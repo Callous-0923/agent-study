@@ -1,0 +1,40 @@
+# ===== 环境变量（含 API Key，绝对不能提交）=====
+.env
+*.env
+
+# ===== Python 缓存 =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# ===== SQLite 数据库 =====
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ===== IDE 配置 =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+# ===== 操作系统 =====
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ===== 虚拟环境 =====
+venv/
+env/
+.venv/
+
+# ===== Jupyter =====
+.ipynb_checkpoints/
+
+# ===== 其他 =====
+*.log
+*.tmp
