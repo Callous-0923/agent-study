@@ -192,117 +192,117 @@ body {
   │ 成本节省      │ ~50%    │ ~60%     │ ~70%    │ ~80%    │
   │ 质量保证      │ 较好     │ 最好      │ 较好     │ 可配置    │
   │ 适合场景      │ 通用     │ 安全第一   │ 多领域    │ 成本敏感   │
-  └──────────────┴──────────┴──────────┴──────────┴──────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (285 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> re
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+  └──────────────┴──────────┴──────────┴──────────┴──────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (285 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">import</span> json
+<span class="k">import</span> hashlib
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ModelRouter</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"模型路由器 —— 成本优化 <span class="</span>n<span class="s">">4</span> 种策略的完整实现。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">ModelRouter</span>:
+    <span class="s">"""模型路由器 —— 成本优化 4 种策略的完整实现。"""</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模型配置（成本、能力、延迟）</span>
+    <span class="h"># 模型配置（成本、能力、延迟）</span>
     MODELS = {
         <span class="s">"gpt-4o"</span>: {
-            <span class="s">"cost_per_1k_input"</span>: <span class=<span class="s">"n"</span>>0.0025</span>,
-            <span class="s">"cost_per_1k_output"</span>: <span class=<span class="s">"n"</span>>0.01</span>,
-            <span class="s">"capability_score"</span>: <span class=<span class="s">"n"</span>>10</span>,
-            <span class="s">"latency_estimate_ms"</span>: <span class=<span class="s">"n"</span>>2500</span>,
+            <span class="s">"cost_per_1k_input"</span>: <span class="n">0.0025</span>,
+            <span class="s">"cost_per_1k_output"</span>: <span class="n">0.01</span>,
+            <span class="s">"capability_score"</span>: <span class="n">10</span>,
+            <span class="s">"latency_estimate_ms"</span>: <span class="n">2500</span>,
         },
         <span class="s">"gpt-4o-mini"</span>: {
-            <span class="s">"cost_per_1k_input"</span>: <span class=<span class="s">"n"</span>>0.00015</span>,
-            <span class="s">"cost_per_1k_output"</span>: <span class=<span class="s">"n"</span>>0.0006</span>,
-            <span class="s">"capability_score"</span>: <span class=<span class="s">"n"</span>>6</span>,
-            <span class="s">"latency_estimate_ms"</span>: <span class=<span class="s">"n"</span>>800</span>,
+            <span class="s">"cost_per_1k_input"</span>: <span class="n">0.00015</span>,
+            <span class="s">"cost_per_1k_output"</span>: <span class="n">0.0006</span>,
+            <span class="s">"capability_score"</span>: <span class="n">6</span>,
+            <span class="s">"latency_estimate_ms"</span>: <span class="n">800</span>,
         },
         <span class="s">"claude-haiku"</span>: {
-            <span class="s">"cost_per_1k_input"</span>: <span class=<span class="s">"n"</span>>0.00025</span>,
-            <span class="s">"cost_per_1k_output"</span>: <span class=<span class="s">"n"</span>>0.00125</span>,
-            <span class="s">"capability_score"</span>: <span class=<span class="s">"n"</span>>5</span>,
-            <span class="s">"latency_estimate_ms"</span>: <span class=<span class="s">"n"</span>>600</span>,
+            <span class="s">"cost_per_1k_input"</span>: <span class="n">0.00025</span>,
+            <span class="s">"cost_per_1k_output"</span>: <span class="n">0.00125</span>,
+            <span class="s">"capability_score"</span>: <span class="n">5</span>,
+            <span class="s">"latency_estimate_ms"</span>: <span class="n">600</span>,
         },
         <span class="s">"claude-sonnet"</span>: {
-            <span class="s">"cost_per_1k_input"</span>: <span class=<span class="s">"n"</span>>0.003</span>,
-            <span class="s">"cost_per_1k_output"</span>: <span class=<span class="s">"n"</span>>0.015</span>,
-            <span class="s">"capability_score"</span>: <span class=<span class="s">"n"</span>>9</span>,
-            <span class="s">"latency_estimate_ms"</span>: <span class=<span class="s">"n"</span>>1500</span>,
+            <span class="s">"cost_per_1k_input"</span>: <span class="n">0.003</span>,
+            <span class="s">"cost_per_1k_output"</span>: <span class="n">0.015</span>,
+            <span class="s">"capability_score"</span>: <span class="n">9</span>,
+            <span class="s">"latency_estimate_ms"</span>: <span class="n">1500</span>,
         },
     }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>threshold_route</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>,
-                        threshold: <span class=<span class="s">"b"</span>>float</span> = <span class=<span class="s">"n"</span>>0.5</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"策略 <span class="</span>n">1</span>：复杂度阈值路由。
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">threshold_route</span>(cls, query: <span class="b">str</span>,
+                        threshold: <span class="b">float</span> = <span class="n">0.5</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""策略 1：复杂度阈值路由。
 
         最简单有效的策略：
           复杂度 &lt; 阈值 → 小模型
           复杂度 ≥ 阈值 → 大模型
-        <span class="s">""</span>"</span>
+        """</span>
         complexity = cls._estimate_complexity(query)
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"strategy"</span>: <span class="s">"threshold"</span>,
-            <span class="s">"complexity"</span>: <span class=<span class="s">"b"</span>>round</span>(complexity, <span class=<span class="s">"n"</span>>2</span>),
-            <span class="s">"model"</span>: <span class="s">"gpt-4o"</span> <span class=<span class="s">"k"</span>>if</span> complexity &gt;= threshold <span class=<span class="s">"k"</span>>else</span> <span class="s">"gpt-4o-mini"</span>,
+            <span class="s">"complexity"</span>: <span class="b">round</span>(complexity, <span class="n">2</span>),
+            <span class="s">"model"</span>: <span class="s">"gpt-4o"</span> <span class="k">if</span> complexity &gt;= threshold <span class="k">else</span> <span class="s">"gpt-4o-mini"</span>,
             <span class="s">"reason"</span>: (f<span class="s">"复杂度 {complexity:.2f} "</span>
-                       f<span class="s">"{<span class='s'>'≥'</span> <span class="</span>k<span class="s">">if</span> complexity &gt;= threshold <span class="</span>k<span class="s">">else</span> <span class='s'>'&lt;'</span>} "</span>
+                       f<span class="s">"{'≥' if complexity &gt;= threshold else '&lt;'} "</span>
                        f<span class="s">"阈值 {threshold}"</span>),
         }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>cascade_route</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>,
-                      confidence_threshold: <span class=<span class="s">"b"</span>>float</span> = <span class=<span class="s">"n"</span>>0.7</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"策略 <span class="</span>n">2</span>：级联路由（降级重试）。
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">cascade_route</span>(cls, query: <span class="b">str</span>,
+                      confidence_threshold: <span class="b">float</span> = <span class="n">0.7</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""策略 2：级联路由（降级重试）。
 
         先用便宜模型 → 置信度不够 → 自动升级大模型。
         保证最终质量不下降。
-        <span class="s">""</span>"</span>
+        """</span>
         cascade = []
-        total_cost = <span class=<span class="s">"n"</span>>0</span>
+        total_cost = <span class="n">0</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第1步：尝试小模型</span>
+        <span class="h"># 第1步：尝试小模型</span>
         cheap_confidence = cls._simulate_confidence(query, <span class="s">"gpt-4o-mini"</span>)
         step1_cost = cls._estimate_cost(query, <span class="s">"gpt-4o-mini"</span>)
         cascade.append({
-            <span class="s">"step"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"model"</span>: <span class="s">"gpt-4o-mini"</span>,
-            <span class="s">"confidence"</span>: <span class=<span class="s">"b"</span>>round</span>(cheap_confidence, <span class=<span class="s">"n"</span>>2</span>),
-            <span class="s">"cost"</span>: <span class=<span class="s">"b"</span>>round</span>(step1_cost, <span class=<span class="s">"n"</span>>6</span>),
+            <span class="s">"step"</span>: <span class="n">1</span>, <span class="s">"model"</span>: <span class="s">"gpt-4o-mini"</span>,
+            <span class="s">"confidence"</span>: <span class="b">round</span>(cheap_confidence, <span class="n">2</span>),
+            <span class="s">"cost"</span>: <span class="b">round</span>(step1_cost, <span class="n">6</span>),
         })
 
-        <span class=<span class="s">"k"</span>>if</span> cheap_confidence &gt;= confidence_threshold:
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 小模型足够好 → 完成</span>
-            <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">if</span> cheap_confidence &gt;= confidence_threshold:
+            <span class="h"># 小模型足够好 → 完成</span>
+            <span class="k">return</span> {
                 <span class="s">"strategy"</span>: <span class="s">"cascade"</span>,
-                <span class="s">"escalated"</span>: <span class=<span class="s">"k"</span>>False</span>,
+                <span class="s">"escalated"</span>: <span class="k">False</span>,
                 <span class="s">"final_model"</span>: <span class="s">"gpt-4o-mini"</span>,
-                <span class="s">"total_cost"</span>: <span class=<span class="s">"b"</span>>round</span>(step1_cost, <span class=<span class="s">"n"</span>>6</span>),
+                <span class="s">"total_cost"</span>: <span class="b">round</span>(step1_cost, <span class="n">6</span>),
                 <span class="s">"cascade"</span>: cascade,
             }
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第2步：升级大模型</span>
+        <span class="h"># 第2步：升级大模型</span>
         step2_cost = cls._estimate_cost(query, <span class="s">"gpt-4o"</span>)
         cascade.append({
-            <span class="s">"step"</span>: <span class=<span class="s">"n"</span>>2</span>, <span class="s">"model"</span>: <span class="s">"gpt-4o"</span>,
-            <span class="s">"confidence"</span>: <span class=<span class="s">"n"</span>>0.95</span>,
-            <span class="s">"cost"</span>: <span class=<span class="s">"b"</span>>round</span>(step2_cost, <span class=<span class="s">"n"</span>>6</span>),
+            <span class="s">"step"</span>: <span class="n">2</span>, <span class="s">"model"</span>: <span class="s">"gpt-4o"</span>,
+            <span class="s">"confidence"</span>: <span class="n">0.95</span>,
+            <span class="s">"cost"</span>: <span class="b">round</span>(step2_cost, <span class="n">6</span>),
         })
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"strategy"</span>: <span class="s">"cascade"</span>,
-            <span class="s">"escalated"</span>: <span class=<span class="s">"k"</span>>True</span>,
+            <span class="s">"escalated"</span>: <span class="k">True</span>,
             <span class="s">"final_model"</span>: <span class="s">"gpt-4o"</span>,
-            <span class="s">"total_cost"</span>: <span class=<span class="s">"b"</span>>round</span>(step1_cost + step2_cost, <span class=<span class="s">"n"</span>>6</span>),
+            <span class="s">"total_cost"</span>: <span class="b">round</span>(step1_cost + step2_cost, <span class="n">6</span>),
             <span class="s">"cascade"</span>: cascade,
         }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>semantic_route</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"策略 <span class="</span>n">3</span>：语义路由。
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">semantic_route</span>(cls, query: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""策略 3：语义路由。
 
         根据查询的语义特征匹配最合适的模型。
         不同模型擅长不同领域。
-        <span class="s">""</span>"</span>
+        """</span>
         domain_examples = {
             <span class="s">"code"</span>: {
                 <span class="s">"keywords"</span>: [<span class="s">"代码"</span>, <span class="s">"函数"</span>, <span class="s">"bug"</span>, <span class="s">"debug"</span>, <span class="s">"算法"</span>,
@@ -318,7 +318,7 @@ body {
             },
             <span class="s">"simple_qa"</span>: {
                 <span class="s">"keywords"</span>: [<span class="s">"是什么"</span>, <span class="s">"多少钱"</span>, <span class="s">"时间"</span>, <span class="s">"在哪"</span>,
-                            <span class="s">"怎么"</span>, <span class="s">"what <span class="</span>k<span class="s">">is</span>"</span>, <span class="s">"how to"</span>],
+                            <span class="s">"怎么"</span>, <span class="s">"what is"</span>, <span class="s">"how to"</span>],
                 <span class="s">"model"</span>: <span class="s">"gpt-4o-mini"</span>,
                 <span class="s">"reason"</span>: <span class="s">"简单问答小模型足够"</span>,
             },
@@ -331,15 +331,15 @@ body {
         }
 
         scores = {}
-        <span class=<span class="s">"k"</span>>for</span> domain, config <span class=<span class="s">"k"</span>>in</span> domain_examples.items():
-            score = <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>1</span> <span class=<span class="s">"k"</span>>for</span> kw <span class=<span class="s">"k"</span>>in</span> config[<span class="s">"keywords"</span>]
-                       <span class=<span class="s">"k"</span>>if</span> kw.lower() <span class=<span class="s">"k"</span>>in</span> query.lower())
+        <span class="k">for</span> domain, config <span class="k">in</span> domain_examples.items():
+            score = <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> kw <span class="k">in</span> config[<span class="s">"keywords"</span>]
+                       <span class="k">if</span> kw.lower() <span class="k">in</span> query.lower())
             scores[domain] = score
 
-        best_domain = <span class=<span class="s">"b"</span>>max</span>(scores, key=scores.get)
+        best_domain = <span class="b">max</span>(scores, key=scores.get)
         config = domain_examples[best_domain]
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"strategy"</span>: <span class="s">"semantic"</span>,
             <span class="s">"matched_domain"</span>: best_domain,
             <span class="s">"model"</span>: config[<span class="s">"model"</span>],
@@ -347,136 +347,136 @@ body {
             <span class="s">"score"</span>: scores[best_domain],
         }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>cost_aware_route</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>,
-                         budget: <span class=<span class="s">"b"</span>>float</span> = <span class=<span class="s">"n"</span>>0.001</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"策略 <span class="</span>n">4</span>：成本感知路由。
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">cost_aware_route</span>(cls, query: <span class="b">str</span>,
+                         budget: <span class="b">float</span> = <span class="n">0.001</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""策略 4：成本感知路由。
 
         在预算约束下选择能力最强的模型。
-        <span class="s">""</span>"</span>
+        """</span>
         complexity = cls._estimate_complexity(query)
-        best_model = <span class=<span class="s">"k"</span>>None</span>
-        best_capability = <span class=<span class="s">"n"</span>>0</span>
+        best_model = <span class="k">None</span>
+        best_capability = <span class="n">0</span>
 
-        <span class=<span class="s">"k"</span>>for</span> name, config <span class=<span class="s">"k"</span>>in</span> cls.MODELS.items():
+        <span class="k">for</span> name, config <span class="k">in</span> cls.MODELS.items():
             est_cost = cls._estimate_cost(query, name)
-            <span class=<span class="s">"k"</span>>if</span> est_cost &lt;= budget <span class=<span class="s">"k"</span>>and</span> config[<span class="s">"capability_score"</span>] &gt; best_capability:
+            <span class="k">if</span> est_cost &lt;= budget <span class="k">and</span> config[<span class="s">"capability_score"</span>] &gt; best_capability:
                 best_model = name
                 best_capability = config[<span class="s">"capability_score"</span>]
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"strategy"</span>: <span class="s">"cost_aware"</span>,
             <span class="s">"budget"</span>: budget,
-            <span class="s">"model"</span>: best_model <span class=<span class="s">"k"</span>>or</span> <span class="s">"gpt-4o-mini"</span>,
-            <span class="s">"est_cost"</span>: <span class=<span class="s">"b"</span>>round</span>(cls._estimate_cost(query, best_model <span class=<span class="s">"k"</span>>or</span> <span class="s">"gpt-4o-mini"</span>), <span class=<span class="s">"n"</span>>6</span>),
-            <span class="s">"within_budget"</span>: (cls._estimate_cost(query, best_model <span class=<span class="s">"k"</span>>or</span> <span class="s">"gpt-4o-mini"</span>) &lt;= budget),
+            <span class="s">"model"</span>: best_model <span class="k">or</span> <span class="s">"gpt-4o-mini"</span>,
+            <span class="s">"est_cost"</span>: <span class="b">round</span>(cls._estimate_cost(query, best_model <span class="k">or</span> <span class="s">"gpt-4o-mini"</span>), <span class="n">6</span>),
+            <span class="s">"within_budget"</span>: (cls._estimate_cost(query, best_model <span class="k">or</span> <span class="s">"gpt-4o-mini"</span>) &lt;= budget),
         }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ========== 辅助方法 ==========</span>
+    <span class="h"># ========== 辅助方法 ==========</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@staticmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_estimate_complexity</span>(query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"估算查询复杂度（<span class="</span>n<span class="s">">0</span>-<span class="</span>n">1</span>）。
+    <span <span class="k">class</span>="d">@staticmethod</span>
+    <span class="k">def</span> <span class="f">_estimate_complexity</span>(query: <span class="b">str</span>) -&gt; <span class="b">float</span>:
+        <span class="s">"""估算查询复杂度（0-1）。
 
         规则：关键词 + 长度 + 标点综合判断。
-        <span class="s">""</span>"</span>
-        score = <span class=<span class="s">"n"</span>>0.0</span>
+        """</span>
+        score = <span class="n">0.0</span>
         lq = query.lower()
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 推理关键词 → 高复杂度</span>
+        <span class="h"># 推理关键词 → 高复杂度</span>
         reasoning_kw = [<span class="s">"为什么"</span>, <span class="s">"如何"</span>, <span class="s">"分析"</span>, <span class="s">"解释"</span>, <span class="s">"原因"</span>,
                         <span class="s">"设计"</span>, <span class="s">"方案"</span>, <span class="s">"对比"</span>, <span class="s">"why"</span>, <span class="s">"explain"</span>,
                         <span class="s">"analyze"</span>, <span class="s">"compare"</span>]
-        score += <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>0.15</span> <span class=<span class="s">"k"</span>>for</span> kw <span class=<span class="s">"k"</span>>in</span> reasoning_kw <span class=<span class="s">"k"</span>>if</span> kw <span class=<span class="s">"k"</span>>in</span> lq)
+        score += <span class="b">sum</span>(<span class="n">0.15</span> <span class="k">for</span> kw <span class="k">in</span> reasoning_kw <span class="k">if</span> kw <span class="k">in</span> lq)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 代码关键词 → 高复杂度</span>
+        <span class="h"># 代码关键词 → 高复杂度</span>
         code_kw = [<span class="s">"代码"</span>, <span class="s">"函数"</span>, <span class="s">"实现"</span>, <span class="s">"bug"</span>, <span class="s">"code"</span>, <span class="s">"function"</span>]
-        score += <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>0.15</span> <span class=<span class="s">"k"</span>>for</span> kw <span class=<span class="s">"k"</span>>in</span> code_kw <span class=<span class="s">"k"</span>>if</span> kw <span class=<span class="s">"k"</span>>in</span> lq)
+        score += <span class="b">sum</span>(<span class="n">0.15</span> <span class="k">for</span> kw <span class="k">in</span> code_kw <span class="k">if</span> kw <span class="k">in</span> lq)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 简单问答 → 低复杂度</span>
-        simple_kw = [<span class="s">"是什么"</span>, <span class="s">"多少钱"</span>, <span class="s">"几点"</span>, <span class="s">"在哪"</span>, <span class="s">"what <span class="</span>k<span class="s">">is</span>"</span>]
-        score -= <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>0.1</span> <span class=<span class="s">"k"</span>>for</span> kw <span class=<span class="s">"k"</span>>in</span> simple_kw <span class=<span class="s">"k"</span>>if</span> kw <span class=<span class="s">"k"</span>>in</span> lq)
+        <span class="h"># 简单问答 → 低复杂度</span>
+        simple_kw = [<span class="s">"是什么"</span>, <span class="s">"多少钱"</span>, <span class="s">"几点"</span>, <span class="s">"在哪"</span>, <span class="s">"what is"</span>]
+        score -= <span class="b">sum</span>(<span class="n">0.1</span> <span class="k">for</span> kw <span class="k">in</span> simple_kw <span class="k">if</span> kw <span class="k">in</span> lq)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 长度影响</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(query) &gt; <span class=<span class="s">"n"</span>>200</span>:
-            score += <span class=<span class="s">"n"</span>>0.1</span>
+        <span class="h"># 长度影响</span>
+        <span class="k">if</span> <span class="b">len</span>(query) &gt; <span class="n">200</span>:
+            score += <span class="n">0.1</span>
 
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"n"</span>>0.0</span>, <span class=<span class="s">"b"</span>>min</span>(<span class=<span class="s">"n"</span>>1.0</span>, score))
+        <span class="k">return</span> <span class="b">max</span>(<span class="n">0.0</span>, <span class="b">min</span>(<span class="n">1.0</span>, score))
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_simulate_confidence</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>, model: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"模拟模型的置信度。"</span><span class="s">""</span></span>
-        base = cls.MODELS[model][<span class="s">"capability_score"</span>] / <span class=<span class="s">"n"</span>>10</span>
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">_simulate_confidence</span>(cls, query: <span class="b">str</span>, model: <span class="b">str</span>) -&gt; <span class="b">float</span>:
+        <span class="s">"""模拟模型的置信度。"""</span>
+        base = cls.MODELS[model][<span class="s">"capability_score"</span>] / <span class="n">10</span>
         complexity = cls._estimate_complexity(query)
-        confidence = base - complexity * <span class=<span class="s">"n"</span>>0.5</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"n"</span>>0.1</span>, <span class=<span class="s">"b"</span>>min</span>(<span class=<span class="s">"n"</span>>1.0</span>, confidence))
+        confidence = base - complexity * <span class="n">0.5</span>
+        <span class="k">return</span> <span class="b">max</span>(<span class="n">0.1</span>, <span class="b">min</span>(<span class="n">1.0</span>, confidence))
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_estimate_cost</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>, model: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"估算单次查询成本。"</span><span class="s">""</span></span>
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">_estimate_cost</span>(cls, query: <span class="b">str</span>, model: <span class="b">str</span>) -&gt; <span class="b">float</span>:
+        <span class="s">"""估算单次查询成本。"""</span>
         cfg = cls.MODELS[model]
-        input_tokens = <span class=<span class="s">"b"</span>>len</span>(query) // <span class=<span class="s">"n"</span>>4</span>
-        output_tokens = <span class=<span class="s">"n"</span>>200</span>
-        <span class=<span class="s">"k"</span>>return</span> (input_tokens / <span class=<span class="s">"n"</span>>1000</span> * cfg[<span class="s">"cost_per_1k_input"</span>] +
-                output_tokens / <span class=<span class="s">"n"</span>>1000</span> * cfg[<span class="s">"cost_per_1k_output"</span>])
+        input_tokens = <span class="b">len</span>(query) // <span class="n">4</span>
+        output_tokens = <span class="n">200</span>
+        <span class="k">return</span> (input_tokens / <span class="n">1000</span> * cfg[<span class="s">"cost_per_1k_input"</span>] +
+                output_tokens / <span class="n">1000</span> * cfg[<span class="s">"cost_per_1k_output"</span>])
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_routing</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示四种路由策略。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  模型路由 <span class="</span>n<span class="s">">4</span> 策略演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_routing</span>():
+    <span class="s">"""演示四种路由策略。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  模型路由 4 策略演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     queries = [
         <span class="s">"帮我写一个快速排序的Python函数"</span>,
         <span class="s">"今天天气怎么样？"</span>,
         <span class="s">"分析一下AI Agent市场的竞争格局"</span>,
         <span class="s">"帮我翻译这段文字成英文"</span>,
-        <span class="s">"计算 <span class="</span>n<span class="s">">12345</span> * <span class="</span>n<span class="s">">67890</span> 等于多少"</span>,
+        <span class="s">"计算 12345 * 67890 等于多少"</span>,
     ]
 
-    <span class=<span class="s">"k"</span>>for</span> q <span class=<span class="s">"k"</span>>in</span> queries:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  ── 查询: 「{q[:<span class="</span>n<span class="s">">40</span>]}...」──"</span>)
+    <span class="k">for</span> q <span class="k">in</span> queries:
+        <span class="b">print</span>(f<span class="s">"\n  ── 查询: 「{q[:40]}...」──"</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 策略1</span>
+        <span class="h"># 策略1</span>
         r1 = ModelRouter.threshold_route(q)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  Threshold: {r1[<span class='s'>'model'</span>]:15s} (复杂度:{r1[<span class='s'>'complexity'</span>]})"</span>)
+        <span class="b">print</span>(f<span class="s">"  Threshold: {r1['model']:15s} (复杂度:{r1['complexity']})"</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 策略2</span>
+        <span class="h"># 策略2</span>
         r2 = ModelRouter.cascade_route(q)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  Cascade:   {r2[<span class='s'>'final_model'</span>]:15s} "</span>
-              f<span class="s">"({<span class='s'>'升级'</span> <span class="</span>k<span class="s">">if</span> r2[<span class='s'>'escalated'</span>] <span class="</span>k<span class="s">">else</span> <span class='s'>'未升级'</span>} "</span>
-              f<span class="s">"| ${r2[<span class='s'>'total_cost'</span>]:.6f})"</span>)
+        <span class="b">print</span>(f<span class="s">"  Cascade:   {r2['final_model']:15s} "</span>
+              f<span class="s">"({'升级' if r2['escalated'] else '未升级'} "</span>
+              f<span class="s">"| ${r2['total_cost']:.6f})"</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 策略3</span>
+        <span class="h"># 策略3</span>
         r3 = ModelRouter.semantic_route(q)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  Semantic:  {r3[<span class='s'>'model'</span>]:15s} "</span>
-              f<span class="s">"(领域:{r3[<span class='s'>'matched_domain'</span>]})"</span>)
+        <span class="b">print</span>(f<span class="s">"  Semantic:  {r3['model']:15s} "</span>
+              f<span class="s">"(领域:{r3['matched_domain']})"</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 策略4</span>
-        r4 = ModelRouter.cost_aware_route(q, budget=<span class=<span class="s">"n"</span>>0.0005</span>)
-        icon = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> r4[<span class="s">"within_budget"</span>] <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌ 超预算"</span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  CostAware: {r4[<span class='s'>'model'</span>]:15s} "</span>
-              f<span class="s">"(${r4[<span class='s'>'est_cost'</span>]:.6f} {icon})"</span>)
+        <span class="h"># 策略4</span>
+        r4 = ModelRouter.cost_aware_route(q, budget=<span class="n">0.0005</span>)
+        icon = <span class="s">"✅"</span> <span class="k">if</span> r4[<span class="s">"within_budget"</span>] <span class="k">else</span> <span class="s">"❌ 超预算"</span>
+        <span class="b">print</span>(f<span class="s">"  CostAware: {r4['model']:15s} "</span>
+              f<span class="s">"(${r4['est_cost']:.6f} {icon})"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 成本对比</span>
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  成本对比实验"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  场景: 100次查询(80简单+20复杂)"</span>)
-    simple_q = <span class="s">"什么是Python？"</span> * <span class=<span class="s">"n"</span>>80</span>
-    complex_q = <span class="s">"分析AI Agent的架构设计原理"</span> * <span class=<span class="s">"n"</span>>20</span>
-    queries_100 = [simple_q] * <span class=<span class="s">"n"</span>>80</span> + [complex_q] * <span class=<span class="s">"n"</span>>20</span>
+    <span class="h"># 成本对比</span>
+    <span class="b">print</span>(f<span class="s">"\n{'='*60}"</span>)
+    <span class="b">print</span>(f<span class="s">"  成本对比实验"</span>)
+    <span class="b">print</span>(f<span class="s">"{'='*60}"</span>)
+    <span class="b">print</span>(f<span class="s">"  场景: 100次查询(80简单+20复杂)"</span>)
+    simple_q = <span class="s">"什么是Python？"</span> * <span class="n">80</span>
+    complex_q = <span class="s">"分析AI Agent的架构设计原理"</span> * <span class="n">20</span>
+    queries_100 = [simple_q] * <span class="n">80</span> + [complex_q] * <span class="n">20</span>
 
-    all_big = <span class=<span class="s">"b"</span>>sum</span>(ModelRouter._estimate_cost(q, <span class="s">"gpt-4o"</span>) <span class=<span class="s">"k"</span>>for</span> q <span class=<span class="s">"k"</span>>in</span> queries_100)
-    routed = <span class=<span class="s">"n"</span>>0</span>
-    <span class=<span class="s">"k"</span>>for</span> q <span class=<span class="s">"k"</span>>in</span> queries_100:
+    all_big = <span class="b">sum</span>(ModelRouter._estimate_cost(q, <span class="s">"gpt-4o"</span>) <span class="k">for</span> q <span class="k">in</span> queries_100)
+    routed = <span class="n">0</span>
+    <span class="k">for</span> q <span class="k">in</span> queries_100:
         r = ModelRouter.threshold_route(q)
         routed += ModelRouter._estimate_cost(q, r[<span class="s">"model"</span>])
 
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  全用大模型:   ${all_big:.4f}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  路由策略:     ${routed:.4f}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  节省:         {((all_big - routed) / all_big) * <span class="</span>n<span class="s">">100</span>:.0f}%"</span>)</pre></div></details></div><div class="lecture"><h2>26.3 本章总结</h2>
+    <span class="b">print</span>(f<span class="s">"  全用大模型:   ${all_big:.4f}"</span>)
+    <span class="b">print</span>(f<span class="s">"  路由策略:     ${routed:.4f}"</span>)
+    <span class="b">print</span>(f<span class="s">"  节省:         {((all_big - routed) / all_big) * 100:.0f}%"</span>)</pre></div></details></div><div class="lecture"><h2>26.3 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
@@ -489,37 +489,37 @@ body {
 <p>「怎么降低 LLM 成本？」</p>
 <p>→ 模型路由：80% 简单用 mini，20% 复杂用大模型</p>
 <p>→ 级联策略保证质量：小模型先试，不行再升级</p>
-<p>→ 结果：成本降 60%+，质量损失 < 2%</p></div><div class="code-section"><details open><summary>💻 代码 (23 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> re
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<p>→ 结果：成本降 60%+，质量损失 < 2%</p></div><div class="code-section"><details open><summary>💻 代码 (23 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">import</span> json
+<span class="k">import</span> hashlib
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第26章：模型路由与多 LLM 策略                         ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Threshold · Cascade · Semantic · Cost-Aware        ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第26章：模型路由与多 LLM 策略                         ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  Threshold · Cascade · Semantic · Cost-Aware        ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
     demo_routing()
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">4</span> 种路由策略速查"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
-    <span class=<span class="s">"k"</span>>for</span> item <span class=<span class="s">"k"</span>>in</span> [
+    <span class="b">print</span>(<span class="s">"\n▶ 4 种路由策略速查"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> item <span class="k">in</span> [
         <span class="s">"Threshold: 复杂度评分 &gt; 阈值 → 大模型（最简单）"</span>,
         <span class="s">"Cascade: 小模型先试 → 不行升级（质量保证）"</span>,
         <span class="s">"Semantic: 按领域匹配最佳模型（最精准）"</span>,
         <span class="s">"CostAware: 预算约束下最大化能力（最可控）"</span>,
     ]:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {item}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第26章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (390 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+        <span class="b">print</span>(f<span class="s">"  {item}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第26章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (390 行)</summary><div class="code-block"><pre><span class="s">"""
 第26章：模型路由与多 LLM 策略 —— 成本砍半的秘密
 ==================================================
 
 📌 本章目标：
-  <span class=<span class="s">"n"</span>>1</span>. 理解模型路由的 <span class=<span class="s">"n"</span>>4</span> 种核心策略
-  <span class=<span class="s">"n"</span>>2</span>. 掌握成本-质量-延迟三元权衡
-  <span class=<span class="s">"n"</span>>3</span>. 实现 Cascade Router 和 Semantic Router
-  <span class=<span class="s">"n"</span>>4</span>. 学会用降级重试降低高风险查询成本
+  1. 理解模型路由的 4 种核心策略
+  2. 掌握成本-质量-延迟三元权衡
+  3. 实现 Cascade Router 和 Semantic Router
+  4. 学会用降级重试降低高风险查询成本
 
 📌 面试高频点：
   - 「怎么降低 Agent 的 LLM 成本？」
@@ -527,11 +527,11 @@ body {
   - 「Cascade Routing 和 Semantic Routing 的区别？」
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-综合 <span class=<span class="s">"n"</span>>2025</span> RouterBench + 业界实践
+综合 2025 RouterBench + 业界实践
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-<span class=<span class="s">"n"</span>>26.1</span> 为什么需要模型路由？
+26.1 为什么需要模型路由？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 问题：
@@ -543,27 +543,27 @@ body {
   不同任务需要不同的「交通工具」
 
 模型路由要解决的问题：
-  简单任务 → 便宜小模型（成本 $<span class=<span class="s">"n"</span>>0.02</span>/M token）
-  复杂任务 → 强大模型（成本 $<span class=<span class="s">"n"</span>>2.5</span>/M token）
-  → 保持质量的同时，降低 <span class=<span class="s">"n"</span>>50</span>-<span class=<span class="s">"n"</span>>80</span>% 成本
+  简单任务 → 便宜小模型（成本 $0.02/M token）
+  复杂任务 → 强大模型（成本 $2.5/M token）
+  → 保持质量的同时，降低 50-80% 成本
 
 关键数据（业界实践）：
-  智能客服场景：<span class=<span class="s">"n"</span>>80</span>% 简单查询 + <span class=<span class="s">"n"</span>>20</span>% 复杂查询
-  → 全用大模型：$<span class=<span class="s">"n"</span>>1000</span>/天
-  → 路由策略：$<span class=<span class="s">"n"</span>>200</span>/天（降低 <span class=<span class="s">"n"</span>>80</span>%）
-  → 质量损失：&lt; <span class=<span class="s">"n"</span>>2</span>%
+  智能客服场景：80% 简单查询 + 20% 复杂查询
+  → 全用大模型：$1000/天
+  → 路由策略：$200/天（降低 80%）
+  → 质量损失：&lt; 2%
 
 
-<span class=<span class="s">"n"</span>>26.2</span> 四种路由策略
+26.2 四种路由策略
 ━━━━━━━━━━━━━━━
 
   ┌─────────────────────┬──────────────────────────────────┐
   │ 策略                 │            核心思想               │
   ├─────────────────────┼──────────────────────────────────┤
-  │ <span class=<span class="s">"n"</span>>1</span>. Threshold Router │ 复杂度评分 → 超过阈值用大模型      │
-  │ <span class=<span class="s">"n"</span>>2</span>. Cascade Router   │ 先用小模型 → 不行再升级            │
-  │ <span class=<span class="s">"n"</span>>3</span>. Semantic Router  │ 语义相似度 → 匹配最佳模型           │
-  │ <span class=<span class="s">"n"</span>>4</span>. Cost-Aware Router │ 成本约束下最大化质量               │
+  │ 1. Threshold Router │ 复杂度评分 → 超过阈值用大模型      │
+  │ 2. Cascade Router   │ 先用小模型 → 不行再升级            │
+  │ 3. Semantic Router  │ 语义相似度 → 匹配最佳模型           │
+  │ 4. Cost-Aware Router │ 成本约束下最大化质量               │
   └─────────────────────┴──────────────────────────────────┘
 
 策略对比：
@@ -572,123 +572,123 @@ body {
   ├──────────────┼──────────┼──────────┼──────────┼──────────┤
   │ 实现难度      │ ⭐       │ ⭐⭐      │ ⭐⭐⭐     │ ⭐⭐⭐     │
   │ 延迟(额外)    │ &lt;10ms   │ 可能+延迟 │ &lt;50ms   │ &lt;100ms  │
-  │ 成本节省      │ ~<span class=<span class="s">"n"</span>>50</span>%    │ ~<span class=<span class="s">"n"</span>>60</span>%     │ ~<span class=<span class="s">"n"</span>>70</span>%    │ ~<span class=<span class="s">"n"</span>>80</span>%    │
+  │ 成本节省      │ ~50%    │ ~60%     │ ~70%    │ ~80%    │
   │ 质量保证      │ 较好     │ 最好      │ 较好     │ 可配置    │
   │ 适合场景      │ 通用     │ 安全第一   │ 多领域    │ 成本敏感   │
   └──────────────┴──────────┴──────────┴──────────┴──────────┘
-<span class="s">""</span>"</span>
+"""</span>
 
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> re
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">import</span> json
+<span class="k">import</span> hashlib
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ModelRouter</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"模型路由器 —— 成本优化 <span class="</span>n<span class="s">">4</span> 种策略的完整实现。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">ModelRouter</span>:
+    <span class="s">"""模型路由器 —— 成本优化 4 种策略的完整实现。"""</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模型配置（成本、能力、延迟）</span>
+    <span class="h"># 模型配置（成本、能力、延迟）</span>
     MODELS = {
         <span class="s">"gpt-4o"</span>: {
-            <span class="s">"cost_per_1k_input"</span>: <span class=<span class="s">"n"</span>>0.0025</span>,
-            <span class="s">"cost_per_1k_output"</span>: <span class=<span class="s">"n"</span>>0.01</span>,
-            <span class="s">"capability_score"</span>: <span class=<span class="s">"n"</span>>10</span>,
-            <span class="s">"latency_estimate_ms"</span>: <span class=<span class="s">"n"</span>>2500</span>,
+            <span class="s">"cost_per_1k_input"</span>: <span class="n">0.0025</span>,
+            <span class="s">"cost_per_1k_output"</span>: <span class="n">0.01</span>,
+            <span class="s">"capability_score"</span>: <span class="n">10</span>,
+            <span class="s">"latency_estimate_ms"</span>: <span class="n">2500</span>,
         },
         <span class="s">"gpt-4o-mini"</span>: {
-            <span class="s">"cost_per_1k_input"</span>: <span class=<span class="s">"n"</span>>0.00015</span>,
-            <span class="s">"cost_per_1k_output"</span>: <span class=<span class="s">"n"</span>>0.0006</span>,
-            <span class="s">"capability_score"</span>: <span class=<span class="s">"n"</span>>6</span>,
-            <span class="s">"latency_estimate_ms"</span>: <span class=<span class="s">"n"</span>>800</span>,
+            <span class="s">"cost_per_1k_input"</span>: <span class="n">0.00015</span>,
+            <span class="s">"cost_per_1k_output"</span>: <span class="n">0.0006</span>,
+            <span class="s">"capability_score"</span>: <span class="n">6</span>,
+            <span class="s">"latency_estimate_ms"</span>: <span class="n">800</span>,
         },
         <span class="s">"claude-haiku"</span>: {
-            <span class="s">"cost_per_1k_input"</span>: <span class=<span class="s">"n"</span>>0.00025</span>,
-            <span class="s">"cost_per_1k_output"</span>: <span class=<span class="s">"n"</span>>0.00125</span>,
-            <span class="s">"capability_score"</span>: <span class=<span class="s">"n"</span>>5</span>,
-            <span class="s">"latency_estimate_ms"</span>: <span class=<span class="s">"n"</span>>600</span>,
+            <span class="s">"cost_per_1k_input"</span>: <span class="n">0.00025</span>,
+            <span class="s">"cost_per_1k_output"</span>: <span class="n">0.00125</span>,
+            <span class="s">"capability_score"</span>: <span class="n">5</span>,
+            <span class="s">"latency_estimate_ms"</span>: <span class="n">600</span>,
         },
         <span class="s">"claude-sonnet"</span>: {
-            <span class="s">"cost_per_1k_input"</span>: <span class=<span class="s">"n"</span>>0.003</span>,
-            <span class="s">"cost_per_1k_output"</span>: <span class=<span class="s">"n"</span>>0.015</span>,
-            <span class="s">"capability_score"</span>: <span class=<span class="s">"n"</span>>9</span>,
-            <span class="s">"latency_estimate_ms"</span>: <span class=<span class="s">"n"</span>>1500</span>,
+            <span class="s">"cost_per_1k_input"</span>: <span class="n">0.003</span>,
+            <span class="s">"cost_per_1k_output"</span>: <span class="n">0.015</span>,
+            <span class="s">"capability_score"</span>: <span class="n">9</span>,
+            <span class="s">"latency_estimate_ms"</span>: <span class="n">1500</span>,
         },
     }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>threshold_route</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>,
-                        threshold: <span class=<span class="s">"b"</span>>float</span> = <span class=<span class="s">"n"</span>>0.5</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"策略 <span class="</span>n">1</span>：复杂度阈值路由。
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">threshold_route</span>(cls, query: <span class="b">str</span>,
+                        threshold: <span class="b">float</span> = <span class="n">0.5</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""策略 1：复杂度阈值路由。
 
         最简单有效的策略：
           复杂度 &lt; 阈值 → 小模型
           复杂度 ≥ 阈值 → 大模型
-        <span class="s">""</span>"</span>
+        """</span>
         complexity = cls._estimate_complexity(query)
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"strategy"</span>: <span class="s">"threshold"</span>,
-            <span class="s">"complexity"</span>: <span class=<span class="s">"b"</span>>round</span>(complexity, <span class=<span class="s">"n"</span>>2</span>),
-            <span class="s">"model"</span>: <span class="s">"gpt-4o"</span> <span class=<span class="s">"k"</span>>if</span> complexity &gt;= threshold <span class=<span class="s">"k"</span>>else</span> <span class="s">"gpt-4o-mini"</span>,
+            <span class="s">"complexity"</span>: <span class="b">round</span>(complexity, <span class="n">2</span>),
+            <span class="s">"model"</span>: <span class="s">"gpt-4o"</span> <span class="k">if</span> complexity &gt;= threshold <span class="k">else</span> <span class="s">"gpt-4o-mini"</span>,
             <span class="s">"reason"</span>: (f<span class="s">"复杂度 {complexity:.2f} "</span>
-                       f<span class="s">"{<span class='s'>'≥'</span> <span class="</span>k<span class="s">">if</span> complexity &gt;= threshold <span class="</span>k<span class="s">">else</span> <span class='s'>'&lt;'</span>} "</span>
+                       f<span class="s">"{'≥' if complexity &gt;= threshold else '&lt;'} "</span>
                        f<span class="s">"阈值 {threshold}"</span>),
         }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>cascade_route</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>,
-                      confidence_threshold: <span class=<span class="s">"b"</span>>float</span> = <span class=<span class="s">"n"</span>>0.7</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"策略 <span class="</span>n">2</span>：级联路由（降级重试）。
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">cascade_route</span>(cls, query: <span class="b">str</span>,
+                      confidence_threshold: <span class="b">float</span> = <span class="n">0.7</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""策略 2：级联路由（降级重试）。
 
         先用便宜模型 → 置信度不够 → 自动升级大模型。
         保证最终质量不下降。
-        <span class="s">""</span>"</span>
+        """</span>
         cascade = []
-        total_cost = <span class=<span class="s">"n"</span>>0</span>
+        total_cost = <span class="n">0</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第1步：尝试小模型</span>
+        <span class="h"># 第1步：尝试小模型</span>
         cheap_confidence = cls._simulate_confidence(query, <span class="s">"gpt-4o-mini"</span>)
         step1_cost = cls._estimate_cost(query, <span class="s">"gpt-4o-mini"</span>)
         cascade.append({
-            <span class="s">"step"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"model"</span>: <span class="s">"gpt-4o-mini"</span>,
-            <span class="s">"confidence"</span>: <span class=<span class="s">"b"</span>>round</span>(cheap_confidence, <span class=<span class="s">"n"</span>>2</span>),
-            <span class="s">"cost"</span>: <span class=<span class="s">"b"</span>>round</span>(step1_cost, <span class=<span class="s">"n"</span>>6</span>),
+            <span class="s">"step"</span>: <span class="n">1</span>, <span class="s">"model"</span>: <span class="s">"gpt-4o-mini"</span>,
+            <span class="s">"confidence"</span>: <span class="b">round</span>(cheap_confidence, <span class="n">2</span>),
+            <span class="s">"cost"</span>: <span class="b">round</span>(step1_cost, <span class="n">6</span>),
         })
 
-        <span class=<span class="s">"k"</span>>if</span> cheap_confidence &gt;= confidence_threshold:
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 小模型足够好 → 完成</span>
-            <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">if</span> cheap_confidence &gt;= confidence_threshold:
+            <span class="h"># 小模型足够好 → 完成</span>
+            <span class="k">return</span> {
                 <span class="s">"strategy"</span>: <span class="s">"cascade"</span>,
-                <span class="s">"escalated"</span>: <span class=<span class="s">"k"</span>>False</span>,
+                <span class="s">"escalated"</span>: <span class="k">False</span>,
                 <span class="s">"final_model"</span>: <span class="s">"gpt-4o-mini"</span>,
-                <span class="s">"total_cost"</span>: <span class=<span class="s">"b"</span>>round</span>(step1_cost, <span class=<span class="s">"n"</span>>6</span>),
+                <span class="s">"total_cost"</span>: <span class="b">round</span>(step1_cost, <span class="n">6</span>),
                 <span class="s">"cascade"</span>: cascade,
             }
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第2步：升级大模型</span>
+        <span class="h"># 第2步：升级大模型</span>
         step2_cost = cls._estimate_cost(query, <span class="s">"gpt-4o"</span>)
         cascade.append({
-            <span class="s">"step"</span>: <span class=<span class="s">"n"</span>>2</span>, <span class="s">"model"</span>: <span class="s">"gpt-4o"</span>,
-            <span class="s">"confidence"</span>: <span class=<span class="s">"n"</span>>0.95</span>,
-            <span class="s">"cost"</span>: <span class=<span class="s">"b"</span>>round</span>(step2_cost, <span class=<span class="s">"n"</span>>6</span>),
+            <span class="s">"step"</span>: <span class="n">2</span>, <span class="s">"model"</span>: <span class="s">"gpt-4o"</span>,
+            <span class="s">"confidence"</span>: <span class="n">0.95</span>,
+            <span class="s">"cost"</span>: <span class="b">round</span>(step2_cost, <span class="n">6</span>),
         })
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"strategy"</span>: <span class="s">"cascade"</span>,
-            <span class="s">"escalated"</span>: <span class=<span class="s">"k"</span>>True</span>,
+            <span class="s">"escalated"</span>: <span class="k">True</span>,
             <span class="s">"final_model"</span>: <span class="s">"gpt-4o"</span>,
-            <span class="s">"total_cost"</span>: <span class=<span class="s">"b"</span>>round</span>(step1_cost + step2_cost, <span class=<span class="s">"n"</span>>6</span>),
+            <span class="s">"total_cost"</span>: <span class="b">round</span>(step1_cost + step2_cost, <span class="n">6</span>),
             <span class="s">"cascade"</span>: cascade,
         }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>semantic_route</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"策略 <span class="</span>n">3</span>：语义路由。
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">semantic_route</span>(cls, query: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""策略 3：语义路由。
 
         根据查询的语义特征匹配最合适的模型。
         不同模型擅长不同领域。
-        <span class="s">""</span>"</span>
+        """</span>
         domain_examples = {
             <span class="s">"code"</span>: {
                 <span class="s">"keywords"</span>: [<span class="s">"代码"</span>, <span class="s">"函数"</span>, <span class="s">"bug"</span>, <span class="s">"debug"</span>, <span class="s">"算法"</span>,
@@ -704,7 +704,7 @@ body {
             },
             <span class="s">"simple_qa"</span>: {
                 <span class="s">"keywords"</span>: [<span class="s">"是什么"</span>, <span class="s">"多少钱"</span>, <span class="s">"时间"</span>, <span class="s">"在哪"</span>,
-                            <span class="s">"怎么"</span>, <span class="s">"what <span class="</span>k<span class="s">">is</span>"</span>, <span class="s">"how to"</span>],
+                            <span class="s">"怎么"</span>, <span class="s">"what is"</span>, <span class="s">"how to"</span>],
                 <span class="s">"model"</span>: <span class="s">"gpt-4o-mini"</span>,
                 <span class="s">"reason"</span>: <span class="s">"简单问答小模型足够"</span>,
             },
@@ -717,15 +717,15 @@ body {
         }
 
         scores = {}
-        <span class=<span class="s">"k"</span>>for</span> domain, config <span class=<span class="s">"k"</span>>in</span> domain_examples.items():
-            score = <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>1</span> <span class=<span class="s">"k"</span>>for</span> kw <span class=<span class="s">"k"</span>>in</span> config[<span class="s">"keywords"</span>]
-                       <span class=<span class="s">"k"</span>>if</span> kw.lower() <span class=<span class="s">"k"</span>>in</span> query.lower())
+        <span class="k">for</span> domain, config <span class="k">in</span> domain_examples.items():
+            score = <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> kw <span class="k">in</span> config[<span class="s">"keywords"</span>]
+                       <span class="k">if</span> kw.lower() <span class="k">in</span> query.lower())
             scores[domain] = score
 
-        best_domain = <span class=<span class="s">"b"</span>>max</span>(scores, key=scores.get)
+        best_domain = <span class="b">max</span>(scores, key=scores.get)
         config = domain_examples[best_domain]
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"strategy"</span>: <span class="s">"semantic"</span>,
             <span class="s">"matched_domain"</span>: best_domain,
             <span class="s">"model"</span>: config[<span class="s">"model"</span>],
@@ -733,173 +733,173 @@ body {
             <span class="s">"score"</span>: scores[best_domain],
         }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>cost_aware_route</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>,
-                         budget: <span class=<span class="s">"b"</span>>float</span> = <span class=<span class="s">"n"</span>>0.001</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"策略 <span class="</span>n">4</span>：成本感知路由。
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">cost_aware_route</span>(cls, query: <span class="b">str</span>,
+                         budget: <span class="b">float</span> = <span class="n">0.001</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""策略 4：成本感知路由。
 
         在预算约束下选择能力最强的模型。
-        <span class="s">""</span>"</span>
+        """</span>
         complexity = cls._estimate_complexity(query)
-        best_model = <span class=<span class="s">"k"</span>>None</span>
-        best_capability = <span class=<span class="s">"n"</span>>0</span>
+        best_model = <span class="k">None</span>
+        best_capability = <span class="n">0</span>
 
-        <span class=<span class="s">"k"</span>>for</span> name, config <span class=<span class="s">"k"</span>>in</span> cls.MODELS.items():
+        <span class="k">for</span> name, config <span class="k">in</span> cls.MODELS.items():
             est_cost = cls._estimate_cost(query, name)
-            <span class=<span class="s">"k"</span>>if</span> est_cost &lt;= budget <span class=<span class="s">"k"</span>>and</span> config[<span class="s">"capability_score"</span>] &gt; best_capability:
+            <span class="k">if</span> est_cost &lt;= budget <span class="k">and</span> config[<span class="s">"capability_score"</span>] &gt; best_capability:
                 best_model = name
                 best_capability = config[<span class="s">"capability_score"</span>]
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"strategy"</span>: <span class="s">"cost_aware"</span>,
             <span class="s">"budget"</span>: budget,
-            <span class="s">"model"</span>: best_model <span class=<span class="s">"k"</span>>or</span> <span class="s">"gpt-4o-mini"</span>,
-            <span class="s">"est_cost"</span>: <span class=<span class="s">"b"</span>>round</span>(cls._estimate_cost(query, best_model <span class=<span class="s">"k"</span>>or</span> <span class="s">"gpt-4o-mini"</span>), <span class=<span class="s">"n"</span>>6</span>),
-            <span class="s">"within_budget"</span>: (cls._estimate_cost(query, best_model <span class=<span class="s">"k"</span>>or</span> <span class="s">"gpt-4o-mini"</span>) &lt;= budget),
+            <span class="s">"model"</span>: best_model <span class="k">or</span> <span class="s">"gpt-4o-mini"</span>,
+            <span class="s">"est_cost"</span>: <span class="b">round</span>(cls._estimate_cost(query, best_model <span class="k">or</span> <span class="s">"gpt-4o-mini"</span>), <span class="n">6</span>),
+            <span class="s">"within_budget"</span>: (cls._estimate_cost(query, best_model <span class="k">or</span> <span class="s">"gpt-4o-mini"</span>) &lt;= budget),
         }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ========== 辅助方法 ==========</span>
+    <span class="h"># ========== 辅助方法 ==========</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@staticmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_estimate_complexity</span>(query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"估算查询复杂度（<span class="</span>n<span class="s">">0</span>-<span class="</span>n">1</span>）。
+    <span <span class="k">class</span>="d">@staticmethod</span>
+    <span class="k">def</span> <span class="f">_estimate_complexity</span>(query: <span class="b">str</span>) -&gt; <span class="b">float</span>:
+        <span class="s">"""估算查询复杂度（0-1）。
 
         规则：关键词 + 长度 + 标点综合判断。
-        <span class="s">""</span>"</span>
-        score = <span class=<span class="s">"n"</span>>0.0</span>
+        """</span>
+        score = <span class="n">0.0</span>
         lq = query.lower()
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 推理关键词 → 高复杂度</span>
+        <span class="h"># 推理关键词 → 高复杂度</span>
         reasoning_kw = [<span class="s">"为什么"</span>, <span class="s">"如何"</span>, <span class="s">"分析"</span>, <span class="s">"解释"</span>, <span class="s">"原因"</span>,
                         <span class="s">"设计"</span>, <span class="s">"方案"</span>, <span class="s">"对比"</span>, <span class="s">"why"</span>, <span class="s">"explain"</span>,
                         <span class="s">"analyze"</span>, <span class="s">"compare"</span>]
-        score += <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>0.15</span> <span class=<span class="s">"k"</span>>for</span> kw <span class=<span class="s">"k"</span>>in</span> reasoning_kw <span class=<span class="s">"k"</span>>if</span> kw <span class=<span class="s">"k"</span>>in</span> lq)
+        score += <span class="b">sum</span>(<span class="n">0.15</span> <span class="k">for</span> kw <span class="k">in</span> reasoning_kw <span class="k">if</span> kw <span class="k">in</span> lq)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 代码关键词 → 高复杂度</span>
+        <span class="h"># 代码关键词 → 高复杂度</span>
         code_kw = [<span class="s">"代码"</span>, <span class="s">"函数"</span>, <span class="s">"实现"</span>, <span class="s">"bug"</span>, <span class="s">"code"</span>, <span class="s">"function"</span>]
-        score += <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>0.15</span> <span class=<span class="s">"k"</span>>for</span> kw <span class=<span class="s">"k"</span>>in</span> code_kw <span class=<span class="s">"k"</span>>if</span> kw <span class=<span class="s">"k"</span>>in</span> lq)
+        score += <span class="b">sum</span>(<span class="n">0.15</span> <span class="k">for</span> kw <span class="k">in</span> code_kw <span class="k">if</span> kw <span class="k">in</span> lq)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 简单问答 → 低复杂度</span>
-        simple_kw = [<span class="s">"是什么"</span>, <span class="s">"多少钱"</span>, <span class="s">"几点"</span>, <span class="s">"在哪"</span>, <span class="s">"what <span class="</span>k<span class="s">">is</span>"</span>]
-        score -= <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>0.1</span> <span class=<span class="s">"k"</span>>for</span> kw <span class=<span class="s">"k"</span>>in</span> simple_kw <span class=<span class="s">"k"</span>>if</span> kw <span class=<span class="s">"k"</span>>in</span> lq)
+        <span class="h"># 简单问答 → 低复杂度</span>
+        simple_kw = [<span class="s">"是什么"</span>, <span class="s">"多少钱"</span>, <span class="s">"几点"</span>, <span class="s">"在哪"</span>, <span class="s">"what is"</span>]
+        score -= <span class="b">sum</span>(<span class="n">0.1</span> <span class="k">for</span> kw <span class="k">in</span> simple_kw <span class="k">if</span> kw <span class="k">in</span> lq)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 长度影响</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(query) &gt; <span class=<span class="s">"n"</span>>200</span>:
-            score += <span class=<span class="s">"n"</span>>0.1</span>
+        <span class="h"># 长度影响</span>
+        <span class="k">if</span> <span class="b">len</span>(query) &gt; <span class="n">200</span>:
+            score += <span class="n">0.1</span>
 
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"n"</span>>0.0</span>, <span class=<span class="s">"b"</span>>min</span>(<span class=<span class="s">"n"</span>>1.0</span>, score))
+        <span class="k">return</span> <span class="b">max</span>(<span class="n">0.0</span>, <span class="b">min</span>(<span class="n">1.0</span>, score))
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_simulate_confidence</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>, model: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"模拟模型的置信度。"</span><span class="s">""</span></span>
-        base = cls.MODELS[model][<span class="s">"capability_score"</span>] / <span class=<span class="s">"n"</span>>10</span>
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">_simulate_confidence</span>(cls, query: <span class="b">str</span>, model: <span class="b">str</span>) -&gt; <span class="b">float</span>:
+        <span class="s">"""模拟模型的置信度。"""</span>
+        base = cls.MODELS[model][<span class="s">"capability_score"</span>] / <span class="n">10</span>
         complexity = cls._estimate_complexity(query)
-        confidence = base - complexity * <span class=<span class="s">"n"</span>>0.5</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"n"</span>>0.1</span>, <span class=<span class="s">"b"</span>>min</span>(<span class=<span class="s">"n"</span>>1.0</span>, confidence))
+        confidence = base - complexity * <span class="n">0.5</span>
+        <span class="k">return</span> <span class="b">max</span>(<span class="n">0.1</span>, <span class="b">min</span>(<span class="n">1.0</span>, confidence))
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_estimate_cost</span>(cls, query: <span class=<span class="s">"b"</span>>str</span>, model: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"估算单次查询成本。"</span><span class="s">""</span></span>
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">_estimate_cost</span>(cls, query: <span class="b">str</span>, model: <span class="b">str</span>) -&gt; <span class="b">float</span>:
+        <span class="s">"""估算单次查询成本。"""</span>
         cfg = cls.MODELS[model]
-        input_tokens = <span class=<span class="s">"b"</span>>len</span>(query) // <span class=<span class="s">"n"</span>>4</span>
-        output_tokens = <span class=<span class="s">"n"</span>>200</span>
-        <span class=<span class="s">"k"</span>>return</span> (input_tokens / <span class=<span class="s">"n"</span>>1000</span> * cfg[<span class="s">"cost_per_1k_input"</span>] +
-                output_tokens / <span class=<span class="s">"n"</span>>1000</span> * cfg[<span class="s">"cost_per_1k_output"</span>])
+        input_tokens = <span class="b">len</span>(query) // <span class="n">4</span>
+        output_tokens = <span class="n">200</span>
+        <span class="k">return</span> (input_tokens / <span class="n">1000</span> * cfg[<span class="s">"cost_per_1k_input"</span>] +
+                output_tokens / <span class="n">1000</span> * cfg[<span class="s">"cost_per_1k_output"</span>])
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_routing</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示四种路由策略。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  模型路由 <span class="</span>n<span class="s">">4</span> 策略演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_routing</span>():
+    <span class="s">"""演示四种路由策略。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  模型路由 4 策略演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     queries = [
         <span class="s">"帮我写一个快速排序的Python函数"</span>,
         <span class="s">"今天天气怎么样？"</span>,
         <span class="s">"分析一下AI Agent市场的竞争格局"</span>,
         <span class="s">"帮我翻译这段文字成英文"</span>,
-        <span class="s">"计算 <span class="</span>n<span class="s">">12345</span> * <span class="</span>n<span class="s">">67890</span> 等于多少"</span>,
+        <span class="s">"计算 12345 * 67890 等于多少"</span>,
     ]
 
-    <span class=<span class="s">"k"</span>>for</span> q <span class=<span class="s">"k"</span>>in</span> queries:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  ── 查询: 「{q[:<span class="</span>n<span class="s">">40</span>]}...」──"</span>)
+    <span class="k">for</span> q <span class="k">in</span> queries:
+        <span class="b">print</span>(f<span class="s">"\n  ── 查询: 「{q[:40]}...」──"</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 策略1</span>
+        <span class="h"># 策略1</span>
         r1 = ModelRouter.threshold_route(q)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  Threshold: {r1[<span class='s'>'model'</span>]:15s} (复杂度:{r1[<span class='s'>'complexity'</span>]})"</span>)
+        <span class="b">print</span>(f<span class="s">"  Threshold: {r1['model']:15s} (复杂度:{r1['complexity']})"</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 策略2</span>
+        <span class="h"># 策略2</span>
         r2 = ModelRouter.cascade_route(q)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  Cascade:   {r2[<span class='s'>'final_model'</span>]:15s} "</span>
-              f<span class="s">"({<span class='s'>'升级'</span> <span class="</span>k<span class="s">">if</span> r2[<span class='s'>'escalated'</span>] <span class="</span>k<span class="s">">else</span> <span class='s'>'未升级'</span>} "</span>
-              f<span class="s">"| ${r2[<span class='s'>'total_cost'</span>]:.6f})"</span>)
+        <span class="b">print</span>(f<span class="s">"  Cascade:   {r2['final_model']:15s} "</span>
+              f<span class="s">"({'升级' if r2['escalated'] else '未升级'} "</span>
+              f<span class="s">"| ${r2['total_cost']:.6f})"</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 策略3</span>
+        <span class="h"># 策略3</span>
         r3 = ModelRouter.semantic_route(q)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  Semantic:  {r3[<span class='s'>'model'</span>]:15s} "</span>
-              f<span class="s">"(领域:{r3[<span class='s'>'matched_domain'</span>]})"</span>)
+        <span class="b">print</span>(f<span class="s">"  Semantic:  {r3['model']:15s} "</span>
+              f<span class="s">"(领域:{r3['matched_domain']})"</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 策略4</span>
-        r4 = ModelRouter.cost_aware_route(q, budget=<span class=<span class="s">"n"</span>>0.0005</span>)
-        icon = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> r4[<span class="s">"within_budget"</span>] <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌ 超预算"</span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  CostAware: {r4[<span class='s'>'model'</span>]:15s} "</span>
-              f<span class="s">"(${r4[<span class='s'>'est_cost'</span>]:.6f} {icon})"</span>)
+        <span class="h"># 策略4</span>
+        r4 = ModelRouter.cost_aware_route(q, budget=<span class="n">0.0005</span>)
+        icon = <span class="s">"✅"</span> <span class="k">if</span> r4[<span class="s">"within_budget"</span>] <span class="k">else</span> <span class="s">"❌ 超预算"</span>
+        <span class="b">print</span>(f<span class="s">"  CostAware: {r4['model']:15s} "</span>
+              f<span class="s">"(${r4['est_cost']:.6f} {icon})"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 成本对比</span>
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  成本对比实验"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  场景: 100次查询(80简单+20复杂)"</span>)
-    simple_q = <span class="s">"什么是Python？"</span> * <span class=<span class="s">"n"</span>>80</span>
-    complex_q = <span class="s">"分析AI Agent的架构设计原理"</span> * <span class=<span class="s">"n"</span>>20</span>
-    queries_100 = [simple_q] * <span class=<span class="s">"n"</span>>80</span> + [complex_q] * <span class=<span class="s">"n"</span>>20</span>
+    <span class="h"># 成本对比</span>
+    <span class="b">print</span>(f<span class="s">"\n{'='*60}"</span>)
+    <span class="b">print</span>(f<span class="s">"  成本对比实验"</span>)
+    <span class="b">print</span>(f<span class="s">"{'='*60}"</span>)
+    <span class="b">print</span>(f<span class="s">"  场景: 100次查询(80简单+20复杂)"</span>)
+    simple_q = <span class="s">"什么是Python？"</span> * <span class="n">80</span>
+    complex_q = <span class="s">"分析AI Agent的架构设计原理"</span> * <span class="n">20</span>
+    queries_100 = [simple_q] * <span class="n">80</span> + [complex_q] * <span class="n">20</span>
 
-    all_big = <span class=<span class="s">"b"</span>>sum</span>(ModelRouter._estimate_cost(q, <span class="s">"gpt-4o"</span>) <span class=<span class="s">"k"</span>>for</span> q <span class=<span class="s">"k"</span>>in</span> queries_100)
-    routed = <span class=<span class="s">"n"</span>>0</span>
-    <span class=<span class="s">"k"</span>>for</span> q <span class=<span class="s">"k"</span>>in</span> queries_100:
+    all_big = <span class="b">sum</span>(ModelRouter._estimate_cost(q, <span class="s">"gpt-4o"</span>) <span class="k">for</span> q <span class="k">in</span> queries_100)
+    routed = <span class="n">0</span>
+    <span class="k">for</span> q <span class="k">in</span> queries_100:
         r = ModelRouter.threshold_route(q)
         routed += ModelRouter._estimate_cost(q, r[<span class="s">"model"</span>])
 
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  全用大模型:   ${all_big:.4f}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  路由策略:     ${routed:.4f}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  节省:         {((all_big - routed) / all_big) * <span class="</span>n<span class="s">">100</span>:.0f}%"</span>)
+    <span class="b">print</span>(f<span class="s">"  全用大模型:   ${all_big:.4f}"</span>)
+    <span class="b">print</span>(f<span class="s">"  路由策略:     ${routed:.4f}"</span>)
+    <span class="b">print</span>(f<span class="s">"  节省:         {((all_big - routed) / all_big) * 100:.0f}%"</span>)
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>26.3</span> 本章总结
+<span class="s">"""
+26.3 本章总结
 ━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class=<span class="s">"n"</span>>1</span>. 模型路由 = 简单任务用小模型 + 复杂任务用大模型
-<span class=<span class="s">"n"</span>>2</span>. <span class=<span class="s">"n"</span>>4</span> 种策略各有适用场景
-<span class=<span class="s">"n"</span>>3</span>. 级联路由提供质量保证（不行自动升级）
-<span class=<span class="s">"n"</span>>4</span>. 合理路由可降低 <span class=<span class="s">"n"</span>>50</span>-<span class=<span class="s">"n"</span>>80</span>% 成本
+1. 模型路由 = 简单任务用小模型 + 复杂任务用大模型
+2. 4 种策略各有适用场景
+3. 级联路由提供质量保证（不行自动升级）
+4. 合理路由可降低 50-80% 成本
 
 面试速记：
   「怎么降低 LLM 成本？」
-  → 模型路由：<span class=<span class="s">"n"</span>>80</span>% 简单用 mini，<span class=<span class="s">"n"</span>>20</span>% 复杂用大模型
+  → 模型路由：80% 简单用 mini，20% 复杂用大模型
   → 级联策略保证质量：小模型先试，不行再升级
-  → 结果：成本降 <span class=<span class="s">"n"</span>>60</span>%+，质量损失 &lt; <span class=<span class="s">"n"</span>>2</span>%
-<span class="s">""</span>"</span>
+  → 结果：成本降 60%+，质量损失 &lt; 2%
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第26章：模型路由与多 LLM 策略                         ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Threshold · Cascade · Semantic · Cost-Aware        ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第26章：模型路由与多 LLM 策略                         ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  Threshold · Cascade · Semantic · Cost-Aware        ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
     demo_routing()
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">4</span> 种路由策略速查"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
-    <span class=<span class="s">"k"</span>>for</span> item <span class=<span class="s">"k"</span>>in</span> [
+    <span class="b">print</span>(<span class="s">"\n▶ 4 种路由策略速查"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> item <span class="k">in</span> [
         <span class="s">"Threshold: 复杂度评分 &gt; 阈值 → 大模型（最简单）"</span>,
         <span class="s">"Cascade: 小模型先试 → 不行升级（质量保证）"</span>,
         <span class="s">"Semantic: 按领域匹配最佳模型（最精准）"</span>,
         <span class="s">"CostAware: 预算约束下最大化能力（最可控）"</span>,
     ]:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {item}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第26章完成！"</span>)
+        <span class="b">print</span>(f<span class="s">"  {item}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第26章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_25_vectordb/25_vectordb.html" title="向量数据库选型 — Chroma·Pinecone·Milvus·Qdrant">← 第25章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

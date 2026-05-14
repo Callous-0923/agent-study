@@ -185,21 +185,21 @@ body {
 ├──────────────┼───────────────────────────────────────┤
 │ 竞争式        │ 多个 Agent 各自生成方案，择优选用         │
 │ (Competitive)│ 典型：辩论式 Agent / Self-Play          │
-└──────────────┴───────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (15 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Annotated, TypedDict, Literal, Optional
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+└──────────────┴───────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (15 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
 load_dotenv()
 
-<span class=<span class="s">"k"</span>>try</span>:
-    <span class=<span class="s">"k"</span>>from</span> langchain_openai <span class=<span class="s">"k"</span>>import</span> ChatOpenAI
-    <span class=<span class="s">"k"</span>>from</span> langchain_core.messages <span class=<span class="s">"k"</span>>import</span> BaseMessage, HumanMessage, AIMessage
-    <span class=<span class="s">"k"</span>>from</span> langgraph.graph <span class=<span class="s">"k"</span>>import</span> StateGraph, END
-    <span class=<span class="s">"k"</span>>from</span> langgraph.graph.message <span class=<span class="s">"k"</span>>import</span> add_messages
-    LANGGRAPH_AVAILABLE = <span class=<span class="s">"k"</span>>True</span>
-<span class=<span class="s">"k"</span>>except</span> ImportError:
-    LANGGRAPH_AVAILABLE = <span class=<span class="s">"k"</span>>False</span></pre></div></details></div><div class="lecture"><h2>5.2 用 LangGraph 构建双 Agent 协作系统</h2>
+<span class="k">try</span>:
+    <span class="k">from</span> langchain_openai <span class="k">import</span> ChatOpenAI
+    <span class="k">from</span> langchain_core.messages <span class="k">import</span> BaseMessage, HumanMessage, AIMessage
+    <span class="k">from</span> langgraph.graph <span class="k">import</span> StateGraph, END
+    <span class="k">from</span> langgraph.graph.message <span class="k">import</span> add_messages
+    LANGGRAPH_AVAILABLE = <span class="k">True</span>
+<span class="k">except</span> ImportError:
+    LANGGRAPH_AVAILABLE = <span class="k">False</span></pre></div></details></div><div class="lecture"><h2>5.2 用 LangGraph 构建双 Agent 协作系统</h2>
 <p>&nbsp;</p>
 <p>场景：内容创作流水线</p>
 <li>Writer Agent: 负责创作内容</li>
@@ -208,37 +208,37 @@ load_dotenv()
 <p>流程：</p>
 <p>输入需求 → Writer 创作 → Reviewer 审核 →</p>
 <p>如果不合格 → Writer 修改 → Reviewer 再审 →</p>
-<p>如果合格 → 输出终稿</p></div><div class="code-section"><details open><summary>💻 代码 (140 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Annotated, TypedDict, Literal, Optional
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+<p>如果合格 → 输出终稿</p></div><div class="code-section"><details open><summary>💻 代码 (140 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
 load_dotenv()
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ContentTeamState</span>(TypedDict):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"内容创作团队的状态。
+<span class="k">class</span> <span class="f">ContentTeamState</span>(TypedDict):
+    <span class="s">"""内容创作团队的状态。
 
     所有 Agent 节点共享此状态，通过读写状态来协作。
     这是 LangGraph 多 Agent 系统的核心：
     状态是 Agent 之间的「共享白板」。
-    <span class="s">""</span>"</span>
-    messages: Annotated[<span class=<span class="s">"b"</span>>list</span>, add_messages]
-    task: <span class=<span class="s">"b"</span>>str</span>                      <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 原始任务</span>
-    draft: <span class=<span class="s">"b"</span>>str</span>                     <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Writer 的草稿</span>
-    review: <span class=<span class="s">"b"</span>>str</span>                    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Reviewer 的审核意见</span>
-    iteration: <span class=<span class="s">"b"</span>>int</span>                 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 当前迭代轮次</span>
-    approved: bool                 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 是否通过审核</span>
-    max_iterations: <span class=<span class="s">"b"</span>>int</span>            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 最大迭代次数</span>
+    """</span>
+    messages: Annotated[<span class="b">list</span>, add_messages]
+    task: <span class="b">str</span>                      <span class="h"># 原始任务</span>
+    draft: <span class="b">str</span>                     <span class="h"># Writer 的草稿</span>
+    review: <span class="b">str</span>                    <span class="h"># Reviewer 的审核意见</span>
+    iteration: <span class="b">int</span>                 <span class="h"># 当前迭代轮次</span>
+    approved: bool                 <span class="h"># 是否通过审核</span>
+    max_iterations: <span class="b">int</span>            <span class="h"># 最大迭代次数</span>
 
 
-WRITER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"你是一位专业的内容创作者。
+WRITER_SYSTEM_PROMPT = <span class="s">"""你是一位专业的内容创作者。
 风格要求：
 - 语言简洁有力
 - 逻辑清晰，论据充分
 - 面向技术读者的科普风格
-- 字数在 <span class=<span class="s">"n"</span>>300</span>-<span class=<span class="s">"n"</span>>500</span> 字之间<span class="s">""</span>"</span>
+- 字数在 300-500 字之间"""</span>
 
-REVIEWER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"你是一位严格的内容审核编辑。
+REVIEWER_SYSTEM_PROMPT = <span class="s">"""你是一位严格的内容审核编辑。
 审查标准：
 - 准确性：内容是否有事实性错误？
 - 逻辑性：论述是否严密？
@@ -246,51 +246,51 @@ REVIEWER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</spa
 - 完整性：是否覆盖了任务要求的所有方面？
 
 返回格式：
-{<span class="s">"score"</span>: <span class=<span class="s">"n"</span>>1</span>-<span class=<span class="s">"n"</span>>10</span>, <span class="s">"issues"</span>: [<span class="s">"问题1"</span>, <span class="s">"问题2"</span>], 
- <span class="s">"approved"</span>: true/false, <span class="s">"suggestions"</span>: <span class="s">"改进建议"</span>}<span class="s">""</span>"</span>
+{"score": 1-10, "issues": ["问题1", "问题2"], 
+ "approved": true/false, "suggestions": "改进建议"}"""</span>
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>build_content_team</span>(llm):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"构建内容创作双 Agent 团队。
+<span class="k">def</span> <span class="f">build_content_team</span>(llm):
+    <span class="s">"""构建内容创作双 Agent 团队。
 
     Args:
         llm: LangChain ChatOpenAI 实例。
 
     Returns:
         编译后的 LangGraph 应用。
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>writer_node</span>(state: ContentTeamState) -&gt; ContentTeamState:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Writer Agent：创作内容或根据审核意见修改。"</span><span class="s">""</span></span>
-        iteration = state.get(<span class="s">"iteration"</span>, <span class=<span class="s">"n"</span>>0</span>)
+    <span class="k">def</span> <span class="f">writer_node</span>(state: ContentTeamState) -&gt; ContentTeamState:
+        <span class="s">"""Writer Agent：创作内容或根据审核意见修改。"""</span>
+        iteration = state.get(<span class="s">"iteration"</span>, <span class="n">0</span>)
         review = state.get(<span class="s">"review"</span>, <span class="s">""</span>)
 
-        <span class=<span class="s">"k"</span>>if</span> review <span class=<span class="s">"k"</span>>and</span> iteration &gt; <span class=<span class="s">"n"</span>>0</span>:
+        <span class="k">if</span> review <span class="k">and</span> iteration &gt; <span class="n">0</span>:
             prompt = (
-                f<span class="s">"原始任务: {state[<span class='s'>'task'</span>]}\n\n"</span>
-                f<span class="s">"上次草稿: {state[<span class='s'>'draft'</span>]}\n\n"</span>
+                f<span class="s">"原始任务: {state['task']}\n\n"</span>
+                f<span class="s">"上次草稿: {state['draft']}\n\n"</span>
                 f<span class="s">"审核意见: {review}\n\n"</span>
                 f<span class="s">"请根据审核意见修改草稿。"</span>
             )
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✏️ [Writer] 第{iteration}轮修改..."</span>)
-        <span class=<span class="s">"k"</span>>else</span>:
-            prompt = f<span class="s">"任务: {state[<span class='s'>'task'</span>]}\n请撰写内容。"</span>
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✏️ [Writer] 开始创作..."</span>)
+            <span class="b">print</span>(f<span class="s">"  ✏️ [Writer] 第{iteration}轮修改..."</span>)
+        <span class="k">else</span>:
+            prompt = f<span class="s">"任务: {state['task']}\n请撰写内容。"</span>
+            <span class="b">print</span>(f<span class="s">"  ✏️ [Writer] 开始创作..."</span>)
 
         response = llm.invoke([
             (<span class="s">"system"</span>, WRITER_SYSTEM_PROMPT),
             (<span class="s">"user"</span>, prompt),
         ])
         state[<span class="s">"draft"</span>] = response.content
-        <span class=<span class="s">"k"</span>>return</span> state
+        <span class="k">return</span> state
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>reviewer_node</span>(state: ContentTeamState) -&gt; ContentTeamState:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Reviewer Agent：审核草稿质量。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  🔍 [Reviewer] 正在审核..."</span>)
+    <span class="k">def</span> <span class="f">reviewer_node</span>(state: ContentTeamState) -&gt; ContentTeamState:
+        <span class="s">"""Reviewer Agent：审核草稿质量。"""</span>
+        <span class="b">print</span>(f<span class="s">"  🔍 [Reviewer] 正在审核..."</span>)
 
         prompt = (
-            f<span class="s">"任务要求: {state[<span class='s'>'task'</span>]}\n\n"</span>
-            f<span class="s">"待审核草稿:\n{state[<span class='s'>'draft'</span>]}\n\n"</span>
+            f<span class="s">"任务要求: {state['task']}\n\n"</span>
+            f<span class="s">"待审核草稿:\n{state['draft']}\n\n"</span>
             f<span class="s">"请审核并评分。返回 JSON 格式。"</span>
         )
         response = llm.invoke([
@@ -298,42 +298,42 @@ REVIEWER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</spa
             (<span class="s">"user"</span>, prompt),
         ])
 
-        <span class=<span class="s">"k"</span>>try</span>:
+        <span class="k">try</span>:
             result = json.loads(response.content)
-        <span class=<span class="s">"k"</span>>except</span> json.JSONDecodeError:
-            result = {<span class="s">"score"</span>: <span class=<span class="s">"n"</span>>5</span>, <span class="s">"issues"</span>: [<span class="s">"无法解析审核结果"</span>],
-                       <span class="s">"approved"</span>: <span class=<span class="s">"k"</span>>True</span>, <span class="s">"suggestions"</span>: <span class="s">""</span>}
+        <span class="k">except</span> json.JSONDecodeError:
+            result = {<span class="s">"score"</span>: <span class="n">5</span>, <span class="s">"issues"</span>: [<span class="s">"无法解析审核结果"</span>],
+                       <span class="s">"approved"</span>: <span class="k">True</span>, <span class="s">"suggestions"</span>: <span class="s">""</span>}
 
         state[<span class="s">"review"</span>] = result.get(<span class="s">"suggestions"</span>, <span class="s">""</span>)
-        state[<span class="s">"approved"</span>] = result.get(<span class="s">"approved"</span>, <span class=<span class="s">"k"</span>>False</span>)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    评分: {result.get(<span class='s'>'score'</span>, <span class='s'>'N/A'</span>)}/<span class="</span>n<span class="s">">10</span> | "</span>
-              f<span class="s">"通过: {state[<span class='s'>'approved'</span>]} | "</span>
-              f<span class="s">"问题: {result.get(<span class='s'>'issues'</span>, [])}"</span>)
-        <span class=<span class="s">"k"</span>>return</span> state
+        state[<span class="s">"approved"</span>] = result.get(<span class="s">"approved"</span>, <span class="k">False</span>)
+        <span class="b">print</span>(f<span class="s">"    评分: {result.get('score', 'N/A')}/10 | "</span>
+              f<span class="s">"通过: {state['approved']} | "</span>
+              f<span class="s">"问题: {result.get('issues', [])}"</span>)
+        <span class="k">return</span> state
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>should_continue</span>(state: ContentTeamState) -&gt; Literal[<span class="s">"writer"</span>, <span class="s">"end"</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"决定是否继续迭代。
+    <span class="k">def</span> <span class="f">should_continue</span>(state: ContentTeamState) -&gt; Literal[<span class="s">"writer"</span>, <span class="s">"end"</span>]:
+        <span class="s">"""决定是否继续迭代。
 
         Returns:
-            <span class='s'>'writer'</span>: 需要 Writer 修改
-            <span class='s'>'end'</span>: 审核通过或达到最大迭代次数
-        <span class="s">""</span>"</span>
-        iteration = state.get(<span class="s">"iteration"</span>, <span class=<span class="s">"n"</span>>0</span>)
-        max_iter = state.get(<span class="s">"max_iterations"</span>, <span class=<span class="s">"n"</span>>3</span>)
-        approved = state.get(<span class="s">"approved"</span>, <span class=<span class="s">"k"</span>>False</span>)
+            'writer': 需要 Writer 修改
+            'end': 审核通过或达到最大迭代次数
+        """</span>
+        iteration = state.get(<span class="s">"iteration"</span>, <span class="n">0</span>)
+        max_iter = state.get(<span class="s">"max_iterations"</span>, <span class="n">3</span>)
+        approved = state.get(<span class="s">"approved"</span>, <span class="k">False</span>)
 
-        <span class=<span class="s">"k"</span>>if</span> approved:
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✅ 审核通过！总迭代 {iteration + <span class="</span>n<span class="s">">1</span>} 轮"</span>)
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"end"</span>
+        <span class="k">if</span> approved:
+            <span class="b">print</span>(f<span class="s">"  ✅ 审核通过！总迭代 {iteration + 1} 轮"</span>)
+            <span class="k">return</span> <span class="s">"end"</span>
 
-        <span class=<span class="s">"k"</span>>if</span> iteration &gt;= max_iter - <span class=<span class="s">"n"</span>>1</span>:
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 达到最大迭代次数 {max_iter}，强制结束"</span>)
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"end"</span>
+        <span class="k">if</span> iteration &gt;= max_iter - <span class="n">1</span>:
+            <span class="b">print</span>(f<span class="s">"  ⚠️ 达到最大迭代次数 {max_iter}，强制结束"</span>)
+            <span class="k">return</span> <span class="s">"end"</span>
 
-        state[<span class="s">"iteration"</span>] = iteration + <span class=<span class="s">"n"</span>>1</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"writer"</span>
+        state[<span class="s">"iteration"</span>] = iteration + <span class="n">1</span>
+        <span class="k">return</span> <span class="s">"writer"</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 构建图</span>
+    <span class="h"># 构建图</span>
     workflow = StateGraph(ContentTeamState)
 
     workflow.add_node(<span class="s">"writer"</span>, writer_node)
@@ -347,7 +347,7 @@ REVIEWER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</spa
         {<span class="s">"writer"</span>: <span class="s">"writer"</span>, <span class="s">"end"</span>: END},
     )
 
-    <span class=<span class="s">"k"</span>>return</span> workflow.compile()</pre></div></details></div><div class="lecture"><p>图结构示意：</p>
+    <span class="k">return</span> workflow.compile()</pre></div></details></div><div class="lecture"><p>图结构示意：</p>
 <p>&nbsp;</p>
 <pre> [START]
     │
@@ -366,28 +366,28 @@ REVIEWER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</spa
 <p>&nbsp;</p>
 <p>这是协作式 + 分层式的混合架构：</p>
 <li>Writer 和 Reviewer 是协作关系（双方一起产出内容）</li>
-<li>Reviewer 对 Writer 有审查-修改的上下级关系</li></div><div class="code-section"><details open><summary>💻 代码 (48 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Annotated, TypedDict, Literal, Optional
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+<li>Reviewer 对 Writer 有审查-修改的上下级关系</li></div><div class="code-section"><details open><summary>💻 代码 (48 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
 load_dotenv()
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_content_team</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示双 Agent 内容创作团队。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> LANGGRAPH_AVAILABLE:
-        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"需要安装 langgraph 才能运行此演示。"</span>)
-        <span class=<span class="s">"k"</span>>return</span>
+<span class="k">def</span> <span class="f">demo_content_team</span>():
+    <span class="s">"""演示双 Agent 内容创作团队。"""</span>
+    <span class="k">if</span> <span class="k">not</span> LANGGRAPH_AVAILABLE:
+        <span class="b">print</span>(<span class="s">"需要安装 langgraph 才能运行此演示。"</span>)
+        <span class="k">return</span>
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Multi-Agent: 内容创作团队演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class="b">print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Multi-Agent: 内容创作团队演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     llm = ChatOpenAI(
         model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
         api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
         base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
-        temperature=<span class=<span class="s">"n"</span>>0.7</span>,
+        temperature=<span class="n">0.7</span>,
     )
 
     app = build_content_team(llm)
@@ -399,21 +399,21 @@ load_dotenv()
         <span class="s">"task"</span>: task,
         <span class="s">"draft"</span>: <span class="s">""</span>,
         <span class="s">"review"</span>: <span class="s">""</span>,
-        <span class="s">"iteration"</span>: <span class=<span class="s">"n"</span>>0</span>,
-        <span class="s">"approved"</span>: <span class=<span class="s">"k"</span>>False</span>,
-        <span class="s">"max_iterations"</span>: <span class=<span class="s">"n"</span>>3</span>,
+        <span class="s">"iteration"</span>: <span class="n">0</span>,
+        <span class="s">"approved"</span>: <span class="k">False</span>,
+        <span class="s">"max_iterations"</span>: <span class="n">3</span>,
     }
 
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n📋 任务: {task}\n"</span>)
+    <span class="b">print</span>(f<span class="s">"\n📋 任务: {task}\n"</span>)
 
-    <span class=<span class="s">"k"</span>>try</span>:
+    <span class="k">try</span>:
         final_state = app.invoke(initial_state)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"📄 终稿:"</span>)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-        <span class=<span class="s">"b"</span>>print</span>(final_state[<span class="s">"draft"</span>])
-    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 运行出错: {e}"</span>)</pre></div></details></div><div class="lecture"><h2>5.3 crewAI 风格的角色-Crew 模型</h2>
+        <span class="b">print</span>(f<span class="s">"\n{'='*60}"</span>)
+        <span class="b">print</span>(f<span class="s">"📄 终稿:"</span>)
+        <span class="b">print</span>(f<span class="s">"{'='*60}"</span>)
+        <span class="b">print</span>(final_state[<span class="s">"draft"</span>])
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="b">print</span>(f<span class="s">"  ⚠️ 运行出错: {e}"</span>)</pre></div></details></div><div class="lecture"><h2>5.3 crewAI 风格的角色-Crew 模型</h2>
 <p>&nbsp;</p>
 <p>crewAI 采用「Crew = Agents + Tasks」模型：</p>
 <li>定义一系列 Agent（角色）</li>
@@ -422,87 +422,87 @@ load_dotenv()
 <li>Crew 自动协调执行</li>
 <p>&nbsp;</p>
 <p>虽然我们不直接安装 crewAI（避免依赖过重），</p>
-<p>但可以用 LangChain 模拟其核心概念来理解其设计思想。</p></div><div class="code-section"><details open><summary>💻 代码 (128 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Annotated, TypedDict, Literal, Optional
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+<p>但可以用 LangChain 模拟其核心概念来理解其设计思想。</p></div><div class="code-section"><details open><summary>💻 代码 (128 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
 load_dotenv()
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>RoleBasedAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 crewAI 风格的角色 Agent。
+<span class="k">class</span> <span class="f">RoleBasedAgent</span>:
+    <span class="s">"""模拟 crewAI 风格的角色 Agent。
 
     crewAI 的核心设计理念：
-      <span class=<span class="s">"n"</span>>1</span>. 每个 Agent 有明确的角色(role)、目标(goal)、背景(backstory)
-      <span class=<span class="s">"n"</span>>2</span>. Agent 之间通过任务(task)来协作
-      <span class=<span class="s">"n"</span>>3</span>. 可以设置 allow_delegation 允许 Agent 把任务委派给其他 Agent
-    <span class="s">""</span>"</span>
+      1. 每个 Agent 有明确的角色(role)、目标(goal)、背景(backstory)
+      2. Agent 之间通过任务(task)来协作
+      3. 可以设置 allow_delegation 允许 Agent 把任务委派给其他 Agent
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>, role: <span class=<span class="s">"b"</span>>str</span>, goal: <span class=<span class="s">"b"</span>>str</span>, backstory: <span class=<span class="s">"b"</span>>str</span>,
-                 llm=<span class=<span class="s">"k"</span>>None</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"初始化角色 Agent。
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, name: <span class="b">str</span>, role: <span class="b">str</span>, goal: <span class="b">str</span>, backstory: <span class="b">str</span>,
+                 llm=<span class="k">None</span>):
+        <span class="s">"""初始化角色 Agent。
 
         Args:
             name: Agent 名称。
-            role: 角色描述（如 <span class="s">"数据分析师"</span>）。
+            role: 角色描述（如 "数据分析师"）。
             goal: 目标描述。
             backstory: 背景故事（帮助 LLM 理解角色定位）。
             llm: LangChain LLM 实例。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.name = name
-        <span class=<span class="s">"k"</span>>self</span>.role = role
-        <span class=<span class="s">"k"</span>>self</span>.goal = goal
-        <span class=<span class="s">"k"</span>>self</span>.backstory = backstory
-        <span class=<span class="s">"k"</span>>self</span>.llm = llm
+        """</span>
+        <span class="k">self</span>.name = name
+        <span class="k">self</span>.role = role
+        <span class="k">self</span>.goal = goal
+        <span class="k">self</span>.backstory = backstory
+        <span class="k">self</span>.llm = llm
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>execute</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"执行分配给此 Agent 的任务。
+    <span class="k">def</span> <span class="f">execute</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""执行分配给此 Agent 的任务。
 
         Args:
             task: 任务描述。
 
         Returns:
             执行结果。
-        <span class="s">""</span>"</span>
+        """</span>
         system_prompt = (
-            f<span class="s">"你是 {<span class="</span>k<span class="s">">self</span>.name}，一名 {<span class="</span>k<span class="s">">self</span>.role}。\n"</span>
-            f<span class="s">"你的目标: {<span class="</span>k<span class="s">">self</span>.goal}\n"</span>
-            f<span class="s">"你的背景: {<span class="</span>k<span class="s">">self</span>.backstory}"</span>
+            f<span class="s">"你是 {self.name}，一名 {self.role}。\n"</span>
+            f<span class="s">"你的目标: {self.goal}\n"</span>
+            f<span class="s">"你的背景: {self.backstory}"</span>
         )
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.llm <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
-            <span class=<span class="s">"k"</span>>return</span> f<span class="s">"[{<span class="</span>k<span class="s">">self</span>.name}] 模拟输出：已完成任务 <span class='s'>'{task}'</span>"</span>
-        response = <span class=<span class="s">"k"</span>>self</span>.llm.invoke([
+        <span class="k">if</span> <span class="k">self</span>.llm <span class="k">is</span> <span class="k">None</span>:
+            <span class="k">return</span> f<span class="s">"[{self.name}] 模拟输出：已完成任务 '{task}'"</span>
+        response = <span class="k">self</span>.llm.invoke([
             (<span class="s">"system"</span>, system_prompt),
             (<span class="s">"user"</span>, task),
         ])
-        <span class=<span class="s">"k"</span>>return</span> response.content
+        <span class="k">return</span> response.content
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_crew_style</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"演示 crewAI 风格的多 Agent 协作。
+<span class="k">def</span> <span class="f">demo_crew_style</span>():
+    <span class="s">"""演示 crewAI 风格的多 Agent 协作。
 
     场景：市场分析报告
       - 数据分析师：收集和处理数据
       - 策略规划师：基于数据制定策略
       - 报告撰写师：汇总形成最终报告
-    <span class="s">""</span>"</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  crewAI 风格: 市场分析团队演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    """</span>
+    <span class="b">print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  crewAI 风格: 市场分析团队演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 尝试初始化 LLM</span>
-    <span class=<span class="s">"k"</span>>try</span>:
+    <span class="h"># 尝试初始化 LLM</span>
+    <span class="k">try</span>:
         llm = ChatOpenAI(
             model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
             api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
             base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
-            temperature=<span class=<span class="s">"n"</span>>0.5</span>,
+            temperature=<span class="n">0.5</span>,
         )
-    <span class=<span class="s">"k"</span>>except</span> Exception:
-        llm = <span class=<span class="s">"k"</span>>None</span>
-        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  ⚠️ 未配置 API Key，使用模拟模式"</span>)
+    <span class="k">except</span> Exception:
+        llm = <span class="k">None</span>
+        <span class="b">print</span>(<span class="s">"  ⚠️ 未配置 API Key，使用模拟模式"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 定义团队</span>
+    <span class="h"># 定义团队</span>
     data_analyst = RoleBasedAgent(
         name=<span class="s">"数据分析师"</span>,
         role=<span class="s">"市场数据分析专家"</span>,
@@ -527,29 +527,29 @@ load_dotenv()
         llm=llm,
     )
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 流程：数据分析 → 策略制定 → 报告撰写</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n📊 阶段 <span class="</span>n<span class="s">">1</span>: 数据分析"</span>)
+    <span class="h"># 流程：数据分析 → 策略制定 → 报告撰写</span>
+    <span class="b">print</span>(<span class="s">"\n📊 阶段 1: 数据分析"</span>)
     analysis = data_analyst.execute(
         <span class="s">"分析2025年中国AI Agent市场的规模和主要趋势，列出3-5个关键发现"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    输出: {analysis[:<span class="</span>n<span class="s">">150</span>]}..."</span>)
+    <span class="b">print</span>(f<span class="s">"    输出: {analysis[:150]}..."</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n📈 阶段 <span class="</span>n<span class="s">">2</span>: 策略制定"</span>)
+    <span class="b">print</span>(<span class="s">"\n📈 阶段 2: 策略制定"</span>)
     strategy = strategist.execute(
         f<span class="s">"基于以下市场分析，制定一套市场进入策略:\n{analysis}"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    输出: {strategy[:<span class="</span>n<span class="s">">150</span>]}..."</span>)
+    <span class="b">print</span>(f<span class="s">"    输出: {strategy[:150]}..."</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n📝 阶段 <span class="</span>n<span class="s">">3</span>: 报告撰写"</span>)
+    <span class="b">print</span>(<span class="s">"\n📝 阶段 3: 报告撰写"</span>)
     report = report_writer.execute(
         f<span class="s">"请将以下分析报告和策略建议整合为一份正式研究报告:\n\n"</span>
         f<span class="s">"市场分析:\n{analysis}\n\n策略建议:\n{strategy}\n\n"</span>
         f<span class="s">"要求: 结构清晰、有执行摘要、分章节、每个观点有数据支撑。"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    输出: {report[:<span class="</span>n<span class="s">">200</span>]}..."</span>)
+    <span class="b">print</span>(f<span class="s">"    输出: {report[:200]}..."</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n📄 ===== 最终报告摘要 ====="</span>)
-    <span class=<span class="s">"b"</span>>print</span>(report <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(report) &lt; <span class=<span class="s">"n"</span>>500</span> <span class=<span class="s">"k"</span>>else</span> report[:<span class=<span class="s">"n"</span>>500</span>] + <span class="s">"..."</span>)</pre></div></details></div><div class="lecture"><h2>5.4 Multi-Agent 设计原则（面试高频！）</h2>
+    <span class="b">print</span>(<span class="s">"\n📄 ===== 最终报告摘要 ====="</span>)
+    <span class="b">print</span>(report <span class="k">if</span> <span class="b">len</span>(report) &lt; <span class="n">500</span> <span class="k">else</span> report[:<span class="n">500</span>] + <span class="s">"..."</span>)</pre></div></details></div><div class="lecture"><h2>5.4 Multi-Agent 设计原则（面试高频！）</h2>
 <p>&nbsp;</p>
 <li>职责单一原则</li>
 <li>每个 Agent 只做一件事，做到极致</li>
@@ -608,50 +608,50 @@ load_dotenv()
 <p>"你们项目用了 Multi-Agent 吗？为什么？"</p>
 <p>→ 描述场景复杂度（需要多角色协作）</p>
 <p>→ 说明架构设计（用什么模式、为什么）</p>
-<p>→ 展示效果提升（效率/质量提升多少）</p></div><div class="code-section"><details open><summary>💻 代码 (36 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Annotated, TypedDict, Literal, Optional
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+<p>→ 展示效果提升（效率/质量提升多少）</p></div><div class="code-section"><details open><summary>💻 代码 (36 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
 load_dotenv()
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       第5章：多智能体系统 (Multi-Agent)               ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       双Agent协作 · crewAI风格 · 设计原则            ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║       第5章：多智能体系统 (Multi-Agent)               ║"</span>)
+    <span class="b">print</span>(<span class="s">"║       双Agent协作 · crewAI风格 · 设计原则            ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">5.2</span> 双 Agent 协作（Writer + Reviewer）"</span>)
-    <span class=<span class="s">"k"</span>>try</span>:
+    <span class="b">print</span>(<span class="s">"\n▶ 5.2 双 Agent 协作（Writer + Reviewer）"</span>)
+    <span class="k">try</span>:
         demo_content_team()
-    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 运行出错（需要 API Key）: {e}"</span>)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="b">print</span>(f<span class="s">"  ⚠️ 运行出错（需要 API Key）: {e}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">5.3</span> crewAI 风格角色 Agent"</span>)
-    <span class=<span class="s">"k"</span>>try</span>:
+    <span class="b">print</span>(<span class="s">"\n▶ 5.3 crewAI 风格角色 Agent"</span>)
+    <span class="k">try</span>:
         demo_crew_style()
-    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 运行出错: {e}"</span>)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="b">print</span>(f<span class="s">"  ⚠️ 运行出错: {e}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">5.4</span> Multi-Agent 速查表"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"架构: 协作式 → 平等 Agent 共同决策"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"架构: 分层式 → 上级委派任务给下级"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"架构: 竞争式 → 多方生成，择优选用"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"框架: LangGraph → 自定义 Multi-Agent 图"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"框架: crewAI   → 角色-任务模型"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"框架: AutoGen  → 对话驱动 Multi-Agent"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"原则: 职责单一、通信标准、错误隔离、可观测、控成本"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 5.4 Multi-Agent 速查表"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="b">print</span>(<span class="s">"架构: 协作式 → 平等 Agent 共同决策"</span>)
+    <span class="b">print</span>(<span class="s">"架构: 分层式 → 上级委派任务给下级"</span>)
+    <span class="b">print</span>(<span class="s">"架构: 竞争式 → 多方生成，择优选用"</span>)
+    <span class="b">print</span>(<span class="s">"框架: LangGraph → 自定义 Multi-Agent 图"</span>)
+    <span class="b">print</span>(<span class="s">"框架: crewAI   → 角色-任务模型"</span>)
+    <span class="b">print</span>(<span class="s">"框架: AutoGen  → 对话驱动 Multi-Agent"</span>)
+    <span class="b">print</span>(<span class="s">"原则: 职责单一、通信标准、错误隔离、可观测、控成本"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第5章完成！接下来进入第6章：评估与最佳实践。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (536 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+    <span class="b">print</span>(<span class="s">"\n✅ 第5章完成！接下来进入第6章：评估与最佳实践。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (536 行)</summary><div class="code-block"><pre><span class="s">"""
 第5章：多智能体系统（Multi-Agent System）
 =========================================
 
 📌 本章目标：
-  <span class=<span class="s">"n"</span>>1</span>. 理解多智能体系统的核心架构模式
-  <span class=<span class="s">"n"</span>>2</span>. 掌握 Agent 之间的协作/通信机制
-  <span class=<span class="s">"n"</span>>3</span>. 学会用 LangGraph 构建多 Agent 工作流
-  <span class=<span class="s">"n"</span>>4</span>. 了解 crewAI 等框架的多 Agent 编排方式
+  1. 理解多智能体系统的核心架构模式
+  2. 掌握 Agent 之间的协作/通信机制
+  3. 学会用 LangGraph 构建多 Agent 工作流
+  4. 了解 crewAI 等框架的多 Agent 编排方式
 
 📌 面试高频点：
   - 多 Agent 系统的架构模式（协作/分层/竞争）
@@ -661,7 +661,7 @@ load_dotenv()
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>5.1</span> 为什么需要 Multi-Agent？
+5.1 为什么需要 Multi-Agent？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **一个类比**：
@@ -676,10 +676,10 @@ load_dotenv()
     - 每个 Agent 的 prompt 可以高度专业化
 
 核心优势：
-  <span class=<span class="s">"n"</span>>1</span>. 分工明确：每个 Agent 专注自己的领域
-  <span class=<span class="s">"n"</span>>2</span>. 并行执行：多个 Agent 可以同时工作
-  <span class=<span class="s">"n"</span>>3</span>. 错误隔离：一个 Agent 出错不影响整体
-  <span class=<span class="s">"n"</span>>4</span>. 专业化 prompt：每个 Agent 可以用领域最优提示词
+  1. 分工明确：每个 Agent 专注自己的领域
+  2. 并行执行：多个 Agent 可以同时工作
+  3. 错误隔离：一个 Agent 出错不影响整体
+  4. 专业化 prompt：每个 Agent 可以用领域最优提示词
 
 经典场景：
   - 软件开发生命周期（需求 → 设计 → 编码 → 测试 → 部署）
@@ -700,28 +700,28 @@ load_dotenv()
 │ 竞争式        │ 多个 Agent 各自生成方案，择优选用         │
 │ (Competitive)│ 典型：辩论式 Agent / Self-Play          │
 └──────────────┴───────────────────────────────────────┘
-<span class="s">""</span>"</span>
+"""</span>
 
-<span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Annotated, TypedDict, Literal, Optional
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+<span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
 load_dotenv()
 
-<span class=<span class="s">"k"</span>>try</span>:
-    <span class=<span class="s">"k"</span>>from</span> langchain_openai <span class=<span class="s">"k"</span>>import</span> ChatOpenAI
-    <span class=<span class="s">"k"</span>>from</span> langchain_core.messages <span class=<span class="s">"k"</span>>import</span> BaseMessage, HumanMessage, AIMessage
-    <span class=<span class="s">"k"</span>>from</span> langgraph.graph <span class=<span class="s">"k"</span>>import</span> StateGraph, END
-    <span class=<span class="s">"k"</span>>from</span> langgraph.graph.message <span class=<span class="s">"k"</span>>import</span> add_messages
-    LANGGRAPH_AVAILABLE = <span class=<span class="s">"k"</span>>True</span>
-<span class=<span class="s">"k"</span>>except</span> ImportError:
-    LANGGRAPH_AVAILABLE = <span class=<span class="s">"k"</span>>False</span>
+<span class="k">try</span>:
+    <span class="k">from</span> langchain_openai <span class="k">import</span> ChatOpenAI
+    <span class="k">from</span> langchain_core.messages <span class="k">import</span> BaseMessage, HumanMessage, AIMessage
+    <span class="k">from</span> langgraph.graph <span class="k">import</span> StateGraph, END
+    <span class="k">from</span> langgraph.graph.message <span class="k">import</span> add_messages
+    LANGGRAPH_AVAILABLE = <span class="k">True</span>
+<span class="k">except</span> ImportError:
+    LANGGRAPH_AVAILABLE = <span class="k">False</span>
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>5.2</span> 用 LangGraph 构建双 Agent 协作系统
+5.2 用 LangGraph 构建双 Agent 协作系统
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 场景：内容创作流水线
@@ -732,33 +732,33 @@ load_dotenv()
   输入需求 → Writer 创作 → Reviewer 审核 → 
   如果不合格 → Writer 修改 → Reviewer 再审 →
   如果合格 → 输出终稿
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ContentTeamState</span>(TypedDict):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"内容创作团队的状态。
+<span class="k">class</span> <span class="f">ContentTeamState</span>(TypedDict):
+    <span class="s">"""内容创作团队的状态。
 
     所有 Agent 节点共享此状态，通过读写状态来协作。
     这是 LangGraph 多 Agent 系统的核心：
     状态是 Agent 之间的「共享白板」。
-    <span class="s">""</span>"</span>
-    messages: Annotated[<span class=<span class="s">"b"</span>>list</span>, add_messages]
-    task: <span class=<span class="s">"b"</span>>str</span>                      <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 原始任务</span>
-    draft: <span class=<span class="s">"b"</span>>str</span>                     <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Writer 的草稿</span>
-    review: <span class=<span class="s">"b"</span>>str</span>                    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Reviewer 的审核意见</span>
-    iteration: <span class=<span class="s">"b"</span>>int</span>                 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 当前迭代轮次</span>
-    approved: bool                 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 是否通过审核</span>
-    max_iterations: <span class=<span class="s">"b"</span>>int</span>            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 最大迭代次数</span>
+    """</span>
+    messages: Annotated[<span class="b">list</span>, add_messages]
+    task: <span class="b">str</span>                      <span class="h"># 原始任务</span>
+    draft: <span class="b">str</span>                     <span class="h"># Writer 的草稿</span>
+    review: <span class="b">str</span>                    <span class="h"># Reviewer 的审核意见</span>
+    iteration: <span class="b">int</span>                 <span class="h"># 当前迭代轮次</span>
+    approved: bool                 <span class="h"># 是否通过审核</span>
+    max_iterations: <span class="b">int</span>            <span class="h"># 最大迭代次数</span>
 
 
-WRITER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"你是一位专业的内容创作者。
+WRITER_SYSTEM_PROMPT = <span class="s">"""你是一位专业的内容创作者。
 风格要求：
 - 语言简洁有力
 - 逻辑清晰，论据充分
 - 面向技术读者的科普风格
-- 字数在 <span class=<span class="s">"n"</span>>300</span>-<span class=<span class="s">"n"</span>>500</span> 字之间<span class="s">""</span>"</span>
+- 字数在 300-500 字之间"""</span>
 
-REVIEWER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"你是一位严格的内容审核编辑。
+REVIEWER_SYSTEM_PROMPT = <span class="s">"""你是一位严格的内容审核编辑。
 审查标准：
 - 准确性：内容是否有事实性错误？
 - 逻辑性：论述是否严密？
@@ -766,51 +766,51 @@ REVIEWER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</spa
 - 完整性：是否覆盖了任务要求的所有方面？
 
 返回格式：
-{<span class="s">"score"</span>: <span class=<span class="s">"n"</span>>1</span>-<span class=<span class="s">"n"</span>>10</span>, <span class="s">"issues"</span>: [<span class="s">"问题1"</span>, <span class="s">"问题2"</span>], 
- <span class="s">"approved"</span>: true/false, <span class="s">"suggestions"</span>: <span class="s">"改进建议"</span>}<span class="s">""</span>"</span>
+{"score": 1-10, "issues": ["问题1", "问题2"], 
+ "approved": true/false, "suggestions": "改进建议"}"""</span>
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>build_content_team</span>(llm):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"构建内容创作双 Agent 团队。
+<span class="k">def</span> <span class="f">build_content_team</span>(llm):
+    <span class="s">"""构建内容创作双 Agent 团队。
 
     Args:
         llm: LangChain ChatOpenAI 实例。
 
     Returns:
         编译后的 LangGraph 应用。
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>writer_node</span>(state: ContentTeamState) -&gt; ContentTeamState:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Writer Agent：创作内容或根据审核意见修改。"</span><span class="s">""</span></span>
-        iteration = state.get(<span class="s">"iteration"</span>, <span class=<span class="s">"n"</span>>0</span>)
+    <span class="k">def</span> <span class="f">writer_node</span>(state: ContentTeamState) -&gt; ContentTeamState:
+        <span class="s">"""Writer Agent：创作内容或根据审核意见修改。"""</span>
+        iteration = state.get(<span class="s">"iteration"</span>, <span class="n">0</span>)
         review = state.get(<span class="s">"review"</span>, <span class="s">""</span>)
 
-        <span class=<span class="s">"k"</span>>if</span> review <span class=<span class="s">"k"</span>>and</span> iteration &gt; <span class=<span class="s">"n"</span>>0</span>:
+        <span class="k">if</span> review <span class="k">and</span> iteration &gt; <span class="n">0</span>:
             prompt = (
-                f<span class="s">"原始任务: {state[<span class='s'>'task'</span>]}\n\n"</span>
-                f<span class="s">"上次草稿: {state[<span class='s'>'draft'</span>]}\n\n"</span>
+                f<span class="s">"原始任务: {state['task']}\n\n"</span>
+                f<span class="s">"上次草稿: {state['draft']}\n\n"</span>
                 f<span class="s">"审核意见: {review}\n\n"</span>
                 f<span class="s">"请根据审核意见修改草稿。"</span>
             )
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✏️ [Writer] 第{iteration}轮修改..."</span>)
-        <span class=<span class="s">"k"</span>>else</span>:
-            prompt = f<span class="s">"任务: {state[<span class='s'>'task'</span>]}\n请撰写内容。"</span>
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✏️ [Writer] 开始创作..."</span>)
+            <span class="b">print</span>(f<span class="s">"  ✏️ [Writer] 第{iteration}轮修改..."</span>)
+        <span class="k">else</span>:
+            prompt = f<span class="s">"任务: {state['task']}\n请撰写内容。"</span>
+            <span class="b">print</span>(f<span class="s">"  ✏️ [Writer] 开始创作..."</span>)
 
         response = llm.invoke([
             (<span class="s">"system"</span>, WRITER_SYSTEM_PROMPT),
             (<span class="s">"user"</span>, prompt),
         ])
         state[<span class="s">"draft"</span>] = response.content
-        <span class=<span class="s">"k"</span>>return</span> state
+        <span class="k">return</span> state
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>reviewer_node</span>(state: ContentTeamState) -&gt; ContentTeamState:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Reviewer Agent：审核草稿质量。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  🔍 [Reviewer] 正在审核..."</span>)
+    <span class="k">def</span> <span class="f">reviewer_node</span>(state: ContentTeamState) -&gt; ContentTeamState:
+        <span class="s">"""Reviewer Agent：审核草稿质量。"""</span>
+        <span class="b">print</span>(f<span class="s">"  🔍 [Reviewer] 正在审核..."</span>)
 
         prompt = (
-            f<span class="s">"任务要求: {state[<span class='s'>'task'</span>]}\n\n"</span>
-            f<span class="s">"待审核草稿:\n{state[<span class='s'>'draft'</span>]}\n\n"</span>
+            f<span class="s">"任务要求: {state['task']}\n\n"</span>
+            f<span class="s">"待审核草稿:\n{state['draft']}\n\n"</span>
             f<span class="s">"请审核并评分。返回 JSON 格式。"</span>
         )
         response = llm.invoke([
@@ -818,42 +818,42 @@ REVIEWER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</spa
             (<span class="s">"user"</span>, prompt),
         ])
 
-        <span class=<span class="s">"k"</span>>try</span>:
+        <span class="k">try</span>:
             result = json.loads(response.content)
-        <span class=<span class="s">"k"</span>>except</span> json.JSONDecodeError:
-            result = {<span class="s">"score"</span>: <span class=<span class="s">"n"</span>>5</span>, <span class="s">"issues"</span>: [<span class="s">"无法解析审核结果"</span>],
-                       <span class="s">"approved"</span>: <span class=<span class="s">"k"</span>>True</span>, <span class="s">"suggestions"</span>: <span class="s">""</span>}
+        <span class="k">except</span> json.JSONDecodeError:
+            result = {<span class="s">"score"</span>: <span class="n">5</span>, <span class="s">"issues"</span>: [<span class="s">"无法解析审核结果"</span>],
+                       <span class="s">"approved"</span>: <span class="k">True</span>, <span class="s">"suggestions"</span>: <span class="s">""</span>}
 
         state[<span class="s">"review"</span>] = result.get(<span class="s">"suggestions"</span>, <span class="s">""</span>)
-        state[<span class="s">"approved"</span>] = result.get(<span class="s">"approved"</span>, <span class=<span class="s">"k"</span>>False</span>)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    评分: {result.get(<span class='s'>'score'</span>, <span class='s'>'N/A'</span>)}/<span class="</span>n<span class="s">">10</span> | "</span>
-              f<span class="s">"通过: {state[<span class='s'>'approved'</span>]} | "</span>
-              f<span class="s">"问题: {result.get(<span class='s'>'issues'</span>, [])}"</span>)
-        <span class=<span class="s">"k"</span>>return</span> state
+        state[<span class="s">"approved"</span>] = result.get(<span class="s">"approved"</span>, <span class="k">False</span>)
+        <span class="b">print</span>(f<span class="s">"    评分: {result.get('score', 'N/A')}/10 | "</span>
+              f<span class="s">"通过: {state['approved']} | "</span>
+              f<span class="s">"问题: {result.get('issues', [])}"</span>)
+        <span class="k">return</span> state
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>should_continue</span>(state: ContentTeamState) -&gt; Literal[<span class="s">"writer"</span>, <span class="s">"end"</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"决定是否继续迭代。
+    <span class="k">def</span> <span class="f">should_continue</span>(state: ContentTeamState) -&gt; Literal[<span class="s">"writer"</span>, <span class="s">"end"</span>]:
+        <span class="s">"""决定是否继续迭代。
 
         Returns:
-            <span class='s'>'writer'</span>: 需要 Writer 修改
-            <span class='s'>'end'</span>: 审核通过或达到最大迭代次数
-        <span class="s">""</span>"</span>
-        iteration = state.get(<span class="s">"iteration"</span>, <span class=<span class="s">"n"</span>>0</span>)
-        max_iter = state.get(<span class="s">"max_iterations"</span>, <span class=<span class="s">"n"</span>>3</span>)
-        approved = state.get(<span class="s">"approved"</span>, <span class=<span class="s">"k"</span>>False</span>)
+            'writer': 需要 Writer 修改
+            'end': 审核通过或达到最大迭代次数
+        """</span>
+        iteration = state.get(<span class="s">"iteration"</span>, <span class="n">0</span>)
+        max_iter = state.get(<span class="s">"max_iterations"</span>, <span class="n">3</span>)
+        approved = state.get(<span class="s">"approved"</span>, <span class="k">False</span>)
 
-        <span class=<span class="s">"k"</span>>if</span> approved:
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✅ 审核通过！总迭代 {iteration + <span class="</span>n<span class="s">">1</span>} 轮"</span>)
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"end"</span>
+        <span class="k">if</span> approved:
+            <span class="b">print</span>(f<span class="s">"  ✅ 审核通过！总迭代 {iteration + 1} 轮"</span>)
+            <span class="k">return</span> <span class="s">"end"</span>
 
-        <span class=<span class="s">"k"</span>>if</span> iteration &gt;= max_iter - <span class=<span class="s">"n"</span>>1</span>:
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 达到最大迭代次数 {max_iter}，强制结束"</span>)
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"end"</span>
+        <span class="k">if</span> iteration &gt;= max_iter - <span class="n">1</span>:
+            <span class="b">print</span>(f<span class="s">"  ⚠️ 达到最大迭代次数 {max_iter}，强制结束"</span>)
+            <span class="k">return</span> <span class="s">"end"</span>
 
-        state[<span class="s">"iteration"</span>] = iteration + <span class=<span class="s">"n"</span>>1</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"writer"</span>
+        state[<span class="s">"iteration"</span>] = iteration + <span class="n">1</span>
+        <span class="k">return</span> <span class="s">"writer"</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 构建图</span>
+    <span class="h"># 构建图</span>
     workflow = StateGraph(ContentTeamState)
 
     workflow.add_node(<span class="s">"writer"</span>, writer_node)
@@ -867,10 +867,10 @@ REVIEWER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</spa
         {<span class="s">"writer"</span>: <span class="s">"writer"</span>, <span class="s">"end"</span>: END},
     )
 
-    <span class=<span class="s">"k"</span>>return</span> workflow.compile()
+    <span class="k">return</span> workflow.compile()
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 图结构示意：
 
      [START]
@@ -891,24 +891,24 @@ REVIEWER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</spa
 这是协作式 + 分层式的混合架构：
   - Writer 和 Reviewer 是协作关系（双方一起产出内容）
   - Reviewer 对 Writer 有审查-修改的上下级关系
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_content_team</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示双 Agent 内容创作团队。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> LANGGRAPH_AVAILABLE:
-        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"需要安装 langgraph 才能运行此演示。"</span>)
-        <span class=<span class="s">"k"</span>>return</span>
+<span class="k">def</span> <span class="f">demo_content_team</span>():
+    <span class="s">"""演示双 Agent 内容创作团队。"""</span>
+    <span class="k">if</span> <span class="k">not</span> LANGGRAPH_AVAILABLE:
+        <span class="b">print</span>(<span class="s">"需要安装 langgraph 才能运行此演示。"</span>)
+        <span class="k">return</span>
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Multi-Agent: 内容创作团队演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class="b">print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Multi-Agent: 内容创作团队演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     llm = ChatOpenAI(
         model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
         api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
         base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
-        temperature=<span class=<span class="s">"n"</span>>0.7</span>,
+        temperature=<span class="n">0.7</span>,
     )
 
     app = build_content_team(llm)
@@ -920,26 +920,26 @@ REVIEWER_SYSTEM_PROMPT = <span <span class=<span class="s">"k"</span>>class</spa
         <span class="s">"task"</span>: task,
         <span class="s">"draft"</span>: <span class="s">""</span>,
         <span class="s">"review"</span>: <span class="s">""</span>,
-        <span class="s">"iteration"</span>: <span class=<span class="s">"n"</span>>0</span>,
-        <span class="s">"approved"</span>: <span class=<span class="s">"k"</span>>False</span>,
-        <span class="s">"max_iterations"</span>: <span class=<span class="s">"n"</span>>3</span>,
+        <span class="s">"iteration"</span>: <span class="n">0</span>,
+        <span class="s">"approved"</span>: <span class="k">False</span>,
+        <span class="s">"max_iterations"</span>: <span class="n">3</span>,
     }
 
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n📋 任务: {task}\n"</span>)
+    <span class="b">print</span>(f<span class="s">"\n📋 任务: {task}\n"</span>)
 
-    <span class=<span class="s">"k"</span>>try</span>:
+    <span class="k">try</span>:
         final_state = app.invoke(initial_state)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"📄 终稿:"</span>)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-        <span class=<span class="s">"b"</span>>print</span>(final_state[<span class="s">"draft"</span>])
-    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 运行出错: {e}"</span>)
+        <span class="b">print</span>(f<span class="s">"\n{'='*60}"</span>)
+        <span class="b">print</span>(f<span class="s">"📄 终稿:"</span>)
+        <span class="b">print</span>(f<span class="s">"{'='*60}"</span>)
+        <span class="b">print</span>(final_state[<span class="s">"draft"</span>])
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="b">print</span>(f<span class="s">"  ⚠️ 运行出错: {e}"</span>)
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>5.3</span> crewAI 风格的角色-Crew 模型
+5.3 crewAI 风格的角色-Crew 模型
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 crewAI 采用「Crew = Agents + Tasks」模型：
@@ -950,83 +950,83 @@ crewAI 采用「Crew = Agents + Tasks」模型：
 
 虽然我们不直接安装 crewAI（避免依赖过重），
 但可以用 LangChain 模拟其核心概念来理解其设计思想。
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>RoleBasedAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 crewAI 风格的角色 Agent。
+<span class="k">class</span> <span class="f">RoleBasedAgent</span>:
+    <span class="s">"""模拟 crewAI 风格的角色 Agent。
 
     crewAI 的核心设计理念：
-      <span class=<span class="s">"n"</span>>1</span>. 每个 Agent 有明确的角色(role)、目标(goal)、背景(backstory)
-      <span class=<span class="s">"n"</span>>2</span>. Agent 之间通过任务(task)来协作
-      <span class=<span class="s">"n"</span>>3</span>. 可以设置 allow_delegation 允许 Agent 把任务委派给其他 Agent
-    <span class="s">""</span>"</span>
+      1. 每个 Agent 有明确的角色(role)、目标(goal)、背景(backstory)
+      2. Agent 之间通过任务(task)来协作
+      3. 可以设置 allow_delegation 允许 Agent 把任务委派给其他 Agent
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>, role: <span class=<span class="s">"b"</span>>str</span>, goal: <span class=<span class="s">"b"</span>>str</span>, backstory: <span class=<span class="s">"b"</span>>str</span>,
-                 llm=<span class=<span class="s">"k"</span>>None</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"初始化角色 Agent。
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, name: <span class="b">str</span>, role: <span class="b">str</span>, goal: <span class="b">str</span>, backstory: <span class="b">str</span>,
+                 llm=<span class="k">None</span>):
+        <span class="s">"""初始化角色 Agent。
 
         Args:
             name: Agent 名称。
-            role: 角色描述（如 <span class="s">"数据分析师"</span>）。
+            role: 角色描述（如 "数据分析师"）。
             goal: 目标描述。
             backstory: 背景故事（帮助 LLM 理解角色定位）。
             llm: LangChain LLM 实例。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.name = name
-        <span class=<span class="s">"k"</span>>self</span>.role = role
-        <span class=<span class="s">"k"</span>>self</span>.goal = goal
-        <span class=<span class="s">"k"</span>>self</span>.backstory = backstory
-        <span class=<span class="s">"k"</span>>self</span>.llm = llm
+        """</span>
+        <span class="k">self</span>.name = name
+        <span class="k">self</span>.role = role
+        <span class="k">self</span>.goal = goal
+        <span class="k">self</span>.backstory = backstory
+        <span class="k">self</span>.llm = llm
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>execute</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"执行分配给此 Agent 的任务。
+    <span class="k">def</span> <span class="f">execute</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""执行分配给此 Agent 的任务。
 
         Args:
             task: 任务描述。
 
         Returns:
             执行结果。
-        <span class="s">""</span>"</span>
+        """</span>
         system_prompt = (
-            f<span class="s">"你是 {<span class="</span>k<span class="s">">self</span>.name}，一名 {<span class="</span>k<span class="s">">self</span>.role}。\n"</span>
-            f<span class="s">"你的目标: {<span class="</span>k<span class="s">">self</span>.goal}\n"</span>
-            f<span class="s">"你的背景: {<span class="</span>k<span class="s">">self</span>.backstory}"</span>
+            f<span class="s">"你是 {self.name}，一名 {self.role}。\n"</span>
+            f<span class="s">"你的目标: {self.goal}\n"</span>
+            f<span class="s">"你的背景: {self.backstory}"</span>
         )
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.llm <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
-            <span class=<span class="s">"k"</span>>return</span> f<span class="s">"[{<span class="</span>k<span class="s">">self</span>.name}] 模拟输出：已完成任务 <span class='s'>'{task}'</span>"</span>
-        response = <span class=<span class="s">"k"</span>>self</span>.llm.invoke([
+        <span class="k">if</span> <span class="k">self</span>.llm <span class="k">is</span> <span class="k">None</span>:
+            <span class="k">return</span> f<span class="s">"[{self.name}] 模拟输出：已完成任务 '{task}'"</span>
+        response = <span class="k">self</span>.llm.invoke([
             (<span class="s">"system"</span>, system_prompt),
             (<span class="s">"user"</span>, task),
         ])
-        <span class=<span class="s">"k"</span>>return</span> response.content
+        <span class="k">return</span> response.content
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_crew_style</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"演示 crewAI 风格的多 Agent 协作。
+<span class="k">def</span> <span class="f">demo_crew_style</span>():
+    <span class="s">"""演示 crewAI 风格的多 Agent 协作。
 
     场景：市场分析报告
       - 数据分析师：收集和处理数据
       - 策略规划师：基于数据制定策略
       - 报告撰写师：汇总形成最终报告
-    <span class="s">""</span>"</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  crewAI 风格: 市场分析团队演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    """</span>
+    <span class="b">print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  crewAI 风格: 市场分析团队演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 尝试初始化 LLM</span>
-    <span class=<span class="s">"k"</span>>try</span>:
+    <span class="h"># 尝试初始化 LLM</span>
+    <span class="k">try</span>:
         llm = ChatOpenAI(
             model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
             api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
             base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
-            temperature=<span class=<span class="s">"n"</span>>0.5</span>,
+            temperature=<span class="n">0.5</span>,
         )
-    <span class=<span class="s">"k"</span>>except</span> Exception:
-        llm = <span class=<span class="s">"k"</span>>None</span>
-        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  ⚠️ 未配置 API Key，使用模拟模式"</span>)
+    <span class="k">except</span> Exception:
+        llm = <span class="k">None</span>
+        <span class="b">print</span>(<span class="s">"  ⚠️ 未配置 API Key，使用模拟模式"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 定义团队</span>
+    <span class="h"># 定义团队</span>
     data_analyst = RoleBasedAgent(
         name=<span class="s">"数据分析师"</span>,
         role=<span class="s">"市场数据分析专家"</span>,
@@ -1051,58 +1051,58 @@ crewAI 采用「Crew = Agents + Tasks」模型：
         llm=llm,
     )
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 流程：数据分析 → 策略制定 → 报告撰写</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n📊 阶段 <span class="</span>n<span class="s">">1</span>: 数据分析"</span>)
+    <span class="h"># 流程：数据分析 → 策略制定 → 报告撰写</span>
+    <span class="b">print</span>(<span class="s">"\n📊 阶段 1: 数据分析"</span>)
     analysis = data_analyst.execute(
         <span class="s">"分析2025年中国AI Agent市场的规模和主要趋势，列出3-5个关键发现"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    输出: {analysis[:<span class="</span>n<span class="s">">150</span>]}..."</span>)
+    <span class="b">print</span>(f<span class="s">"    输出: {analysis[:150]}..."</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n📈 阶段 <span class="</span>n<span class="s">">2</span>: 策略制定"</span>)
+    <span class="b">print</span>(<span class="s">"\n📈 阶段 2: 策略制定"</span>)
     strategy = strategist.execute(
         f<span class="s">"基于以下市场分析，制定一套市场进入策略:\n{analysis}"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    输出: {strategy[:<span class="</span>n<span class="s">">150</span>]}..."</span>)
+    <span class="b">print</span>(f<span class="s">"    输出: {strategy[:150]}..."</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n📝 阶段 <span class="</span>n<span class="s">">3</span>: 报告撰写"</span>)
+    <span class="b">print</span>(<span class="s">"\n📝 阶段 3: 报告撰写"</span>)
     report = report_writer.execute(
         f<span class="s">"请将以下分析报告和策略建议整合为一份正式研究报告:\n\n"</span>
         f<span class="s">"市场分析:\n{analysis}\n\n策略建议:\n{strategy}\n\n"</span>
         f<span class="s">"要求: 结构清晰、有执行摘要、分章节、每个观点有数据支撑。"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    输出: {report[:<span class="</span>n<span class="s">">200</span>]}..."</span>)
+    <span class="b">print</span>(f<span class="s">"    输出: {report[:200]}..."</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n📄 ===== 最终报告摘要 ====="</span>)
-    <span class=<span class="s">"b"</span>>print</span>(report <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(report) &lt; <span class=<span class="s">"n"</span>>500</span> <span class=<span class="s">"k"</span>>else</span> report[:<span class=<span class="s">"n"</span>>500</span>] + <span class="s">"..."</span>)
+    <span class="b">print</span>(<span class="s">"\n📄 ===== 最终报告摘要 ====="</span>)
+    <span class="b">print</span>(report <span class="k">if</span> <span class="b">len</span>(report) &lt; <span class="n">500</span> <span class="k">else</span> report[:<span class="n">500</span>] + <span class="s">"..."</span>)
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>5.4</span> Multi-Agent 设计原则（面试高频！）
+5.4 Multi-Agent 设计原则（面试高频！）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-<span class=<span class="s">"n"</span>>1</span>. 职责单一原则
+1. 职责单一原则
    - 每个 Agent 只做一件事，做到极致
    - 不要给一个 Agent 塞太多职责
 
-<span class=<span class="s">"n"</span>>2</span>. 通信标准化
+2. 通信标准化
    - Agent 之间用结构化格式通信（JSON/XML）
    - 避免自然语言的模糊性
 
-<span class=<span class="s">"n"</span>>3</span>. 错误隔离
+3. 错误隔离
    - 一个 Agent 失败不应导致整个系统崩溃
    - 设置重试机制和降级策略
 
-<span class=<span class="s">"n"</span>>4</span>. 可观测性
+4. 可观测性
    - 记录每个 Agent 的输入/输出/耗时
    - 便于调试和优化
 
-<span class=<span class="s">"n"</span>>5</span>. 成本控制
+5. 成本控制
    - Multi-Agent 会成倍增加 API 调用量
    - 用缓存、batching、模型分层来降低成本
 
 面试常问：
-  <span class="s">"Multi-Agent 比单 Agent 好在哪里？什么时候不该用？"</span>
+  "Multi-Agent 比单 Agent 好在哪里？什么时候不该用？"
 
   好处：
     - 分工专业化，输出质量更高
@@ -1113,71 +1113,71 @@ crewAI 采用「Crew = Agents + Tasks」模型：
     - 简单任务（杀鸡用牛刀）
     - 成本敏感场景（多倍 API 调用）
     - Agent 间协调开销 &gt; 收益的场景
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>5.5</span> 本章总结
+5.5 本章总结
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class=<span class="s">"n"</span>>1</span>. Multi-Agent = 多角色协作
+1. Multi-Agent = 多角色协作
    - 协作式：平等对话，共同决策
    - 分层式：上级委派，下级执行
    - 竞争式：多方生成，择优选用
 
-<span class=<span class="s">"n"</span>>2</span>. 通信机制
+2. 通信机制
    - 共享状态（LangGraph 的方式）
    - 消息传递（AutoGen 的方式）
    - 任务委派（crewAI 的方式）
 
-<span class=<span class="s">"n"</span>>3</span>. 实践框架
+3. 实践框架
    - LangGraph：灵活构建自定义 Multi-Agent 图
    - crewAI：开箱即用的角色-任务模型
    - AutoGen：对话驱动的 Multi-Agent
 
-<span class=<span class="s">"n"</span>>4</span>. 设计原则
+4. 设计原则
    - 职责单一、通信标准化、错误隔离、可观测、控成本
 
 面试速记：
-  <span class="s">"你们项目用了 Multi-Agent 吗？为什么？"</span>
+  "你们项目用了 Multi-Agent 吗？为什么？"
   → 描述场景复杂度（需要多角色协作）
   → 说明架构设计（用什么模式、为什么）
   → 展示效果提升（效率/质量提升多少）
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       第5章：多智能体系统 (Multi-Agent)               ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       双Agent协作 · crewAI风格 · 设计原则            ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║       第5章：多智能体系统 (Multi-Agent)               ║"</span>)
+    <span class="b">print</span>(<span class="s">"║       双Agent协作 · crewAI风格 · 设计原则            ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">5.2</span> 双 Agent 协作（Writer + Reviewer）"</span>)
-    <span class=<span class="s">"k"</span>>try</span>:
+    <span class="b">print</span>(<span class="s">"\n▶ 5.2 双 Agent 协作（Writer + Reviewer）"</span>)
+    <span class="k">try</span>:
         demo_content_team()
-    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 运行出错（需要 API Key）: {e}"</span>)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="b">print</span>(f<span class="s">"  ⚠️ 运行出错（需要 API Key）: {e}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">5.3</span> crewAI 风格角色 Agent"</span>)
-    <span class=<span class="s">"k"</span>>try</span>:
+    <span class="b">print</span>(<span class="s">"\n▶ 5.3 crewAI 风格角色 Agent"</span>)
+    <span class="k">try</span>:
         demo_crew_style()
-    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 运行出错: {e}"</span>)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="b">print</span>(f<span class="s">"  ⚠️ 运行出错: {e}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">5.4</span> Multi-Agent 速查表"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"架构: 协作式 → 平等 Agent 共同决策"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"架构: 分层式 → 上级委派任务给下级"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"架构: 竞争式 → 多方生成，择优选用"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"框架: LangGraph → 自定义 Multi-Agent 图"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"框架: crewAI   → 角色-任务模型"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"框架: AutoGen  → 对话驱动 Multi-Agent"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"原则: 职责单一、通信标准、错误隔离、可观测、控成本"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 5.4 Multi-Agent 速查表"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="b">print</span>(<span class="s">"架构: 协作式 → 平等 Agent 共同决策"</span>)
+    <span class="b">print</span>(<span class="s">"架构: 分层式 → 上级委派任务给下级"</span>)
+    <span class="b">print</span>(<span class="s">"架构: 竞争式 → 多方生成，择优选用"</span>)
+    <span class="b">print</span>(<span class="s">"框架: LangGraph → 自定义 Multi-Agent 图"</span>)
+    <span class="b">print</span>(<span class="s">"框架: crewAI   → 角色-任务模型"</span>)
+    <span class="b">print</span>(<span class="s">"框架: AutoGen  → 对话驱动 Multi-Agent"</span>)
+    <span class="b">print</span>(<span class="s">"原则: 职责单一、通信标准、错误隔离、可观测、控成本"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第5章完成！接下来进入第6章：评估与最佳实践。"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第5章完成！接下来进入第6章：评估与最佳实践。"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_04_frameworks/04_frameworks.html" title="主流框架实战 — LangChain·LangGraph">← 第4章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

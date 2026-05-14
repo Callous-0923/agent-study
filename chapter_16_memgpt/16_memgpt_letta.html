@@ -308,232 +308,232 @@ body {
 <p>而不是记忆工具的复杂度。文件系统 + 好用工具 = 最佳记忆方案。"</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>16.6 MemGPT 架构的简化实现</h2></div><div class="code-section"><details open><summary>💻 代码 (260 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> hashlib
+<h2>16.6 MemGPT 架构的简化实现</h2></div><div class="code-section"><details open><summary>💻 代码 (260 行)</summary><div class="code-block"><pre><span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>MemGPTAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"MemGPT 架构的简化实现 —— 展示核心概念。
+<span class="k">class</span> <span class="f">MemGPTAgent</span>:
+    <span class="s">"""MemGPT 架构的简化实现 —— 展示核心概念。
 
     实现：
-      <span class=<span class="s">"n"</span>>1</span>. Core Memory 块（System + Human + Persona）
-      <span class=<span class="s">"n"</span>>2</span>. 记忆编辑工具（core_memory_append/replace）
-      <span class=<span class="s">"n"</span>>3</span>. Conversation Search（对话历史搜索）
-      <span class=<span class="s">"n"</span>>4</span>. 上下文压缩（对话历史过长时自动压缩）
-    <span class="s">""</span>"</span>
+      1. Core Memory 块（System + Human + Persona）
+      2. 记忆编辑工具（core_memory_append/replace）
+      3. Conversation Search（对话历史搜索）
+      4. 上下文压缩（对话历史过长时自动压缩）
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, system_prompt: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"初始化 MemGPT Agent。
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, system_prompt: <span class="b">str</span> = <span class="s">""</span>):
+        <span class="s">"""初始化 MemGPT Agent。
 
         Args:
             system_prompt: 系统提示词。
-        <span class="s">""</span>"</span>
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Core Memory 块</span>
-        <span class=<span class="s">"k"</span>>self</span>.core_memory = {
+        """</span>
+        <span class="h"># Core Memory 块</span>
+        <span class="k">self</span>.core_memory = {
             <span class="s">"human"</span>: <span class="s">"用户偏好和背景信息"</span>,
             <span class="s">"persona"</span>: <span class="s">"AI助手，专业且友好"</span>,
-            <span class="s">"system"</span>: system_prompt <span class=<span class="s">"k"</span>>or</span> <span class="s">"你是一个有用的 AI 助手。"</span>,
+            <span class="s">"system"</span>: system_prompt <span class="k">or</span> <span class="s">"你是一个有用的 AI 助手。"</span>,
         }
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 完整对话历史（Recall Memory）</span>
-        <span class=<span class="s">"k"</span>>self</span>.conversation = []
+        <span class="h"># 完整对话历史（Recall Memory）</span>
+        <span class="k">self</span>.conversation = []
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 归档记忆（简化版：字典存储）</span>
-        <span class=<span class="s">"k"</span>>self</span>.archival = {}
+        <span class="h"># 归档记忆（简化版：字典存储）</span>
+        <span class="k">self</span>.archival = {}
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 已压缩的摘要</span>
-        <span class=<span class="s">"k"</span>>self</span>.compacted_summary = <span class="s">""</span>
+        <span class="h"># 已压缩的摘要</span>
+        <span class="k">self</span>.compacted_summary = <span class="s">""</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_build_context</span>(<span class=<span class="s">"k"</span>>self</span>, max_recent: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>10</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"构建发给 LLM 的上下文。
+    <span class="k">def</span> <span class="f">_build_context</span>(<span class="k">self</span>, max_recent: <span class="b">int</span> = <span class="n">10</span>) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""构建发给 LLM 的上下文。
 
         包含：
-          <span class=<span class="s">"n"</span>>1</span>. Core Memory 块
-          <span class=<span class="s">"n"</span>>2</span>. 压缩摘要（如果有）
-          <span class=<span class="s">"n"</span>>3</span>. 最近 N 条对话
+          1. Core Memory 块
+          2. 压缩摘要（如果有）
+          3. 最近 N 条对话
 
         Args:
             max_recent: 最大保留的最近消息数。
 
         Returns:
             上下文消息列表。
-        <span class="s">""</span>"</span>
+        """</span>
         context = []
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Core Memory 组装</span>
+        <span class="h"># Core Memory 组装</span>
         core_text = <span class="s">"\n"</span>.join(
-            f<span class="s">"<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">">### {key}\n{value}"</span> <span class=<span class="s">"k"</span>>for</span> key, value <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.core_memory.items()</span>
+            f"<span class="h">### {key}\n{value}" for key, value in self.core_memory.items()</span>
         )
         context.append({
             <span class="s">"role"</span>: <span class="s">"system"</span>,
             <span class="s">"content"</span>: f<span class="s">"&lt;memory&gt;\n{core_text}\n&lt;/memory&gt;"</span>,
         })
 
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.compacted_summary:
+        <span class="k">if</span> <span class="k">self</span>.compacted_summary:
             context.append({
                 <span class="s">"role"</span>: <span class="s">"system"</span>,
-                <span class="s">"content"</span>: f<span class="s">"&lt;summary&gt;\n{<span class="</span>k<span class="s">">self</span>.compacted_summary}\n&lt;/summary&gt;"</span>,
+                <span class="s">"content"</span>: f<span class="s">"&lt;summary&gt;\n{self.compacted_summary}\n&lt;/summary&gt;"</span>,
             })
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 最近 N 条对话</span>
-        recent = <span class=<span class="s">"k"</span>>self</span>.conversation[-max_recent:] <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.conversation <span class=<span class="s">"k"</span>>else</span> []
+        <span class="h"># 最近 N 条对话</span>
+        recent = <span class="k">self</span>.conversation[-max_recent:] <span class="k">if</span> <span class="k">self</span>.conversation <span class="k">else</span> []
         context.extend(recent)
 
-        <span class=<span class="s">"k"</span>>return</span> context
+        <span class="k">return</span> context
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>core_memory_append</span>(<span class=<span class="s">"k"</span>>self</span>, block: <span class=<span class="s">"b"</span>>str</span>, content: <span class=<span class="s">"b"</span>>str</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"向 Core Memory 块追加内容。
+    <span class="k">def</span> <span class="f">core_memory_append</span>(<span class="k">self</span>, block: <span class="b">str</span>, content: <span class="b">str</span>):
+        <span class="s">"""向 Core Memory 块追加内容。
 
         Args:
             block: 块名（human/persona）。
             content: 追加的内容。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>if</span> block <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.core_memory:
-            <span class=<span class="s">"k"</span>>self</span>.core_memory[block] += <span class="s">"\n"</span> + content
+        """</span>
+        <span class="k">if</span> block <span class="k">in</span> <span class="k">self</span>.core_memory:
+            <span class="k">self</span>.core_memory[block] += <span class="s">"\n"</span> + content
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>core_memory_replace</span>(<span class=<span class="s">"k"</span>>self</span>, block: <span class=<span class="s">"b"</span>>str</span>, content: <span class=<span class="s">"b"</span>>str</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"替换 Core Memory 块的内容。
+    <span class="k">def</span> <span class="f">core_memory_replace</span>(<span class="k">self</span>, block: <span class="b">str</span>, content: <span class="b">str</span>):
+        <span class="s">"""替换 Core Memory 块的内容。
 
         Args:
             block: 块名。
             content: 新内容。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>if</span> block <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.core_memory:
-            <span class=<span class="s">"k"</span>>self</span>.core_memory[block] = content
+        """</span>
+        <span class="k">if</span> block <span class="k">in</span> <span class="k">self</span>.core_memory:
+            <span class="k">self</span>.core_memory[block] = content
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>archival_memory_insert</span>(<span class=<span class="s">"k"</span>>self</span>, key: <span class=<span class="s">"b"</span>>str</span>, content: <span class=<span class="s">"b"</span>>str</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"向归档记忆插入一条信息。
+    <span class="k">def</span> <span class="f">archival_memory_insert</span>(<span class="k">self</span>, key: <span class="b">str</span>, content: <span class="b">str</span>):
+        <span class="s">"""向归档记忆插入一条信息。
 
         Args:
             key: 检索键。
             content: 信息内容。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.archival[key] = {
+        """</span>
+        <span class="k">self</span>.archival[key] = {
             <span class="s">"content"</span>: content,
             <span class="s">"timestamp"</span>: time.time(),
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>archival_memory_search</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"从归档记忆搜索（简化版关键词匹配）。
+    <span class="k">def</span> <span class="f">archival_memory_search</span>(<span class="k">self</span>, query: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""从归档记忆搜索（简化版关键词匹配）。
 
         Args:
             query: 搜索词。
 
         Returns:
             匹配的结果。
-        <span class="s">""</span>"</span>
+        """</span>
         results = []
-        <span class=<span class="s">"k"</span>>for</span> key, entry <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.archival.items():
-            <span class=<span class="s">"k"</span>>if</span> query.lower() <span class=<span class="s">"k"</span>>in</span> key.lower() <span class=<span class="s">"k"</span>>or</span> query.lower() <span class=<span class="s">"k"</span>>in</span> entry[<span class="s">"content"</span>].lower():
-                results.append(f<span class="s">"[{key}] {entry[<span class='s'>'content'</span>]}"</span>)
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"\n"</span>.join(results[-<span class=<span class="s">"n"</span>>5</span>:]) <span class=<span class="s">"k"</span>>if</span> results <span class=<span class="s">"k"</span>>else</span> <span class="s">"未找到相关信息"</span>
+        <span class="k">for</span> key, entry <span class="k">in</span> <span class="k">self</span>.archival.items():
+            <span class="k">if</span> query.lower() <span class="k">in</span> key.lower() <span class="k">or</span> query.lower() <span class="k">in</span> entry[<span class="s">"content"</span>].lower():
+                results.append(f<span class="s">"[{key}] {entry['content']}"</span>)
+        <span class="k">return</span> <span class="s">"\n"</span>.join(results[-<span class="n">5</span>:]) <span class="k">if</span> results <span class="k">else</span> <span class="s">"未找到相关信息"</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>compact_conversation</span>(<span class=<span class="s">"k"</span>>self</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"对话压缩：早期对话 → 摘要，放入 compacted_summary。
+    <span class="k">def</span> <span class="f">compact_conversation</span>(<span class="k">self</span>):
+        <span class="s">"""对话压缩：早期对话 → 摘要，放入 compacted_summary。
 
         这是 MemGPT 最核心的操作之一：
           当对话历史过长时，对早期部分做摘要压缩。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.conversation) &lt;= <span class=<span class="s">"n"</span>>20</span>:
-            <span class=<span class="s">"k"</span>>return</span>
+        """</span>
+        <span class="k">if</span> <span class="b">len</span>(<span class="k">self</span>.conversation) &lt;= <span class="n">20</span>:
+            <span class="k">return</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 取最早的 <span class=<span class="s">"n"</span>>10</span> 条对话做压缩</span>
-        old_part = <span class=<span class="s">"k"</span>>self</span>.conversation[:<span class=<span class="s">"n"</span>>10</span>]
-        <span class=<span class="s">"k"</span>>self</span>.conversation = <span class=<span class="s">"k"</span>>self</span>.conversation[<span class=<span class="s">"n"</span>>10</span>:]
+        <span class="h"># 取最早的 10 条对话做压缩</span>
+        old_part = <span class="k">self</span>.conversation[:<span class="n">10</span>]
+        <span class="k">self</span>.conversation = <span class="k">self</span>.conversation[<span class="n">10</span>:]
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 简化的摘要生成</span>
-        topics = <span class=<span class="s">"b"</span>>set</span>()
-        <span class=<span class="s">"k"</span>>for</span> msg <span class=<span class="s">"k"</span>>in</span> old_part:
-            <span class=<span class="s">"k"</span>>for</span> word <span class=<span class="s">"k"</span>>in</span> msg.get(<span class="s">"content"</span>, <span class="s">""</span>).split():
-                <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(word) &gt; <span class=<span class="s">"n"</span>>3</span>:
+        <span class="h"># 简化的摘要生成</span>
+        topics = <span class="b">set</span>()
+        <span class="k">for</span> msg <span class="k">in</span> old_part:
+            <span class="k">for</span> word <span class="k">in</span> msg.get(<span class="s">"content"</span>, <span class="s">""</span>).split():
+                <span class="k">if</span> <span class="b">len</span>(word) &gt; <span class="n">3</span>:
                     topics.add(word.lower())
 
         new_summary = (
-            f<span class="s">"此前讨论了以下话题：{<span class='s'>', '</span>.join(<span class="</span>b<span class="s">">list</span>(topics)[:<span class="</span>n<span class="s">">10</span>])}..."</span>
+            f<span class="s">"此前讨论了以下话题：{', '.join(list(topics)[:10])}..."</span>
         )
 
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.compacted_summary:
-            <span class=<span class="s">"k"</span>>self</span>.compacted_summary += <span class="s">"\n"</span> + new_summary
-        <span class=<span class="s">"k"</span>>else</span>:
-            <span class=<span class="s">"k"</span>>self</span>.compacted_summary = new_summary
+        <span class="k">if</span> <span class="k">self</span>.compacted_summary:
+            <span class="k">self</span>.compacted_summary += <span class="s">"\n"</span> + new_summary
+        <span class="k">else</span>:
+            <span class="k">self</span>.compacted_summary = new_summary
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>heartbeat_should_continue</span>(<span class=<span class="s">"k"</span>>self</span>, last_tool_result: <span class=<span class="s">"b"</span>>str</span>) -&gt; bool:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"判断是否需要 Heartbeat（继续给 Agent 控制权）。
+    <span class="k">def</span> <span class="f">heartbeat_should_continue</span>(<span class="k">self</span>, last_tool_result: <span class="b">str</span>) -&gt; bool:
+        <span class="s">"""判断是否需要 Heartbeat（继续给 Agent 控制权）。
 
         如果工具调用失败或者返回不充分，
-        返回 <span class=<span class="s">"k"</span>>True</span> 让 Agent 继续思考和行动。
+        返回 True 让 Agent 继续思考和行动。
 
         Args:
             last_tool_result: 上一步工具调用的结果。
 
         Returns:
             是否需要继续。
-        <span class="s">""</span>"</span>
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟判断：如果结果包含错误信号</span>
+        """</span>
+        <span class="h"># 模拟判断：如果结果包含错误信号</span>
         error_signals = [<span class="s">"未找到"</span>, <span class="s">"错误"</span>, <span class="s">"失败"</span>, <span class="s">"抱歉"</span>, <span class="s">"无法"</span>]
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>any</span>(sig <span class=<span class="s">"k"</span>>in</span> last_tool_result <span class=<span class="s">"k"</span>>for</span> sig <span class=<span class="s">"k"</span>>in</span> error_signals)
+        <span class="k">return</span> <span class="b">any</span>(sig <span class="k">in</span> last_tool_result <span class="k">for</span> sig <span class="k">in</span> error_signals)
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_memgpt_workflow</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 MemGPT 的完整工作流。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  MemGPT 记忆架构演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_memgpt_workflow</span>():
+    <span class="s">"""演示 MemGPT 的完整工作流。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  MemGPT 记忆架构演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     agent = MemGPTAgent()
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>1</span>: 展示初始 Core Memory</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  🧠 初始 Core Memory:"</span>)
-    <span class=<span class="s">"k"</span>>for</span> key, value <span class=<span class="s">"k"</span>>in</span> agent.core_memory.items():
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{key}] {value}"</span>)
+    <span class="h"># Step 1: 展示初始 Core Memory</span>
+    <span class="b">print</span>(<span class="s">"\n  🧠 初始 Core Memory:"</span>)
+    <span class="k">for</span> key, value <span class="k">in</span> agent.core_memory.items():
+        <span class="b">print</span>(f<span class="s">"    [{key}] {value}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>2</span>: Agent 学习用户信息 → 写入 Core Memory</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  📝 用户告诉 Agent 自己的偏好"</span>)
+    <span class="h"># Step 2: Agent 学习用户信息 → 写入 Core Memory</span>
+    <span class="b">print</span>(<span class="s">"\n  📝 用户告诉 Agent 自己的偏好"</span>)
     agent.core_memory_append(<span class="s">"human"</span>, <span class="s">"喜欢简洁的回答风格"</span>)
     agent.core_memory_append(<span class="s">"human"</span>, <span class="s">"是Python开发者，经常需要代码帮助"</span>)
     agent.core_memory_replace(<span class="s">"persona"</span>, <span class="s">"Python 专家助手，回答简洁专业"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"    更新后的 Core Memory:"</span>)
-    <span class=<span class="s">"k"</span>>for</span> key, value <span class=<span class="s">"k"</span>>in</span> agent.core_memory.items():
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{key}] {value}"</span>)
+    <span class="b">print</span>(<span class="s">"    更新后的 Core Memory:"</span>)
+    <span class="k">for</span> key, value <span class="k">in</span> agent.core_memory.items():
+        <span class="b">print</span>(f<span class="s">"    [{key}] {value}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>3</span>: 模拟对话</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  💬 模拟对话"</span>)
+    <span class="h"># Step 3: 模拟对话</span>
+    <span class="b">print</span>(<span class="s">"\n  💬 模拟对话"</span>)
     dialogs = [
         (<span class="s">"user"</span>, <span class="s">"帮我写一个快速排序算法"</span>),
-        (<span class="s">"assistant"</span>, <span class="s">"好的，这是一个 Python 快速排序实现：\ndef quicksort(arr):\n    <span class="</span>k<span class="s">">if</span> <span class="</span>b<span class="s">">len</span>(arr) &lt;= <span class="</span>n<span class="s">">1</span>:\n        <span class="</span>k<span class="s">">return</span> arr\n    pivot = arr[<span class="</span>n<span class="s">">0</span>]\n    left = [x <span class="</span>k<span class="s">">for</span> x <span class="</span>k<span class="s">">in</span> arr[<span class="</span>n<span class="s">">1</span>:] <span class="</span>k<span class="s">">if</span> x &lt;= pivot]\n    right = [x <span class="</span>k<span class="s">">for</span> x <span class="</span>k<span class="s">">in</span> arr[<span class="</span>n<span class="s">">1</span>:] <span class="</span>k<span class="s">">if</span> x &gt; pivot]\n    <span class="</span>k<span class="s">">return</span> quicksort(left) + [pivot] + quicksort(right)"</span>),
+        (<span class="s">"assistant"</span>, <span class="s">"好的，这是一个 Python 快速排序实现：\ndef quicksort(arr):\n    if len(arr) &lt;= 1:\n        return arr\n    pivot = arr[0]\n    left = [x for x in arr[1:] if x &lt;= pivot]\n    right = [x for x in arr[1:] if x &gt; pivot]\n    return quicksort(left) + [pivot] + quicksort(right)"</span>),
         (<span class="s">"user"</span>, <span class="s">"谢谢！再帮我分析一下时间复杂度"</span>),
         (<span class="s">"assistant"</span>, <span class="s">"快速排序的平均时间复杂度是 O(n log n)，最坏情况是 O(n²)..."</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> role, content <span class=<span class="s">"k"</span>>in</span> dialogs:
+    <span class="k">for</span> role, content <span class="k">in</span> dialogs:
         agent.conversation.append({<span class="s">"role"</span>: role, <span class="s">"content"</span>: content})
 
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    当前对话数: {<span class="</span>b<span class="s">">len</span>(agent.conversation)}"</span>)
+    <span class="b">print</span>(f<span class="s">"    当前对话数: {len(agent.conversation)}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>4</span>: 写入归档记忆</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  📦 归档记忆"</span>)
+    <span class="h"># Step 4: 写入归档记忆</span>
+    <span class="b">print</span>(<span class="s">"\n  📦 归档记忆"</span>)
     agent.archival_memory_insert(
         <span class="s">"quicksort"</span>, <span class="s">"快速排序：O(n log n) 平均，O(n²) 最坏，非稳定排序"</span>
     )
     agent.archival_memory_insert(
-        <span class="s">"python_best_practice"</span>, <span class="s">"Python编码规范：PEP <span class="</span>n<span class="s">">8</span>, 类型注解, 单元测试"</span>
+        <span class="s">"python_best_practice"</span>, <span class="s">"Python编码规范：PEP 8, 类型注解, 单元测试"</span>
     )
     agent.archival_memory_insert(
         <span class="s">"user_preference"</span>, <span class="s">"用户偏好简洁代码，不喜欢过度注释"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    已存入 {<span class="</span>b<span class="s">">len</span>(agent.archival)} 条归档记忆"</span>)
+    <span class="b">print</span>(f<span class="s">"    已存入 {len(agent.archival)} 条归档记忆"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>5</span>: 搜索归档记忆</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  🔍 搜索归档记忆"</span>)
+    <span class="h"># Step 5: 搜索归档记忆</span>
+    <span class="b">print</span>(<span class="s">"\n  🔍 搜索归档记忆"</span>)
     result = agent.archival_memory_search(<span class="s">"排序"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    搜索「排序」→ {result}"</span>)
+    <span class="b">print</span>(f<span class="s">"    搜索「排序」→ {result}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>6</span>: 模拟对话压缩</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  🗜️ 对话压缩演示"</span>)
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟大量对话</span>
-    <span class=<span class="s">"k"</span>>for</span> i <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>50</span>):
+    <span class="h"># Step 6: 模拟对话压缩</span>
+    <span class="b">print</span>(<span class="s">"\n  🗜️ 对话压缩演示"</span>)
+    <span class="h"># 模拟大量对话</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="b">range</span>(<span class="n">50</span>):
         agent.conversation.append({
             <span class="s">"role"</span>: <span class="s">"user"</span>,
             <span class="s">"content"</span>: f<span class="s">"问题{i}：这是一条测试消息"</span>,
@@ -543,31 +543,31 @@ body {
             <span class="s">"content"</span>: f<span class="s">"回答{i}：这是一条回复"</span>,
         })
 
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    压缩前: {<span class="</span>b<span class="s">">len</span>(agent.conversation)} 条消息"</span>)
+    <span class="b">print</span>(f<span class="s">"    压缩前: {len(agent.conversation)} 条消息"</span>)
     agent.compact_conversation()
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    压缩后: {<span class="</span>b<span class="s">">len</span>(agent.conversation)} 条消息"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    摘要: {agent.compacted_summary[:<span class="</span>n<span class="s">">100</span>]}..."</span>)
+    <span class="b">print</span>(f<span class="s">"    压缩后: {len(agent.conversation)} 条消息"</span>)
+    <span class="b">print</span>(f<span class="s">"    摘要: {agent.compacted_summary[:100]}..."</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>7</span>: Heartbeat 机制演示</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  💓 Heartbeat 机制演示"</span>)
+    <span class="h"># Step 7: Heartbeat 机制演示</span>
+    <span class="b">print</span>(<span class="s">"\n  💓 Heartbeat 机制演示"</span>)
     test_cases = [
-        (<span class="s">"查询成功：找到 <span class="</span>n<span class="s">">3</span> 条结果"</span>, <span class=<span class="s">"k"</span>>False</span>),
-        (<span class="s">"未找到相关数据，请更换搜索词"</span>, <span class=<span class="s">"k"</span>>True</span>),
-        (<span class="s">"工具调用失败：API 超时"</span>, <span class=<span class="s">"k"</span>>True</span>),
-        (<span class="s">"计算完成：结果为 <span class="</span>n<span class="s">">42</span>"</span>, <span class=<span class="s">"k"</span>>False</span>),
+        (<span class="s">"查询成功：找到 3 条结果"</span>, <span class="k">False</span>),
+        (<span class="s">"未找到相关数据，请更换搜索词"</span>, <span class="k">True</span>),
+        (<span class="s">"工具调用失败：API 超时"</span>, <span class="k">True</span>),
+        (<span class="s">"计算完成：结果为 42"</span>, <span class="k">False</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> result, expected_heartbeat <span class=<span class="s">"k"</span>>in</span> test_cases:
+    <span class="k">for</span> result, expected_heartbeat <span class="k">in</span> test_cases:
         needs_heartbeat = agent.heartbeat_should_continue(result)
-        status = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> needs_heartbeat == expected_heartbeat <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌"</span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {status} 「{result[:<span class="</span>n<span class="s">">25</span>]}...」→ 需要心跳: {needs_heartbeat}"</span>)
+        status = <span class="s">"✅"</span> <span class="k">if</span> needs_heartbeat == expected_heartbeat <span class="k">else</span> <span class="s">"❌"</span>
+        <span class="b">print</span>(f<span class="s">"    {status} 「{result[:25]}...」→ 需要心跳: {needs_heartbeat}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>8</span>: 展示 LLM 上下文</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  📋 发给 LLM 的上下文结构"</span>)
-    context = agent._build_context(max_recent=<span class=<span class="s">"n"</span>>3</span>)
-    <span class=<span class="s">"k"</span>>for</span> i, msg <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(context):
+    <span class="h"># Step 8: 展示 LLM 上下文</span>
+    <span class="b">print</span>(<span class="s">"\n  📋 发给 LLM 的上下文结构"</span>)
+    context = agent._build_context(max_recent=<span class="n">3</span>)
+    <span class="k">for</span> i, msg <span class="k">in</span> <span class="b">enumerate</span>(context):
         role = msg[<span class="s">"role"</span>]
-        content = msg[<span class="s">"content"</span>][:<span class=<span class="s">"n"</span>>80</span>].replace(<span class="s">"\n"</span>, <span class="s">" "</span>)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{i}] {role}: {content}..."</span>)</pre></div></details></div><div class="lecture"><h2>16.7 本章总结</h2>
+        content = msg[<span class="s">"content"</span>][:<span class="n">80</span>].replace(<span class="s">"\n"</span>, <span class="s">" "</span>)
+        <span class="b">print</span>(f<span class="s">"    [{i}] {role}: {content}..."</span>)</pre></div></details></div><div class="lecture"><h2>16.7 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
@@ -595,39 +595,39 @@ body {
 <p>→ OS 级内存管理：Core Memory + Recall + Archival</p>
 <p>→ 通过工具让 Agent 自己管理自己的记忆</p>
 <p>→ Heartbeat 机制实现自我纠错</p>
-<p>→ 「文件系统就是最好的记忆工具」</p></div><div class="code-section"><details open><summary>💻 代码 (24 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> hashlib
+<p>→ 「文件系统就是最好的记忆工具」</p></div><div class="code-section"><details open><summary>💻 代码 (24 行)</summary><div class="code-block"><pre><span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第16章：MemGPT / Letta 记忆架构                        ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Core Memory · Heartbeat · Sleep-Time · Filesystem   ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第16章：MemGPT / Letta 记忆架构                        ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  Core Memory · Heartbeat · Sleep-Time · Filesystem   ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_memgpt_workflow()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ MemGPT 内存层次对应关系"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ MemGPT 内存层次对应关系"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     layers = [
         (<span class="s">"Core Memory"</span>, <span class="s">"RAM"</span>, <span class="s">"当前上下文 + 可编辑记忆块"</span>),
         (<span class="s">"Recall Memory"</span>, <span class="s">"磁盘"</span>, <span class="s">"完整对话历史，可搜索"</span>),
         (<span class="s">"Archival Memory"</span>, <span class="s">"归档"</span>, <span class="s">"向量数据库，外部知识"</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> mem, os, desc <span class=<span class="s">"k"</span>>in</span> layers:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {mem:18s} ↔ {os:6s} → {desc}"</span>)
+    <span class="k">for</span> mem, os, desc <span class="k">in</span> layers:
+        <span class="b">print</span>(f<span class="s">"  {mem:18s} ↔ {os:6s} → {desc}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第16章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (505 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+    <span class="b">print</span>(<span class="s">"\n✅ 第16章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (505 行)</summary><div class="code-block"><pre><span class="s">"""
 第16章：MemGPT / Letta —— Agent 记忆的「操作系统」
 =====================================================
 
 📌 本章目标：
-  <span class=<span class="s">"n"</span>>1</span>. 理解 MemGPT 的核心思想：「把 LLM 当作操作系统来管」
-  <span class=<span class="s">"n"</span>>2</span>. 掌握内存层次结构：Core Memory ↔ Recall Memory ↔ Archival Memory
-  <span class=<span class="s">"n"</span>>3</span>. 理解 Heartbeat 机制（自我纠错）
-  <span class=<span class="s">"n"</span>>4</span>. 理解 Sleep-Time Compute（后台记忆整理）
-  <span class=<span class="s">"n"</span>>5</span>. 了解 Letta Filesystem（2025年最新发现：文件系统做记忆效果惊人）
+  1. 理解 MemGPT 的核心思想：「把 LLM 当作操作系统来管」
+  2. 掌握内存层次结构：Core Memory ↔ Recall Memory ↔ Archival Memory
+  3. 理解 Heartbeat 机制（自我纠错）
+  4. 理解 Sleep-Time Compute（后台记忆整理）
+  5. 了解 Letta Filesystem（2025年最新发现：文件系统做记忆效果惊人）
 
 📌 面试高频点：
   - MemGPT 怎么解决 LLM 的上下文窗口限制？
@@ -636,12 +636,12 @@ body {
   - Letta 的「文件系统做记忆」为什么效果好？
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-论文: <span class="s">"MemGPT: Towards LLMs <span class="</span>k<span class="s">">as</span> Operating Systems"</span> (<span class=<span class="s">"n"</span>>2023</span>)
+论文: "MemGPT: Towards LLMs as Operating Systems" (2023)
 项目: github.com/letta-ai/letta (原 MemGPT)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-<span class=<span class="s">"n"</span>>16.1</span> 核心思想：把 LLM 当作操作系统
+16.1 核心思想：把 LLM 当作操作系统
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 类比：计算机操作系统管理内存的方式
@@ -676,7 +676,7 @@ body {
   - OS 用虚拟内存换页 → MemGPT 用记忆管理工具换页
 
 
-<span class=<span class="s">"n"</span>>16.2</span> MemGPT 的内存管理机制
+16.2 MemGPT 的内存管理机制
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ┌────────────────────────────────────────────────────┐
@@ -710,15 +710,15 @@ body {
 └────────────────────────────────────────────────────┘
 
 核心工具（Agent 通过 Function Calling 调用）：
-  <span class=<span class="s">"n"</span>>1</span>. send_message: 向用户发送消息（MemGPT 唯一的消息出口）
-  <span class=<span class="s">"n"</span>>2</span>. core_memory_append: 向 Core Memory 块追加信息
-  <span class=<span class="s">"n"</span>>3</span>. core_memory_replace: 替换 Core Memory 块的内容
-  <span class=<span class="s">"n"</span>>4</span>. conversation_search: 搜索完整对话历史
-  <span class=<span class="s">"n"</span>>5</span>. archival_memory_insert: 将信息存入归档记忆（向量化）
-  <span class=<span class="s">"n"</span>>6</span>. archival_memory_search: 从归档记忆中检索
+  1. send_message: 向用户发送消息（MemGPT 唯一的消息出口）
+  2. core_memory_append: 向 Core Memory 块追加信息
+  3. core_memory_replace: 替换 Core Memory 块的内容
+  4. conversation_search: 搜索完整对话历史
+  5. archival_memory_insert: 将信息存入归档记忆（向量化）
+  6. archival_memory_search: 从归档记忆中检索
 
 
-<span class=<span class="s">"n"</span>>16.3</span> Heartbeat 机制 —— Agent 的「自我意识」
+16.3 Heartbeat 机制 —— Agent 的「自我意识」
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 传统 Agent 的问题：
@@ -731,16 +731,16 @@ Heartbeat 的解决方案：
   Agent 可以：检查结果 → 发现错误 → 自动重试
 
 代码示意：
-  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 工具返回结果</span>
+  # 工具返回结果
   {
-    <span class="s">"tool_call_id"</span>: <span class="s">"call_123"</span>,
-    <span class="s">"content"</span>: <span class="s">"搜索结果为空"</span>,
-    <span class="s">"request_heartbeat"</span>: true  // ← 请求心跳！
+    "tool_call_id": "call_123",
+    "content": "搜索结果为空",
+    "request_heartbeat": true  // ← 请求心跳！
   }
 
-  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Agent 收到心跳后</span>
-  → <span class="s">"搜索结果为空？我换一个关键词试试"</span>
-  → 再次调用 search(<span class="s">"换一个搜索词"</span>)
+  # Agent 收到心跳后
+  → "搜索结果为空？我换一个关键词试试"
+  → 再次调用 search("换一个搜索词")
   → 这次找到了！
 
 这类似于：
@@ -749,7 +749,7 @@ Heartbeat 的解决方案：
   Heartbeat 就是给 Agent 的「命令提示符」
 
 
-<span class=<span class="s">"n"</span>>16.4</span> Sleep-Time Compute —— 后台记忆整理
+16.4 Sleep-Time Compute —— 后台记忆整理
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 MemGPT v2 的创新（2025年）。
@@ -759,41 +759,41 @@ MemGPT v2 的创新（2025年）。
   启动一个后台 Agent 来整理记忆。
 
 做什么？
-  <span class=<span class="s">"n"</span>>1</span>. 浏览最近的对话历史
-  <span class=<span class="s">"n"</span>>2</span>. 提取重要信息 → 写入 Core Memory
-  <span class=<span class="s">"n"</span>>3</span>. 删除过时的信息
-  <span class=<span class="s">"n"</span>>4</span>. 更新用户画像
-  <span class=<span class="s">"n"</span>>5</span>. 合并重复的记忆
+  1. 浏览最近的对话历史
+  2. 提取重要信息 → 写入 Core Memory
+  3. 删除过时的信息
+  4. 更新用户画像
+  5. 合并重复的记忆
 
 类比：
   就像你睡觉时，大脑在整理白天的记忆
   不重要的事情遗忘，重要的事情巩固
 
 效果：
-  Letta 在 LoCoMo 基准测试上达到 <span class=<span class="s">"n"</span>>74.0</span>% 准确率
+  Letta 在 LoCoMo 基准测试上达到 74.0% 准确率
   （仅用文件系统 + GPT-4o-mini）
 
 
-<span class=<span class="s">"n"</span>>16.5</span> Letta Filesystem ——「文件系统 = 最好的记忆工具」
+16.5 Letta Filesystem ——「文件系统 = 最好的记忆工具」
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 2025年8月，Letta 发表了一篇震撼论文：
-  <span class="s">"Is a Filesystem All You Need?"</span>
-  → LoCoMo 基准测试 <span class=<span class="s">"n"</span>>74.0</span>%（超过专用记忆工具 Mem0 的 <span class=<span class="s">"n"</span>>68.5</span>%）
+  "Is a Filesystem All You Need?"
+  → LoCoMo 基准测试 74.0%（超过专用记忆工具 Mem0 的 68.5%）
 
 为什么文件系统做记忆效果惊人？
 
-  <span class=<span class="s">"n"</span>>1</span>. 文件操作是 LLM 最熟悉的范式
-     - grep / <span class=<span class="s">"b"</span>>open</span> / close / search_files
+  1. 文件操作是 LLM 最熟悉的范式
+     - grep / open / close / search_files
      - 这些工具在 LLM 训练数据中大量出现
      - Agent 对它们的使用非常自然
 
-  <span class=<span class="s">"n"</span>>2</span>. 简单即正确
+  2. 简单即正确
      - 专用记忆工具引入额外复杂性
      - 多了出错的环节
      - Agent 需要理解专用工具的特殊语义
 
-  <span class=<span class="s">"n"</span>>3</span>. 无需学习新范式
+  3. 无需学习新范式
      - 每个记忆工具（Mem0/Zep/LangMem）都有自己的 API
      - LLM 需要「学会」每个新工具
      - 而文件操作是 LLM 的「母语」
@@ -803,236 +803,236 @@ MemGPT v2 的创新（2025年）。
    而不是记忆工具的复杂度。文件系统 + 好用工具 = 最佳记忆方案。"
 
 
-<span class=<span class="s">"n"</span>>16.6</span> MemGPT 架构的简化实现
+16.6 MemGPT 架构的简化实现
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="s">""</span>"</span>
+"""</span>
 
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> hashlib
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>MemGPTAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"MemGPT 架构的简化实现 —— 展示核心概念。
+<span class="k">class</span> <span class="f">MemGPTAgent</span>:
+    <span class="s">"""MemGPT 架构的简化实现 —— 展示核心概念。
 
     实现：
-      <span class=<span class="s">"n"</span>>1</span>. Core Memory 块（System + Human + Persona）
-      <span class=<span class="s">"n"</span>>2</span>. 记忆编辑工具（core_memory_append/replace）
-      <span class=<span class="s">"n"</span>>3</span>. Conversation Search（对话历史搜索）
-      <span class=<span class="s">"n"</span>>4</span>. 上下文压缩（对话历史过长时自动压缩）
-    <span class="s">""</span>"</span>
+      1. Core Memory 块（System + Human + Persona）
+      2. 记忆编辑工具（core_memory_append/replace）
+      3. Conversation Search（对话历史搜索）
+      4. 上下文压缩（对话历史过长时自动压缩）
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, system_prompt: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"初始化 MemGPT Agent。
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, system_prompt: <span class="b">str</span> = <span class="s">""</span>):
+        <span class="s">"""初始化 MemGPT Agent。
 
         Args:
             system_prompt: 系统提示词。
-        <span class="s">""</span>"</span>
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Core Memory 块</span>
-        <span class=<span class="s">"k"</span>>self</span>.core_memory = {
+        """</span>
+        <span class="h"># Core Memory 块</span>
+        <span class="k">self</span>.core_memory = {
             <span class="s">"human"</span>: <span class="s">"用户偏好和背景信息"</span>,
             <span class="s">"persona"</span>: <span class="s">"AI助手，专业且友好"</span>,
-            <span class="s">"system"</span>: system_prompt <span class=<span class="s">"k"</span>>or</span> <span class="s">"你是一个有用的 AI 助手。"</span>,
+            <span class="s">"system"</span>: system_prompt <span class="k">or</span> <span class="s">"你是一个有用的 AI 助手。"</span>,
         }
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 完整对话历史（Recall Memory）</span>
-        <span class=<span class="s">"k"</span>>self</span>.conversation = []
+        <span class="h"># 完整对话历史（Recall Memory）</span>
+        <span class="k">self</span>.conversation = []
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 归档记忆（简化版：字典存储）</span>
-        <span class=<span class="s">"k"</span>>self</span>.archival = {}
+        <span class="h"># 归档记忆（简化版：字典存储）</span>
+        <span class="k">self</span>.archival = {}
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 已压缩的摘要</span>
-        <span class=<span class="s">"k"</span>>self</span>.compacted_summary = <span class="s">""</span>
+        <span class="h"># 已压缩的摘要</span>
+        <span class="k">self</span>.compacted_summary = <span class="s">""</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_build_context</span>(<span class=<span class="s">"k"</span>>self</span>, max_recent: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>10</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"构建发给 LLM 的上下文。
+    <span class="k">def</span> <span class="f">_build_context</span>(<span class="k">self</span>, max_recent: <span class="b">int</span> = <span class="n">10</span>) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""构建发给 LLM 的上下文。
 
         包含：
-          <span class=<span class="s">"n"</span>>1</span>. Core Memory 块
-          <span class=<span class="s">"n"</span>>2</span>. 压缩摘要（如果有）
-          <span class=<span class="s">"n"</span>>3</span>. 最近 N 条对话
+          1. Core Memory 块
+          2. 压缩摘要（如果有）
+          3. 最近 N 条对话
 
         Args:
             max_recent: 最大保留的最近消息数。
 
         Returns:
             上下文消息列表。
-        <span class="s">""</span>"</span>
+        """</span>
         context = []
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Core Memory 组装</span>
+        <span class="h"># Core Memory 组装</span>
         core_text = <span class="s">"\n"</span>.join(
-            f<span class="s">"<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">">### {key}\n{value}"</span> <span class=<span class="s">"k"</span>>for</span> key, value <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.core_memory.items()</span>
+            f"<span class="h">### {key}\n{value}" for key, value in self.core_memory.items()</span>
         )
         context.append({
             <span class="s">"role"</span>: <span class="s">"system"</span>,
             <span class="s">"content"</span>: f<span class="s">"&lt;memory&gt;\n{core_text}\n&lt;/memory&gt;"</span>,
         })
 
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.compacted_summary:
+        <span class="k">if</span> <span class="k">self</span>.compacted_summary:
             context.append({
                 <span class="s">"role"</span>: <span class="s">"system"</span>,
-                <span class="s">"content"</span>: f<span class="s">"&lt;summary&gt;\n{<span class="</span>k<span class="s">">self</span>.compacted_summary}\n&lt;/summary&gt;"</span>,
+                <span class="s">"content"</span>: f<span class="s">"&lt;summary&gt;\n{self.compacted_summary}\n&lt;/summary&gt;"</span>,
             })
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 最近 N 条对话</span>
-        recent = <span class=<span class="s">"k"</span>>self</span>.conversation[-max_recent:] <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.conversation <span class=<span class="s">"k"</span>>else</span> []
+        <span class="h"># 最近 N 条对话</span>
+        recent = <span class="k">self</span>.conversation[-max_recent:] <span class="k">if</span> <span class="k">self</span>.conversation <span class="k">else</span> []
         context.extend(recent)
 
-        <span class=<span class="s">"k"</span>>return</span> context
+        <span class="k">return</span> context
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>core_memory_append</span>(<span class=<span class="s">"k"</span>>self</span>, block: <span class=<span class="s">"b"</span>>str</span>, content: <span class=<span class="s">"b"</span>>str</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"向 Core Memory 块追加内容。
+    <span class="k">def</span> <span class="f">core_memory_append</span>(<span class="k">self</span>, block: <span class="b">str</span>, content: <span class="b">str</span>):
+        <span class="s">"""向 Core Memory 块追加内容。
 
         Args:
             block: 块名（human/persona）。
             content: 追加的内容。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>if</span> block <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.core_memory:
-            <span class=<span class="s">"k"</span>>self</span>.core_memory[block] += <span class="s">"\n"</span> + content
+        """</span>
+        <span class="k">if</span> block <span class="k">in</span> <span class="k">self</span>.core_memory:
+            <span class="k">self</span>.core_memory[block] += <span class="s">"\n"</span> + content
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>core_memory_replace</span>(<span class=<span class="s">"k"</span>>self</span>, block: <span class=<span class="s">"b"</span>>str</span>, content: <span class=<span class="s">"b"</span>>str</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"替换 Core Memory 块的内容。
+    <span class="k">def</span> <span class="f">core_memory_replace</span>(<span class="k">self</span>, block: <span class="b">str</span>, content: <span class="b">str</span>):
+        <span class="s">"""替换 Core Memory 块的内容。
 
         Args:
             block: 块名。
             content: 新内容。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>if</span> block <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.core_memory:
-            <span class=<span class="s">"k"</span>>self</span>.core_memory[block] = content
+        """</span>
+        <span class="k">if</span> block <span class="k">in</span> <span class="k">self</span>.core_memory:
+            <span class="k">self</span>.core_memory[block] = content
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>archival_memory_insert</span>(<span class=<span class="s">"k"</span>>self</span>, key: <span class=<span class="s">"b"</span>>str</span>, content: <span class=<span class="s">"b"</span>>str</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"向归档记忆插入一条信息。
+    <span class="k">def</span> <span class="f">archival_memory_insert</span>(<span class="k">self</span>, key: <span class="b">str</span>, content: <span class="b">str</span>):
+        <span class="s">"""向归档记忆插入一条信息。
 
         Args:
             key: 检索键。
             content: 信息内容。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.archival[key] = {
+        """</span>
+        <span class="k">self</span>.archival[key] = {
             <span class="s">"content"</span>: content,
             <span class="s">"timestamp"</span>: time.time(),
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>archival_memory_search</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"从归档记忆搜索（简化版关键词匹配）。
+    <span class="k">def</span> <span class="f">archival_memory_search</span>(<span class="k">self</span>, query: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""从归档记忆搜索（简化版关键词匹配）。
 
         Args:
             query: 搜索词。
 
         Returns:
             匹配的结果。
-        <span class="s">""</span>"</span>
+        """</span>
         results = []
-        <span class=<span class="s">"k"</span>>for</span> key, entry <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.archival.items():
-            <span class=<span class="s">"k"</span>>if</span> query.lower() <span class=<span class="s">"k"</span>>in</span> key.lower() <span class=<span class="s">"k"</span>>or</span> query.lower() <span class=<span class="s">"k"</span>>in</span> entry[<span class="s">"content"</span>].lower():
-                results.append(f<span class="s">"[{key}] {entry[<span class='s'>'content'</span>]}"</span>)
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"\n"</span>.join(results[-<span class=<span class="s">"n"</span>>5</span>:]) <span class=<span class="s">"k"</span>>if</span> results <span class=<span class="s">"k"</span>>else</span> <span class="s">"未找到相关信息"</span>
+        <span class="k">for</span> key, entry <span class="k">in</span> <span class="k">self</span>.archival.items():
+            <span class="k">if</span> query.lower() <span class="k">in</span> key.lower() <span class="k">or</span> query.lower() <span class="k">in</span> entry[<span class="s">"content"</span>].lower():
+                results.append(f<span class="s">"[{key}] {entry['content']}"</span>)
+        <span class="k">return</span> <span class="s">"\n"</span>.join(results[-<span class="n">5</span>:]) <span class="k">if</span> results <span class="k">else</span> <span class="s">"未找到相关信息"</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>compact_conversation</span>(<span class=<span class="s">"k"</span>>self</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"对话压缩：早期对话 → 摘要，放入 compacted_summary。
+    <span class="k">def</span> <span class="f">compact_conversation</span>(<span class="k">self</span>):
+        <span class="s">"""对话压缩：早期对话 → 摘要，放入 compacted_summary。
 
         这是 MemGPT 最核心的操作之一：
           当对话历史过长时，对早期部分做摘要压缩。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.conversation) &lt;= <span class=<span class="s">"n"</span>>20</span>:
-            <span class=<span class="s">"k"</span>>return</span>
+        """</span>
+        <span class="k">if</span> <span class="b">len</span>(<span class="k">self</span>.conversation) &lt;= <span class="n">20</span>:
+            <span class="k">return</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 取最早的 <span class=<span class="s">"n"</span>>10</span> 条对话做压缩</span>
-        old_part = <span class=<span class="s">"k"</span>>self</span>.conversation[:<span class=<span class="s">"n"</span>>10</span>]
-        <span class=<span class="s">"k"</span>>self</span>.conversation = <span class=<span class="s">"k"</span>>self</span>.conversation[<span class=<span class="s">"n"</span>>10</span>:]
+        <span class="h"># 取最早的 10 条对话做压缩</span>
+        old_part = <span class="k">self</span>.conversation[:<span class="n">10</span>]
+        <span class="k">self</span>.conversation = <span class="k">self</span>.conversation[<span class="n">10</span>:]
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 简化的摘要生成</span>
-        topics = <span class=<span class="s">"b"</span>>set</span>()
-        <span class=<span class="s">"k"</span>>for</span> msg <span class=<span class="s">"k"</span>>in</span> old_part:
-            <span class=<span class="s">"k"</span>>for</span> word <span class=<span class="s">"k"</span>>in</span> msg.get(<span class="s">"content"</span>, <span class="s">""</span>).split():
-                <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(word) &gt; <span class=<span class="s">"n"</span>>3</span>:
+        <span class="h"># 简化的摘要生成</span>
+        topics = <span class="b">set</span>()
+        <span class="k">for</span> msg <span class="k">in</span> old_part:
+            <span class="k">for</span> word <span class="k">in</span> msg.get(<span class="s">"content"</span>, <span class="s">""</span>).split():
+                <span class="k">if</span> <span class="b">len</span>(word) &gt; <span class="n">3</span>:
                     topics.add(word.lower())
 
         new_summary = (
-            f<span class="s">"此前讨论了以下话题：{<span class='s'>', '</span>.join(<span class="</span>b<span class="s">">list</span>(topics)[:<span class="</span>n<span class="s">">10</span>])}..."</span>
+            f<span class="s">"此前讨论了以下话题：{', '.join(list(topics)[:10])}..."</span>
         )
 
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.compacted_summary:
-            <span class=<span class="s">"k"</span>>self</span>.compacted_summary += <span class="s">"\n"</span> + new_summary
-        <span class=<span class="s">"k"</span>>else</span>:
-            <span class=<span class="s">"k"</span>>self</span>.compacted_summary = new_summary
+        <span class="k">if</span> <span class="k">self</span>.compacted_summary:
+            <span class="k">self</span>.compacted_summary += <span class="s">"\n"</span> + new_summary
+        <span class="k">else</span>:
+            <span class="k">self</span>.compacted_summary = new_summary
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>heartbeat_should_continue</span>(<span class=<span class="s">"k"</span>>self</span>, last_tool_result: <span class=<span class="s">"b"</span>>str</span>) -&gt; bool:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"判断是否需要 Heartbeat（继续给 Agent 控制权）。
+    <span class="k">def</span> <span class="f">heartbeat_should_continue</span>(<span class="k">self</span>, last_tool_result: <span class="b">str</span>) -&gt; bool:
+        <span class="s">"""判断是否需要 Heartbeat（继续给 Agent 控制权）。
 
         如果工具调用失败或者返回不充分，
-        返回 <span class=<span class="s">"k"</span>>True</span> 让 Agent 继续思考和行动。
+        返回 True 让 Agent 继续思考和行动。
 
         Args:
             last_tool_result: 上一步工具调用的结果。
 
         Returns:
             是否需要继续。
-        <span class="s">""</span>"</span>
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟判断：如果结果包含错误信号</span>
+        """</span>
+        <span class="h"># 模拟判断：如果结果包含错误信号</span>
         error_signals = [<span class="s">"未找到"</span>, <span class="s">"错误"</span>, <span class="s">"失败"</span>, <span class="s">"抱歉"</span>, <span class="s">"无法"</span>]
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>any</span>(sig <span class=<span class="s">"k"</span>>in</span> last_tool_result <span class=<span class="s">"k"</span>>for</span> sig <span class=<span class="s">"k"</span>>in</span> error_signals)
+        <span class="k">return</span> <span class="b">any</span>(sig <span class="k">in</span> last_tool_result <span class="k">for</span> sig <span class="k">in</span> error_signals)
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_memgpt_workflow</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 MemGPT 的完整工作流。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  MemGPT 记忆架构演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_memgpt_workflow</span>():
+    <span class="s">"""演示 MemGPT 的完整工作流。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  MemGPT 记忆架构演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     agent = MemGPTAgent()
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>1</span>: 展示初始 Core Memory</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  🧠 初始 Core Memory:"</span>)
-    <span class=<span class="s">"k"</span>>for</span> key, value <span class=<span class="s">"k"</span>>in</span> agent.core_memory.items():
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{key}] {value}"</span>)
+    <span class="h"># Step 1: 展示初始 Core Memory</span>
+    <span class="b">print</span>(<span class="s">"\n  🧠 初始 Core Memory:"</span>)
+    <span class="k">for</span> key, value <span class="k">in</span> agent.core_memory.items():
+        <span class="b">print</span>(f<span class="s">"    [{key}] {value}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>2</span>: Agent 学习用户信息 → 写入 Core Memory</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  📝 用户告诉 Agent 自己的偏好"</span>)
+    <span class="h"># Step 2: Agent 学习用户信息 → 写入 Core Memory</span>
+    <span class="b">print</span>(<span class="s">"\n  📝 用户告诉 Agent 自己的偏好"</span>)
     agent.core_memory_append(<span class="s">"human"</span>, <span class="s">"喜欢简洁的回答风格"</span>)
     agent.core_memory_append(<span class="s">"human"</span>, <span class="s">"是Python开发者，经常需要代码帮助"</span>)
     agent.core_memory_replace(<span class="s">"persona"</span>, <span class="s">"Python 专家助手，回答简洁专业"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"    更新后的 Core Memory:"</span>)
-    <span class=<span class="s">"k"</span>>for</span> key, value <span class=<span class="s">"k"</span>>in</span> agent.core_memory.items():
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{key}] {value}"</span>)
+    <span class="b">print</span>(<span class="s">"    更新后的 Core Memory:"</span>)
+    <span class="k">for</span> key, value <span class="k">in</span> agent.core_memory.items():
+        <span class="b">print</span>(f<span class="s">"    [{key}] {value}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>3</span>: 模拟对话</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  💬 模拟对话"</span>)
+    <span class="h"># Step 3: 模拟对话</span>
+    <span class="b">print</span>(<span class="s">"\n  💬 模拟对话"</span>)
     dialogs = [
         (<span class="s">"user"</span>, <span class="s">"帮我写一个快速排序算法"</span>),
-        (<span class="s">"assistant"</span>, <span class="s">"好的，这是一个 Python 快速排序实现：\ndef quicksort(arr):\n    <span class="</span>k<span class="s">">if</span> <span class="</span>b<span class="s">">len</span>(arr) &lt;= <span class="</span>n<span class="s">">1</span>:\n        <span class="</span>k<span class="s">">return</span> arr\n    pivot = arr[<span class="</span>n<span class="s">">0</span>]\n    left = [x <span class="</span>k<span class="s">">for</span> x <span class="</span>k<span class="s">">in</span> arr[<span class="</span>n<span class="s">">1</span>:] <span class="</span>k<span class="s">">if</span> x &lt;= pivot]\n    right = [x <span class="</span>k<span class="s">">for</span> x <span class="</span>k<span class="s">">in</span> arr[<span class="</span>n<span class="s">">1</span>:] <span class="</span>k<span class="s">">if</span> x &gt; pivot]\n    <span class="</span>k<span class="s">">return</span> quicksort(left) + [pivot] + quicksort(right)"</span>),
+        (<span class="s">"assistant"</span>, <span class="s">"好的，这是一个 Python 快速排序实现：\ndef quicksort(arr):\n    if len(arr) &lt;= 1:\n        return arr\n    pivot = arr[0]\n    left = [x for x in arr[1:] if x &lt;= pivot]\n    right = [x for x in arr[1:] if x &gt; pivot]\n    return quicksort(left) + [pivot] + quicksort(right)"</span>),
         (<span class="s">"user"</span>, <span class="s">"谢谢！再帮我分析一下时间复杂度"</span>),
         (<span class="s">"assistant"</span>, <span class="s">"快速排序的平均时间复杂度是 O(n log n)，最坏情况是 O(n²)..."</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> role, content <span class=<span class="s">"k"</span>>in</span> dialogs:
+    <span class="k">for</span> role, content <span class="k">in</span> dialogs:
         agent.conversation.append({<span class="s">"role"</span>: role, <span class="s">"content"</span>: content})
 
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    当前对话数: {<span class="</span>b<span class="s">">len</span>(agent.conversation)}"</span>)
+    <span class="b">print</span>(f<span class="s">"    当前对话数: {len(agent.conversation)}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>4</span>: 写入归档记忆</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  📦 归档记忆"</span>)
+    <span class="h"># Step 4: 写入归档记忆</span>
+    <span class="b">print</span>(<span class="s">"\n  📦 归档记忆"</span>)
     agent.archival_memory_insert(
         <span class="s">"quicksort"</span>, <span class="s">"快速排序：O(n log n) 平均，O(n²) 最坏，非稳定排序"</span>
     )
     agent.archival_memory_insert(
-        <span class="s">"python_best_practice"</span>, <span class="s">"Python编码规范：PEP <span class="</span>n<span class="s">">8</span>, 类型注解, 单元测试"</span>
+        <span class="s">"python_best_practice"</span>, <span class="s">"Python编码规范：PEP 8, 类型注解, 单元测试"</span>
     )
     agent.archival_memory_insert(
         <span class="s">"user_preference"</span>, <span class="s">"用户偏好简洁代码，不喜欢过度注释"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    已存入 {<span class="</span>b<span class="s">">len</span>(agent.archival)} 条归档记忆"</span>)
+    <span class="b">print</span>(f<span class="s">"    已存入 {len(agent.archival)} 条归档记忆"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>5</span>: 搜索归档记忆</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  🔍 搜索归档记忆"</span>)
+    <span class="h"># Step 5: 搜索归档记忆</span>
+    <span class="b">print</span>(<span class="s">"\n  🔍 搜索归档记忆"</span>)
     result = agent.archival_memory_search(<span class="s">"排序"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    搜索「排序」→ {result}"</span>)
+    <span class="b">print</span>(f<span class="s">"    搜索「排序」→ {result}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>6</span>: 模拟对话压缩</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  🗜️ 对话压缩演示"</span>)
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟大量对话</span>
-    <span class=<span class="s">"k"</span>>for</span> i <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>50</span>):
+    <span class="h"># Step 6: 模拟对话压缩</span>
+    <span class="b">print</span>(<span class="s">"\n  🗜️ 对话压缩演示"</span>)
+    <span class="h"># 模拟大量对话</span>
+    <span class="k">for</span> i <span class="k">in</span> <span class="b">range</span>(<span class="n">50</span>):
         agent.conversation.append({
             <span class="s">"role"</span>: <span class="s">"user"</span>,
             <span class="s">"content"</span>: f<span class="s">"问题{i}：这是一条测试消息"</span>,
@@ -1042,86 +1042,86 @@ MemGPT v2 的创新（2025年）。
             <span class="s">"content"</span>: f<span class="s">"回答{i}：这是一条回复"</span>,
         })
 
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    压缩前: {<span class="</span>b<span class="s">">len</span>(agent.conversation)} 条消息"</span>)
+    <span class="b">print</span>(f<span class="s">"    压缩前: {len(agent.conversation)} 条消息"</span>)
     agent.compact_conversation()
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    压缩后: {<span class="</span>b<span class="s">">len</span>(agent.conversation)} 条消息"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    摘要: {agent.compacted_summary[:<span class="</span>n<span class="s">">100</span>]}..."</span>)
+    <span class="b">print</span>(f<span class="s">"    压缩后: {len(agent.conversation)} 条消息"</span>)
+    <span class="b">print</span>(f<span class="s">"    摘要: {agent.compacted_summary[:100]}..."</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>7</span>: Heartbeat 机制演示</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  💓 Heartbeat 机制演示"</span>)
+    <span class="h"># Step 7: Heartbeat 机制演示</span>
+    <span class="b">print</span>(<span class="s">"\n  💓 Heartbeat 机制演示"</span>)
     test_cases = [
-        (<span class="s">"查询成功：找到 <span class="</span>n<span class="s">">3</span> 条结果"</span>, <span class=<span class="s">"k"</span>>False</span>),
-        (<span class="s">"未找到相关数据，请更换搜索词"</span>, <span class=<span class="s">"k"</span>>True</span>),
-        (<span class="s">"工具调用失败：API 超时"</span>, <span class=<span class="s">"k"</span>>True</span>),
-        (<span class="s">"计算完成：结果为 <span class="</span>n<span class="s">">42</span>"</span>, <span class=<span class="s">"k"</span>>False</span>),
+        (<span class="s">"查询成功：找到 3 条结果"</span>, <span class="k">False</span>),
+        (<span class="s">"未找到相关数据，请更换搜索词"</span>, <span class="k">True</span>),
+        (<span class="s">"工具调用失败：API 超时"</span>, <span class="k">True</span>),
+        (<span class="s">"计算完成：结果为 42"</span>, <span class="k">False</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> result, expected_heartbeat <span class=<span class="s">"k"</span>>in</span> test_cases:
+    <span class="k">for</span> result, expected_heartbeat <span class="k">in</span> test_cases:
         needs_heartbeat = agent.heartbeat_should_continue(result)
-        status = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> needs_heartbeat == expected_heartbeat <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌"</span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {status} 「{result[:<span class="</span>n<span class="s">">25</span>]}...」→ 需要心跳: {needs_heartbeat}"</span>)
+        status = <span class="s">"✅"</span> <span class="k">if</span> needs_heartbeat == expected_heartbeat <span class="k">else</span> <span class="s">"❌"</span>
+        <span class="b">print</span>(f<span class="s">"    {status} 「{result[:25]}...」→ 需要心跳: {needs_heartbeat}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>8</span>: 展示 LLM 上下文</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  📋 发给 LLM 的上下文结构"</span>)
-    context = agent._build_context(max_recent=<span class=<span class="s">"n"</span>>3</span>)
-    <span class=<span class="s">"k"</span>>for</span> i, msg <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(context):
+    <span class="h"># Step 8: 展示 LLM 上下文</span>
+    <span class="b">print</span>(<span class="s">"\n  📋 发给 LLM 的上下文结构"</span>)
+    context = agent._build_context(max_recent=<span class="n">3</span>)
+    <span class="k">for</span> i, msg <span class="k">in</span> <span class="b">enumerate</span>(context):
         role = msg[<span class="s">"role"</span>]
-        content = msg[<span class="s">"content"</span>][:<span class=<span class="s">"n"</span>>80</span>].replace(<span class="s">"\n"</span>, <span class="s">" "</span>)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{i}] {role}: {content}..."</span>)
+        content = msg[<span class="s">"content"</span>][:<span class="n">80</span>].replace(<span class="s">"\n"</span>, <span class="s">" "</span>)
+        <span class="b">print</span>(f<span class="s">"    [{i}] {role}: {content}..."</span>)
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>16.7</span> 本章总结
+<span class="s">"""
+16.7 本章总结
 ━━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class=<span class="s">"n"</span>>1</span>. MemGPT = 把 LLM 当操作系统管理
+1. MemGPT = 把 LLM 当操作系统管理
    - Core Memory = RAM（上下文中，快速访问）
    - Recall Memory = 磁盘（对话历史全文，可检索）
    - Archival Memory = 归档（向量库 + 外部知识）
 
-<span class=<span class="s">"n"</span>>2</span>. Heartbeat 机制
+2. Heartbeat 机制
    - 工具调用后把控制权交还给 Agent
    - Agent 可以检查结果、发现错误、自动重试
    - 类似命令行的「命令提示符」
 
-<span class=<span class="s">"n"</span>>3</span>. Sleep-Time Compute (MemGPT v2)
+3. Sleep-Time Compute (MemGPT v2)
    - Agent 休眠时后台整理记忆
    - 提取重要信息、删除冗余、更新画像
 
-<span class=<span class="s">"n"</span>>4</span>. Letta Filesystem 的启示
+4. Letta Filesystem 的启示
    - 文件系统做记忆 = 简单 + 效果好
-   - LoCoMo <span class=<span class="s">"n"</span>>74.0</span>%（超过专用工具的 <span class=<span class="s">"n"</span>>68.5</span>%）
+   - LoCoMo 74.0%（超过专用工具的 68.5%）
    - Agent 不需要复杂的记忆工具，需要好用的工具
 
 面试速记：
-  <span class="s">"MemGPT 的核心创新是什么？"</span>
+  "MemGPT 的核心创新是什么？"
   → OS 级内存管理：Core Memory + Recall + Archival
   → 通过工具让 Agent 自己管理自己的记忆
   → Heartbeat 机制实现自我纠错
   → 「文件系统就是最好的记忆工具」
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第16章：MemGPT / Letta 记忆架构                        ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Core Memory · Heartbeat · Sleep-Time · Filesystem   ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第16章：MemGPT / Letta 记忆架构                        ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  Core Memory · Heartbeat · Sleep-Time · Filesystem   ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_memgpt_workflow()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ MemGPT 内存层次对应关系"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ MemGPT 内存层次对应关系"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     layers = [
         (<span class="s">"Core Memory"</span>, <span class="s">"RAM"</span>, <span class="s">"当前上下文 + 可编辑记忆块"</span>),
         (<span class="s">"Recall Memory"</span>, <span class="s">"磁盘"</span>, <span class="s">"完整对话历史，可搜索"</span>),
         (<span class="s">"Archival Memory"</span>, <span class="s">"归档"</span>, <span class="s">"向量数据库，外部知识"</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> mem, os, desc <span class=<span class="s">"k"</span>>in</span> layers:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {mem:18s} ↔ {os:6s} → {desc}"</span>)
+    <span class="k">for</span> mem, os, desc <span class="k">in</span> layers:
+        <span class="b">print</span>(f<span class="s">"  {mem:18s} ↔ {os:6s} → {desc}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第16章完成！"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第16章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_15_a2a/15_a2a_protocol.html" title="Google A2A 协议 — AgentCard·Task·Artifact">← 第15章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

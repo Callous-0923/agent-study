@@ -268,127 +268,127 @@ body {
       │←── event: task-complete ──────│</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>15.4 模拟 A2A Agent 生态系统</h2></div><div class="code-section"><details open><summary>💻 代码 (356 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> enum <span class=<span class="s">"k"</span>>import</span> Enum
+<h2>15.4 模拟 A2A Agent 生态系统</h2></div><div class="code-section"><details open><summary>💻 代码 (356 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> enum <span class="k">import</span> Enum
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>TaskState</span>(<span class=<span class="s">"b"</span>>str</span>, Enum):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"A2A 协议定义的任务状态。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">TaskState</span>(<span class="b">str</span>, Enum):
+    <span class="s">"""A2A 协议定义的任务状态。"""</span>
     PENDING = <span class="s">"pending"</span>
     WORKING = <span class="s">"working"</span>
-    INPUT_REQUIRED = <span class="s">"<span class="</span>b<span class="s">">input</span>-required"</span>
+    INPUT_REQUIRED = <span class="s">"input-required"</span>
     COMPLETED = <span class="s">"completed"</span>
     FAILED = <span class="s">"failed"</span>
     CANCELLED = <span class="s">"cancelled"</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>A2AAgentCard</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"A2A AgentCard —— Agent 的自我声明文件。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">A2AAgentCard</span>:
+    <span class="s">"""A2A AgentCard —— Agent 的自我声明文件。"""</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>, description: <span class=<span class="s">"b"</span>>str</span>,
-                 url: <span class=<span class="s">"b"</span>>str</span>, skills: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]):
-        <span class=<span class="s">"k"</span>>self</span>.name = name
-        <span class=<span class="s">"k"</span>>self</span>.description = description
-        <span class=<span class="s">"k"</span>>self</span>.url = url
-        <span class=<span class="s">"k"</span>>self</span>.skills = skills
-        <span class=<span class="s">"k"</span>>self</span>.capabilities = {
-            <span class="s">"streaming"</span>: <span class=<span class="s">"k"</span>>True</span>,
-            <span class="s">"pushNotifications"</span>: <span class=<span class="s">"k"</span>>False</span>,
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, name: <span class="b">str</span>, description: <span class="b">str</span>,
+                 url: <span class="b">str</span>, skills: <span class="b">list</span>[<span class="b">dict</span>]):
+        <span class="k">self</span>.name = name
+        <span class="k">self</span>.description = description
+        <span class="k">self</span>.url = url
+        <span class="k">self</span>.skills = skills
+        <span class="k">self</span>.capabilities = {
+            <span class="s">"streaming"</span>: <span class="k">True</span>,
+            <span class="s">"pushNotifications"</span>: <span class="k">False</span>,
         }
-        <span class=<span class="s">"k"</span>>self</span>.defaultInputModes = [<span class="s">"text"</span>]
-        <span class=<span class="s">"k"</span>>self</span>.defaultOutputModes = [<span class="s">"text"</span>]
-        <span class=<span class="s">"k"</span>>self</span>.version = <span class="s">"<span class="</span>n<span class="s">">0.2</span>.<span class="</span>n<span class="s">">6</span>"</span>
+        <span class="k">self</span>.defaultInputModes = [<span class="s">"text"</span>]
+        <span class="k">self</span>.defaultOutputModes = [<span class="s">"text"</span>]
+        <span class="k">self</span>.version = <span class="s">"0.2.6"</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>to_dict</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"序列化为标准 AgentCard JSON。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> {
-            <span class="s">"name"</span>: <span class=<span class="s">"k"</span>>self</span>.name,
-            <span class="s">"description"</span>: <span class=<span class="s">"k"</span>>self</span>.description,
-            <span class="s">"url"</span>: <span class=<span class="s">"k"</span>>self</span>.url,
-            <span class="s">"version"</span>: <span class=<span class="s">"k"</span>>self</span>.version,
-            <span class="s">"capabilities"</span>: <span class=<span class="s">"k"</span>>self</span>.capabilities,
-            <span class="s">"skills"</span>: <span class=<span class="s">"k"</span>>self</span>.skills,
-            <span class="s">"defaultInputModes"</span>: <span class=<span class="s">"k"</span>>self</span>.defaultInputModes,
-            <span class="s">"defaultOutputModes"</span>: <span class=<span class="s">"k"</span>>self</span>.defaultOutputModes,
+    <span class="k">def</span> <span class="f">to_dict</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""序列化为标准 AgentCard JSON。"""</span>
+        <span class="k">return</span> {
+            <span class="s">"name"</span>: <span class="k">self</span>.name,
+            <span class="s">"description"</span>: <span class="k">self</span>.description,
+            <span class="s">"url"</span>: <span class="k">self</span>.url,
+            <span class="s">"version"</span>: <span class="k">self</span>.version,
+            <span class="s">"capabilities"</span>: <span class="k">self</span>.capabilities,
+            <span class="s">"skills"</span>: <span class="k">self</span>.skills,
+            <span class="s">"defaultInputModes"</span>: <span class="k">self</span>.defaultInputModes,
+            <span class="s">"defaultOutputModes"</span>: <span class="k">self</span>.defaultOutputModes,
         }
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>A2ATask</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"A2A Task —— 协议的工作单元。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">A2ATask</span>:
+    <span class="s">"""A2A Task —— 协议的工作单元。"""</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, task_id: <span class=<span class="s">"b"</span>>str</span>, session_id: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.<span class=<span class="s">"b"</span>>id</span> = task_id
-        <span class=<span class="s">"k"</span>>self</span>.session_id = session_id
-        <span class=<span class="s">"k"</span>>self</span>.state = TaskState.PENDING
-        <span class=<span class="s">"k"</span>>self</span>.status_message = <span class="s">"任务已创建，等待处理"</span>
-        <span class=<span class="s">"k"</span>>self</span>.artifacts = []
-        <span class=<span class="s">"k"</span>>self</span>.history = []
-        <span class=<span class="s">"k"</span>>self</span>._add_history(<span class="s">"created"</span>, f<span class="s">"Task {task_id} created"</span>)
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, task_id: <span class="b">str</span>, session_id: <span class="b">str</span>):
+        <span class="k">self</span>.<span class="b">id</span> = task_id
+        <span class="k">self</span>.session_id = session_id
+        <span class="k">self</span>.state = TaskState.PENDING
+        <span class="k">self</span>.status_message = <span class="s">"任务已创建，等待处理"</span>
+        <span class="k">self</span>.artifacts = []
+        <span class="k">self</span>.history = []
+        <span class="k">self</span>._add_history(<span class="s">"created"</span>, f<span class="s">"Task {task_id} created"</span>)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>start</span>(<span class=<span class="s">"k"</span>>self</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"开始执行任务。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.state = TaskState.WORKING
-        <span class=<span class="s">"k"</span>>self</span>.status_message = <span class="s">"任务执行中..."</span>
-        <span class=<span class="s">"k"</span>>self</span>._add_history(<span class="s">"started"</span>, <span class="s">"Task execution started"</span>)
+    <span class="k">def</span> <span class="f">start</span>(<span class="k">self</span>):
+        <span class="s">"""开始执行任务。"""</span>
+        <span class="k">self</span>.state = TaskState.WORKING
+        <span class="k">self</span>.status_message = <span class="s">"任务执行中..."</span>
+        <span class="k">self</span>._add_history(<span class="s">"started"</span>, <span class="s">"Task execution started"</span>)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>complete</span>(<span class=<span class="s">"k"</span>>self</span>, artifacts: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"完成任务。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.state = TaskState.COMPLETED
-        <span class=<span class="s">"k"</span>>self</span>.status_message = <span class="s">"任务已完成"</span>
-        <span class=<span class="s">"k"</span>>self</span>.artifacts = artifacts
-        <span class=<span class="s">"k"</span>>self</span>._add_history(<span class="s">"completed"</span>, f<span class="s">"Produced {<span class="</span>b<span class="s">">len</span>(artifacts)} artifacts"</span>)
+    <span class="k">def</span> <span class="f">complete</span>(<span class="k">self</span>, artifacts: <span class="b">list</span>[<span class="b">dict</span>]):
+        <span class="s">"""完成任务。"""</span>
+        <span class="k">self</span>.state = TaskState.COMPLETED
+        <span class="k">self</span>.status_message = <span class="s">"任务已完成"</span>
+        <span class="k">self</span>.artifacts = artifacts
+        <span class="k">self</span>._add_history(<span class="s">"completed"</span>, f<span class="s">"Produced {len(artifacts)} artifacts"</span>)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>fail</span>(<span class=<span class="s">"k"</span>>self</span>, reason: <span class=<span class="s">"b"</span>>str</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"任务失败。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.state = TaskState.FAILED
-        <span class=<span class="s">"k"</span>>self</span>.status_message = reason
-        <span class=<span class="s">"k"</span>>self</span>._add_history(<span class="s">"failed"</span>, reason)
+    <span class="k">def</span> <span class="f">fail</span>(<span class="k">self</span>, reason: <span class="b">str</span>):
+        <span class="s">"""任务失败。"""</span>
+        <span class="k">self</span>.state = TaskState.FAILED
+        <span class="k">self</span>.status_message = reason
+        <span class="k">self</span>._add_history(<span class="s">"failed"</span>, reason)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>to_dict</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"序列化为标准 Task JSON。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> {
-            <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"k"</span>>self</span>.<span class=<span class="s">"b"</span>>id</span>,
-            <span class="s">"sessionId"</span>: <span class=<span class="s">"k"</span>>self</span>.session_id,
+    <span class="k">def</span> <span class="f">to_dict</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""序列化为标准 Task JSON。"""</span>
+        <span class="k">return</span> {
+            <span class="s">"id"</span>: <span class="k">self</span>.<span class="b">id</span>,
+            <span class="s">"sessionId"</span>: <span class="k">self</span>.session_id,
             <span class="s">"status"</span>: {
-                <span class="s">"state"</span>: <span class=<span class="s">"k"</span>>self</span>.state.value,
-                <span class="s">"message"</span>: <span class=<span class="s">"k"</span>>self</span>.status_message,
+                <span class="s">"state"</span>: <span class="k">self</span>.state.value,
+                <span class="s">"message"</span>: <span class="k">self</span>.status_message,
             },
-            <span class="s">"artifacts"</span>: <span class=<span class="s">"k"</span>>self</span>.artifacts,
-            <span class="s">"history"</span>: <span class=<span class="s">"k"</span>>self</span>.history,
+            <span class="s">"artifacts"</span>: <span class="k">self</span>.artifacts,
+            <span class="s">"history"</span>: <span class="k">self</span>.history,
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_add_history</span>(<span class=<span class="s">"k"</span>>self</span>, event: <span class=<span class="s">"b"</span>>str</span>, detail: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.history.append({
+    <span class="k">def</span> <span class="f">_add_history</span>(<span class="k">self</span>, event: <span class="b">str</span>, detail: <span class="b">str</span>):
+        <span class="k">self</span>.history.append({
             <span class="s">"timestamp"</span>: time.time(),
             <span class="s">"event"</span>: event,
             <span class="s">"detail"</span>: detail,
         })
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>SimulatedA2AServer</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 A2A Server —— 演示 Agent-to-Agent 通信。
+<span class="k">class</span> <span class="f">SimulatedA2AServer</span>:
+    <span class="s">"""模拟 A2A Server —— 演示 Agent-to-Agent 通信。
 
     完整的 A2A Server 实现：
-      <span class=<span class="s">"n"</span>>1</span>. 暴露 AgentCard（GET /.well-known/agent.json）
-      <span class=<span class="s">"n"</span>>2</span>. 接收任务（POST /a2a tasks/send）
-      <span class=<span class="s">"n"</span>>3</span>. 查询任务状态（POST /a2a tasks/get）
-      <span class=<span class="s">"n"</span>>4</span>. 取消任务（POST /a2a tasks/cancel）
-    <span class="s">""</span>"</span>
+      1. 暴露 AgentCard（GET /.well-known/agent.json）
+      2. 接收任务（POST /a2a tasks/send）
+      3. 查询任务状态（POST /a2a tasks/get）
+      4. 取消任务（POST /a2a tasks/cancel）
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, agent_card: A2AAgentCard):
-        <span class=<span class="s">"k"</span>>self</span>.agent_card = agent_card
-        <span class=<span class="s">"k"</span>>self</span>.tasks = {}
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, agent_card: A2AAgentCard):
+        <span class="k">self</span>.agent_card = agent_card
+        <span class="k">self</span>.tasks = {}
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_agent_card</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"返回 AgentCard（Agent 发现阶段）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.agent_card.to_dict()
+    <span class="k">def</span> <span class="f">get_agent_card</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""返回 AgentCard（Agent 发现阶段）。"""</span>
+        <span class="k">return</span> <span class="k">self</span>.agent_card.to_dict()
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>send_task</span>(<span class=<span class="s">"k"</span>>self</span>, message: <span class=<span class="s">"b"</span>>str</span>,
-                  session_id: <span class=<span class="s">"b"</span>>str</span> = <span class=<span class="s">"k"</span>>None</span>) -&gt; A2ATask:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"接收并开始执行一个任务。
+    <span class="k">def</span> <span class="f">send_task</span>(<span class="k">self</span>, message: <span class="b">str</span>,
+                  session_id: <span class="b">str</span> = <span class="k">None</span>) -&gt; A2ATask:
+        <span class="s">"""接收并开始执行一个任务。
 
         Args:
             message: 任务描述。
@@ -396,112 +396,112 @@ body {
 
         Returns:
             创建的 Task 对象。
-        <span class="s">""</span>"</span>
+        """</span>
         task_id = hashlib.md5(
             f<span class="s">"{message}-{time.time()}"</span>.encode()
-        ).hexdigest()[:<span class=<span class="s">"n"</span>>16</span>]
-        <span class=<span class="s">"k"</span>>if</span> session_id <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+        ).hexdigest()[:<span class="n">16</span>]
+        <span class="k">if</span> session_id <span class="k">is</span> <span class="k">None</span>:
             session_id = hashlib.md5(
                 f<span class="s">"session-{time.time()}"</span>.encode()
-            ).hexdigest()[:<span class=<span class="s">"n"</span>>16</span>]
+            ).hexdigest()[:<span class="n">16</span>]
 
         task = A2ATask(task_id, session_id)
-        <span class=<span class="s">"k"</span>>self</span>.tasks[task_id] = task
+        <span class="k">self</span>.tasks[task_id] = task
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟任务执行</span>
+        <span class="h"># 模拟任务执行</span>
         task.start()
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 找到匹配的 skill 并「执行」</span>
+        <span class="h"># 找到匹配的 skill 并「执行」</span>
         result_artifact = {
             <span class="s">"artifactId"</span>: f<span class="s">"artifact_{task_id}"</span>,
-            <span class="s">"name"</span>: f<span class="s">"结果_{task_id[:<span class="</span>n<span class="s">">8</span>]}"</span>,
+            <span class="s">"name"</span>: f<span class="s">"结果_{task_id[:8]}"</span>,
             <span class="s">"mimeType"</span>: <span class="s">"application/json"</span>,
             <span class="s">"parts"</span>: [{
-                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"text"</span>,
+                <span class="s">"type"</span>: <span class="s">"text"</span>,
                 <span class="s">"text"</span>: json.dumps({
-                    <span class="s">"summary"</span>: f<span class="s">"已完成任务: {message[:<span class="</span>n<span class="s">">50</span>]}..."</span>,
-                    <span class="s">"agent"</span>: <span class=<span class="s">"k"</span>>self</span>.agent_card.name,
+                    <span class="s">"summary"</span>: f<span class="s">"已完成任务: {message[:50]}..."</span>,
+                    <span class="s">"agent"</span>: <span class="k">self</span>.agent_card.name,
                     <span class="s">"timestamp"</span>: time.time(),
-                }, ensure_ascii=<span class=<span class="s">"k"</span>>False</span>),
+                }, ensure_ascii=<span class="k">False</span>),
             }],
         }
         task.complete([result_artifact])
 
-        <span class=<span class="s">"k"</span>>return</span> task
+        <span class="k">return</span> task
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_task</span>(<span class=<span class="s">"k"</span>>self</span>, task_id: <span class=<span class="s">"b"</span>>str</span>) -&gt; Optional[A2ATask]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"查询任务状态。
+    <span class="k">def</span> <span class="f">get_task</span>(<span class="k">self</span>, task_id: <span class="b">str</span>) -&gt; Optional[A2ATask]:
+        <span class="s">"""查询任务状态。
 
         Args:
             task_id: 任务 ID。
 
         Returns:
-            Task 对象，不存在返回 <span class=<span class="s">"k"</span>>None</span>。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.tasks.get(task_id)
+            Task 对象，不存在返回 None。
+        """</span>
+        <span class="k">return</span> <span class="k">self</span>.tasks.get(task_id)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>cancel_task</span>(<span class=<span class="s">"k"</span>>self</span>, task_id: <span class=<span class="s">"b"</span>>str</span>) -&gt; bool:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"取消任务。
+    <span class="k">def</span> <span class="f">cancel_task</span>(<span class="k">self</span>, task_id: <span class="b">str</span>) -&gt; bool:
+        <span class="s">"""取消任务。
 
         Args:
             task_id: 任务 ID。
 
         Returns:
             是否成功取消。
-        <span class="s">""</span>"</span>
-        task = <span class=<span class="s">"k"</span>>self</span>.tasks.get(task_id)
-        <span class=<span class="s">"k"</span>>if</span> task <span class=<span class="s">"k"</span>>and</span> task.state <span class=<span class="s">"k"</span>>in</span> (TaskState.PENDING, TaskState.WORKING):
+        """</span>
+        task = <span class="k">self</span>.tasks.get(task_id)
+        <span class="k">if</span> task <span class="k">and</span> task.state <span class="k">in</span> (TaskState.PENDING, TaskState.WORKING):
             task.state = TaskState.CANCELLED
             task.status_message = <span class="s">"任务已被取消"</span>
-            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>True</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>False</span>
+            <span class="k">return</span> <span class="k">True</span>
+        <span class="k">return</span> <span class="k">False</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>A2AClient</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 A2A Client —— 作为「用户 Agent」去调用其他 Agent。
+<span class="k">class</span> <span class="f">A2AClient</span>:
+    <span class="s">"""模拟 A2A Client —— 作为「用户 Agent」去调用其他 Agent。
 
     代表 Agent 完成：
-      <span class=<span class="s">"n"</span>>1</span>. 发现远程 Agent（获取 AgentCard）
-      <span class=<span class="s">"n"</span>>2</span>. 评估 skills（是否匹配任务需求）
-      <span class=<span class="s">"n"</span>>3</span>. 提交任务 + 获取结果
-    <span class="s">""</span>"</span>
+      1. 发现远程 Agent（获取 AgentCard）
+      2. 评估 skills（是否匹配任务需求）
+      3. 提交任务 + 获取结果
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.name = name
-        <span class=<span class="s">"k"</span>>self</span>.known_agents = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># {url: AgentCard}</span>
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, name: <span class="b">str</span>):
+        <span class="k">self</span>.name = name
+        <span class="k">self</span>.known_agents = {}  <span class="h"># {url: AgentCard}</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>discover</span>(<span class=<span class="s">"k"</span>>self</span>, server: SimulatedA2AServer) -&gt; A2AAgentCard:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"发现一个 A2A Agent —— 获取其 AgentCard。
+    <span class="k">def</span> <span class="f">discover</span>(<span class="k">self</span>, server: SimulatedA2AServer) -&gt; A2AAgentCard:
+        <span class="s">"""发现一个 A2A Agent —— 获取其 AgentCard。
 
         Args:
             server: A2A Server 实例。
 
         Returns:
             AgentCard 字典。
-        <span class="s">""</span>"</span>
+        """</span>
         card = server.get_agent_card()
-        <span class=<span class="s">"k"</span>>self</span>.known_agents[card[<span class="s">"url"</span>]] = card
-        <span class=<span class="s">"k"</span>>return</span> card
+        <span class="k">self</span>.known_agents[card[<span class="s">"url"</span>]] = card
+        <span class="k">return</span> card
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>find_agent_for_skill</span>(<span class=<span class="s">"k"</span>>self</span>, skill_keyword: <span class=<span class="s">"b"</span>>str</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"根据需求关键词找到匹配的 Agent。
+    <span class="k">def</span> <span class="f">find_agent_for_skill</span>(<span class="k">self</span>, skill_keyword: <span class="b">str</span>) -&gt; Optional[<span class="b">dict</span>]:
+        <span class="s">"""根据需求关键词找到匹配的 Agent。
 
         Args:
             skill_keyword: 技能关键词。
 
         Returns:
-            匹配的 AgentCard，未找到返回 <span class=<span class="s">"k"</span>>None</span>。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>for</span> _, card <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.known_agents.items():
-            <span class=<span class="s">"k"</span>>for</span> skill <span class=<span class="s">"k"</span>>in</span> card.get(<span class="s">"skills"</span>, []):
-                <span class=<span class="s">"k"</span>>if</span> skill_keyword <span class=<span class="s">"k"</span>>in</span> skill.get(<span class="s">"name"</span>, <span class="s">""</span>).lower() <span class=<span class="s">"k"</span>>or</span> \
-                   skill_keyword <span class=<span class="s">"k"</span>>in</span> skill.get(<span class="s">"description"</span>, <span class="s">""</span>).lower():
-                    <span class=<span class="s">"k"</span>>return</span> card
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>None</span>
+            匹配的 AgentCard，未找到返回 None。
+        """</span>
+        <span class="k">for</span> _, card <span class="k">in</span> <span class="k">self</span>.known_agents.items():
+            <span class="k">for</span> skill <span class="k">in</span> card.get(<span class="s">"skills"</span>, []):
+                <span class="k">if</span> skill_keyword <span class="k">in</span> skill.get(<span class="s">"name"</span>, <span class="s">""</span>).lower() <span class="k">or</span> \
+                   skill_keyword <span class="k">in</span> skill.get(<span class="s">"description"</span>, <span class="s">""</span>).lower():
+                    <span class="k">return</span> card
+        <span class="k">return</span> <span class="k">None</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>delegate_task</span>(<span class=<span class="s">"k"</span>>self</span>, server: SimulatedA2AServer,
-                      message: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"将任务委派给远程 Agent。
+    <span class="k">def</span> <span class="f">delegate_task</span>(<span class="k">self</span>, server: SimulatedA2AServer,
+                      message: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""将任务委派给远程 Agent。
 
         完整的 A2A 委派流程：
           Discover → Evaluate → Send → Wait → Receive
@@ -512,48 +512,48 @@ body {
 
         Returns:
             包含任务结果的字典。
-        <span class="s">""</span>"</span>
+        """</span>
         result = {}
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>1</span>: 发现</span>
-        card = <span class=<span class="s">"k"</span>>self</span>.discover(server)
+        <span class="h"># Step 1: 发现</span>
+        card = <span class="k">self</span>.discover(server)
         result[<span class="s">"agent"</span>] = card[<span class="s">"name"</span>]
-        result[<span class="s">"skills"</span>] = [s[<span class="s">"name"</span>] <span class=<span class="s">"k"</span>>for</span> s <span class=<span class="s">"k"</span>>in</span> card[<span class="s">"skills"</span>]]
+        result[<span class="s">"skills"</span>] = [s[<span class="s">"name"</span>] <span class="k">for</span> s <span class="k">in</span> card[<span class="s">"skills"</span>]]
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>2</span>: 提交任务</span>
+        <span class="h"># Step 2: 提交任务</span>
         task = server.send_task(message)
-        result[<span class="s">"task_id"</span>] = task.<span class=<span class="s">"b"</span>>id</span>
+        result[<span class="s">"task_id"</span>] = task.<span class="b">id</span>
         result[<span class="s">"task_state"</span>] = task.state.value
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>3</span>: 获取结果</span>
-        final_task = server.get_task(task.<span class=<span class="s">"b"</span>>id</span>)
+        <span class="h"># Step 3: 获取结果</span>
+        final_task = server.get_task(task.<span class="b">id</span>)
         result[<span class="s">"final_state"</span>] = final_task.state.value
         result[<span class="s">"artifacts"</span>] = final_task.artifacts
 
-        <span class=<span class="s">"k"</span>>return</span> result
+        <span class="k">return</span> result
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_a2a_ecosystem</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示一个完整的 A2A 多 Agent 协作场景。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  A2A 多 Agent 协作演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_a2a_ecosystem</span>():
+    <span class="s">"""演示一个完整的 A2A 多 Agent 协作场景。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  A2A 多 Agent 协作演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 创建 Agent 生态</span>
+    <span class="h"># 创建 Agent 生态</span>
     tax_agent = SimulatedA2AServer(A2AAgentCard(
         name=<span class="s">"税务计算Agent"</span>,
         description=<span class="s">"支持中美跨境税务计算和合规分析"</span>,
         url=<span class="s">"https://tax.example.com"</span>,
         skills=[
             {
-                <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class="s">"tax_calculation"</span>,
+                <span class="s">"id"</span>: <span class="s">"tax_calculation"</span>,
                 <span class="s">"name"</span>: <span class="s">"税务计算"</span>,
                 <span class="s">"description"</span>: <span class="s">"计算个人所得税、企业所得税"</span>,
                 <span class="s">"inputModes"</span>: [<span class="s">"text"</span>],
                 <span class="s">"outputModes"</span>: [<span class="s">"text"</span>],
             },
             {
-                <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class="s">"tax_compliance"</span>,
+                <span class="s">"id"</span>: <span class="s">"tax_compliance"</span>,
                 <span class="s">"name"</span>: <span class="s">"合规分析"</span>,
                 <span class="s">"description"</span>: <span class="s">"分析税务合规风险"</span>,
                 <span class="s">"inputModes"</span>: [<span class="s">"text"</span>],
@@ -568,14 +568,14 @@ body {
         url=<span class="s">"https://flight.example.com"</span>,
         skills=[
             {
-                <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class="s">"flight_search"</span>,
+                <span class="s">"id"</span>: <span class="s">"flight_search"</span>,
                 <span class="s">"name"</span>: <span class="s">"航班搜索"</span>,
                 <span class="s">"description"</span>: <span class="s">"搜索可用的航班"</span>,
                 <span class="s">"inputModes"</span>: [<span class="s">"text"</span>],
                 <span class="s">"outputModes"</span>: [<span class="s">"text"</span>],
             },
             {
-                <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class="s">"flight_booking"</span>,
+                <span class="s">"id"</span>: <span class="s">"flight_booking"</span>,
                 <span class="s">"name"</span>: <span class="s">"航班预订"</span>,
                 <span class="s">"description"</span>: <span class="s">"预订机票"</span>,
                 <span class="s">"inputModes"</span>: [<span class="s">"text"</span>],
@@ -584,46 +584,46 @@ body {
         ],
     ))
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 用户 Agent（协调者）</span>
+    <span class="h"># 用户 Agent（协调者）</span>
     user_agent = A2AClient(<span class="s">"个人助理Agent"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 场景：用户需要出差</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  🎯 场景：用户需要去北京出差，请安排行程"</span>)
+    <span class="h"># 场景：用户需要出差</span>
+    <span class="b">print</span>(<span class="s">"\n  🎯 场景：用户需要去北京出差，请安排行程"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 子任务 <span class=<span class="s">"n"</span>>1</span>：税务相关查询</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── 子任务 <span class="</span>n<span class="s">">1</span>：税务查询 ──"</span>)
+    <span class="h"># 子任务 1：税务相关查询</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 子任务 1：税务查询 ──"</span>)
     tax_card = user_agent.discover(tax_agent)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  发现 Agent: {tax_card[<span class='s'>'name'</span>]}"</span>)
-    <span class=<span class="s">"k"</span>>for</span> skill <span class=<span class="s">"k"</span>>in</span> tax_card[<span class="s">"skills"</span>]:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    技能: {skill[<span class='s'>'name'</span>]} - {skill[<span class='s'>'description'</span>]}"</span>)
+    <span class="b">print</span>(f<span class="s">"  发现 Agent: {tax_card['name']}"</span>)
+    <span class="k">for</span> skill <span class="k">in</span> tax_card[<span class="s">"skills"</span>]:
+        <span class="b">print</span>(f<span class="s">"    技能: {skill['name']} - {skill['description']}"</span>)
 
     tax_result = user_agent.delegate_task(
         tax_agent, <span class="s">"计算2025年出差费用的税务抵扣"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  任务状态: {tax_result[<span class='s'>'task_state'</span>]} → {tax_result[<span class='s'>'final_state'</span>]}"</span>)
-    artifact_text = tax_result[<span class="s">"artifacts"</span>][<span class=<span class="s">"n"</span>>0</span>][<span class="s">"parts"</span>][<span class=<span class="s">"n"</span>>0</span>][<span class="s">"text"</span>]
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  结果: {json.loads(artifact_text)[<span class='s'>'summary'</span>]}"</span>)
+    <span class="b">print</span>(f<span class="s">"  任务状态: {tax_result['task_state']} → {tax_result['final_state']}"</span>)
+    artifact_text = tax_result[<span class="s">"artifacts"</span>][<span class="n">0</span>][<span class="s">"parts"</span>][<span class="n">0</span>][<span class="s">"text"</span>]
+    <span class="b">print</span>(f<span class="s">"  结果: {json.loads(artifact_text)['summary']}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 子任务 <span class=<span class="s">"n"</span>>2</span>：预订机票</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── 子任务 <span class="</span>n<span class="s">">2</span>：预订机票 ──"</span>)
+    <span class="h"># 子任务 2：预订机票</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 子任务 2：预订机票 ──"</span>)
     flight_card = user_agent.discover(flight_agent)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  发现 Agent: {flight_card[<span class='s'>'name'</span>]}"</span>)
-    <span class=<span class="s">"k"</span>>for</span> skill <span class=<span class="s">"k"</span>>in</span> flight_card[<span class="s">"skills"</span>]:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    技能: {skill[<span class='s'>'name'</span>]} - {skill[<span class='s'>'description'</span>]}"</span>)
+    <span class="b">print</span>(f<span class="s">"  发现 Agent: {flight_card['name']}"</span>)
+    <span class="k">for</span> skill <span class="k">in</span> flight_card[<span class="s">"skills"</span>]:
+        <span class="b">print</span>(f<span class="s">"    技能: {skill['name']} - {skill['description']}"</span>)
 
     flight_result = user_agent.delegate_task(
         flight_agent, <span class="s">"预订2026年5月15日从上海到北京的机票"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  任务状态: {flight_result[<span class='s'>'task_state'</span>]} → {flight_result[<span class='s'>'final_state'</span>]}"</span>)
-    artifact_text = flight_result[<span class="s">"artifacts"</span>][<span class=<span class="s">"n"</span>>0</span>][<span class="s">"parts"</span>][<span class=<span class="s">"n"</span>>0</span>][<span class="s">"text"</span>]
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  结果: {json.loads(artifact_text)[<span class='s'>'summary'</span>]}"</span>)
+    <span class="b">print</span>(f<span class="s">"  任务状态: {flight_result['task_state']} → {flight_result['final_state']}"</span>)
+    artifact_text = flight_result[<span class="s">"artifacts"</span>][<span class="n">0</span>][<span class="s">"parts"</span>][<span class="n">0</span>][<span class="s">"text"</span>]
+    <span class="b">print</span>(f<span class="s">"  结果: {json.loads(artifact_text)['summary']}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 展示 Agent 发现注册表</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── 已知 Agent 注册表 ──"</span>)
-    <span class=<span class="s">"k"</span>>for</span> url, card <span class=<span class="s">"k"</span>>in</span> user_agent.known_agents.items():
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  📡 {card[<span class='s'>'name'</span>]} @ {url}"</span>)
-        <span class=<span class="s">"k"</span>>for</span> s <span class=<span class="s">"k"</span>>in</span> card[<span class="s">"skills"</span>]:
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"      └─ {s[<span class='s'>'name'</span>]}"</span>)</pre></div></details></div><div class="lecture"><h2>15.5 A2A vs MCP 配合：完整的 Agent 协议栈</h2>
+    <span class="h"># 展示 Agent 发现注册表</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 已知 Agent 注册表 ──"</span>)
+    <span class="k">for</span> url, card <span class="k">in</span> user_agent.known_agents.items():
+        <span class="b">print</span>(f<span class="s">"  📡 {card['name']} @ {url}"</span>)
+        <span class="k">for</span> s <span class="k">in</span> card[<span class="s">"skills"</span>]:
+            <span class="b">print</span>(f<span class="s">"      └─ {s['name']}"</span>)</pre></div></details></div><div class="lecture"><h2>15.5 A2A vs MCP 配合：完整的 Agent 协议栈</h2>
 <p>&nbsp;</p>
 <p>将它们组合起来：</p>
 <p>&nbsp;</p>
@@ -691,43 +691,43 @@ body {
 <p>"A2A 是怎么工作的？"</p>
 <p>→ AgentCard 声明能力 → Client 按需发现 → Task 委派</p>
 <p>→ SSE/轮询跟踪进度 → 获取 Artifact</p>
-<p>→ MCP 管工具，A2A 管 Agent 间协作</p></div><div class="code-section"><details open><summary>💻 代码 (28 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> enum <span class=<span class="s">"k"</span>>import</span> Enum
+<p>→ MCP 管工具，A2A 管 Agent 间协作</p></div><div class="code-section"><details open><summary>💻 代码 (28 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> enum <span class="k">import</span> Enum
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第15章：Google A2A 协议深度剖析                        ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  AgentCard · Task · Artifact · Multi-Agent协作       ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第15章：Google A2A 协议深度剖析                        ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  AgentCard · Task · Artifact · Multi-Agent协作       ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_a2a_ecosystem()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ A2A vs MCP 互补关系"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ A2A vs MCP 互补关系"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     pairs = [
-        (<span class="s">"MCP"</span>, <span class="s">"Agent ↔ 工具/数据"</span>, <span class="s">"Anthropic <span class="</span>n<span class="s">">2024.11</span>"</span>),
-        (<span class="s">"A2A"</span>, <span class="s">"Agent ↔ Agent"</span>, <span class="s">"Google <span class="</span>n<span class="s">">2025.04</span>"</span>),
+        (<span class="s">"MCP"</span>, <span class="s">"Agent ↔ 工具/数据"</span>, <span class="s">"Anthropic 2024.11"</span>),
+        (<span class="s">"A2A"</span>, <span class="s">"Agent ↔ Agent"</span>, <span class="s">"Google 2025.04"</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> name, purpose, source <span class=<span class="s">"k"</span>>in</span> pairs:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {name}: {purpose:30s} ({source})"</span>)
+    <span class="k">for</span> name, purpose, source <span class="k">in</span> pairs:
+        <span class="b">print</span>(f<span class="s">"  {name}: {purpose:30s} ({source})"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ A2A Task 生命周期"</span>)
-    <span class=<span class="s">"k"</span>>for</span> state <span class=<span class="s">"k"</span>>in</span> TaskState:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {state.value}"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ A2A Task 生命周期"</span>)
+    <span class="k">for</span> state <span class="k">in</span> TaskState:
+        <span class="b">print</span>(f<span class="s">"  {state.value}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第15章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (603 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+    <span class="b">print</span>(<span class="s">"\n✅ 第15章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (603 行)</summary><div class="code-block"><pre><span class="s">"""
 第15章：Google A2A 协议 —— Agent 之间的「世界语」
 ====================================================
 
 📌 本章目标：
-  <span class=<span class="s">"n"</span>>1</span>. 深入理解 A2A (Agent-to-Agent) 协议的设计哲学
-  <span class=<span class="s">"n"</span>>2</span>. 掌握 AgentCard / Task / Artifact 三大核心概念
-  <span class=<span class="s">"n"</span>>3</span>. 理解 A2A 和 MCP 的分工关系（面试高频！）
-  <span class=<span class="s">"n"</span>>4</span>. 体验完整的 Agent 发现→协商→执行流程
-  <span class=<span class="s">"n"</span>>5</span>. 了解 Multi-Agent 协作的真实架构模式
+  1. 深入理解 A2A (Agent-to-Agent) 协议的设计哲学
+  2. 掌握 AgentCard / Task / Artifact 三大核心概念
+  3. 理解 A2A 和 MCP 的分工关系（面试高频！）
+  4. 体验完整的 Agent 发现→协商→执行流程
+  5. 了解 Multi-Agent 协作的真实架构模式
 
 📌 面试高频点：
   - A2A 和 MCP 分别解决什么问题？怎么配合使用？
@@ -737,11 +737,11 @@ body {
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Google 于 2025年4月9日发布 A2A 协议
-联合 <span class=<span class="s">"n"</span>>50</span>+ 企业：Salesforce、SAP、MongoDB、LangChain...
+联合 50+ 企业：Salesforce、SAP、MongoDB、LangChain...
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-<span class=<span class="s">"n"</span>>15.1</span> A2A 解决了什么核心问题？
+15.1 A2A 解决了什么核心问题？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 MCP 解决：「Agent 怎么和工具/数据库/API 交互？」
@@ -757,100 +757,100 @@ A2A 解决：「Agent 怎么和其他 Agent 交互？」
   │     维度      │        MCP           │        A2A           │
   ├──────────────┼─────────────────────┼─────────────────────┤
   │ 解决什么      │ Agent ↔ 工具/数据     │ Agent ↔ Agent       │
-  │ 发布方        │ Anthropic (<span class=<span class="s">"n"</span>>2024.11</span>)  │ Google (<span class=<span class="s">"n"</span>>2025.04</span>)    │
+  │ 发布方        │ Anthropic (2024.11)  │ Google (2025.04)    │
   │ 架构          │ Client-Host-Server   │ Client-Server       │
   │ 核心概念      │ Tools/Resources/Prompts│ AgentCard/Task/Artifact│
-  │ 通信协议      │ JSON-RPC <span class=<span class="s">"n"</span>>2.0</span>         │ JSON-RPC <span class=<span class="s">"n"</span>>2.0</span> + HTTP │
+  │ 通信协议      │ JSON-RPC 2.0         │ JSON-RPC 2.0 + HTTP │
   │ 传输方式      │ stdio / SSE          │ HTTP / SSE          │
   │ 典型场景      │ 查数据库/调API       │ 多Agent协作/委派任务 │
   └──────────────┴─────────────────────┴─────────────────────┘
 
 配合使用的示例（面试可以这样描述）：
-  <span class=<span class="s">"n"</span>>1</span>. 用户 Agent 收到任务「预订去北京的出差行程」
-  <span class=<span class="s">"n"</span>>2</span>. 用户 Agent 通过 MCP 调用数据库 → 查用户偏好
-  <span class=<span class="s">"n"</span>>3</span>. 用户 Agent 通过 A2A → 发现「机票预订Agent」
-  <span class=<span class="s">"n"</span>>4</span>. 用户 Agent 通过 A2A → 将「订机票」子任务委派给机票Agent
-  <span class=<span class="s">"n"</span>>5</span>. 机票 Agent 通过 MCP → 调用航空公司 API
-  <span class=<span class="s">"n"</span>>6</span>. 机票 Agent 通过 A2A → 返回预订结果
+  1. 用户 Agent 收到任务「预订去北京的出差行程」
+  2. 用户 Agent 通过 MCP 调用数据库 → 查用户偏好
+  3. 用户 Agent 通过 A2A → 发现「机票预订Agent」
+  4. 用户 Agent 通过 A2A → 将「订机票」子任务委派给机票Agent
+  5. 机票 Agent 通过 MCP → 调用航空公司 API
+  6. 机票 Agent 通过 A2A → 返回预订结果
 
 
-<span class=<span class="s">"n"</span>>15.2</span> A2A 三大核心概念
+15.2 A2A 三大核心概念
 ━━━━━━━━━━━━━━━━━━━━━
 
-<span class=<span class="s">"n"</span>>1</span>. AgentCard —— Agent 的「数字护照」
+1. AgentCard —— Agent 的「数字护照」
 
   每个 A2A Agent 都暴露一个 JSON 文件（/.well-known/agent.json），
   声明自己的能力、接口、安全要求：
 
   {
-    <span class="s">"name"</span>: <span class="s">"TaxAgent"</span>,
-    <span class="s">"description"</span>: <span class="s">"税务计算和合规分析 Agent"</span>,
-    <span class="s">"url"</span>: <span class="s">"https://tax.example.com"</span>,
-    <span class="s">"capabilities"</span>: {
-      <span class="s">"streaming"</span>: true,
-      <span class="s">"pushNotifications"</span>: false
+    "name": "TaxAgent",
+    "description": "税务计算和合规分析 Agent",
+    "url": "https://tax.example.com",
+    "capabilities": {
+      "streaming": true,
+      "pushNotifications": false
     },
-    <span class="s">"skills"</span>: [
+    "skills": [
       {
-        <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class="s">"tax_calculation"</span>,
-        <span class="s">"name"</span>: <span class="s">"税务计算"</span>,
-        <span class="s">"description"</span>: <span class="s">"支持中美跨境税务计算"</span>,
-        <span class="s">"inputModes"</span>: [<span class="s">"text"</span>, <span class="s">"file"</span>],
-        <span class="s">"outputModes"</span>: [<span class="s">"text"</span>, <span class="s">"file"</span>]
+        "id": "tax_calculation",
+        "name": "税务计算",
+        "description": "支持中美跨境税务计算",
+        "inputModes": ["text", "file"],
+        "outputModes": ["text", "file"]
       }
     ],
-    <span class="s">"defaultInputModes"</span>: [<span class="s">"text"</span>],
-    <span class="s">"defaultOutputModes"</span>: [<span class="s">"text"</span>],
-    <span class="s">"interfaces"</span>: [
-      {<span class="s">"url"</span>: <span class="s">"https://tax.example.com/a2a"</span>, <span class="s">"transport"</span>: <span class="s">"JSONRPC"</span>}
+    "defaultInputModes": ["text"],
+    "defaultOutputModes": ["text"],
+    "interfaces": [
+      {"url": "https://tax.example.com/a2a", "transport": "JSONRPC"}
     ]
   }
 
-<span class=<span class="s">"n"</span>>2</span>. Task —— A2A 的工作单元
+2. Task —— A2A 的工作单元
 
   Task 是整个协议的核心抽象：
 
-  生命周期：pending → working → <span class=<span class="s">"b"</span>>input</span>-required → completed/failed/cancelled
+  生命周期：pending → working → input-required → completed/failed/cancelled
 
   Task 数据结构：
   {
-    <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class="s">"task_001"</span>,
-    <span class="s">"sessionId"</span>: <span class="s">"session_abc"</span>,
-    <span class="s">"status"</span>: {<span class="s">"state"</span>: <span class="s">"working"</span>, <span class="s">"message"</span>: <span class="s">"正在计算税务..."</span>},
-    <span class="s">"artifacts"</span>: [...],
-    <span class="s">"history"</span>: [...]  // 操作历史
+    "id": "task_001",
+    "sessionId": "session_abc",
+    "status": {"state": "working", "message": "正在计算税务..."},
+    "artifacts": [...],
+    "history": [...]  // 操作历史
   }
 
-<span class=<span class="s">"n"</span>>3</span>. Artifact —— 跨 Agent 的成果物
+3. Artifact —— 跨 Agent 的成果物
 
   Task 完成后的产出，携带 MIME 类型和元数据：
 
   {
-    <span class="s">"artifactId"</span>: <span class="s">"report_001"</span>,
-    <span class="s">"name"</span>: <span class="s">"2025Q1税务报告.pdf"</span>,
-    <span class="s">"mimeType"</span>: <span class="s">"application/pdf"</span>,
-    <span class="s">"parts"</span>: [{<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"file"</span>, <span class="s">"file"</span>: {...}}]
+    "artifactId": "report_001",
+    "name": "2025Q1税务报告.pdf",
+    "mimeType": "application/pdf",
+    "parts": [{"type": "file", "file": {...}}]
   }
 
 
-<span class=<span class="s">"n"</span>>15.3</span> A2A 的完整交互流程
+15.3 A2A 的完整交互流程
 ━━━━━━━━━━━━━━━━━━━━━━━
 
   Client Agent                     Server Agent
       │                                │
-      │── GET /.well-known/agent.json ─→│  (<span class=<span class="s">"n"</span>>1</span>) 发现：获取 AgentCard
+      │── GET /.well-known/agent.json ─→│  (1) 发现：获取 AgentCard
       │←── AgentCard ─────────────────│
       │                                │
-      │── POST /a2a tasks/send ──────→│  (<span class=<span class="s">"n"</span>>2</span>) 提交任务
-      │   {message: <span class="s">"请计算这笔税的..."</span>, │
+      │── POST /a2a tasks/send ──────→│  (2) 提交任务
+      │   {message: "请计算这笔税的...", │
       │    artifacts: [...]}           │
-      │←── Task {status: <span class="s">"working"</span>} ──│
+      │←── Task {status: "working"} ──│
       │                                │
-      │── POST /a2a tasks/get ────────→│  (<span class=<span class="s">"n"</span>>3</span>) 查询进度（轮询）
-      │←── Task {status: <span class="s">"working"</span>} ──│
+      │── POST /a2a tasks/get ────────→│  (3) 查询进度（轮询）
+      │←── Task {status: "working"} ──│
       │                                │
       │── POST /a2a tasks/get ────────→│
-      │←── Task {status: <span class="s">"completed"</span>,  │  (<span class=<span class="s">"n"</span>>4</span>) 获取结果
+      │←── Task {status: "completed",  │  (4) 获取结果
       │    artifacts: [计算结果]}      │
       │                                │
 
@@ -861,131 +861,131 @@ A2A 解决：「Agent 怎么和其他 Agent 交互？」
       │←── event: task-complete ──────│
 
 
-<span class=<span class="s">"n"</span>>15.4</span> 模拟 A2A Agent 生态系统
+15.4 模拟 A2A Agent 生态系统
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="s">""</span>"</span>
+"""</span>
 
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> enum <span class=<span class="s">"k"</span>>import</span> Enum
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> enum <span class="k">import</span> Enum
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>TaskState</span>(<span class=<span class="s">"b"</span>>str</span>, Enum):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"A2A 协议定义的任务状态。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">TaskState</span>(<span class="b">str</span>, Enum):
+    <span class="s">"""A2A 协议定义的任务状态。"""</span>
     PENDING = <span class="s">"pending"</span>
     WORKING = <span class="s">"working"</span>
-    INPUT_REQUIRED = <span class="s">"<span class="</span>b<span class="s">">input</span>-required"</span>
+    INPUT_REQUIRED = <span class="s">"input-required"</span>
     COMPLETED = <span class="s">"completed"</span>
     FAILED = <span class="s">"failed"</span>
     CANCELLED = <span class="s">"cancelled"</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>A2AAgentCard</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"A2A AgentCard —— Agent 的自我声明文件。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">A2AAgentCard</span>:
+    <span class="s">"""A2A AgentCard —— Agent 的自我声明文件。"""</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>, description: <span class=<span class="s">"b"</span>>str</span>,
-                 url: <span class=<span class="s">"b"</span>>str</span>, skills: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]):
-        <span class=<span class="s">"k"</span>>self</span>.name = name
-        <span class=<span class="s">"k"</span>>self</span>.description = description
-        <span class=<span class="s">"k"</span>>self</span>.url = url
-        <span class=<span class="s">"k"</span>>self</span>.skills = skills
-        <span class=<span class="s">"k"</span>>self</span>.capabilities = {
-            <span class="s">"streaming"</span>: <span class=<span class="s">"k"</span>>True</span>,
-            <span class="s">"pushNotifications"</span>: <span class=<span class="s">"k"</span>>False</span>,
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, name: <span class="b">str</span>, description: <span class="b">str</span>,
+                 url: <span class="b">str</span>, skills: <span class="b">list</span>[<span class="b">dict</span>]):
+        <span class="k">self</span>.name = name
+        <span class="k">self</span>.description = description
+        <span class="k">self</span>.url = url
+        <span class="k">self</span>.skills = skills
+        <span class="k">self</span>.capabilities = {
+            <span class="s">"streaming"</span>: <span class="k">True</span>,
+            <span class="s">"pushNotifications"</span>: <span class="k">False</span>,
         }
-        <span class=<span class="s">"k"</span>>self</span>.defaultInputModes = [<span class="s">"text"</span>]
-        <span class=<span class="s">"k"</span>>self</span>.defaultOutputModes = [<span class="s">"text"</span>]
-        <span class=<span class="s">"k"</span>>self</span>.version = <span class="s">"<span class="</span>n<span class="s">">0.2</span>.<span class="</span>n<span class="s">">6</span>"</span>
+        <span class="k">self</span>.defaultInputModes = [<span class="s">"text"</span>]
+        <span class="k">self</span>.defaultOutputModes = [<span class="s">"text"</span>]
+        <span class="k">self</span>.version = <span class="s">"0.2.6"</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>to_dict</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"序列化为标准 AgentCard JSON。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> {
-            <span class="s">"name"</span>: <span class=<span class="s">"k"</span>>self</span>.name,
-            <span class="s">"description"</span>: <span class=<span class="s">"k"</span>>self</span>.description,
-            <span class="s">"url"</span>: <span class=<span class="s">"k"</span>>self</span>.url,
-            <span class="s">"version"</span>: <span class=<span class="s">"k"</span>>self</span>.version,
-            <span class="s">"capabilities"</span>: <span class=<span class="s">"k"</span>>self</span>.capabilities,
-            <span class="s">"skills"</span>: <span class=<span class="s">"k"</span>>self</span>.skills,
-            <span class="s">"defaultInputModes"</span>: <span class=<span class="s">"k"</span>>self</span>.defaultInputModes,
-            <span class="s">"defaultOutputModes"</span>: <span class=<span class="s">"k"</span>>self</span>.defaultOutputModes,
+    <span class="k">def</span> <span class="f">to_dict</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""序列化为标准 AgentCard JSON。"""</span>
+        <span class="k">return</span> {
+            <span class="s">"name"</span>: <span class="k">self</span>.name,
+            <span class="s">"description"</span>: <span class="k">self</span>.description,
+            <span class="s">"url"</span>: <span class="k">self</span>.url,
+            <span class="s">"version"</span>: <span class="k">self</span>.version,
+            <span class="s">"capabilities"</span>: <span class="k">self</span>.capabilities,
+            <span class="s">"skills"</span>: <span class="k">self</span>.skills,
+            <span class="s">"defaultInputModes"</span>: <span class="k">self</span>.defaultInputModes,
+            <span class="s">"defaultOutputModes"</span>: <span class="k">self</span>.defaultOutputModes,
         }
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>A2ATask</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"A2A Task —— 协议的工作单元。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">A2ATask</span>:
+    <span class="s">"""A2A Task —— 协议的工作单元。"""</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, task_id: <span class=<span class="s">"b"</span>>str</span>, session_id: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.<span class=<span class="s">"b"</span>>id</span> = task_id
-        <span class=<span class="s">"k"</span>>self</span>.session_id = session_id
-        <span class=<span class="s">"k"</span>>self</span>.state = TaskState.PENDING
-        <span class=<span class="s">"k"</span>>self</span>.status_message = <span class="s">"任务已创建，等待处理"</span>
-        <span class=<span class="s">"k"</span>>self</span>.artifacts = []
-        <span class=<span class="s">"k"</span>>self</span>.history = []
-        <span class=<span class="s">"k"</span>>self</span>._add_history(<span class="s">"created"</span>, f<span class="s">"Task {task_id} created"</span>)
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, task_id: <span class="b">str</span>, session_id: <span class="b">str</span>):
+        <span class="k">self</span>.<span class="b">id</span> = task_id
+        <span class="k">self</span>.session_id = session_id
+        <span class="k">self</span>.state = TaskState.PENDING
+        <span class="k">self</span>.status_message = <span class="s">"任务已创建，等待处理"</span>
+        <span class="k">self</span>.artifacts = []
+        <span class="k">self</span>.history = []
+        <span class="k">self</span>._add_history(<span class="s">"created"</span>, f<span class="s">"Task {task_id} created"</span>)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>start</span>(<span class=<span class="s">"k"</span>>self</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"开始执行任务。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.state = TaskState.WORKING
-        <span class=<span class="s">"k"</span>>self</span>.status_message = <span class="s">"任务执行中..."</span>
-        <span class=<span class="s">"k"</span>>self</span>._add_history(<span class="s">"started"</span>, <span class="s">"Task execution started"</span>)
+    <span class="k">def</span> <span class="f">start</span>(<span class="k">self</span>):
+        <span class="s">"""开始执行任务。"""</span>
+        <span class="k">self</span>.state = TaskState.WORKING
+        <span class="k">self</span>.status_message = <span class="s">"任务执行中..."</span>
+        <span class="k">self</span>._add_history(<span class="s">"started"</span>, <span class="s">"Task execution started"</span>)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>complete</span>(<span class=<span class="s">"k"</span>>self</span>, artifacts: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"完成任务。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.state = TaskState.COMPLETED
-        <span class=<span class="s">"k"</span>>self</span>.status_message = <span class="s">"任务已完成"</span>
-        <span class=<span class="s">"k"</span>>self</span>.artifacts = artifacts
-        <span class=<span class="s">"k"</span>>self</span>._add_history(<span class="s">"completed"</span>, f<span class="s">"Produced {<span class="</span>b<span class="s">">len</span>(artifacts)} artifacts"</span>)
+    <span class="k">def</span> <span class="f">complete</span>(<span class="k">self</span>, artifacts: <span class="b">list</span>[<span class="b">dict</span>]):
+        <span class="s">"""完成任务。"""</span>
+        <span class="k">self</span>.state = TaskState.COMPLETED
+        <span class="k">self</span>.status_message = <span class="s">"任务已完成"</span>
+        <span class="k">self</span>.artifacts = artifacts
+        <span class="k">self</span>._add_history(<span class="s">"completed"</span>, f<span class="s">"Produced {len(artifacts)} artifacts"</span>)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>fail</span>(<span class=<span class="s">"k"</span>>self</span>, reason: <span class=<span class="s">"b"</span>>str</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"任务失败。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.state = TaskState.FAILED
-        <span class=<span class="s">"k"</span>>self</span>.status_message = reason
-        <span class=<span class="s">"k"</span>>self</span>._add_history(<span class="s">"failed"</span>, reason)
+    <span class="k">def</span> <span class="f">fail</span>(<span class="k">self</span>, reason: <span class="b">str</span>):
+        <span class="s">"""任务失败。"""</span>
+        <span class="k">self</span>.state = TaskState.FAILED
+        <span class="k">self</span>.status_message = reason
+        <span class="k">self</span>._add_history(<span class="s">"failed"</span>, reason)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>to_dict</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"序列化为标准 Task JSON。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> {
-            <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"k"</span>>self</span>.<span class=<span class="s">"b"</span>>id</span>,
-            <span class="s">"sessionId"</span>: <span class=<span class="s">"k"</span>>self</span>.session_id,
+    <span class="k">def</span> <span class="f">to_dict</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""序列化为标准 Task JSON。"""</span>
+        <span class="k">return</span> {
+            <span class="s">"id"</span>: <span class="k">self</span>.<span class="b">id</span>,
+            <span class="s">"sessionId"</span>: <span class="k">self</span>.session_id,
             <span class="s">"status"</span>: {
-                <span class="s">"state"</span>: <span class=<span class="s">"k"</span>>self</span>.state.value,
-                <span class="s">"message"</span>: <span class=<span class="s">"k"</span>>self</span>.status_message,
+                <span class="s">"state"</span>: <span class="k">self</span>.state.value,
+                <span class="s">"message"</span>: <span class="k">self</span>.status_message,
             },
-            <span class="s">"artifacts"</span>: <span class=<span class="s">"k"</span>>self</span>.artifacts,
-            <span class="s">"history"</span>: <span class=<span class="s">"k"</span>>self</span>.history,
+            <span class="s">"artifacts"</span>: <span class="k">self</span>.artifacts,
+            <span class="s">"history"</span>: <span class="k">self</span>.history,
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_add_history</span>(<span class=<span class="s">"k"</span>>self</span>, event: <span class=<span class="s">"b"</span>>str</span>, detail: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.history.append({
+    <span class="k">def</span> <span class="f">_add_history</span>(<span class="k">self</span>, event: <span class="b">str</span>, detail: <span class="b">str</span>):
+        <span class="k">self</span>.history.append({
             <span class="s">"timestamp"</span>: time.time(),
             <span class="s">"event"</span>: event,
             <span class="s">"detail"</span>: detail,
         })
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>SimulatedA2AServer</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 A2A Server —— 演示 Agent-to-Agent 通信。
+<span class="k">class</span> <span class="f">SimulatedA2AServer</span>:
+    <span class="s">"""模拟 A2A Server —— 演示 Agent-to-Agent 通信。
 
     完整的 A2A Server 实现：
-      <span class=<span class="s">"n"</span>>1</span>. 暴露 AgentCard（GET /.well-known/agent.json）
-      <span class=<span class="s">"n"</span>>2</span>. 接收任务（POST /a2a tasks/send）
-      <span class=<span class="s">"n"</span>>3</span>. 查询任务状态（POST /a2a tasks/get）
-      <span class=<span class="s">"n"</span>>4</span>. 取消任务（POST /a2a tasks/cancel）
-    <span class="s">""</span>"</span>
+      1. 暴露 AgentCard（GET /.well-known/agent.json）
+      2. 接收任务（POST /a2a tasks/send）
+      3. 查询任务状态（POST /a2a tasks/get）
+      4. 取消任务（POST /a2a tasks/cancel）
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, agent_card: A2AAgentCard):
-        <span class=<span class="s">"k"</span>>self</span>.agent_card = agent_card
-        <span class=<span class="s">"k"</span>>self</span>.tasks = {}
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, agent_card: A2AAgentCard):
+        <span class="k">self</span>.agent_card = agent_card
+        <span class="k">self</span>.tasks = {}
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_agent_card</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"返回 AgentCard（Agent 发现阶段）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.agent_card.to_dict()
+    <span class="k">def</span> <span class="f">get_agent_card</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""返回 AgentCard（Agent 发现阶段）。"""</span>
+        <span class="k">return</span> <span class="k">self</span>.agent_card.to_dict()
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>send_task</span>(<span class=<span class="s">"k"</span>>self</span>, message: <span class=<span class="s">"b"</span>>str</span>,
-                  session_id: <span class=<span class="s">"b"</span>>str</span> = <span class=<span class="s">"k"</span>>None</span>) -&gt; A2ATask:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"接收并开始执行一个任务。
+    <span class="k">def</span> <span class="f">send_task</span>(<span class="k">self</span>, message: <span class="b">str</span>,
+                  session_id: <span class="b">str</span> = <span class="k">None</span>) -&gt; A2ATask:
+        <span class="s">"""接收并开始执行一个任务。
 
         Args:
             message: 任务描述。
@@ -993,112 +993,112 @@ A2A 解决：「Agent 怎么和其他 Agent 交互？」
 
         Returns:
             创建的 Task 对象。
-        <span class="s">""</span>"</span>
+        """</span>
         task_id = hashlib.md5(
             f<span class="s">"{message}-{time.time()}"</span>.encode()
-        ).hexdigest()[:<span class=<span class="s">"n"</span>>16</span>]
-        <span class=<span class="s">"k"</span>>if</span> session_id <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+        ).hexdigest()[:<span class="n">16</span>]
+        <span class="k">if</span> session_id <span class="k">is</span> <span class="k">None</span>:
             session_id = hashlib.md5(
                 f<span class="s">"session-{time.time()}"</span>.encode()
-            ).hexdigest()[:<span class=<span class="s">"n"</span>>16</span>]
+            ).hexdigest()[:<span class="n">16</span>]
 
         task = A2ATask(task_id, session_id)
-        <span class=<span class="s">"k"</span>>self</span>.tasks[task_id] = task
+        <span class="k">self</span>.tasks[task_id] = task
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟任务执行</span>
+        <span class="h"># 模拟任务执行</span>
         task.start()
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 找到匹配的 skill 并「执行」</span>
+        <span class="h"># 找到匹配的 skill 并「执行」</span>
         result_artifact = {
             <span class="s">"artifactId"</span>: f<span class="s">"artifact_{task_id}"</span>,
-            <span class="s">"name"</span>: f<span class="s">"结果_{task_id[:<span class="</span>n<span class="s">">8</span>]}"</span>,
+            <span class="s">"name"</span>: f<span class="s">"结果_{task_id[:8]}"</span>,
             <span class="s">"mimeType"</span>: <span class="s">"application/json"</span>,
             <span class="s">"parts"</span>: [{
-                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"text"</span>,
+                <span class="s">"type"</span>: <span class="s">"text"</span>,
                 <span class="s">"text"</span>: json.dumps({
-                    <span class="s">"summary"</span>: f<span class="s">"已完成任务: {message[:<span class="</span>n<span class="s">">50</span>]}..."</span>,
-                    <span class="s">"agent"</span>: <span class=<span class="s">"k"</span>>self</span>.agent_card.name,
+                    <span class="s">"summary"</span>: f<span class="s">"已完成任务: {message[:50]}..."</span>,
+                    <span class="s">"agent"</span>: <span class="k">self</span>.agent_card.name,
                     <span class="s">"timestamp"</span>: time.time(),
-                }, ensure_ascii=<span class=<span class="s">"k"</span>>False</span>),
+                }, ensure_ascii=<span class="k">False</span>),
             }],
         }
         task.complete([result_artifact])
 
-        <span class=<span class="s">"k"</span>>return</span> task
+        <span class="k">return</span> task
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_task</span>(<span class=<span class="s">"k"</span>>self</span>, task_id: <span class=<span class="s">"b"</span>>str</span>) -&gt; Optional[A2ATask]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"查询任务状态。
+    <span class="k">def</span> <span class="f">get_task</span>(<span class="k">self</span>, task_id: <span class="b">str</span>) -&gt; Optional[A2ATask]:
+        <span class="s">"""查询任务状态。
 
         Args:
             task_id: 任务 ID。
 
         Returns:
-            Task 对象，不存在返回 <span class=<span class="s">"k"</span>>None</span>。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.tasks.get(task_id)
+            Task 对象，不存在返回 None。
+        """</span>
+        <span class="k">return</span> <span class="k">self</span>.tasks.get(task_id)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>cancel_task</span>(<span class=<span class="s">"k"</span>>self</span>, task_id: <span class=<span class="s">"b"</span>>str</span>) -&gt; bool:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"取消任务。
+    <span class="k">def</span> <span class="f">cancel_task</span>(<span class="k">self</span>, task_id: <span class="b">str</span>) -&gt; bool:
+        <span class="s">"""取消任务。
 
         Args:
             task_id: 任务 ID。
 
         Returns:
             是否成功取消。
-        <span class="s">""</span>"</span>
-        task = <span class=<span class="s">"k"</span>>self</span>.tasks.get(task_id)
-        <span class=<span class="s">"k"</span>>if</span> task <span class=<span class="s">"k"</span>>and</span> task.state <span class=<span class="s">"k"</span>>in</span> (TaskState.PENDING, TaskState.WORKING):
+        """</span>
+        task = <span class="k">self</span>.tasks.get(task_id)
+        <span class="k">if</span> task <span class="k">and</span> task.state <span class="k">in</span> (TaskState.PENDING, TaskState.WORKING):
             task.state = TaskState.CANCELLED
             task.status_message = <span class="s">"任务已被取消"</span>
-            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>True</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>False</span>
+            <span class="k">return</span> <span class="k">True</span>
+        <span class="k">return</span> <span class="k">False</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>A2AClient</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 A2A Client —— 作为「用户 Agent」去调用其他 Agent。
+<span class="k">class</span> <span class="f">A2AClient</span>:
+    <span class="s">"""模拟 A2A Client —— 作为「用户 Agent」去调用其他 Agent。
 
     代表 Agent 完成：
-      <span class=<span class="s">"n"</span>>1</span>. 发现远程 Agent（获取 AgentCard）
-      <span class=<span class="s">"n"</span>>2</span>. 评估 skills（是否匹配任务需求）
-      <span class=<span class="s">"n"</span>>3</span>. 提交任务 + 获取结果
-    <span class="s">""</span>"</span>
+      1. 发现远程 Agent（获取 AgentCard）
+      2. 评估 skills（是否匹配任务需求）
+      3. 提交任务 + 获取结果
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.name = name
-        <span class=<span class="s">"k"</span>>self</span>.known_agents = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># {url: AgentCard}</span>
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, name: <span class="b">str</span>):
+        <span class="k">self</span>.name = name
+        <span class="k">self</span>.known_agents = {}  <span class="h"># {url: AgentCard}</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>discover</span>(<span class=<span class="s">"k"</span>>self</span>, server: SimulatedA2AServer) -&gt; A2AAgentCard:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"发现一个 A2A Agent —— 获取其 AgentCard。
+    <span class="k">def</span> <span class="f">discover</span>(<span class="k">self</span>, server: SimulatedA2AServer) -&gt; A2AAgentCard:
+        <span class="s">"""发现一个 A2A Agent —— 获取其 AgentCard。
 
         Args:
             server: A2A Server 实例。
 
         Returns:
             AgentCard 字典。
-        <span class="s">""</span>"</span>
+        """</span>
         card = server.get_agent_card()
-        <span class=<span class="s">"k"</span>>self</span>.known_agents[card[<span class="s">"url"</span>]] = card
-        <span class=<span class="s">"k"</span>>return</span> card
+        <span class="k">self</span>.known_agents[card[<span class="s">"url"</span>]] = card
+        <span class="k">return</span> card
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>find_agent_for_skill</span>(<span class=<span class="s">"k"</span>>self</span>, skill_keyword: <span class=<span class="s">"b"</span>>str</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"根据需求关键词找到匹配的 Agent。
+    <span class="k">def</span> <span class="f">find_agent_for_skill</span>(<span class="k">self</span>, skill_keyword: <span class="b">str</span>) -&gt; Optional[<span class="b">dict</span>]:
+        <span class="s">"""根据需求关键词找到匹配的 Agent。
 
         Args:
             skill_keyword: 技能关键词。
 
         Returns:
-            匹配的 AgentCard，未找到返回 <span class=<span class="s">"k"</span>>None</span>。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>for</span> _, card <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.known_agents.items():
-            <span class=<span class="s">"k"</span>>for</span> skill <span class=<span class="s">"k"</span>>in</span> card.get(<span class="s">"skills"</span>, []):
-                <span class=<span class="s">"k"</span>>if</span> skill_keyword <span class=<span class="s">"k"</span>>in</span> skill.get(<span class="s">"name"</span>, <span class="s">""</span>).lower() <span class=<span class="s">"k"</span>>or</span> \
-                   skill_keyword <span class=<span class="s">"k"</span>>in</span> skill.get(<span class="s">"description"</span>, <span class="s">""</span>).lower():
-                    <span class=<span class="s">"k"</span>>return</span> card
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>None</span>
+            匹配的 AgentCard，未找到返回 None。
+        """</span>
+        <span class="k">for</span> _, card <span class="k">in</span> <span class="k">self</span>.known_agents.items():
+            <span class="k">for</span> skill <span class="k">in</span> card.get(<span class="s">"skills"</span>, []):
+                <span class="k">if</span> skill_keyword <span class="k">in</span> skill.get(<span class="s">"name"</span>, <span class="s">""</span>).lower() <span class="k">or</span> \
+                   skill_keyword <span class="k">in</span> skill.get(<span class="s">"description"</span>, <span class="s">""</span>).lower():
+                    <span class="k">return</span> card
+        <span class="k">return</span> <span class="k">None</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>delegate_task</span>(<span class=<span class="s">"k"</span>>self</span>, server: SimulatedA2AServer,
-                      message: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"将任务委派给远程 Agent。
+    <span class="k">def</span> <span class="f">delegate_task</span>(<span class="k">self</span>, server: SimulatedA2AServer,
+                      message: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""将任务委派给远程 Agent。
 
         完整的 A2A 委派流程：
           Discover → Evaluate → Send → Wait → Receive
@@ -1109,48 +1109,48 @@ A2A 解决：「Agent 怎么和其他 Agent 交互？」
 
         Returns:
             包含任务结果的字典。
-        <span class="s">""</span>"</span>
+        """</span>
         result = {}
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>1</span>: 发现</span>
-        card = <span class=<span class="s">"k"</span>>self</span>.discover(server)
+        <span class="h"># Step 1: 发现</span>
+        card = <span class="k">self</span>.discover(server)
         result[<span class="s">"agent"</span>] = card[<span class="s">"name"</span>]
-        result[<span class="s">"skills"</span>] = [s[<span class="s">"name"</span>] <span class=<span class="s">"k"</span>>for</span> s <span class=<span class="s">"k"</span>>in</span> card[<span class="s">"skills"</span>]]
+        result[<span class="s">"skills"</span>] = [s[<span class="s">"name"</span>] <span class="k">for</span> s <span class="k">in</span> card[<span class="s">"skills"</span>]]
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>2</span>: 提交任务</span>
+        <span class="h"># Step 2: 提交任务</span>
         task = server.send_task(message)
-        result[<span class="s">"task_id"</span>] = task.<span class=<span class="s">"b"</span>>id</span>
+        result[<span class="s">"task_id"</span>] = task.<span class="b">id</span>
         result[<span class="s">"task_state"</span>] = task.state.value
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Step <span class=<span class="s">"n"</span>>3</span>: 获取结果</span>
-        final_task = server.get_task(task.<span class=<span class="s">"b"</span>>id</span>)
+        <span class="h"># Step 3: 获取结果</span>
+        final_task = server.get_task(task.<span class="b">id</span>)
         result[<span class="s">"final_state"</span>] = final_task.state.value
         result[<span class="s">"artifacts"</span>] = final_task.artifacts
 
-        <span class=<span class="s">"k"</span>>return</span> result
+        <span class="k">return</span> result
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_a2a_ecosystem</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示一个完整的 A2A 多 Agent 协作场景。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  A2A 多 Agent 协作演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_a2a_ecosystem</span>():
+    <span class="s">"""演示一个完整的 A2A 多 Agent 协作场景。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  A2A 多 Agent 协作演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 创建 Agent 生态</span>
+    <span class="h"># 创建 Agent 生态</span>
     tax_agent = SimulatedA2AServer(A2AAgentCard(
         name=<span class="s">"税务计算Agent"</span>,
         description=<span class="s">"支持中美跨境税务计算和合规分析"</span>,
         url=<span class="s">"https://tax.example.com"</span>,
         skills=[
             {
-                <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class="s">"tax_calculation"</span>,
+                <span class="s">"id"</span>: <span class="s">"tax_calculation"</span>,
                 <span class="s">"name"</span>: <span class="s">"税务计算"</span>,
                 <span class="s">"description"</span>: <span class="s">"计算个人所得税、企业所得税"</span>,
                 <span class="s">"inputModes"</span>: [<span class="s">"text"</span>],
                 <span class="s">"outputModes"</span>: [<span class="s">"text"</span>],
             },
             {
-                <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class="s">"tax_compliance"</span>,
+                <span class="s">"id"</span>: <span class="s">"tax_compliance"</span>,
                 <span class="s">"name"</span>: <span class="s">"合规分析"</span>,
                 <span class="s">"description"</span>: <span class="s">"分析税务合规风险"</span>,
                 <span class="s">"inputModes"</span>: [<span class="s">"text"</span>],
@@ -1165,14 +1165,14 @@ A2A 解决：「Agent 怎么和其他 Agent 交互？」
         url=<span class="s">"https://flight.example.com"</span>,
         skills=[
             {
-                <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class="s">"flight_search"</span>,
+                <span class="s">"id"</span>: <span class="s">"flight_search"</span>,
                 <span class="s">"name"</span>: <span class="s">"航班搜索"</span>,
                 <span class="s">"description"</span>: <span class="s">"搜索可用的航班"</span>,
                 <span class="s">"inputModes"</span>: [<span class="s">"text"</span>],
                 <span class="s">"outputModes"</span>: [<span class="s">"text"</span>],
             },
             {
-                <span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class="s">"flight_booking"</span>,
+                <span class="s">"id"</span>: <span class="s">"flight_booking"</span>,
                 <span class="s">"name"</span>: <span class="s">"航班预订"</span>,
                 <span class="s">"description"</span>: <span class="s">"预订机票"</span>,
                 <span class="s">"inputModes"</span>: [<span class="s">"text"</span>],
@@ -1181,50 +1181,50 @@ A2A 解决：「Agent 怎么和其他 Agent 交互？」
         ],
     ))
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 用户 Agent（协调者）</span>
+    <span class="h"># 用户 Agent（协调者）</span>
     user_agent = A2AClient(<span class="s">"个人助理Agent"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 场景：用户需要出差</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  🎯 场景：用户需要去北京出差，请安排行程"</span>)
+    <span class="h"># 场景：用户需要出差</span>
+    <span class="b">print</span>(<span class="s">"\n  🎯 场景：用户需要去北京出差，请安排行程"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 子任务 <span class=<span class="s">"n"</span>>1</span>：税务相关查询</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── 子任务 <span class="</span>n<span class="s">">1</span>：税务查询 ──"</span>)
+    <span class="h"># 子任务 1：税务相关查询</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 子任务 1：税务查询 ──"</span>)
     tax_card = user_agent.discover(tax_agent)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  发现 Agent: {tax_card[<span class='s'>'name'</span>]}"</span>)
-    <span class=<span class="s">"k"</span>>for</span> skill <span class=<span class="s">"k"</span>>in</span> tax_card[<span class="s">"skills"</span>]:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    技能: {skill[<span class='s'>'name'</span>]} - {skill[<span class='s'>'description'</span>]}"</span>)
+    <span class="b">print</span>(f<span class="s">"  发现 Agent: {tax_card['name']}"</span>)
+    <span class="k">for</span> skill <span class="k">in</span> tax_card[<span class="s">"skills"</span>]:
+        <span class="b">print</span>(f<span class="s">"    技能: {skill['name']} - {skill['description']}"</span>)
 
     tax_result = user_agent.delegate_task(
         tax_agent, <span class="s">"计算2025年出差费用的税务抵扣"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  任务状态: {tax_result[<span class='s'>'task_state'</span>]} → {tax_result[<span class='s'>'final_state'</span>]}"</span>)
-    artifact_text = tax_result[<span class="s">"artifacts"</span>][<span class=<span class="s">"n"</span>>0</span>][<span class="s">"parts"</span>][<span class=<span class="s">"n"</span>>0</span>][<span class="s">"text"</span>]
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  结果: {json.loads(artifact_text)[<span class='s'>'summary'</span>]}"</span>)
+    <span class="b">print</span>(f<span class="s">"  任务状态: {tax_result['task_state']} → {tax_result['final_state']}"</span>)
+    artifact_text = tax_result[<span class="s">"artifacts"</span>][<span class="n">0</span>][<span class="s">"parts"</span>][<span class="n">0</span>][<span class="s">"text"</span>]
+    <span class="b">print</span>(f<span class="s">"  结果: {json.loads(artifact_text)['summary']}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 子任务 <span class=<span class="s">"n"</span>>2</span>：预订机票</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── 子任务 <span class="</span>n<span class="s">">2</span>：预订机票 ──"</span>)
+    <span class="h"># 子任务 2：预订机票</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 子任务 2：预订机票 ──"</span>)
     flight_card = user_agent.discover(flight_agent)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  发现 Agent: {flight_card[<span class='s'>'name'</span>]}"</span>)
-    <span class=<span class="s">"k"</span>>for</span> skill <span class=<span class="s">"k"</span>>in</span> flight_card[<span class="s">"skills"</span>]:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    技能: {skill[<span class='s'>'name'</span>]} - {skill[<span class='s'>'description'</span>]}"</span>)
+    <span class="b">print</span>(f<span class="s">"  发现 Agent: {flight_card['name']}"</span>)
+    <span class="k">for</span> skill <span class="k">in</span> flight_card[<span class="s">"skills"</span>]:
+        <span class="b">print</span>(f<span class="s">"    技能: {skill['name']} - {skill['description']}"</span>)
 
     flight_result = user_agent.delegate_task(
         flight_agent, <span class="s">"预订2026年5月15日从上海到北京的机票"</span>
     )
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  任务状态: {flight_result[<span class='s'>'task_state'</span>]} → {flight_result[<span class='s'>'final_state'</span>]}"</span>)
-    artifact_text = flight_result[<span class="s">"artifacts"</span>][<span class=<span class="s">"n"</span>>0</span>][<span class="s">"parts"</span>][<span class=<span class="s">"n"</span>>0</span>][<span class="s">"text"</span>]
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  结果: {json.loads(artifact_text)[<span class='s'>'summary'</span>]}"</span>)
+    <span class="b">print</span>(f<span class="s">"  任务状态: {flight_result['task_state']} → {flight_result['final_state']}"</span>)
+    artifact_text = flight_result[<span class="s">"artifacts"</span>][<span class="n">0</span>][<span class="s">"parts"</span>][<span class="n">0</span>][<span class="s">"text"</span>]
+    <span class="b">print</span>(f<span class="s">"  结果: {json.loads(artifact_text)['summary']}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 展示 Agent 发现注册表</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── 已知 Agent 注册表 ──"</span>)
-    <span class=<span class="s">"k"</span>>for</span> url, card <span class=<span class="s">"k"</span>>in</span> user_agent.known_agents.items():
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  📡 {card[<span class='s'>'name'</span>]} @ {url}"</span>)
-        <span class=<span class="s">"k"</span>>for</span> s <span class=<span class="s">"k"</span>>in</span> card[<span class="s">"skills"</span>]:
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"      └─ {s[<span class='s'>'name'</span>]}"</span>)
+    <span class="h"># 展示 Agent 发现注册表</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 已知 Agent 注册表 ──"</span>)
+    <span class="k">for</span> url, card <span class="k">in</span> user_agent.known_agents.items():
+        <span class="b">print</span>(f<span class="s">"  📡 {card['name']} @ {url}"</span>)
+        <span class="k">for</span> s <span class="k">in</span> card[<span class="s">"skills"</span>]:
+            <span class="b">print</span>(f<span class="s">"      └─ {s['name']}"</span>)
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>15.5</span> A2A vs MCP 配合：完整的 Agent 协议栈
+<span class="s">"""
+15.5 A2A vs MCP 配合：完整的 Agent 协议栈
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 将它们组合起来：
@@ -1265,61 +1265,61 @@ A2A 解决：「Agent 怎么和其他 Agent 交互？」
    通过 A2A 把复杂子任务委派给其他专业的 Agent。"
 
 
-<span class=<span class="s">"n"</span>>15.6</span> 本章总结
+15.6 本章总结
 ━━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class=<span class="s">"n"</span>>1</span>. A2A = Agent 之间的「世界语」
-   - Google 2025年4月发布，<span class=<span class="s">"n"</span>>50</span>+ 企业参与
+1. A2A = Agent 之间的「世界语」
+   - Google 2025年4月发布，50+ 企业参与
    - 解决 Agent 间协作的标准化问题
 
-<span class=<span class="s">"n"</span>>2</span>. 三大核心概念（面试反复问！）
+2. 三大核心概念（面试反复问！）
    - AgentCard: Agent 的自我声明（skills/capabilities/interfaces）
    - Task: 工作单元（pending→working→completed/failed）
    - Artifact: 跨 Agent 的成果物封装
 
-<span class=<span class="s">"n"</span>>3</span>. A2A vs MCP —— 分工明确
+3. A2A vs MCP —— 分工明确
    - MCP: Agent ↔ 工具/数据（Anthropic 发布）
    - A2A: Agent ↔ Agent（Google 发布）
    - 互补关系，不是竞争
 
-<span class=<span class="s">"n"</span>>4</span>. 典型交互流程
+4. 典型交互流程
    - 发现 (GET AgentCard)
    - 委派 (POST tasks/send)
    - 查询 (POST tasks/get，或 SSE 推送)
    - 获取 Artifact
 
 面试速记：
-  <span class="s">"A2A 是怎么工作的？"</span>
+  "A2A 是怎么工作的？"
   → AgentCard 声明能力 → Client 按需发现 → Task 委派
   → SSE/轮询跟踪进度 → 获取 Artifact
   → MCP 管工具，A2A 管 Agent 间协作
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第15章：Google A2A 协议深度剖析                        ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  AgentCard · Task · Artifact · Multi-Agent协作       ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第15章：Google A2A 协议深度剖析                        ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  AgentCard · Task · Artifact · Multi-Agent协作       ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_a2a_ecosystem()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ A2A vs MCP 互补关系"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ A2A vs MCP 互补关系"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     pairs = [
-        (<span class="s">"MCP"</span>, <span class="s">"Agent ↔ 工具/数据"</span>, <span class="s">"Anthropic <span class="</span>n<span class="s">">2024.11</span>"</span>),
-        (<span class="s">"A2A"</span>, <span class="s">"Agent ↔ Agent"</span>, <span class="s">"Google <span class="</span>n<span class="s">">2025.04</span>"</span>),
+        (<span class="s">"MCP"</span>, <span class="s">"Agent ↔ 工具/数据"</span>, <span class="s">"Anthropic 2024.11"</span>),
+        (<span class="s">"A2A"</span>, <span class="s">"Agent ↔ Agent"</span>, <span class="s">"Google 2025.04"</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> name, purpose, source <span class=<span class="s">"k"</span>>in</span> pairs:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {name}: {purpose:30s} ({source})"</span>)
+    <span class="k">for</span> name, purpose, source <span class="k">in</span> pairs:
+        <span class="b">print</span>(f<span class="s">"  {name}: {purpose:30s} ({source})"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ A2A Task 生命周期"</span>)
-    <span class=<span class="s">"k"</span>>for</span> state <span class=<span class="s">"k"</span>>in</span> TaskState:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {state.value}"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ A2A Task 生命周期"</span>)
+    <span class="k">for</span> state <span class="k">in</span> TaskState:
+        <span class="b">print</span>(f<span class="s">"  {state.value}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第15章完成！"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第15章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_14_sqlite/14_sqlite_agent_storage.html" title="SQLite 持久化 — 5 表 Schema·WAL·审计查询">← 第14章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

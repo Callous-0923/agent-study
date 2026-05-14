@@ -182,208 +182,208 @@ body {
 <li>SWE-bench: 软件工程任务评测</li>
 <li>WebArena: Web 操作评测</li>
 <li>GAIA: 通用 AI 助手评测</li>
-<li>τ-Bench: 工具使用评测</li></div><div class="code-section"><details open><summary>💻 代码 (3 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Callable</pre></div></details></div><div class="lecture"><h2>6.2 Agent 评测框架（可运行）</h2></div><div class="code-section"><details open><summary>💻 代码 (200 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Callable
+<li>τ-Bench: 工具使用评测</li></div><div class="code-section"><details open><summary>💻 代码 (3 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Callable</pre></div></details></div><div class="lecture"><h2>6.2 Agent 评测框架（可运行）</h2></div><div class="code-section"><details open><summary>💻 代码 (200 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Callable
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentEvaluator</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Agent 评测器 —— 系统化评估 Agent 的表现。
+<span class="k">class</span> <span class="f">AgentEvaluator</span>:
+    <span class="s">"""Agent 评测器 —— 系统化评估 Agent 的表现。
 
     设计思路：
-      <span class=<span class="s">"n"</span>>1</span>. 准备一组测试用例（输入 + 期望输出 + 评估标准）
-      <span class=<span class="s">"n"</span>>2</span>. 对每个用例运行 Agent
-      <span class=<span class="s">"n"</span>>3</span>. 用 LLM 作为评判员（LLM-<span class=<span class="s">"k"</span>>as</span>-Judge）来打分
-      <span class=<span class="s">"n"</span>>4</span>. 汇总统计并生成报告
+      1. 准备一组测试用例（输入 + 期望输出 + 评估标准）
+      2. 对每个用例运行 Agent
+      3. 用 LLM 作为评判员（LLM-as-Judge）来打分
+      4. 汇总统计并生成报告
 
-    LLM-<span class=<span class="s">"k"</span>>as</span>-Judge 是目前业界评估 Agent 的主流方法：
+    LLM-as-Judge 是目前业界评估 Agent 的主流方法：
       因为 Agent 的输出是自然语言，传统指标（BLEU/ROUGE）
       无法准确评估语义层面的质量。
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, llm: Callable = <span class=<span class="s">"k"</span>>None</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"初始化评测器。
-
-        Args:
-            llm: 用于评分的 LLM 函数（可选的 LLM-<span class=<span class="s">"k"</span>>as</span>-Judge）。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.llm = llm
-        <span class=<span class="s">"k"</span>>self</span>.results = []
-
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>evaluate</span>(<span class=<span class="s">"k"</span>>self</span>, agent_func: Callable,
-                 test_cases: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"运行评测。
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, llm: Callable = <span class="k">None</span>):
+        <span class="s">"""初始化评测器。
 
         Args:
-            agent_func: Agent 执行函数，签名为 (<span class=<span class="s">"b"</span>>input</span>: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>。
+            llm: 用于评分的 LLM 函数（可选的 LLM-as-Judge）。
+        """</span>
+        <span class="k">self</span>.llm = llm
+        <span class="k">self</span>.results = []
+
+    <span class="k">def</span> <span class="f">evaluate</span>(<span class="k">self</span>, agent_func: Callable,
+                 test_cases: <span class="b">list</span>[<span class="b">dict</span>]) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""运行评测。
+
+        Args:
+            agent_func: Agent 执行函数，签名为 (input: str) -&gt; str。
             test_cases: 测试用例列表，每个用例包含:
-                - <span class=<span class="s">"b"</span>>input</span>: 输入文本
+                - input: 输入文本
                 - expected_keywords: 回答应包含的关键词（可选）
                 - expected_tool: 预期调用的工具名（可选）
-                - weight: 权重（默认 <span class=<span class="s">"n"</span>>1.0</span>）
+                - weight: 权重（默认 1.0）
 
         Returns:
             评测结果列表。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.results = []
-        <span class=<span class="s">"k"</span>>for</span> i, case <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(test_cases):
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  📝 评测用例 {i+<span class="</span>n<span class="s">">1</span>}/{<span class="</span>b<span class="s">">len</span>(test_cases)}: {case[<span class='s'>'<span class="</span>b<span class="s">">input</span>'</span>][:<span class="</span>n<span class="s">">50</span>]}..."</span>)
+        """</span>
+        <span class="k">self</span>.results = []
+        <span class="k">for</span> i, case <span class="k">in</span> <span class="b">enumerate</span>(test_cases):
+            <span class="b">print</span>(f<span class="s">"\n  📝 评测用例 {i+1}/{len(test_cases)}: {case['input'][:50]}..."</span>)
 
             start_time = time.time()
-            <span class=<span class="s">"k"</span>>try</span>:
-                output = agent_func(case[<span class="s">"<span class="</span>b<span class="s">">input</span>"</span>])
-                error = <span class=<span class="s">"k"</span>>None</span>
-            <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+            <span class="k">try</span>:
+                output = agent_func(case[<span class="s">"input"</span>])
+                error = <span class="k">None</span>
+            <span class="k">except</span> Exception <span class="k">as</span> e:
                 output = <span class="s">""</span>
-                error = <span class=<span class="s">"b"</span>>str</span>(e)
+                error = <span class="b">str</span>(e)
 
             elapsed = time.time() - start_time
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 基本检查</span>
-            score = <span class=<span class="s">"n"</span>>1.0</span>
+            <span class="h"># 基本检查</span>
+            score = <span class="n">1.0</span>
             details = []
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查关键词</span>
-            <span class=<span class="s">"k"</span>>if</span> <span class="s">"expected_keywords"</span> <span class=<span class="s">"k"</span>>in</span> case <span class=<span class="s">"k"</span>>and</span> case[<span class="s">"expected_keywords"</span>]:
-                keyword_score = <span class=<span class="s">"k"</span>>self</span>._check_keywords(
+            <span class="h"># 检查关键词</span>
+            <span class="k">if</span> <span class="s">"expected_keywords"</span> <span class="k">in</span> case <span class="k">and</span> case[<span class="s">"expected_keywords"</span>]:
+                keyword_score = <span class="k">self</span>._check_keywords(
                     output, case[<span class="s">"expected_keywords"</span>]
                 )
                 score *= keyword_score
                 details.append(f<span class="s">"关键词匹配: {keyword_score:.2f}"</span>)
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查是否非空</span>
-            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> output <span class=<span class="s">"k"</span>>or</span> <span class=<span class="s">"b"</span>>len</span>(output) &lt; <span class=<span class="s">"n"</span>>10</span>:
-                score *= <span class=<span class="s">"n"</span>>0.5</span>
+            <span class="h"># 检查是否非空</span>
+            <span class="k">if</span> <span class="k">not</span> output <span class="k">or</span> <span class="b">len</span>(output) &lt; <span class="n">10</span>:
+                score *= <span class="n">0.5</span>
                 details.append(<span class="s">"输出过短"</span>)
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查是否有错误</span>
-            <span class=<span class="s">"k"</span>>if</span> error:
-                score *= <span class=<span class="s">"n"</span>>0</span>
+            <span class="h"># 检查是否有错误</span>
+            <span class="k">if</span> error:
+                score *= <span class="n">0</span>
                 details.append(f<span class="s">"执行错误: {error}"</span>)
 
-            weight = case.get(<span class="s">"weight"</span>, <span class=<span class="s">"n"</span>>1.0</span>)
+            weight = case.get(<span class="s">"weight"</span>, <span class="n">1.0</span>)
             result = {
-                <span class="s">"case_id"</span>: i + <span class=<span class="s">"n"</span>>1</span>,
-                <span class="s">"<span class="</span>b<span class="s">">input</span>"</span>: case[<span class="s">"<span class="</span>b<span class="s">">input</span>"</span>],
-                <span class="s">"output"</span>: output[:<span class=<span class="s">"n"</span>>200</span>],
+                <span class="s">"case_id"</span>: i + <span class="n">1</span>,
+                <span class="s">"input"</span>: case[<span class="s">"input"</span>],
+                <span class="s">"output"</span>: output[:<span class="n">200</span>],
                 <span class="s">"score"</span>: score,
                 <span class="s">"weight"</span>: weight,
                 <span class="s">"error"</span>: error,
-                <span class="s">"elapsed_sec"</span>: <span class=<span class="s">"b"</span>>round</span>(elapsed, <span class=<span class="s">"n"</span>>2</span>),
+                <span class="s">"elapsed_sec"</span>: <span class="b">round</span>(elapsed, <span class="n">2</span>),
                 <span class="s">"details"</span>: details,
             }
-            <span class=<span class="s">"k"</span>>self</span>.results.append(result)
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    评分: {score:.2f} | 耗时: {elapsed:.2f}s"</span>)
+            <span class="k">self</span>.results.append(result)
+            <span class="b">print</span>(f<span class="s">"    评分: {score:.2f} | 耗时: {elapsed:.2f}s"</span>)
 
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.results
+        <span class="k">return</span> <span class="k">self</span>.results
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_check_keywords</span>(<span class=<span class="s">"k"</span>>self</span>, output: <span class=<span class="s">"b"</span>>str</span>, keywords: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]) -&gt; <span class=<span class="s">"b"</span>>float</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"检查输出是否包含期望关键词。
+    <span class="k">def</span> <span class="f">_check_keywords</span>(<span class="k">self</span>, output: <span class="b">str</span>, keywords: <span class="b">list</span>[<span class="b">str</span>]) -&gt; <span class="b">float</span>:
+        <span class="s">"""检查输出是否包含期望关键词。
 
         Args:
             output: Agent 输出。
             keywords: 期望出现的关键词列表。
 
         Returns:
-            匹配比例（<span class=<span class="s">"n"</span>>0</span>~<span class=<span class="s">"n"</span>>1</span>）。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> keywords:
-            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"n"</span>>1.0</span>
-        matched = <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>1</span> <span class=<span class="s">"k"</span>>for</span> kw <span class=<span class="s">"k"</span>>in</span> keywords <span class=<span class="s">"k"</span>>if</span> kw.lower() <span class=<span class="s">"k"</span>>in</span> output.lower())
-        <span class=<span class="s">"k"</span>>return</span> matched / <span class=<span class="s">"b"</span>>len</span>(keywords)
+            匹配比例（0~1）。
+        """</span>
+        <span class="k">if</span> <span class="k">not</span> keywords:
+            <span class="k">return</span> <span class="n">1.0</span>
+        matched = <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> kw <span class="k">in</span> keywords <span class="k">if</span> kw.lower() <span class="k">in</span> output.lower())
+        <span class="k">return</span> matched / <span class="b">len</span>(keywords)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>summary</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"生成评测汇总报告。
+    <span class="k">def</span> <span class="f">summary</span>(<span class="k">self</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""生成评测汇总报告。
 
         Returns:
             格式化的评测报告。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>self</span>.results:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"无评测结果。"</span>
+        """</span>
+        <span class="k">if</span> <span class="k">not</span> <span class="k">self</span>.results:
+            <span class="k">return</span> <span class="s">"无评测结果。"</span>
 
-        total_weight = <span class=<span class="s">"b"</span>>sum</span>(r[<span class="s">"weight"</span>] <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.results)
-        weighted_score = <span class=<span class="s">"b"</span>>sum</span>(
-            r[<span class="s">"score"</span>] * r[<span class="s">"weight"</span>] <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.results
-        ) / total_weight <span class=<span class="s">"k"</span>>if</span> total_weight &gt; <span class=<span class="s">"n"</span>>0</span> <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"n"</span>>0</span>
+        total_weight = <span class="b">sum</span>(r[<span class="s">"weight"</span>] <span class="k">for</span> r <span class="k">in</span> <span class="k">self</span>.results)
+        weighted_score = <span class="b">sum</span>(
+            r[<span class="s">"score"</span>] * r[<span class="s">"weight"</span>] <span class="k">for</span> r <span class="k">in</span> <span class="k">self</span>.results
+        ) / total_weight <span class="k">if</span> total_weight &gt; <span class="n">0</span> <span class="k">else</span> <span class="n">0</span>
 
-        passed = <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>1</span> <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.results <span class=<span class="s">"k"</span>>if</span> r[<span class="s">"score"</span>] &gt;= <span class=<span class="s">"n"</span>>0.7</span>)
-        failed = <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.results) - passed
+        passed = <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> r <span class="k">in</span> <span class="k">self</span>.results <span class="k">if</span> r[<span class="s">"score"</span>] &gt;= <span class="n">0.7</span>)
+        failed = <span class="b">len</span>(<span class="k">self</span>.results) - passed
 
         lines = [
-            <span class="s">"="</span> * <span class=<span class="s">"n"</span>>55</span>,
+            <span class="s">"="</span> * <span class="n">55</span>,
             <span class="s">"  📊 Agent 评测报告"</span>,
-            <span class="s">"="</span> * <span class=<span class="s">"n"</span>>55</span>,
-            f<span class="s">"  总用例数: {<span class="</span>b<span class="s">">len</span>(<span class="</span>k<span class="s">">self</span>.results)}"</span>,
-            f<span class="s">"  通过 (≥<span class="</span>n<span class="s">">0.7</span>): {passed}"</span>,
-            f<span class="s">"  失败 (&lt;<span class="</span>n<span class="s">">0.7</span>): {failed}"</span>,
+            <span class="s">"="</span> * <span class="n">55</span>,
+            f<span class="s">"  总用例数: {len(self.results)}"</span>,
+            f<span class="s">"  通过 (≥0.7): {passed}"</span>,
+            f<span class="s">"  失败 (&lt;0.7): {failed}"</span>,
             f<span class="s">"  加权平均分: {weighted_score:.2f}"</span>,
-            f<span class="s">"  平均耗时: {<span class="</span>b<span class="s">">sum</span>(r[<span class='s'>'elapsed_sec'</span>] <span class="</span>k<span class="s">">for</span> r <span class="</span>k<span class="s">">in</span> <span class="</span>k<span class="s">">self</span>.results) / <span class="</span>b<span class="s">">len</span>(<span class="</span>k<span class="s">">self</span>.results):.2f}s"</span>,
-            <span class="s">"-"</span> * <span class=<span class="s">"n"</span>>55</span>,
+            f<span class="s">"  平均耗时: {sum(r['elapsed_sec'] for r in self.results) / len(self.results):.2f}s"</span>,
+            <span class="s">"-"</span> * <span class="n">55</span>,
         ]
 
-        <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.results:
-            status = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> r[<span class="s">"score"</span>] &gt;= <span class=<span class="s">"n"</span>>0.7</span> <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌"</span>
+        <span class="k">for</span> r <span class="k">in</span> <span class="k">self</span>.results:
+            status = <span class="s">"✅"</span> <span class="k">if</span> r[<span class="s">"score"</span>] &gt;= <span class="n">0.7</span> <span class="k">else</span> <span class="s">"❌"</span>
             lines.append(
-                f<span class="s">"  {status} Case {r[<span class='s'>'case_id'</span>]}: "</span>
-                f<span class="s">"score={r[<span class='s'>'score'</span>]:.2f} | time={r[<span class='s'>'elapsed_sec'</span>]}s"</span>
+                f<span class="s">"  {status} Case {r['case_id']}: "</span>
+                f<span class="s">"score={r['score']:.2f} | time={r['elapsed_sec']}s"</span>
             )
-            <span class=<span class="s">"k"</span>>if</span> r[<span class="s">"details"</span>]:
-                <span class=<span class="s">"k"</span>>for</span> d <span class=<span class="s">"k"</span>>in</span> r[<span class="s">"details"</span>]:
+            <span class="k">if</span> r[<span class="s">"details"</span>]:
+                <span class="k">for</span> d <span class="k">in</span> r[<span class="s">"details"</span>]:
                     lines.append(f<span class="s">"     └─ {d}"</span>)
 
-        lines.append(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>55</span>)
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"\n"</span>.join(lines)
+        lines.append(<span class="s">"="</span> * <span class="n">55</span>)
+        <span class="k">return</span> <span class="s">"\n"</span>.join(lines)
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_evaluation</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 Agent 评测体系。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Agent 评测体系演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_evaluation</span>():
+    <span class="s">"""演示 Agent 评测体系。"""</span>
+    <span class="b">print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Agent 评测体系演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟一个「简单 Agent」</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>mock_agent</span>(user_input: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"模拟 Agent —— 用于演示评测流程。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"天气"</span> <span class=<span class="s">"k"</span>>in</span> user_input:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"当前天气晴好，气温25°C，湿度适中，适合户外活动。"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"计算"</span> <span class=<span class="s">"k"</span>>in</span> user_input:
-            <span class=<span class="s">"k"</span>>try</span>:
-                expr = user_input.split(<span class="s">"计算"</span>)[-<span class=<span class="s">"n"</span>>1</span>].strip()
-                <span class=<span class="s">"k"</span>>return</span> f<span class="s">"计算结果为: {eval(expr)}"</span>
-            <span class=<span class="s">"k"</span>>except</span> Exception:
-                <span class=<span class="s">"k"</span>>return</span> <span class="s">"计算失败，请检查表达式。"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"搜索"</span> <span class=<span class="s">"k"</span>>in</span> user_input:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"搜索结果: 找到了相关信息，详情请查看链接。"</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"我不太理解您的问题，请提供更多信息。"</span>
+    <span class="h"># 模拟一个「简单 Agent」</span>
+    <span class="k">def</span> <span class="f">mock_agent</span>(user_input: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""模拟 Agent —— 用于演示评测流程。"""</span>
+        <span class="k">if</span> <span class="s">"天气"</span> <span class="k">in</span> user_input:
+            <span class="k">return</span> <span class="s">"当前天气晴好，气温25°C，湿度适中，适合户外活动。"</span>
+        <span class="k">if</span> <span class="s">"计算"</span> <span class="k">in</span> user_input:
+            <span class="k">try</span>:
+                expr = user_input.split(<span class="s">"计算"</span>)[-<span class="n">1</span>].strip()
+                <span class="k">return</span> f<span class="s">"计算结果为: {eval(expr)}"</span>
+            <span class="k">except</span> Exception:
+                <span class="k">return</span> <span class="s">"计算失败，请检查表达式。"</span>
+        <span class="k">if</span> <span class="s">"搜索"</span> <span class="k">in</span> user_input:
+            <span class="k">return</span> <span class="s">"搜索结果: 找到了相关信息，详情请查看链接。"</span>
+        <span class="k">return</span> <span class="s">"我不太理解您的问题，请提供更多信息。"</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 准备测试用例</span>
+    <span class="h"># 准备测试用例</span>
     test_cases = [
         {
-            <span class="s">"<span class="</span>b<span class="s">">input</span>"</span>: <span class="s">"北京今天天气怎么样？"</span>,
+            <span class="s">"input"</span>: <span class="s">"北京今天天气怎么样？"</span>,
             <span class="s">"expected_keywords"</span>: [<span class="s">"天气"</span>, <span class="s">"温度"</span>, <span class="s">"°C"</span>],
-            <span class="s">"weight"</span>: <span class=<span class="s">"n"</span>>1.0</span>,
+            <span class="s">"weight"</span>: <span class="n">1.0</span>,
         },
         {
-            <span class="s">"<span class="</span>b<span class="s">">input</span>"</span>: <span class="s">"帮我算一下 <span class="</span>n<span class="s">">123</span> + <span class="</span>n<span class="s">">456</span> 等于多少"</span>,
-            <span class="s">"expected_keywords"</span>: [<span class="s">"<span class="</span>n<span class="s">">579</span>"</span>, <span class="s">"<span class="</span>n<span class="s">">579</span>"</span>],
-            <span class="s">"weight"</span>: <span class=<span class="s">"n"</span>>1.0</span>,
+            <span class="s">"input"</span>: <span class="s">"帮我算一下 123 + 456 等于多少"</span>,
+            <span class="s">"expected_keywords"</span>: [<span class="s">"579"</span>, <span class="s">"579"</span>],
+            <span class="s">"weight"</span>: <span class="n">1.0</span>,
         },
         {
-            <span class="s">"<span class="</span>b<span class="s">">input</span>"</span>: <span class="s">"搜索 Python 教程"</span>,
+            <span class="s">"input"</span>: <span class="s">"搜索 Python 教程"</span>,
             <span class="s">"expected_keywords"</span>: [<span class="s">"搜索"</span>, <span class="s">"结果"</span>],
-            <span class="s">"weight"</span>: <span class=<span class="s">"n"</span>>0.5</span>,
+            <span class="s">"weight"</span>: <span class="n">0.5</span>,
         },
         {
-            <span class="s">"<span class="</span>b<span class="s">">input</span>"</span>: <span class="s">"写一首关于春天的诗"</span>,
+            <span class="s">"input"</span>: <span class="s">"写一首关于春天的诗"</span>,
             <span class="s">"expected_keywords"</span>: [<span class="s">"春"</span>],
-            <span class="s">"weight"</span>: <span class=<span class="s">"n"</span>>1.5</span>,
+            <span class="s">"weight"</span>: <span class="n">1.5</span>,
         },
     ]
 
     evaluator = AgentEvaluator()
     evaluator.evaluate(mock_agent, test_cases)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + evaluator.summary())</pre></div></details></div><div class="lecture"><h2>6.3 Agent 测试策略</h2>
+    <span class="b">print</span>(<span class="s">"\n"</span> + evaluator.summary())</pre></div></details></div><div class="lecture"><h2>6.3 Agent 测试策略</h2>
 <p>&nbsp;</p>
 <p>测试金字塔（从底层到顶层）：</p>
 <p>&nbsp;</p>
@@ -458,47 +458,47 @@ body {
 <li>错误处理：try-catch + 可读错误信息</li>
 <li>可观测性：Tracing + Logging</li>
 <li>成本控制：模型分层 + 缓存 + 限制</li>
-<li>安全：Prompt Injection 防护 + 权限最小化</li></div><div class="code-section"><details open><summary>💻 代码 (33 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Callable
+<li>安全：Prompt Injection 防护 + 权限最小化</li></div><div class="code-section"><details open><summary>💻 代码 (33 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Callable
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       第6章：Agent 评估与最佳实践                      ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       评测框架 · 测试策略 · 生产部署                  ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║       第6章：Agent 评估与最佳实践                      ║"</span>)
+    <span class="b">print</span>(<span class="s">"║       评测框架 · 测试策略 · 生产部署                  ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">6.2</span> Agent 评测框架演示"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 6.2 Agent 评测框架演示"</span>)
     demo_evaluation()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">6.3</span> 测试策略速查"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"Layer <span class="</span>n<span class="s">">1</span>: 工具单元测试 → 测 Tool 函数"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"Layer <span class="</span>n<span class="s">">2</span>: Agent 行为测试 → Mock LLM, 测循环逻辑"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"Layer <span class="</span>n<span class="s">">3</span>: 端到端测试 → LLM-<span class="</span>k<span class="s">">as</span>-Judge 评分"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"Layer <span class="</span>n<span class="s">">4</span>: 回归测试 → Bad case 积累 + 持续回归"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 6.3 测试策略速查"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="b">print</span>(<span class="s">"Layer 1: 工具单元测试 → 测 Tool 函数"</span>)
+    <span class="b">print</span>(<span class="s">"Layer 2: Agent 行为测试 → Mock LLM, 测循环逻辑"</span>)
+    <span class="b">print</span>(<span class="s">"Layer 3: 端到端测试 → LLM-as-Judge 评分"</span>)
+    <span class="b">print</span>(<span class="s">"Layer 4: 回归测试 → Bad case 积累 + 持续回归"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">6.4</span> 生产 Checklist"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 6.4 生产 Checklist"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     checks = [
-        <span class="s">"✅ 错误处理: 每个工具调用有 <span class="</span>k<span class="s">">try</span>-catch"</span>,
+        <span class="s">"✅ 错误处理: 每个工具调用有 try-catch"</span>,
         <span class="s">"✅ 可观测性: Tracing + Logging 全覆盖"</span>,
         <span class="s">"✅ 成本控制: 模型分层 + 缓存 + 限制"</span>,
         <span class="s">"✅ 安全防护: Input 过滤 + 权限最小化"</span>,
         <span class="s">"✅ 性能优化: 并行 + Streaming + 预计算"</span>,
     ]
-    <span class=<span class="s">"k"</span>>for</span> c <span class=<span class="s">"k"</span>>in</span> checks:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {c}"</span>)
+    <span class="k">for</span> c <span class="k">in</span> checks:
+        <span class="b">print</span>(f<span class="s">"  {c}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第6章完成！接下来进入第7章：求职面试准备。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (392 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+    <span class="b">print</span>(<span class="s">"\n✅ 第6章完成！接下来进入第7章：求职面试准备。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (392 行)</summary><div class="code-block"><pre><span class="s">"""
 第6章：Agent 评估、测试与生产最佳实践
 =====================================
 
 📌 本章目标：
-  <span class=<span class="s">"n"</span>>1</span>. 掌握 Agent 评估的核心维度和指标
-  <span class=<span class="s">"n"</span>>2</span>. 了解业界常用的 Agent Benchmark
-  <span class=<span class="s">"n"</span>>3</span>. 学会编写 Agent 的单元测试
-  <span class=<span class="s">"n"</span>>4</span>. 掌握生产环境 Agent 的最佳实践
+  1. 掌握 Agent 评估的核心维度和指标
+  2. 了解业界常用的 Agent Benchmark
+  3. 学会编写 Agent 的单元测试
+  4. 掌握生产环境 Agent 的最佳实践
 
 📌 面试高频点：
   - Agent 的质量怎么衡量？
@@ -508,7 +508,7 @@ body {
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>6.1</span> Agent 评估 vs LLM 评估
+6.1 Agent 评估 vs LLM 评估
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 评估 LLM（模型级别）：
@@ -539,348 +539,348 @@ body {
 └──────────────┴──────────────────────────────────────┘
 
 主流 Agent Benchmark：
-  - AgentBench: <span class=<span class="s">"n"</span>>8</span> 个真实环境的 Agent 评测
+  - AgentBench: 8 个真实环境的 Agent 评测
   - SWE-bench: 软件工程任务评测
   - WebArena: Web 操作评测
   - GAIA: 通用 AI 助手评测
   - τ-Bench: 工具使用评测
-<span class="s">""</span>"</span>
+"""</span>
 
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Callable
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Callable
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>6.2</span> Agent 评测框架（可运行）
+6.2 Agent 评测框架（可运行）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentEvaluator</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Agent 评测器 —— 系统化评估 Agent 的表现。
+<span class="k">class</span> <span class="f">AgentEvaluator</span>:
+    <span class="s">"""Agent 评测器 —— 系统化评估 Agent 的表现。
 
     设计思路：
-      <span class=<span class="s">"n"</span>>1</span>. 准备一组测试用例（输入 + 期望输出 + 评估标准）
-      <span class=<span class="s">"n"</span>>2</span>. 对每个用例运行 Agent
-      <span class=<span class="s">"n"</span>>3</span>. 用 LLM 作为评判员（LLM-<span class=<span class="s">"k"</span>>as</span>-Judge）来打分
-      <span class=<span class="s">"n"</span>>4</span>. 汇总统计并生成报告
+      1. 准备一组测试用例（输入 + 期望输出 + 评估标准）
+      2. 对每个用例运行 Agent
+      3. 用 LLM 作为评判员（LLM-as-Judge）来打分
+      4. 汇总统计并生成报告
 
-    LLM-<span class=<span class="s">"k"</span>>as</span>-Judge 是目前业界评估 Agent 的主流方法：
+    LLM-as-Judge 是目前业界评估 Agent 的主流方法：
       因为 Agent 的输出是自然语言，传统指标（BLEU/ROUGE）
       无法准确评估语义层面的质量。
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, llm: Callable = <span class=<span class="s">"k"</span>>None</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"初始化评测器。
-
-        Args:
-            llm: 用于评分的 LLM 函数（可选的 LLM-<span class=<span class="s">"k"</span>>as</span>-Judge）。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.llm = llm
-        <span class=<span class="s">"k"</span>>self</span>.results = []
-
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>evaluate</span>(<span class=<span class="s">"k"</span>>self</span>, agent_func: Callable,
-                 test_cases: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"运行评测。
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, llm: Callable = <span class="k">None</span>):
+        <span class="s">"""初始化评测器。
 
         Args:
-            agent_func: Agent 执行函数，签名为 (<span class=<span class="s">"b"</span>>input</span>: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>。
+            llm: 用于评分的 LLM 函数（可选的 LLM-as-Judge）。
+        """</span>
+        <span class="k">self</span>.llm = llm
+        <span class="k">self</span>.results = []
+
+    <span class="k">def</span> <span class="f">evaluate</span>(<span class="k">self</span>, agent_func: Callable,
+                 test_cases: <span class="b">list</span>[<span class="b">dict</span>]) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""运行评测。
+
+        Args:
+            agent_func: Agent 执行函数，签名为 (input: str) -&gt; str。
             test_cases: 测试用例列表，每个用例包含:
-                - <span class=<span class="s">"b"</span>>input</span>: 输入文本
+                - input: 输入文本
                 - expected_keywords: 回答应包含的关键词（可选）
                 - expected_tool: 预期调用的工具名（可选）
-                - weight: 权重（默认 <span class=<span class="s">"n"</span>>1.0</span>）
+                - weight: 权重（默认 1.0）
 
         Returns:
             评测结果列表。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.results = []
-        <span class=<span class="s">"k"</span>>for</span> i, case <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(test_cases):
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  📝 评测用例 {i+<span class="</span>n<span class="s">">1</span>}/{<span class="</span>b<span class="s">">len</span>(test_cases)}: {case[<span class='s'>'<span class="</span>b<span class="s">">input</span>'</span>][:<span class="</span>n<span class="s">">50</span>]}..."</span>)
+        """</span>
+        <span class="k">self</span>.results = []
+        <span class="k">for</span> i, case <span class="k">in</span> <span class="b">enumerate</span>(test_cases):
+            <span class="b">print</span>(f<span class="s">"\n  📝 评测用例 {i+1}/{len(test_cases)}: {case['input'][:50]}..."</span>)
 
             start_time = time.time()
-            <span class=<span class="s">"k"</span>>try</span>:
-                output = agent_func(case[<span class="s">"<span class="</span>b<span class="s">">input</span>"</span>])
-                error = <span class=<span class="s">"k"</span>>None</span>
-            <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+            <span class="k">try</span>:
+                output = agent_func(case[<span class="s">"input"</span>])
+                error = <span class="k">None</span>
+            <span class="k">except</span> Exception <span class="k">as</span> e:
                 output = <span class="s">""</span>
-                error = <span class=<span class="s">"b"</span>>str</span>(e)
+                error = <span class="b">str</span>(e)
 
             elapsed = time.time() - start_time
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 基本检查</span>
-            score = <span class=<span class="s">"n"</span>>1.0</span>
+            <span class="h"># 基本检查</span>
+            score = <span class="n">1.0</span>
             details = []
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查关键词</span>
-            <span class=<span class="s">"k"</span>>if</span> <span class="s">"expected_keywords"</span> <span class=<span class="s">"k"</span>>in</span> case <span class=<span class="s">"k"</span>>and</span> case[<span class="s">"expected_keywords"</span>]:
-                keyword_score = <span class=<span class="s">"k"</span>>self</span>._check_keywords(
+            <span class="h"># 检查关键词</span>
+            <span class="k">if</span> <span class="s">"expected_keywords"</span> <span class="k">in</span> case <span class="k">and</span> case[<span class="s">"expected_keywords"</span>]:
+                keyword_score = <span class="k">self</span>._check_keywords(
                     output, case[<span class="s">"expected_keywords"</span>]
                 )
                 score *= keyword_score
                 details.append(f<span class="s">"关键词匹配: {keyword_score:.2f}"</span>)
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查是否非空</span>
-            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> output <span class=<span class="s">"k"</span>>or</span> <span class=<span class="s">"b"</span>>len</span>(output) &lt; <span class=<span class="s">"n"</span>>10</span>:
-                score *= <span class=<span class="s">"n"</span>>0.5</span>
+            <span class="h"># 检查是否非空</span>
+            <span class="k">if</span> <span class="k">not</span> output <span class="k">or</span> <span class="b">len</span>(output) &lt; <span class="n">10</span>:
+                score *= <span class="n">0.5</span>
                 details.append(<span class="s">"输出过短"</span>)
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查是否有错误</span>
-            <span class=<span class="s">"k"</span>>if</span> error:
-                score *= <span class=<span class="s">"n"</span>>0</span>
+            <span class="h"># 检查是否有错误</span>
+            <span class="k">if</span> error:
+                score *= <span class="n">0</span>
                 details.append(f<span class="s">"执行错误: {error}"</span>)
 
-            weight = case.get(<span class="s">"weight"</span>, <span class=<span class="s">"n"</span>>1.0</span>)
+            weight = case.get(<span class="s">"weight"</span>, <span class="n">1.0</span>)
             result = {
-                <span class="s">"case_id"</span>: i + <span class=<span class="s">"n"</span>>1</span>,
-                <span class="s">"<span class="</span>b<span class="s">">input</span>"</span>: case[<span class="s">"<span class="</span>b<span class="s">">input</span>"</span>],
-                <span class="s">"output"</span>: output[:<span class=<span class="s">"n"</span>>200</span>],
+                <span class="s">"case_id"</span>: i + <span class="n">1</span>,
+                <span class="s">"input"</span>: case[<span class="s">"input"</span>],
+                <span class="s">"output"</span>: output[:<span class="n">200</span>],
                 <span class="s">"score"</span>: score,
                 <span class="s">"weight"</span>: weight,
                 <span class="s">"error"</span>: error,
-                <span class="s">"elapsed_sec"</span>: <span class=<span class="s">"b"</span>>round</span>(elapsed, <span class=<span class="s">"n"</span>>2</span>),
+                <span class="s">"elapsed_sec"</span>: <span class="b">round</span>(elapsed, <span class="n">2</span>),
                 <span class="s">"details"</span>: details,
             }
-            <span class=<span class="s">"k"</span>>self</span>.results.append(result)
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    评分: {score:.2f} | 耗时: {elapsed:.2f}s"</span>)
+            <span class="k">self</span>.results.append(result)
+            <span class="b">print</span>(f<span class="s">"    评分: {score:.2f} | 耗时: {elapsed:.2f}s"</span>)
 
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.results
+        <span class="k">return</span> <span class="k">self</span>.results
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_check_keywords</span>(<span class=<span class="s">"k"</span>>self</span>, output: <span class=<span class="s">"b"</span>>str</span>, keywords: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]) -&gt; <span class=<span class="s">"b"</span>>float</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"检查输出是否包含期望关键词。
+    <span class="k">def</span> <span class="f">_check_keywords</span>(<span class="k">self</span>, output: <span class="b">str</span>, keywords: <span class="b">list</span>[<span class="b">str</span>]) -&gt; <span class="b">float</span>:
+        <span class="s">"""检查输出是否包含期望关键词。
 
         Args:
             output: Agent 输出。
             keywords: 期望出现的关键词列表。
 
         Returns:
-            匹配比例（<span class=<span class="s">"n"</span>>0</span>~<span class=<span class="s">"n"</span>>1</span>）。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> keywords:
-            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"n"</span>>1.0</span>
-        matched = <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>1</span> <span class=<span class="s">"k"</span>>for</span> kw <span class=<span class="s">"k"</span>>in</span> keywords <span class=<span class="s">"k"</span>>if</span> kw.lower() <span class=<span class="s">"k"</span>>in</span> output.lower())
-        <span class=<span class="s">"k"</span>>return</span> matched / <span class=<span class="s">"b"</span>>len</span>(keywords)
+            匹配比例（0~1）。
+        """</span>
+        <span class="k">if</span> <span class="k">not</span> keywords:
+            <span class="k">return</span> <span class="n">1.0</span>
+        matched = <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> kw <span class="k">in</span> keywords <span class="k">if</span> kw.lower() <span class="k">in</span> output.lower())
+        <span class="k">return</span> matched / <span class="b">len</span>(keywords)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>summary</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"生成评测汇总报告。
+    <span class="k">def</span> <span class="f">summary</span>(<span class="k">self</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""生成评测汇总报告。
 
         Returns:
             格式化的评测报告。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>self</span>.results:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"无评测结果。"</span>
+        """</span>
+        <span class="k">if</span> <span class="k">not</span> <span class="k">self</span>.results:
+            <span class="k">return</span> <span class="s">"无评测结果。"</span>
 
-        total_weight = <span class=<span class="s">"b"</span>>sum</span>(r[<span class="s">"weight"</span>] <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.results)
-        weighted_score = <span class=<span class="s">"b"</span>>sum</span>(
-            r[<span class="s">"score"</span>] * r[<span class="s">"weight"</span>] <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.results
-        ) / total_weight <span class=<span class="s">"k"</span>>if</span> total_weight &gt; <span class=<span class="s">"n"</span>>0</span> <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"n"</span>>0</span>
+        total_weight = <span class="b">sum</span>(r[<span class="s">"weight"</span>] <span class="k">for</span> r <span class="k">in</span> <span class="k">self</span>.results)
+        weighted_score = <span class="b">sum</span>(
+            r[<span class="s">"score"</span>] * r[<span class="s">"weight"</span>] <span class="k">for</span> r <span class="k">in</span> <span class="k">self</span>.results
+        ) / total_weight <span class="k">if</span> total_weight &gt; <span class="n">0</span> <span class="k">else</span> <span class="n">0</span>
 
-        passed = <span class=<span class="s">"b"</span>>sum</span>(<span class=<span class="s">"n"</span>>1</span> <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.results <span class=<span class="s">"k"</span>>if</span> r[<span class="s">"score"</span>] &gt;= <span class=<span class="s">"n"</span>>0.7</span>)
-        failed = <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.results) - passed
+        passed = <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> r <span class="k">in</span> <span class="k">self</span>.results <span class="k">if</span> r[<span class="s">"score"</span>] &gt;= <span class="n">0.7</span>)
+        failed = <span class="b">len</span>(<span class="k">self</span>.results) - passed
 
         lines = [
-            <span class="s">"="</span> * <span class=<span class="s">"n"</span>>55</span>,
+            <span class="s">"="</span> * <span class="n">55</span>,
             <span class="s">"  📊 Agent 评测报告"</span>,
-            <span class="s">"="</span> * <span class=<span class="s">"n"</span>>55</span>,
-            f<span class="s">"  总用例数: {<span class="</span>b<span class="s">">len</span>(<span class="</span>k<span class="s">">self</span>.results)}"</span>,
-            f<span class="s">"  通过 (≥<span class="</span>n<span class="s">">0.7</span>): {passed}"</span>,
-            f<span class="s">"  失败 (&lt;<span class="</span>n<span class="s">">0.7</span>): {failed}"</span>,
+            <span class="s">"="</span> * <span class="n">55</span>,
+            f<span class="s">"  总用例数: {len(self.results)}"</span>,
+            f<span class="s">"  通过 (≥0.7): {passed}"</span>,
+            f<span class="s">"  失败 (&lt;0.7): {failed}"</span>,
             f<span class="s">"  加权平均分: {weighted_score:.2f}"</span>,
-            f<span class="s">"  平均耗时: {<span class="</span>b<span class="s">">sum</span>(r[<span class='s'>'elapsed_sec'</span>] <span class="</span>k<span class="s">">for</span> r <span class="</span>k<span class="s">">in</span> <span class="</span>k<span class="s">">self</span>.results) / <span class="</span>b<span class="s">">len</span>(<span class="</span>k<span class="s">">self</span>.results):.2f}s"</span>,
-            <span class="s">"-"</span> * <span class=<span class="s">"n"</span>>55</span>,
+            f<span class="s">"  平均耗时: {sum(r['elapsed_sec'] for r in self.results) / len(self.results):.2f}s"</span>,
+            <span class="s">"-"</span> * <span class="n">55</span>,
         ]
 
-        <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.results:
-            status = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> r[<span class="s">"score"</span>] &gt;= <span class=<span class="s">"n"</span>>0.7</span> <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌"</span>
+        <span class="k">for</span> r <span class="k">in</span> <span class="k">self</span>.results:
+            status = <span class="s">"✅"</span> <span class="k">if</span> r[<span class="s">"score"</span>] &gt;= <span class="n">0.7</span> <span class="k">else</span> <span class="s">"❌"</span>
             lines.append(
-                f<span class="s">"  {status} Case {r[<span class='s'>'case_id'</span>]}: "</span>
-                f<span class="s">"score={r[<span class='s'>'score'</span>]:.2f} | time={r[<span class='s'>'elapsed_sec'</span>]}s"</span>
+                f<span class="s">"  {status} Case {r['case_id']}: "</span>
+                f<span class="s">"score={r['score']:.2f} | time={r['elapsed_sec']}s"</span>
             )
-            <span class=<span class="s">"k"</span>>if</span> r[<span class="s">"details"</span>]:
-                <span class=<span class="s">"k"</span>>for</span> d <span class=<span class="s">"k"</span>>in</span> r[<span class="s">"details"</span>]:
+            <span class="k">if</span> r[<span class="s">"details"</span>]:
+                <span class="k">for</span> d <span class="k">in</span> r[<span class="s">"details"</span>]:
                     lines.append(f<span class="s">"     └─ {d}"</span>)
 
-        lines.append(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>55</span>)
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"\n"</span>.join(lines)
+        lines.append(<span class="s">"="</span> * <span class="n">55</span>)
+        <span class="k">return</span> <span class="s">"\n"</span>.join(lines)
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_evaluation</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 Agent 评测体系。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Agent 评测体系演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_evaluation</span>():
+    <span class="s">"""演示 Agent 评测体系。"""</span>
+    <span class="b">print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Agent 评测体系演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟一个「简单 Agent」</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>mock_agent</span>(user_input: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"模拟 Agent —— 用于演示评测流程。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"天气"</span> <span class=<span class="s">"k"</span>>in</span> user_input:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"当前天气晴好，气温25°C，湿度适中，适合户外活动。"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"计算"</span> <span class=<span class="s">"k"</span>>in</span> user_input:
-            <span class=<span class="s">"k"</span>>try</span>:
-                expr = user_input.split(<span class="s">"计算"</span>)[-<span class=<span class="s">"n"</span>>1</span>].strip()
-                <span class=<span class="s">"k"</span>>return</span> f<span class="s">"计算结果为: {eval(expr)}"</span>
-            <span class=<span class="s">"k"</span>>except</span> Exception:
-                <span class=<span class="s">"k"</span>>return</span> <span class="s">"计算失败，请检查表达式。"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"搜索"</span> <span class=<span class="s">"k"</span>>in</span> user_input:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"搜索结果: 找到了相关信息，详情请查看链接。"</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"我不太理解您的问题，请提供更多信息。"</span>
+    <span class="h"># 模拟一个「简单 Agent」</span>
+    <span class="k">def</span> <span class="f">mock_agent</span>(user_input: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""模拟 Agent —— 用于演示评测流程。"""</span>
+        <span class="k">if</span> <span class="s">"天气"</span> <span class="k">in</span> user_input:
+            <span class="k">return</span> <span class="s">"当前天气晴好，气温25°C，湿度适中，适合户外活动。"</span>
+        <span class="k">if</span> <span class="s">"计算"</span> <span class="k">in</span> user_input:
+            <span class="k">try</span>:
+                expr = user_input.split(<span class="s">"计算"</span>)[-<span class="n">1</span>].strip()
+                <span class="k">return</span> f<span class="s">"计算结果为: {eval(expr)}"</span>
+            <span class="k">except</span> Exception:
+                <span class="k">return</span> <span class="s">"计算失败，请检查表达式。"</span>
+        <span class="k">if</span> <span class="s">"搜索"</span> <span class="k">in</span> user_input:
+            <span class="k">return</span> <span class="s">"搜索结果: 找到了相关信息，详情请查看链接。"</span>
+        <span class="k">return</span> <span class="s">"我不太理解您的问题，请提供更多信息。"</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 准备测试用例</span>
+    <span class="h"># 准备测试用例</span>
     test_cases = [
         {
-            <span class="s">"<span class="</span>b<span class="s">">input</span>"</span>: <span class="s">"北京今天天气怎么样？"</span>,
+            <span class="s">"input"</span>: <span class="s">"北京今天天气怎么样？"</span>,
             <span class="s">"expected_keywords"</span>: [<span class="s">"天气"</span>, <span class="s">"温度"</span>, <span class="s">"°C"</span>],
-            <span class="s">"weight"</span>: <span class=<span class="s">"n"</span>>1.0</span>,
+            <span class="s">"weight"</span>: <span class="n">1.0</span>,
         },
         {
-            <span class="s">"<span class="</span>b<span class="s">">input</span>"</span>: <span class="s">"帮我算一下 <span class="</span>n<span class="s">">123</span> + <span class="</span>n<span class="s">">456</span> 等于多少"</span>,
-            <span class="s">"expected_keywords"</span>: [<span class="s">"<span class="</span>n<span class="s">">579</span>"</span>, <span class="s">"<span class="</span>n<span class="s">">579</span>"</span>],
-            <span class="s">"weight"</span>: <span class=<span class="s">"n"</span>>1.0</span>,
+            <span class="s">"input"</span>: <span class="s">"帮我算一下 123 + 456 等于多少"</span>,
+            <span class="s">"expected_keywords"</span>: [<span class="s">"579"</span>, <span class="s">"579"</span>],
+            <span class="s">"weight"</span>: <span class="n">1.0</span>,
         },
         {
-            <span class="s">"<span class="</span>b<span class="s">">input</span>"</span>: <span class="s">"搜索 Python 教程"</span>,
+            <span class="s">"input"</span>: <span class="s">"搜索 Python 教程"</span>,
             <span class="s">"expected_keywords"</span>: [<span class="s">"搜索"</span>, <span class="s">"结果"</span>],
-            <span class="s">"weight"</span>: <span class=<span class="s">"n"</span>>0.5</span>,
+            <span class="s">"weight"</span>: <span class="n">0.5</span>,
         },
         {
-            <span class="s">"<span class="</span>b<span class="s">">input</span>"</span>: <span class="s">"写一首关于春天的诗"</span>,
+            <span class="s">"input"</span>: <span class="s">"写一首关于春天的诗"</span>,
             <span class="s">"expected_keywords"</span>: [<span class="s">"春"</span>],
-            <span class="s">"weight"</span>: <span class=<span class="s">"n"</span>>1.5</span>,
+            <span class="s">"weight"</span>: <span class="n">1.5</span>,
         },
     ]
 
     evaluator = AgentEvaluator()
     evaluator.evaluate(mock_agent, test_cases)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + evaluator.summary())
+    <span class="b">print</span>(<span class="s">"\n"</span> + evaluator.summary())
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>6.3</span> Agent 测试策略
+6.3 Agent 测试策略
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 测试金字塔（从底层到顶层）：
 
-  Layer <span class=<span class="s">"n"</span>>1</span>: 工具单元测试
+  Layer 1: 工具单元测试
     - 测试每个 Tool 函数的输入/输出
     - 确保工具在 LLM 调用前已经正确
 
-  Layer <span class=<span class="s">"n"</span>>2</span>: Agent 行为测试
+  Layer 2: Agent 行为测试
     - 给定输入，验证是否调用了正确的工具
     - 验证 tool_calls 的参数是否正确
     - Mock LLM 的返回，测试 Agent 循环逻辑
 
-  Layer <span class=<span class="s">"n"</span>>3</span>: 端到端测试
+  Layer 3: 端到端测试
     - 完整运行 Agent，验证最终输出
-    - 使用 LLM-<span class=<span class="s">"k"</span>>as</span>-Judge 评分
+    - 使用 LLM-as-Judge 评分
     - 覆盖典型场景和边界情况
 
-  Layer <span class=<span class="s">"n"</span>>4</span>: 回归测试
+  Layer 4: 回归测试
     - 收集线上的 bad case
     - 每次改动后验证这些 case 是否退化
     - 持续积累评测集
 
 面试常见问题：
-  <span class="s">"你怎么测试 Agent 代码？"</span>
+  "你怎么测试 Agent 代码？"
   → 分层测试：工具用单测，Agent 循环用 mock，
-     端到端用 LLM-<span class=<span class="s">"k"</span>>as</span>-Judge，线上用回归评测集
-<span class="s">""</span>"</span>
+     端到端用 LLM-as-Judge，线上用回归评测集
+"""</span>
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>6.4</span> 生产环境最佳实践
+6.4 生产环境最佳实践
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-<span class=<span class="s">"n"</span>>1</span>. 错误处理
-   - 每个工具调用都要 <span class=<span class="s">"k"</span>>try</span>-catch
+1. 错误处理
+   - 每个工具调用都要 try-catch
    - 给 LLM 返回「能帮助它修正」的错误信息
    - 设置全局超时和最大重试次数
 
-<span class=<span class="s">"n"</span>>2</span>. 可观测性
+2. 可观测性
    - 记录每次 LLM 调用的输入/输出/token/耗时
    - 记录每个 tool_call 的参数和结果
    - 使用 LangSmith / LangFuse 等工具做 Tracing
 
-<span class=<span class="s">"n"</span>>3</span>. 成本控制
+3. 成本控制
    - 用更小更便宜的模型做简单任务（模型分层）
    - 缓存相同/相似的 LLM 调用
    - 设置 max_tokens 限制每次调用的成本上限
    - 用语义缓存减少重复查询
 
-<span class=<span class="s">"n"</span>>4</span>. 安全防护
+4. 安全防护
    - Prompt Injection 防护（输入过滤）
    - 工具权限最小化（sudo 问题）
-   - 人工确认（Human-<span class=<span class="s">"k"</span>>in</span>-the-Loop）对关键操作
+   - 人工确认（Human-in-the-Loop）对关键操作
 
-<span class=<span class="s">"n"</span>>5</span>. 性能优化
+5. 性能优化
    - 并行执行独立的工具调用
    - 流式输出（streaming）提升用户体验
    - 预加载和预计算
 
 面试速记：
-  <span class="s">"生产环境 Agent 和 Demo 的区别？"</span>
+  "生产环境 Agent 和 Demo 的区别？"
   → Demo 追求「能跑」；生产追求「稳定、安全、可观测、低成本」
   → 需要监控、告警、降级、熔断等基础设施
-  → 错误处理从<span class="s">"打印日志"</span>升级到<span class="s">"自动恢复 + 通知"</span>
-<span class="s">""</span>"</span>
+  → 错误处理从"打印日志"升级到"自动恢复 + 通知"
+"""</span>
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>6.5</span> 本章总结
+6.5 本章总结
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class=<span class="s">"n"</span>>1</span>. Agent 评估
+1. Agent 评估
    - 多维度：任务完成率、工具准确率、效率、鲁棒性
-   - 主流方法：LLM-<span class=<span class="s">"k"</span>>as</span>-Judge
+   - 主流方法：LLM-as-Judge
    - 业界 Benchmark：AgentBench、SWE-bench、GAIA
 
-<span class=<span class="s">"n"</span>>2</span>. Agent 测试
+2. Agent 测试
    - 分层测试：工具单测 → 行为测试 → 端到端测试 → 回归测试
-   - LLM-<span class=<span class="s">"k"</span>>as</span>-Judge 是端到端测试的核心方法
+   - LLM-as-Judge 是端到端测试的核心方法
 
-<span class=<span class="s">"n"</span>>3</span>. 生产最佳实践
-   - 错误处理：<span class=<span class="s">"k"</span>>try</span>-catch + 可读错误信息
+3. 生产最佳实践
+   - 错误处理：try-catch + 可读错误信息
    - 可观测性：Tracing + Logging
    - 成本控制：模型分层 + 缓存 + 限制
    - 安全：Prompt Injection 防护 + 权限最小化
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       第6章：Agent 评估与最佳实践                      ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       评测框架 · 测试策略 · 生产部署                  ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║       第6章：Agent 评估与最佳实践                      ║"</span>)
+    <span class="b">print</span>(<span class="s">"║       评测框架 · 测试策略 · 生产部署                  ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">6.2</span> Agent 评测框架演示"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 6.2 Agent 评测框架演示"</span>)
     demo_evaluation()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">6.3</span> 测试策略速查"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"Layer <span class="</span>n<span class="s">">1</span>: 工具单元测试 → 测 Tool 函数"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"Layer <span class="</span>n<span class="s">">2</span>: Agent 行为测试 → Mock LLM, 测循环逻辑"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"Layer <span class="</span>n<span class="s">">3</span>: 端到端测试 → LLM-<span class="</span>k<span class="s">">as</span>-Judge 评分"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"Layer <span class="</span>n<span class="s">">4</span>: 回归测试 → Bad case 积累 + 持续回归"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 6.3 测试策略速查"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="b">print</span>(<span class="s">"Layer 1: 工具单元测试 → 测 Tool 函数"</span>)
+    <span class="b">print</span>(<span class="s">"Layer 2: Agent 行为测试 → Mock LLM, 测循环逻辑"</span>)
+    <span class="b">print</span>(<span class="s">"Layer 3: 端到端测试 → LLM-as-Judge 评分"</span>)
+    <span class="b">print</span>(<span class="s">"Layer 4: 回归测试 → Bad case 积累 + 持续回归"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">6.4</span> 生产 Checklist"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 6.4 生产 Checklist"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     checks = [
-        <span class="s">"✅ 错误处理: 每个工具调用有 <span class="</span>k<span class="s">">try</span>-catch"</span>,
+        <span class="s">"✅ 错误处理: 每个工具调用有 try-catch"</span>,
         <span class="s">"✅ 可观测性: Tracing + Logging 全覆盖"</span>,
         <span class="s">"✅ 成本控制: 模型分层 + 缓存 + 限制"</span>,
         <span class="s">"✅ 安全防护: Input 过滤 + 权限最小化"</span>,
         <span class="s">"✅ 性能优化: 并行 + Streaming + 预计算"</span>,
     ]
-    <span class=<span class="s">"k"</span>>for</span> c <span class=<span class="s">"k"</span>>in</span> checks:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {c}"</span>)
+    <span class="k">for</span> c <span class="k">in</span> checks:
+        <span class="b">print</span>(f<span class="s">"  {c}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第6章完成！接下来进入第7章：求职面试准备。"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第6章完成！接下来进入第7章：求职面试准备。"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_05_multi_agent/05_multi_agent.html" title="多智能体系统 — Multi-Agent 协作">← 第5章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

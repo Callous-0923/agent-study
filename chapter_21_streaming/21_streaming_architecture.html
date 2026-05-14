@@ -242,163 +242,163 @@ body {
 <p>&nbsp;</p>
 <p>类比：</p>
 <p>就像办公室里的广播系统 ——</p>
-<p>没人需要知道「谁在听」，只需要「把消息广播出去」。</p></div><div class="code-section"><details open><summary>💻 代码 (158 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> asyncio
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Any, Callable, Optional
-<span class=<span class="s">"k"</span>>from</span> collections <span class=<span class="s">"k"</span>>import</span> defaultdict
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<p>没人需要知道「谁在听」，只需要「把消息广播出去」。</p></div><div class="code-section"><details open><summary>💻 代码 (158 行)</summary><div class="code-block"><pre><span class="k">import</span> asyncio
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Any, Callable, Optional
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@dataclass</span>
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentEvent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Agent 事件基类。"</span><span class="s">""</span></span>
-    event_type: <span class=<span class="s">"b"</span>>str</span>
-    data: Any = <span class=<span class="s">"k"</span>>None</span>
-    timestamp: <span class=<span class="s">"b"</span>>float</span> = field(default_factory=time.time)
-    session_id: <span class=<span class="s">"b"</span>>str</span> = <span class="s">"default"</span>
+<span <span class="k">class</span>="d">@dataclass</span>
+<span class="k">class</span> <span class="f">AgentEvent</span>:
+    <span class="s">"""Agent 事件基类。"""</span>
+    event_type: <span class="b">str</span>
+    data: Any = <span class="k">None</span>
+    timestamp: <span class="b">float</span> = field(default_factory=time.time)
+    session_id: <span class="b">str</span> = <span class="s">"default"</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>EventBus</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Agent 事件总线 —— 发布-订阅模式的核心。
+<span class="k">class</span> <span class="f">EventBus</span>:
+    <span class="s">"""Agent 事件总线 —— 发布-订阅模式的核心。
 
     所有 Agent 组件通过 EventBus 通信，不需要直接引用对方。
     这是 Event-Driven Agent 架构的基础设施。
 
     特性：
-      <span class=<span class="s">"n"</span>>1</span>. 支持多个订阅者监听同一事件类型
-      <span class=<span class="s">"n"</span>>2</span>. 支持通配符订阅 (*)
-      <span class=<span class="s">"n"</span>>3</span>. 记录事件历史（用于调试和 Tracing）
-      <span class=<span class="s">"n"</span>>4</span>. 异步处理（不阻塞发布者）
-    <span class="s">""</span>"</span>
+      1. 支持多个订阅者监听同一事件类型
+      2. 支持通配符订阅 (*)
+      3. 记录事件历史（用于调试和 Tracing）
+      4. 异步处理（不阻塞发布者）
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
-        <span class=<span class="s">"k"</span>>self</span>._subscribers: <span class=<span class="s">"b"</span>>dict</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>list</span>[Callable]] = defaultdict(<span class=<span class="s">"b"</span>>list</span>)
-        <span class=<span class="s">"k"</span>>self</span>._history: <span class=<span class="s">"b"</span>>list</span>[AgentEvent] = []
-        <span class=<span class="s">"k"</span>>self</span>._max_history = <span class=<span class="s">"n"</span>>1000</span>
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>._subscribers: <span class="b">dict</span>[<span class="b">str</span>, <span class="b">list</span>[Callable]] = defaultdict(<span class="b">list</span>)
+        <span class="k">self</span>._history: <span class="b">list</span>[AgentEvent] = []
+        <span class="k">self</span>._max_history = <span class="n">1000</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>subscribe</span>(<span class=<span class="s">"k"</span>>self</span>, event_type: <span class=<span class="s">"b"</span>>str</span>,
-                  callback: Callable[[AgentEvent], <span class=<span class="s">"k"</span>>None</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"订阅事件类型。
+    <span class="k">def</span> <span class="f">subscribe</span>(<span class="k">self</span>, event_type: <span class="b">str</span>,
+                  callback: Callable[[AgentEvent], <span class="k">None</span>]):
+        <span class="s">"""订阅事件类型。
 
         Args:
-            event_type: 事件类型（支持 <span class='s'>'*'</span> 通配符）。
+            event_type: 事件类型（支持 '*' 通配符）。
             callback: 事件处理回调函数。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>._subscribers[event_type].append(callback)
+        """</span>
+        <span class="k">self</span>._subscribers[event_type].append(callback)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>publish</span>(<span class=<span class="s">"k"</span>>self</span>, event: AgentEvent):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"发布事件（同步）。
+    <span class="k">def</span> <span class="f">publish</span>(<span class="k">self</span>, event: AgentEvent):
+        <span class="s">"""发布事件（同步）。
 
         所有匹配的订阅者都会被通知。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>._history.append(event)
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>._history) &gt; <span class=<span class="s">"k"</span>>self</span>._max_history:
-            <span class=<span class="s">"k"</span>>self</span>._history = <span class=<span class="s">"k"</span>>self</span>._history[-<span class=<span class="s">"k"</span>>self</span>._max_history:]
+        """</span>
+        <span class="k">self</span>._history.append(event)
+        <span class="k">if</span> <span class="b">len</span>(<span class="k">self</span>._history) &gt; <span class="k">self</span>._max_history:
+            <span class="k">self</span>._history = <span class="k">self</span>._history[-<span class="k">self</span>._max_history:]
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 精确匹配</span>
-        <span class=<span class="s">"k"</span>>for</span> callback <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._subscribers.get(event.event_type, []):
+        <span class="h"># 精确匹配</span>
+        <span class="k">for</span> callback <span class="k">in</span> <span class="k">self</span>._subscribers.get(event.event_type, []):
             callback(event)
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 通配符匹配</span>
-        <span class=<span class="s">"k"</span>>for</span> callback <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._subscribers.get(<span class="s">"*"</span>, []):
+        <span class="h"># 通配符匹配</span>
+        <span class="k">for</span> callback <span class="k">in</span> <span class="k">self</span>._subscribers.get(<span class="s">"*"</span>, []):
             callback(event)
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>publish_async</span>(<span class=<span class="s">"k"</span>>self</span>, event: AgentEvent):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"异步发布事件（用于需要 <span class="</span>k<span class="s">">await</span> 的回调）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>._history.append(event)
+    <span class="k">async</span> <span class="k">def</span> <span class="f">publish_async</span>(<span class="k">self</span>, event: AgentEvent):
+        <span class="s">"""异步发布事件（用于需要 await 的回调）。"""</span>
+        <span class="k">self</span>._history.append(event)
         tasks = []
-        <span class=<span class="s">"k"</span>>for</span> callback <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._subscribers.get(event.event_type, []):
-            <span class=<span class="s">"k"</span>>if</span> asyncio.iscoroutinefunction(callback):
+        <span class="k">for</span> callback <span class="k">in</span> <span class="k">self</span>._subscribers.get(event.event_type, []):
+            <span class="k">if</span> asyncio.iscoroutinefunction(callback):
                 tasks.append(asyncio.create_task(callback(event)))
-            <span class=<span class="s">"k"</span>>else</span>:
+            <span class="k">else</span>:
                 callback(event)
-        <span class=<span class="s">"k"</span>>for</span> callback <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._subscribers.get(<span class="s">"*"</span>, []):
-            <span class=<span class="s">"k"</span>>if</span> asyncio.iscoroutinefunction(callback):
+        <span class="k">for</span> callback <span class="k">in</span> <span class="k">self</span>._subscribers.get(<span class="s">"*"</span>, []):
+            <span class="k">if</span> asyncio.iscoroutinefunction(callback):
                 tasks.append(asyncio.create_task(callback(event)))
-            <span class=<span class="s">"k"</span>>else</span>:
+            <span class="k">else</span>:
                 callback(event)
-        <span class=<span class="s">"k"</span>>if</span> tasks:
-            <span class=<span class="s">"k"</span>>await</span> asyncio.gather(*tasks)
+        <span class="k">if</span> tasks:
+            <span class="k">await</span> asyncio.gather(*tasks)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_history</span>(<span class=<span class="s">"k"</span>>self</span>, event_type: <span class=<span class="s">"b"</span>>str</span> = <span class=<span class="s">"k"</span>>None</span>,
-                    limit: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>50</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[AgentEvent]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"获取事件历史（用于调试）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>if</span> event_type:
-            filtered = [e <span class=<span class="s">"k"</span>>for</span> e <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._history
-                        <span class=<span class="s">"k"</span>>if</span> e.event_type == event_type]
-            <span class=<span class="s">"k"</span>>return</span> filtered[-limit:]
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>._history[-limit:]
+    <span class="k">def</span> <span class="f">get_history</span>(<span class="k">self</span>, event_type: <span class="b">str</span> = <span class="k">None</span>,
+                    limit: <span class="b">int</span> = <span class="n">50</span>) -&gt; <span class="b">list</span>[AgentEvent]:
+        <span class="s">"""获取事件历史（用于调试）。"""</span>
+        <span class="k">if</span> event_type:
+            filtered = [e <span class="k">for</span> e <span class="k">in</span> <span class="k">self</span>._history
+                        <span class="k">if</span> e.event_type == event_type]
+            <span class="k">return</span> filtered[-limit:]
+        <span class="k">return</span> <span class="k">self</span>._history[-limit:]
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentStateManager</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Agent 状态管理器 —— 单一数据源。
+<span class="k">class</span> <span class="f">AgentStateManager</span>:
+    <span class="s">"""Agent 状态管理器 —— 单一数据源。
 
     使用纯函数（Reducer）更新状态，确保状态变更可预测。
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, session_id: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.session_id = session_id
-        <span class=<span class="s">"k"</span>>self</span>.state = {
-            <span class="s">"status"</span>: <span class="s">"idle"</span>,            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># idle/thinking/acting/done/interrupted</span>
-            <span class="s">"current_step"</span>: <span class=<span class="s">"n"</span>>0</span>,
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, session_id: <span class="b">str</span>):
+        <span class="k">self</span>.session_id = session_id
+        <span class="k">self</span>.state = {
+            <span class="s">"status"</span>: <span class="s">"idle"</span>,            <span class="h"># idle/thinking/acting/done/interrupted</span>
+            <span class="s">"current_step"</span>: <span class="n">0</span>,
             <span class="s">"tool_calls"</span>: [],
-            <span class="s">"last_tool_result"</span>: <span class=<span class="s">"k"</span>>None</span>,
+            <span class="s">"last_tool_result"</span>: <span class="k">None</span>,
             <span class="s">"messages"</span>: [],
-            <span class="s">"error"</span>: <span class=<span class="s">"k"</span>>None</span>,
-            <span class="s">"interrupt_requested"</span>: <span class=<span class="s">"k"</span>>False</span>,
+            <span class="s">"error"</span>: <span class="k">None</span>,
+            <span class="s">"interrupt_requested"</span>: <span class="k">False</span>,
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>reduce</span>(<span class=<span class="s">"k"</span>>self</span>, event: AgentEvent):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"纯函数式状态更新（Reducer 模式）。
+    <span class="k">def</span> <span class="f">reduce</span>(<span class="k">self</span>, event: AgentEvent):
+        <span class="s">"""纯函数式状态更新（Reducer 模式）。
 
         根据事件类型更新状态，没有副作用。
-        <span class="s">""</span>"</span>
+        """</span>
         etype = event.event_type
 
-        <span class=<span class="s">"k"</span>>if</span> etype == <span class="s">"thinking"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"thinking"</span>
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"current_step"</span>] += <span class=<span class="s">"n"</span>>1</span>
+        <span class="k">if</span> etype == <span class="s">"thinking"</span>:
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"thinking"</span>
+            <span class="k">self</span>.state[<span class="s">"current_step"</span>] += <span class="n">1</span>
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"tool_call_start"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"acting"</span>
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"tool_calls"</span>].append({
+        <span class="k">elif</span> etype == <span class="s">"tool_call_start"</span>:
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"acting"</span>
+            <span class="k">self</span>.state[<span class="s">"tool_calls"</span>].append({
                 <span class="s">"tool"</span>: event.data.get(<span class="s">"tool_name"</span>),
                 <span class="s">"args"</span>: event.data.get(<span class="s">"args"</span>),
                 <span class="s">"status"</span>: <span class="s">"pending"</span>,
                 <span class="s">"started_at"</span>: event.timestamp,
             })
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"tool_call_end"</span>:
-            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"tool_calls"</span>]:
-                <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"tool_calls"</span>][-<span class=<span class="s">"n"</span>>1</span>][<span class="s">"status"</span>] = <span class="s">"done"</span>
-                <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"tool_calls"</span>][-<span class=<span class="s">"n"</span>>1</span>][<span class="s">"result"</span>] = event.data
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"last_tool_result"</span>] = event.data
+        <span class="k">elif</span> etype == <span class="s">"tool_call_end"</span>:
+            <span class="k">if</span> <span class="k">self</span>.state[<span class="s">"tool_calls"</span>]:
+                <span class="k">self</span>.state[<span class="s">"tool_calls"</span>][-<span class="n">1</span>][<span class="s">"status"</span>] = <span class="s">"done"</span>
+                <span class="k">self</span>.state[<span class="s">"tool_calls"</span>][-<span class="n">1</span>][<span class="s">"result"</span>] = event.data
+            <span class="k">self</span>.state[<span class="s">"last_tool_result"</span>] = event.data
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"user_interrupt"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"interrupt_requested"</span>] = <span class=<span class="s">"k"</span>>True</span>
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"interrupted"</span>
+        <span class="k">elif</span> etype == <span class="s">"user_interrupt"</span>:
+            <span class="k">self</span>.state[<span class="s">"interrupt_requested"</span>] = <span class="k">True</span>
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"interrupted"</span>
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"resume"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"interrupt_requested"</span>] = <span class=<span class="s">"k"</span>>False</span>
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"thinking"</span>
+        <span class="k">elif</span> etype == <span class="s">"resume"</span>:
+            <span class="k">self</span>.state[<span class="s">"interrupt_requested"</span>] = <span class="k">False</span>
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"thinking"</span>
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"done"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"done"</span>
+        <span class="k">elif</span> etype == <span class="s">"done"</span>:
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"done"</span>
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"error"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"error"</span>
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"error"</span>] = event.data
+        <span class="k">elif</span> etype == <span class="s">"error"</span>:
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"error"</span>
+            <span class="k">self</span>.state[<span class="s">"error"</span>] = event.data
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>should_interrupt</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; bool:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"检查是否需要中断。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"interrupt_requested"</span>]
+    <span class="k">def</span> <span class="f">should_interrupt</span>(<span class="k">self</span>) -&gt; bool:
+        <span class="s">"""检查是否需要中断。"""</span>
+        <span class="k">return</span> <span class="k">self</span>.state[<span class="s">"interrupt_requested"</span>]
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_status_display</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"获取当前状态摘要（用于 UI 展示）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> {
-            <span class="s">"status"</span>: <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>],
-            <span class="s">"step"</span>: <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"current_step"</span>],
-            <span class="s">"active_tools"</span>: [t[<span class="s">"tool"</span>] <span class=<span class="s">"k"</span>>for</span> t <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"tool_calls"</span>]
-                             <span class=<span class="s">"k"</span>>if</span> t[<span class="s">"status"</span>] == <span class="s">"pending"</span>],
+    <span class="k">def</span> <span class="f">get_status_display</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""获取当前状态摘要（用于 UI 展示）。"""</span>
+        <span class="k">return</span> {
+            <span class="s">"status"</span>: <span class="k">self</span>.state[<span class="s">"status"</span>],
+            <span class="s">"step"</span>: <span class="k">self</span>.state[<span class="s">"current_step"</span>],
+            <span class="s">"active_tools"</span>: [t[<span class="s">"tool"</span>] <span class="k">for</span> t <span class="k">in</span> <span class="k">self</span>.state[<span class="s">"tool_calls"</span>]
+                             <span class="k">if</span> t[<span class="s">"status"</span>] == <span class="s">"pending"</span>],
         }</pre></div></details></div><div class="lecture"><h2>21.4 动态中断 (Dynamic Interrupt) —— Agent 交互的质变</h2>
 <p>&nbsp;</p>
 <p>这是 Agent 从「自动化脚本」升级到「交互式伙伴」的关键能力。</p>
@@ -419,90 +419,90 @@ body {
 <p>关键在于中断的「粒度」：</p>
 <li>太粗：等当前工具调完才知道 → 延迟大</li>
 <li>太细：每收到一个 token 就检查 → 开销大</li>
-<li>最优：每个 Agent 步骤结束时检查（Claude Code 的做法）</li></div><div class="code-section"><details open><summary>💻 代码 (85 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> asyncio
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Any, Callable, Optional
-<span class=<span class="s">"k"</span>>from</span> collections <span class=<span class="s">"k"</span>>import</span> defaultdict
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<li>最优：每个 Agent 步骤结束时检查（Claude Code 的做法）</li></div><div class="code-section"><details open><summary>💻 代码 (85 行)</summary><div class="code-block"><pre><span class="k">import</span> asyncio
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Any, Callable, Optional
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>InterruptibleAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"可中断 Agent —— 演示动态中断的完整流程。
+<span class="k">class</span> <span class="f">InterruptibleAgent</span>:
+    <span class="s">"""可中断 Agent —— 演示动态中断的完整流程。
 
     结合 EventBus + StateManager + 模拟 LLM。
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, session_id: <span class=<span class="s">"b"</span>>str</span> = <span class="s">"demo"</span>):
-        <span class=<span class="s">"k"</span>>self</span>.bus = EventBus()
-        <span class=<span class="s">"k"</span>>self</span>.state = AgentStateManager(session_id)
-        <span class=<span class="s">"k"</span>>self</span>.cancelled = <span class=<span class="s">"k"</span>>False</span>
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, session_id: <span class="b">str</span> = <span class="s">"demo"</span>):
+        <span class="k">self</span>.bus = EventBus()
+        <span class="k">self</span>.state = AgentStateManager(session_id)
+        <span class="k">self</span>.cancelled = <span class="k">False</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 注册事件处理</span>
-        <span class=<span class="s">"k"</span>>self</span>.bus.subscribe(<span class="s">"user_interrupt"</span>,
-                           <span class=<span class="s">"k"</span>>lambda</span> e: <span class=<span class="s">"k"</span>>self</span>.state.reduce(e))
-        <span class=<span class="s">"k"</span>>self</span>.bus.subscribe(<span class="s">"resume"</span>,
-                           <span class=<span class="s">"k"</span>>lambda</span> e: <span class=<span class="s">"k"</span>>self</span>.state.reduce(e))
+        <span class="h"># 注册事件处理</span>
+        <span class="k">self</span>.bus.subscribe(<span class="s">"user_interrupt"</span>,
+                           <span class="k">lambda</span> e: <span class="k">self</span>.state.reduce(e))
+        <span class="k">self</span>.bus.subscribe(<span class="s">"resume"</span>,
+                           <span class="k">lambda</span> e: <span class="k">self</span>.state.reduce(e))
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>request_interrupt</span>(<span class=<span class="s">"k"</span>>self</span>, reason: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"用户请求中断。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(
+    <span class="k">def</span> <span class="f">request_interrupt</span>(<span class="k">self</span>, reason: <span class="b">str</span> = <span class="s">""</span>):
+        <span class="s">"""用户请求中断。"""</span>
+        <span class="k">self</span>.bus.publish(AgentEvent(
             <span class="s">"user_interrupt"</span>,
             {<span class="s">"reason"</span>: reason},
-            session_id=<span class=<span class="s">"k"</span>>self</span>.state.session_id,
+            session_id=<span class="k">self</span>.state.session_id,
         ))
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⏸️ 中断请求: {reason}"</span>)
+        <span class="b">print</span>(f<span class="s">"  ⏸️ 中断请求: {reason}"</span>)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>resume</span>(<span class=<span class="s">"k"</span>>self</span>, new_instruction: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"用户恢复执行（可带新指令）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(
+    <span class="k">def</span> <span class="f">resume</span>(<span class="k">self</span>, new_instruction: <span class="b">str</span> = <span class="s">""</span>):
+        <span class="s">"""用户恢复执行（可带新指令）。"""</span>
+        <span class="k">self</span>.bus.publish(AgentEvent(
             <span class="s">"resume"</span>,
             {<span class="s">"new_instruction"</span>: new_instruction},
-            session_id=<span class=<span class="s">"k"</span>>self</span>.state.session_id,
+            session_id=<span class="k">self</span>.state.session_id,
         ))
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ▶️ 恢复执行"</span> +
-              (f<span class="s">"（新指令: {new_instruction}）"</span> <span class=<span class="s">"k"</span>>if</span> new_instruction <span class=<span class="s">"k"</span>>else</span> <span class="s">""</span>))
+        <span class="b">print</span>(f<span class="s">"  ▶️ 恢复执行"</span> +
+              (f<span class="s">"（新指令: {new_instruction}）"</span> <span class="k">if</span> new_instruction <span class="k">else</span> <span class="s">""</span>))
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, max_steps: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>10</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"模拟 Agent 执行（可被中断）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  🎯 任务: {task}"</span>)
+    <span class="k">async</span> <span class="k">def</span> <span class="f">run</span>(<span class="k">self</span>, task: <span class="b">str</span>, max_steps: <span class="b">int</span> = <span class="n">10</span>):
+        <span class="s">"""模拟 Agent 执行（可被中断）。"""</span>
+        <span class="b">print</span>(f<span class="s">"  🎯 任务: {task}"</span>)
 
-        <span class=<span class="s">"k"</span>>for</span> step <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>1</span>, max_steps + <span class=<span class="s">"n"</span>>1</span>):
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第1步：检查中断</span>
-            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.state.should_interrupt():
-                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    ⏸️ Agent 在第 {step} 步暂停，等待用户..."</span>)
-                <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"interrupted"</span>, <span class="s">"step"</span>: step}
-                <span class=<span class="s">"k"</span>>return</span>
-            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.cancelled:
-                <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"cancelled"</span>, <span class="s">"step"</span>: step}
-                <span class=<span class="s">"k"</span>>return</span>
+        <span class="k">for</span> step <span class="k">in</span> <span class="b">range</span>(<span class="n">1</span>, max_steps + <span class="n">1</span>):
+            <span class="h"># 第1步：检查中断</span>
+            <span class="k">if</span> <span class="k">self</span>.state.should_interrupt():
+                <span class="b">print</span>(f<span class="s">"    ⏸️ Agent 在第 {step} 步暂停，等待用户..."</span>)
+                <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"interrupted"</span>, <span class="s">"step"</span>: step}
+                <span class="k">return</span>
+            <span class="k">if</span> <span class="k">self</span>.cancelled:
+                <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"cancelled"</span>, <span class="s">"step"</span>: step}
+                <span class="k">return</span>
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第2步：思考</span>
-            <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(<span class="s">"thinking"</span>))
-            <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"thinking"</span>, <span class="s">"step"</span>: step,
+            <span class="h"># 第2步：思考</span>
+            <span class="k">self</span>.bus.publish(AgentEvent(<span class="s">"thinking"</span>))
+            <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"thinking"</span>, <span class="s">"step"</span>: step,
                    <span class="s">"message"</span>: f<span class="s">"正在分析第 {step} 步..."</span>}
-            <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.3</span>)
+            <span class="k">await</span> asyncio.sleep(<span class="n">0.3</span>)
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第3步：模拟工具调用</span>
+            <span class="h"># 第3步：模拟工具调用</span>
             tool_name = f<span class="s">"tool_{step}"</span>
-            <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(
+            <span class="k">self</span>.bus.publish(AgentEvent(
                 <span class="s">"tool_call_start"</span>,
                 {<span class="s">"tool_name"</span>: tool_name, <span class="s">"args"</span>: {<span class="s">"step"</span>: step}},
             ))
-            <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"tool_call"</span>, <span class="s">"step"</span>: step,
+            <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"tool_call"</span>, <span class="s">"step"</span>: step,
                    <span class="s">"tool"</span>: tool_name}
-            <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.3</span>)
+            <span class="k">await</span> asyncio.sleep(<span class="n">0.3</span>)
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第4步：工具结果</span>
-            <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(
+            <span class="h"># 第4步：工具结果</span>
+            <span class="k">self</span>.bus.publish(AgentEvent(
                 <span class="s">"tool_call_end"</span>,
                 f<span class="s">"工具 {tool_name} 执行成功"</span>,
             ))
-            <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"tool_result"</span>, <span class="s">"step"</span>: step,
+            <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"tool_result"</span>, <span class="s">"step"</span>: step,
                    <span class="s">"result"</span>: f<span class="s">"{tool_name} 完成"</span>}
-            <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.2</span>)
+            <span class="k">await</span> asyncio.sleep(<span class="n">0.2</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 完成</span>
-        <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(<span class="s">"done"</span>))
-        <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"done"</span>, <span class="s">"step"</span>: max_steps + <span class=<span class="s">"n"</span>>1</span>,
+        <span class="h"># 完成</span>
+        <span class="k">self</span>.bus.publish(AgentEvent(<span class="s">"done"</span>))
+        <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"done"</span>, <span class="s">"step"</span>: max_steps + <span class="n">1</span>,
                <span class="s">"message"</span>: <span class="s">"所有步骤完成"</span>}</pre></div></details></div><div class="lecture"><h2>21.5 背压控制 (Backpressure) —— 生产环境的隐性需求</h2>
 <p>&nbsp;</p>
 <p>场景：</p>
@@ -524,94 +524,94 @@ body {
  队列有容量上限，满了暂停生产者</pre>
 <p>&nbsp;</p>
 <p>这就是 Claude Code h2A 的「智能背压控制」</p>
-<p>（Ch8 提到：吞吐量 > 10,000 消息/秒 + 智能背压）。</p></div><div class="code-section"><details open><summary>💻 代码 (88 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> asyncio
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Any, Callable, Optional
-<span class=<span class="s">"k"</span>>from</span> collections <span class=<span class="s">"k"</span>>import</span> defaultdict
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<p>（Ch8 提到：吞吐量 > 10,000 消息/秒 + 智能背压）。</p></div><div class="code-section"><details open><summary>💻 代码 (88 行)</summary><div class="code-block"><pre><span class="k">import</span> asyncio
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Any, Callable, Optional
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>BackpressureController</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"背压控制器 —— 防止生产者速度超过消费者。
+<span class="k">class</span> <span class="f">BackpressureController</span>:
+    <span class="s">"""背压控制器 —— 防止生产者速度超过消费者。
 
     生产者-消费者队列，内置流控机制。
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, max_size: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>100</span>):
-        <span class=<span class="s">"k"</span>>self</span>.queue = asyncio.Queue(maxsize=max_size)
-        <span class=<span class="s">"k"</span>>self</span>.dropped = <span class=<span class="s">"n"</span>>0</span>  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 丢弃的事件数</span>
-        <span class=<span class="s">"k"</span>>self</span>.total = <span class=<span class="s">"n"</span>>0</span>
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, max_size: <span class="b">int</span> = <span class="n">100</span>):
+        <span class="k">self</span>.queue = asyncio.Queue(maxsize=max_size)
+        <span class="k">self</span>.dropped = <span class="n">0</span>  <span class="h"># 丢弃的事件数</span>
+        <span class="k">self</span>.total = <span class="n">0</span>
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>produce</span>(<span class=<span class="s">"k"</span>>self</span>, event: AgentEvent) -&gt; bool:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"生产者：发布事件。
+    <span class="k">async</span> <span class="k">def</span> <span class="f">produce</span>(<span class="k">self</span>, event: AgentEvent) -&gt; bool:
+        <span class="s">"""生产者：发布事件。
 
         Returns:
             是否成功入队。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.total += <span class=<span class="s">"n"</span>>1</span>
-        <span class=<span class="s">"k"</span>>try</span>:
-            <span class=<span class="s">"k"</span>>self</span>.queue.put_nowait(event)
-            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>True</span>
-        <span class=<span class="s">"k"</span>>except</span> asyncio.QueueFull:
-            <span class=<span class="s">"k"</span>>self</span>.dropped += <span class=<span class="s">"n"</span>>1</span>
-            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>False</span>
+        """</span>
+        <span class="k">self</span>.total += <span class="n">1</span>
+        <span class="k">try</span>:
+            <span class="k">self</span>.queue.put_nowait(event)
+            <span class="k">return</span> <span class="k">True</span>
+        <span class="k">except</span> asyncio.QueueFull:
+            <span class="k">self</span>.dropped += <span class="n">1</span>
+            <span class="k">return</span> <span class="k">False</span>
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>consume</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; AgentEvent:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"消费者：取出事件。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>await</span> <span class=<span class="s">"k"</span>>self</span>.queue.get()
+    <span class="k">async</span> <span class="k">def</span> <span class="f">consume</span>(<span class="k">self</span>) -&gt; AgentEvent:
+        <span class="s">"""消费者：取出事件。"""</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="k">self</span>.queue.get()
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>stats</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"背压统计。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> {
-            <span class="s">"queue_size"</span>: <span class=<span class="s">"k"</span>>self</span>.queue.qsize(),
-            <span class="s">"total_produced"</span>: <span class=<span class="s">"k"</span>>self</span>.total,
-            <span class="s">"dropped"</span>: <span class=<span class="s">"k"</span>>self</span>.dropped,
-            <span class="s">"drop_rate"</span>: <span class=<span class="s">"k"</span>>self</span>.dropped / <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"k"</span>>self</span>.total, <span class=<span class="s">"n"</span>>1</span>),
+    <span class="k">def</span> <span class="f">stats</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""背压统计。"""</span>
+        <span class="k">return</span> {
+            <span class="s">"queue_size"</span>: <span class="k">self</span>.queue.qsize(),
+            <span class="s">"total_produced"</span>: <span class="k">self</span>.total,
+            <span class="s">"dropped"</span>: <span class="k">self</span>.dropped,
+            <span class="s">"drop_rate"</span>: <span class="k">self</span>.dropped / <span class="b">max</span>(<span class="k">self</span>.total, <span class="n">1</span>),
         }
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_event_driven_agent</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示事件驱动 Agent 的完整流程。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  事件驱动 + 动态中断 演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_event_driven_agent</span>():
+    <span class="s">"""演示事件驱动 Agent 的完整流程。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  事件驱动 + 动态中断 演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     bus = EventBus()
     state = AgentStateManager(<span class="s">"demo_session"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 注册事件处理器</span>
+    <span class="h"># 注册事件处理器</span>
     event_log = []
-    bus.subscribe(<span class="s">"*"</span>, <span class=<span class="s">"k"</span>>lambda</span> e: event_log.append(
+    bus.subscribe(<span class="s">"*"</span>, <span class="k">lambda</span> e: event_log.append(
         f<span class="s">"[{e.event_type}] {e.data}"</span>
     ))
 
     bus.subscribe(<span class="s">"thinking"</span>,
-                  <span class=<span class="s">"k"</span>>lambda</span> e: state.reduce(e))
+                  <span class="k">lambda</span> e: state.reduce(e))
     bus.subscribe(<span class="s">"tool_call_start"</span>,
-                  <span class=<span class="s">"k"</span>>lambda</span> e: state.reduce(e))
+                  <span class="k">lambda</span> e: state.reduce(e))
     bus.subscribe(<span class="s">"tool_call_end"</span>,
-                  <span class=<span class="s">"k"</span>>lambda</span> e: state.reduce(e))
+                  <span class="k">lambda</span> e: state.reduce(e))
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟 Agent 执行流程</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  🔄 模拟 Agent 执行..."</span>)
+    <span class="h"># 模拟 Agent 执行流程</span>
+    <span class="b">print</span>(<span class="s">"\n  🔄 模拟 Agent 执行..."</span>)
     steps = [
         (<span class="s">"thinking"</span>, <span class="s">"正在分析任务..."</span>),
         (<span class="s">"tool_call_start"</span>, {<span class="s">"tool_name"</span>: <span class="s">"search"</span>, <span class="s">"args"</span>: {<span class="s">"q"</span>: <span class="s">"AI"</span>}}),
-        (<span class="s">"tool_call_end"</span>, <span class="s">"找到 <span class="</span>n<span class="s">">5</span> 条结果"</span>),
+        (<span class="s">"tool_call_end"</span>, <span class="s">"找到 5 条结果"</span>),
         (<span class="s">"thinking"</span>, <span class="s">"正在整理答案..."</span>),
         (<span class="s">"user_interrupt"</span>, <span class="s">"等等，换一个方向！"</span>),
     ]
 
-    <span class=<span class="s">"k"</span>>for</span> etype, data <span class=<span class="s">"k"</span>>in</span> steps:
+    <span class="k">for</span> etype, data <span class="k">in</span> steps:
         event = AgentEvent(etype, data, session_id=<span class="s">"demo_session"</span>)
         bus.publish(event)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  📡 事件: {etype} → 状态: {state.get_status_display()[<span class='s'>'status'</span>]}"</span>)
+        <span class="b">print</span>(f<span class="s">"  📡 事件: {etype} → 状态: {state.get_status_display()['status']}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  📋 事件历史 ({<span class="</span>b<span class="s">">len</span>(event_log)} 条):"</span>)
-    <span class=<span class="s">"k"</span>>for</span> entry <span class=<span class="s">"k"</span>>in</span> event_log:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {entry}"</span>)
+    <span class="b">print</span>(f<span class="s">"\n  📋 事件历史 ({len(event_log)} 条):"</span>)
+    <span class="k">for</span> entry <span class="k">in</span> event_log:
+        <span class="b">print</span>(f<span class="s">"    {entry}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 演示中断</span>
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  ⚡ 中断检测: {state.should_interrupt()}"</span>)</pre></div></details></div><div class="lecture"><h2>21.6 本章总结</h2>
+    <span class="h"># 演示中断</span>
+    <span class="b">print</span>(f<span class="s">"\n  ⚡ 中断检测: {state.should_interrupt()}"</span>)</pre></div></details></div><div class="lecture"><h2>21.6 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
@@ -640,22 +640,22 @@ body {
 <p>→ Event-Driven 架构 + EventBus</p>
 <p>→ Agent 每步检查 interrupt 信号</p>
 <p>→ h2A 双缓冲队列是 Claude Code 的具体实现</p>
-<p>→ 关键是中断粒度：每步结束时检查</p></div><div class="code-section"><details open><summary>💻 代码 (42 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> asyncio
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Any, Callable, Optional
-<span class=<span class="s">"k"</span>>from</span> collections <span class=<span class="s">"k"</span>>import</span> defaultdict
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<p>→ 关键是中断粒度：每步结束时检查</p></div><div class="code-section"><details open><summary>💻 代码 (42 行)</summary><div class="code-block"><pre><span class="k">import</span> asyncio
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Any, Callable, Optional
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第21章：Streaming &amp; 实时 Agent 架构                   ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  EventBus · 动态中断 · 背压控制 · 状态机             ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第21章：Streaming &amp; 实时 Agent 架构                   ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  EventBus · 动态中断 · 背压控制 · 状态机             ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_event_driven_agent()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ Agent 关键事件类型"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ Agent 关键事件类型"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     events = [
         (<span class="s">"user_input"</span>, <span class="s">"用户发送消息"</span>),
         (<span class="s">"thinking"</span>, <span class="s">"Agent 思考中"</span>),
@@ -666,11 +666,11 @@ body {
         (<span class="s">"error"</span>, <span class="s">"错误发生"</span>),
         (<span class="s">"done"</span>, <span class="s">"任务完成"</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> etype, desc <span class=<span class="s">"k"</span>>in</span> events:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {etype:15s} → {desc}"</span>)
+    <span class="k">for</span> etype, desc <span class="k">in</span> events:
+        <span class="b">print</span>(f<span class="s">"  {etype:15s} → {desc}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ 实时架构 Checklist"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 实时架构 Checklist"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     items = [
         <span class="s">"EventBus 解耦组件通信"</span>,
         <span class="s">"StateManager 单一数据源（纯函数 Reducer）"</span>,
@@ -678,19 +678,19 @@ body {
         <span class="s">"背压控制防止生产者超过消费者"</span>,
         <span class="s">"事件历史用于 Tracing 和调试"</span>,
     ]
-    <span class=<span class="s">"k"</span>>for</span> item <span class=<span class="s">"k"</span>>in</span> items:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✅ {item}"</span>)
+    <span class="k">for</span> item <span class="k">in</span> items:
+        <span class="b">print</span>(f<span class="s">"  ✅ {item}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第21章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (570 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+    <span class="b">print</span>(<span class="s">"\n✅ 第21章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (570 行)</summary><div class="code-block"><pre><span class="s">"""
 第21章：Streaming &amp; 实时 Agent 架构 —— 让用户不用等待的 Agent
 ===============================================================
 
 📌 本章目标：
-  <span class=<span class="s">"n"</span>>1</span>. 理解 Event-Driven Architecture 在 Agent 系统中的应用
-  <span class=<span class="s">"n"</span>>2</span>. 掌握 Agent 执行中「动态中断」的架构设计
-  <span class=<span class="s">"n"</span>>3</span>. 深入理解 Streaming Tool Calling 的状态机管理
-  <span class=<span class="s">"n"</span>>4</span>. 学会用 EventBus 模式实现解耦的 Agent 架构
-  <span class=<span class="s">"n"</span>>5</span>. 理解背压控制 (Backpressure) 和流控策略
+  1. 理解 Event-Driven Architecture 在 Agent 系统中的应用
+  2. 掌握 Agent 执行中「动态中断」的架构设计
+  3. 深入理解 Streaming Tool Calling 的状态机管理
+  4. 学会用 EventBus 模式实现解耦的 Agent 架构
+  5. 理解背压控制 (Backpressure) 和流控策略
 
 📌 面试高频点：
   - 「Agent 怎么实现用户中途打断并修改方向？」
@@ -701,18 +701,18 @@ body {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 综合来源：
   - Claude Code h2A 机制 (Ch8)
-  - Event-Driven Agent Architecture (Sandipan Haldar, <span class=<span class="s">"n"</span>>2025</span>)
+  - Event-Driven Agent Architecture (Sandipan Haldar, 2025)
   - A2A Streaming Protocol Design
   - 腾讯云 Agent 实时推理设计
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-<span class=<span class="s">"n"</span>>21.1</span> 为什么 Agent 需要实时架构？
+21.1 为什么 Agent 需要实时架构？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 传统「请求-响应」模式的问题：
 
-  用户 → 发送消息 → [等待 <span class=<span class="s">"n"</span>>30</span> 秒...] → 收到完整回复
+  用户 → 发送消息 → [等待 30 秒...] → 收到完整回复
 
   Agent 执行过程中：
     - 用户不知道 Agent 在做什么
@@ -725,16 +725,16 @@ body {
          中途可以修正方向 → 最终得到结果
 
 核心能力：
-  <span class=<span class="s">"n"</span>>1</span>. 流式输出：LLM 每生成一个 token 就推送给用户
-  <span class=<span class="s">"n"</span>>2</span>. 中途介入：用户可以在 Agent 执行中途发送消息
-  <span class=<span class="s">"n"</span>>3</span>. 工具调用可见：用户能看到 Agent 在调什么工具
-  <span class=<span class="s">"n"</span>>4</span>. 可中断：用户可以随时停止 Agent 的任务
+  1. 流式输出：LLM 每生成一个 token 就推送给用户
+  2. 中途介入：用户可以在 Agent 执行中途发送消息
+  3. 工具调用可见：用户能看到 Agent 在调什么工具
+  4. 可中断：用户可以随时停止 Agent 的任务
 
 这是 Claude Code h2A 机制（Ch8）和 Ch13 SSE/WebSocket 的
 「为什么」解释 —— 本章讲架构设计层面。
 
 
-<span class=<span class="s">"n"</span>>21.2</span> 事件驱动架构 (EDA) —— Agent 系统的骨架
+21.2 事件驱动架构 (EDA) —— Agent 系统的骨架
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 核心思想：
@@ -769,7 +769,7 @@ Agent 的关键事件类型：
     → 将 LLM 的 streaming 输出桥接到前端
 
 
-<span class=<span class="s">"n"</span>>21.3</span> EventBus 模式 —— Agent 架构的核心
+21.3 EventBus 模式 —— Agent 架构的核心
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 问题：Agent 的多个组件（LLM 调用 / 工具执行 / 前端 UI）
@@ -791,178 +791,178 @@ Agent 的关键事件类型：
   └──────────────────────────────────────────────────┘
 
 EventBus 的优势：
-  <span class=<span class="s">"n"</span>>1</span>. 解耦：LLM 不需要知道 UI 的存在
-  <span class=<span class="s">"n"</span>>2</span>. 可测试：可以 Mock EventBus 单独测每个组件
-  <span class=<span class="s">"n"</span>>3</span>. 可扩展：新组件只需订阅感兴趣的事件
-  <span class=<span class="s">"n"</span>>4</span>. 可观测：所有事件都可以记录（天然 Tracing）
+  1. 解耦：LLM 不需要知道 UI 的存在
+  2. 可测试：可以 Mock EventBus 单独测每个组件
+  3. 可扩展：新组件只需订阅感兴趣的事件
+  4. 可观测：所有事件都可以记录（天然 Tracing）
 
 类比：
   就像办公室里的广播系统 ——
   没人需要知道「谁在听」，只需要「把消息广播出去」。
-<span class="s">""</span>"</span>
+"""</span>
 
-<span class=<span class="s">"k"</span>>import</span> asyncio
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Any, Callable, Optional
-<span class=<span class="s">"k"</span>>from</span> collections <span class=<span class="s">"k"</span>>import</span> defaultdict
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
-
-
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@dataclass</span>
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentEvent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Agent 事件基类。"</span><span class="s">""</span></span>
-    event_type: <span class=<span class="s">"b"</span>>str</span>
-    data: Any = <span class=<span class="s">"k"</span>>None</span>
-    timestamp: <span class=<span class="s">"b"</span>>float</span> = field(default_factory=time.time)
-    session_id: <span class=<span class="s">"b"</span>>str</span> = <span class="s">"default"</span>
+<span class="k">import</span> asyncio
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Any, Callable, Optional
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>EventBus</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Agent 事件总线 —— 发布-订阅模式的核心。
+<span <span class="k">class</span>="d">@dataclass</span>
+<span class="k">class</span> <span class="f">AgentEvent</span>:
+    <span class="s">"""Agent 事件基类。"""</span>
+    event_type: <span class="b">str</span>
+    data: Any = <span class="k">None</span>
+    timestamp: <span class="b">float</span> = field(default_factory=time.time)
+    session_id: <span class="b">str</span> = <span class="s">"default"</span>
+
+
+<span class="k">class</span> <span class="f">EventBus</span>:
+    <span class="s">"""Agent 事件总线 —— 发布-订阅模式的核心。
 
     所有 Agent 组件通过 EventBus 通信，不需要直接引用对方。
     这是 Event-Driven Agent 架构的基础设施。
 
     特性：
-      <span class=<span class="s">"n"</span>>1</span>. 支持多个订阅者监听同一事件类型
-      <span class=<span class="s">"n"</span>>2</span>. 支持通配符订阅 (*)
-      <span class=<span class="s">"n"</span>>3</span>. 记录事件历史（用于调试和 Tracing）
-      <span class=<span class="s">"n"</span>>4</span>. 异步处理（不阻塞发布者）
-    <span class="s">""</span>"</span>
+      1. 支持多个订阅者监听同一事件类型
+      2. 支持通配符订阅 (*)
+      3. 记录事件历史（用于调试和 Tracing）
+      4. 异步处理（不阻塞发布者）
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
-        <span class=<span class="s">"k"</span>>self</span>._subscribers: <span class=<span class="s">"b"</span>>dict</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>list</span>[Callable]] = defaultdict(<span class=<span class="s">"b"</span>>list</span>)
-        <span class=<span class="s">"k"</span>>self</span>._history: <span class=<span class="s">"b"</span>>list</span>[AgentEvent] = []
-        <span class=<span class="s">"k"</span>>self</span>._max_history = <span class=<span class="s">"n"</span>>1000</span>
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>._subscribers: <span class="b">dict</span>[<span class="b">str</span>, <span class="b">list</span>[Callable]] = defaultdict(<span class="b">list</span>)
+        <span class="k">self</span>._history: <span class="b">list</span>[AgentEvent] = []
+        <span class="k">self</span>._max_history = <span class="n">1000</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>subscribe</span>(<span class=<span class="s">"k"</span>>self</span>, event_type: <span class=<span class="s">"b"</span>>str</span>,
-                  callback: Callable[[AgentEvent], <span class=<span class="s">"k"</span>>None</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"订阅事件类型。
+    <span class="k">def</span> <span class="f">subscribe</span>(<span class="k">self</span>, event_type: <span class="b">str</span>,
+                  callback: Callable[[AgentEvent], <span class="k">None</span>]):
+        <span class="s">"""订阅事件类型。
 
         Args:
-            event_type: 事件类型（支持 <span class='s'>'*'</span> 通配符）。
+            event_type: 事件类型（支持 '*' 通配符）。
             callback: 事件处理回调函数。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>._subscribers[event_type].append(callback)
+        """</span>
+        <span class="k">self</span>._subscribers[event_type].append(callback)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>publish</span>(<span class=<span class="s">"k"</span>>self</span>, event: AgentEvent):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"发布事件（同步）。
+    <span class="k">def</span> <span class="f">publish</span>(<span class="k">self</span>, event: AgentEvent):
+        <span class="s">"""发布事件（同步）。
 
         所有匹配的订阅者都会被通知。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>._history.append(event)
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>._history) &gt; <span class=<span class="s">"k"</span>>self</span>._max_history:
-            <span class=<span class="s">"k"</span>>self</span>._history = <span class=<span class="s">"k"</span>>self</span>._history[-<span class=<span class="s">"k"</span>>self</span>._max_history:]
+        """</span>
+        <span class="k">self</span>._history.append(event)
+        <span class="k">if</span> <span class="b">len</span>(<span class="k">self</span>._history) &gt; <span class="k">self</span>._max_history:
+            <span class="k">self</span>._history = <span class="k">self</span>._history[-<span class="k">self</span>._max_history:]
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 精确匹配</span>
-        <span class=<span class="s">"k"</span>>for</span> callback <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._subscribers.get(event.event_type, []):
+        <span class="h"># 精确匹配</span>
+        <span class="k">for</span> callback <span class="k">in</span> <span class="k">self</span>._subscribers.get(event.event_type, []):
             callback(event)
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 通配符匹配</span>
-        <span class=<span class="s">"k"</span>>for</span> callback <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._subscribers.get(<span class="s">"*"</span>, []):
+        <span class="h"># 通配符匹配</span>
+        <span class="k">for</span> callback <span class="k">in</span> <span class="k">self</span>._subscribers.get(<span class="s">"*"</span>, []):
             callback(event)
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>publish_async</span>(<span class=<span class="s">"k"</span>>self</span>, event: AgentEvent):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"异步发布事件（用于需要 <span class="</span>k<span class="s">">await</span> 的回调）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>._history.append(event)
+    <span class="k">async</span> <span class="k">def</span> <span class="f">publish_async</span>(<span class="k">self</span>, event: AgentEvent):
+        <span class="s">"""异步发布事件（用于需要 await 的回调）。"""</span>
+        <span class="k">self</span>._history.append(event)
         tasks = []
-        <span class=<span class="s">"k"</span>>for</span> callback <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._subscribers.get(event.event_type, []):
-            <span class=<span class="s">"k"</span>>if</span> asyncio.iscoroutinefunction(callback):
+        <span class="k">for</span> callback <span class="k">in</span> <span class="k">self</span>._subscribers.get(event.event_type, []):
+            <span class="k">if</span> asyncio.iscoroutinefunction(callback):
                 tasks.append(asyncio.create_task(callback(event)))
-            <span class=<span class="s">"k"</span>>else</span>:
+            <span class="k">else</span>:
                 callback(event)
-        <span class=<span class="s">"k"</span>>for</span> callback <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._subscribers.get(<span class="s">"*"</span>, []):
-            <span class=<span class="s">"k"</span>>if</span> asyncio.iscoroutinefunction(callback):
+        <span class="k">for</span> callback <span class="k">in</span> <span class="k">self</span>._subscribers.get(<span class="s">"*"</span>, []):
+            <span class="k">if</span> asyncio.iscoroutinefunction(callback):
                 tasks.append(asyncio.create_task(callback(event)))
-            <span class=<span class="s">"k"</span>>else</span>:
+            <span class="k">else</span>:
                 callback(event)
-        <span class=<span class="s">"k"</span>>if</span> tasks:
-            <span class=<span class="s">"k"</span>>await</span> asyncio.gather(*tasks)
+        <span class="k">if</span> tasks:
+            <span class="k">await</span> asyncio.gather(*tasks)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_history</span>(<span class=<span class="s">"k"</span>>self</span>, event_type: <span class=<span class="s">"b"</span>>str</span> = <span class=<span class="s">"k"</span>>None</span>,
-                    limit: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>50</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[AgentEvent]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"获取事件历史（用于调试）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>if</span> event_type:
-            filtered = [e <span class=<span class="s">"k"</span>>for</span> e <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._history
-                        <span class=<span class="s">"k"</span>>if</span> e.event_type == event_type]
-            <span class=<span class="s">"k"</span>>return</span> filtered[-limit:]
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>._history[-limit:]
+    <span class="k">def</span> <span class="f">get_history</span>(<span class="k">self</span>, event_type: <span class="b">str</span> = <span class="k">None</span>,
+                    limit: <span class="b">int</span> = <span class="n">50</span>) -&gt; <span class="b">list</span>[AgentEvent]:
+        <span class="s">"""获取事件历史（用于调试）。"""</span>
+        <span class="k">if</span> event_type:
+            filtered = [e <span class="k">for</span> e <span class="k">in</span> <span class="k">self</span>._history
+                        <span class="k">if</span> e.event_type == event_type]
+            <span class="k">return</span> filtered[-limit:]
+        <span class="k">return</span> <span class="k">self</span>._history[-limit:]
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentStateManager</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Agent 状态管理器 —— 单一数据源。
+<span class="k">class</span> <span class="f">AgentStateManager</span>:
+    <span class="s">"""Agent 状态管理器 —— 单一数据源。
 
     使用纯函数（Reducer）更新状态，确保状态变更可预测。
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, session_id: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.session_id = session_id
-        <span class=<span class="s">"k"</span>>self</span>.state = {
-            <span class="s">"status"</span>: <span class="s">"idle"</span>,            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># idle/thinking/acting/done/interrupted</span>
-            <span class="s">"current_step"</span>: <span class=<span class="s">"n"</span>>0</span>,
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, session_id: <span class="b">str</span>):
+        <span class="k">self</span>.session_id = session_id
+        <span class="k">self</span>.state = {
+            <span class="s">"status"</span>: <span class="s">"idle"</span>,            <span class="h"># idle/thinking/acting/done/interrupted</span>
+            <span class="s">"current_step"</span>: <span class="n">0</span>,
             <span class="s">"tool_calls"</span>: [],
-            <span class="s">"last_tool_result"</span>: <span class=<span class="s">"k"</span>>None</span>,
+            <span class="s">"last_tool_result"</span>: <span class="k">None</span>,
             <span class="s">"messages"</span>: [],
-            <span class="s">"error"</span>: <span class=<span class="s">"k"</span>>None</span>,
-            <span class="s">"interrupt_requested"</span>: <span class=<span class="s">"k"</span>>False</span>,
+            <span class="s">"error"</span>: <span class="k">None</span>,
+            <span class="s">"interrupt_requested"</span>: <span class="k">False</span>,
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>reduce</span>(<span class=<span class="s">"k"</span>>self</span>, event: AgentEvent):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"纯函数式状态更新（Reducer 模式）。
+    <span class="k">def</span> <span class="f">reduce</span>(<span class="k">self</span>, event: AgentEvent):
+        <span class="s">"""纯函数式状态更新（Reducer 模式）。
 
         根据事件类型更新状态，没有副作用。
-        <span class="s">""</span>"</span>
+        """</span>
         etype = event.event_type
 
-        <span class=<span class="s">"k"</span>>if</span> etype == <span class="s">"thinking"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"thinking"</span>
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"current_step"</span>] += <span class=<span class="s">"n"</span>>1</span>
+        <span class="k">if</span> etype == <span class="s">"thinking"</span>:
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"thinking"</span>
+            <span class="k">self</span>.state[<span class="s">"current_step"</span>] += <span class="n">1</span>
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"tool_call_start"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"acting"</span>
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"tool_calls"</span>].append({
+        <span class="k">elif</span> etype == <span class="s">"tool_call_start"</span>:
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"acting"</span>
+            <span class="k">self</span>.state[<span class="s">"tool_calls"</span>].append({
                 <span class="s">"tool"</span>: event.data.get(<span class="s">"tool_name"</span>),
                 <span class="s">"args"</span>: event.data.get(<span class="s">"args"</span>),
                 <span class="s">"status"</span>: <span class="s">"pending"</span>,
                 <span class="s">"started_at"</span>: event.timestamp,
             })
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"tool_call_end"</span>:
-            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"tool_calls"</span>]:
-                <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"tool_calls"</span>][-<span class=<span class="s">"n"</span>>1</span>][<span class="s">"status"</span>] = <span class="s">"done"</span>
-                <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"tool_calls"</span>][-<span class=<span class="s">"n"</span>>1</span>][<span class="s">"result"</span>] = event.data
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"last_tool_result"</span>] = event.data
+        <span class="k">elif</span> etype == <span class="s">"tool_call_end"</span>:
+            <span class="k">if</span> <span class="k">self</span>.state[<span class="s">"tool_calls"</span>]:
+                <span class="k">self</span>.state[<span class="s">"tool_calls"</span>][-<span class="n">1</span>][<span class="s">"status"</span>] = <span class="s">"done"</span>
+                <span class="k">self</span>.state[<span class="s">"tool_calls"</span>][-<span class="n">1</span>][<span class="s">"result"</span>] = event.data
+            <span class="k">self</span>.state[<span class="s">"last_tool_result"</span>] = event.data
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"user_interrupt"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"interrupt_requested"</span>] = <span class=<span class="s">"k"</span>>True</span>
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"interrupted"</span>
+        <span class="k">elif</span> etype == <span class="s">"user_interrupt"</span>:
+            <span class="k">self</span>.state[<span class="s">"interrupt_requested"</span>] = <span class="k">True</span>
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"interrupted"</span>
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"resume"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"interrupt_requested"</span>] = <span class=<span class="s">"k"</span>>False</span>
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"thinking"</span>
+        <span class="k">elif</span> etype == <span class="s">"resume"</span>:
+            <span class="k">self</span>.state[<span class="s">"interrupt_requested"</span>] = <span class="k">False</span>
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"thinking"</span>
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"done"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"done"</span>
+        <span class="k">elif</span> etype == <span class="s">"done"</span>:
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"done"</span>
 
-        <span class=<span class="s">"k"</span>>elif</span> etype == <span class="s">"error"</span>:
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>] = <span class="s">"error"</span>
-            <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"error"</span>] = event.data
+        <span class="k">elif</span> etype == <span class="s">"error"</span>:
+            <span class="k">self</span>.state[<span class="s">"status"</span>] = <span class="s">"error"</span>
+            <span class="k">self</span>.state[<span class="s">"error"</span>] = event.data
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>should_interrupt</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; bool:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"检查是否需要中断。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"interrupt_requested"</span>]
+    <span class="k">def</span> <span class="f">should_interrupt</span>(<span class="k">self</span>) -&gt; bool:
+        <span class="s">"""检查是否需要中断。"""</span>
+        <span class="k">return</span> <span class="k">self</span>.state[<span class="s">"interrupt_requested"</span>]
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_status_display</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"获取当前状态摘要（用于 UI 展示）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> {
-            <span class="s">"status"</span>: <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"status"</span>],
-            <span class="s">"step"</span>: <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"current_step"</span>],
-            <span class="s">"active_tools"</span>: [t[<span class="s">"tool"</span>] <span class=<span class="s">"k"</span>>for</span> t <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.state[<span class="s">"tool_calls"</span>]
-                             <span class=<span class="s">"k"</span>>if</span> t[<span class="s">"status"</span>] == <span class="s">"pending"</span>],
+    <span class="k">def</span> <span class="f">get_status_display</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""获取当前状态摘要（用于 UI 展示）。"""</span>
+        <span class="k">return</span> {
+            <span class="s">"status"</span>: <span class="k">self</span>.state[<span class="s">"status"</span>],
+            <span class="s">"step"</span>: <span class="k">self</span>.state[<span class="s">"current_step"</span>],
+            <span class="s">"active_tools"</span>: [t[<span class="s">"tool"</span>] <span class="k">for</span> t <span class="k">in</span> <span class="k">self</span>.state[<span class="s">"tool_calls"</span>]
+                             <span class="k">if</span> t[<span class="s">"status"</span>] == <span class="s">"pending"</span>],
         }
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>21.4</span> 动态中断 (Dynamic Interrupt) —— Agent 交互的质变
+<span class="s">"""
+21.4 动态中断 (Dynamic Interrupt) —— Agent 交互的质变
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 这是 Agent 从「自动化脚本」升级到「交互式伙伴」的关键能力。
@@ -971,10 +971,10 @@ EventBus 的优势：
 中断模式：提交任务 → 观察进行中 → 途中发现方向不对 → 立即纠正
 
 架构实现：
-  <span class=<span class="s">"n"</span>>1</span>. EventBus 监听 interrupt 事件
-  <span class=<span class="s">"n"</span>>2</span>. Agent 循环每步检查 should_interrupt()
-  <span class=<span class="s">"n"</span>>3</span>. 如果中断 → 暂停执行 → 等待用户新指令
-  <span class=<span class="s">"n"</span>>4</span>. 用户发送新指令 → resume 事件 → 继续执行
+  1. EventBus 监听 interrupt 事件
+  2. Agent 循环每步检查 should_interrupt()
+  3. 如果中断 → 暂停执行 → 等待用户新指令
+  4. 用户发送新指令 → resume 事件 → 继续执行
 
 和 Claude Code h2A 的关系（Ch8）：
   h2A 是「双缓冲异步队列」
@@ -984,92 +984,92 @@ EventBus 的优势：
   - 太粗：等当前工具调完才知道 → 延迟大
   - 太细：每收到一个 token 就检查 → 开销大
   - 最优：每个 Agent 步骤结束时检查（Claude Code 的做法）
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>InterruptibleAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"可中断 Agent —— 演示动态中断的完整流程。
+<span class="k">class</span> <span class="f">InterruptibleAgent</span>:
+    <span class="s">"""可中断 Agent —— 演示动态中断的完整流程。
 
     结合 EventBus + StateManager + 模拟 LLM。
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, session_id: <span class=<span class="s">"b"</span>>str</span> = <span class="s">"demo"</span>):
-        <span class=<span class="s">"k"</span>>self</span>.bus = EventBus()
-        <span class=<span class="s">"k"</span>>self</span>.state = AgentStateManager(session_id)
-        <span class=<span class="s">"k"</span>>self</span>.cancelled = <span class=<span class="s">"k"</span>>False</span>
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, session_id: <span class="b">str</span> = <span class="s">"demo"</span>):
+        <span class="k">self</span>.bus = EventBus()
+        <span class="k">self</span>.state = AgentStateManager(session_id)
+        <span class="k">self</span>.cancelled = <span class="k">False</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 注册事件处理</span>
-        <span class=<span class="s">"k"</span>>self</span>.bus.subscribe(<span class="s">"user_interrupt"</span>,
-                           <span class=<span class="s">"k"</span>>lambda</span> e: <span class=<span class="s">"k"</span>>self</span>.state.reduce(e))
-        <span class=<span class="s">"k"</span>>self</span>.bus.subscribe(<span class="s">"resume"</span>,
-                           <span class=<span class="s">"k"</span>>lambda</span> e: <span class=<span class="s">"k"</span>>self</span>.state.reduce(e))
+        <span class="h"># 注册事件处理</span>
+        <span class="k">self</span>.bus.subscribe(<span class="s">"user_interrupt"</span>,
+                           <span class="k">lambda</span> e: <span class="k">self</span>.state.reduce(e))
+        <span class="k">self</span>.bus.subscribe(<span class="s">"resume"</span>,
+                           <span class="k">lambda</span> e: <span class="k">self</span>.state.reduce(e))
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>request_interrupt</span>(<span class=<span class="s">"k"</span>>self</span>, reason: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"用户请求中断。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(
+    <span class="k">def</span> <span class="f">request_interrupt</span>(<span class="k">self</span>, reason: <span class="b">str</span> = <span class="s">""</span>):
+        <span class="s">"""用户请求中断。"""</span>
+        <span class="k">self</span>.bus.publish(AgentEvent(
             <span class="s">"user_interrupt"</span>,
             {<span class="s">"reason"</span>: reason},
-            session_id=<span class=<span class="s">"k"</span>>self</span>.state.session_id,
+            session_id=<span class="k">self</span>.state.session_id,
         ))
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⏸️ 中断请求: {reason}"</span>)
+        <span class="b">print</span>(f<span class="s">"  ⏸️ 中断请求: {reason}"</span>)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>resume</span>(<span class=<span class="s">"k"</span>>self</span>, new_instruction: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"用户恢复执行（可带新指令）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(
+    <span class="k">def</span> <span class="f">resume</span>(<span class="k">self</span>, new_instruction: <span class="b">str</span> = <span class="s">""</span>):
+        <span class="s">"""用户恢复执行（可带新指令）。"""</span>
+        <span class="k">self</span>.bus.publish(AgentEvent(
             <span class="s">"resume"</span>,
             {<span class="s">"new_instruction"</span>: new_instruction},
-            session_id=<span class=<span class="s">"k"</span>>self</span>.state.session_id,
+            session_id=<span class="k">self</span>.state.session_id,
         ))
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ▶️ 恢复执行"</span> +
-              (f<span class="s">"（新指令: {new_instruction}）"</span> <span class=<span class="s">"k"</span>>if</span> new_instruction <span class=<span class="s">"k"</span>>else</span> <span class="s">""</span>))
+        <span class="b">print</span>(f<span class="s">"  ▶️ 恢复执行"</span> +
+              (f<span class="s">"（新指令: {new_instruction}）"</span> <span class="k">if</span> new_instruction <span class="k">else</span> <span class="s">""</span>))
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, max_steps: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>10</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"模拟 Agent 执行（可被中断）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  🎯 任务: {task}"</span>)
+    <span class="k">async</span> <span class="k">def</span> <span class="f">run</span>(<span class="k">self</span>, task: <span class="b">str</span>, max_steps: <span class="b">int</span> = <span class="n">10</span>):
+        <span class="s">"""模拟 Agent 执行（可被中断）。"""</span>
+        <span class="b">print</span>(f<span class="s">"  🎯 任务: {task}"</span>)
 
-        <span class=<span class="s">"k"</span>>for</span> step <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>1</span>, max_steps + <span class=<span class="s">"n"</span>>1</span>):
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第1步：检查中断</span>
-            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.state.should_interrupt():
-                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    ⏸️ Agent 在第 {step} 步暂停，等待用户..."</span>)
-                <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"interrupted"</span>, <span class="s">"step"</span>: step}
-                <span class=<span class="s">"k"</span>>return</span>
-            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>self</span>.cancelled:
-                <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"cancelled"</span>, <span class="s">"step"</span>: step}
-                <span class=<span class="s">"k"</span>>return</span>
+        <span class="k">for</span> step <span class="k">in</span> <span class="b">range</span>(<span class="n">1</span>, max_steps + <span class="n">1</span>):
+            <span class="h"># 第1步：检查中断</span>
+            <span class="k">if</span> <span class="k">self</span>.state.should_interrupt():
+                <span class="b">print</span>(f<span class="s">"    ⏸️ Agent 在第 {step} 步暂停，等待用户..."</span>)
+                <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"interrupted"</span>, <span class="s">"step"</span>: step}
+                <span class="k">return</span>
+            <span class="k">if</span> <span class="k">self</span>.cancelled:
+                <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"cancelled"</span>, <span class="s">"step"</span>: step}
+                <span class="k">return</span>
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第2步：思考</span>
-            <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(<span class="s">"thinking"</span>))
-            <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"thinking"</span>, <span class="s">"step"</span>: step,
+            <span class="h"># 第2步：思考</span>
+            <span class="k">self</span>.bus.publish(AgentEvent(<span class="s">"thinking"</span>))
+            <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"thinking"</span>, <span class="s">"step"</span>: step,
                    <span class="s">"message"</span>: f<span class="s">"正在分析第 {step} 步..."</span>}
-            <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.3</span>)
+            <span class="k">await</span> asyncio.sleep(<span class="n">0.3</span>)
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第3步：模拟工具调用</span>
+            <span class="h"># 第3步：模拟工具调用</span>
             tool_name = f<span class="s">"tool_{step}"</span>
-            <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(
+            <span class="k">self</span>.bus.publish(AgentEvent(
                 <span class="s">"tool_call_start"</span>,
                 {<span class="s">"tool_name"</span>: tool_name, <span class="s">"args"</span>: {<span class="s">"step"</span>: step}},
             ))
-            <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"tool_call"</span>, <span class="s">"step"</span>: step,
+            <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"tool_call"</span>, <span class="s">"step"</span>: step,
                    <span class="s">"tool"</span>: tool_name}
-            <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.3</span>)
+            <span class="k">await</span> asyncio.sleep(<span class="n">0.3</span>)
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第4步：工具结果</span>
-            <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(
+            <span class="h"># 第4步：工具结果</span>
+            <span class="k">self</span>.bus.publish(AgentEvent(
                 <span class="s">"tool_call_end"</span>,
                 f<span class="s">"工具 {tool_name} 执行成功"</span>,
             ))
-            <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"tool_result"</span>, <span class="s">"step"</span>: step,
+            <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"tool_result"</span>, <span class="s">"step"</span>: step,
                    <span class="s">"result"</span>: f<span class="s">"{tool_name} 完成"</span>}
-            <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.2</span>)
+            <span class="k">await</span> asyncio.sleep(<span class="n">0.2</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 完成</span>
-        <span class=<span class="s">"k"</span>>self</span>.bus.publish(AgentEvent(<span class="s">"done"</span>))
-        <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"done"</span>, <span class="s">"step"</span>: max_steps + <span class=<span class="s">"n"</span>>1</span>,
+        <span class="h"># 完成</span>
+        <span class="k">self</span>.bus.publish(AgentEvent(<span class="s">"done"</span>))
+        <span class="k">yield</span> {<span class="s">"type"</span>: <span class="s">"done"</span>, <span class="s">"step"</span>: max_steps + <span class="n">1</span>,
                <span class="s">"message"</span>: <span class="s">"所有步骤完成"</span>}
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>21.5</span> 背压控制 (Backpressure) —— 生产环境的隐性需求
+<span class="s">"""
+21.5 背压控制 (Backpressure) —— 生产环境的隐性需求
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 场景：
@@ -1078,152 +1078,152 @@ EventBus 的优势：
 
 解决方案：
 
-  <span class=<span class="s">"n"</span>>1</span>. 缓冲区控制
+  1. 缓冲区控制
      前端维护一个固定大小的缓冲队列
      满了就暂停 SSE 流
 
-  <span class=<span class="s">"n"</span>>2</span>. 自适应降频
+  2. 自适应降频
      如果前端处理变慢 → 减少推送频率
-     从「每 token 推送」降级到「每 <span class=<span class="s">"n"</span>>5</span> token 推送」
+     从「每 token 推送」降级到「每 5 token 推送」
 
-  <span class=<span class="s">"n"</span>>3</span>. 生产者-消费者模式
+  3. 生产者-消费者模式
      生产者（LLM）→ 队列 → 消费者（前端）
      队列有容量上限，满了暂停生产者
 
 这就是 Claude Code h2A 的「智能背压控制」
-（Ch8 提到：吞吐量 &gt; <span class=<span class="s">"n"</span>>10</span>,<span class=<span class="s">"n"</span>>000</span> 消息/秒 + 智能背压）。
-<span class="s">""</span>"</span>
+（Ch8 提到：吞吐量 &gt; 10,000 消息/秒 + 智能背压）。
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>BackpressureController</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"背压控制器 —— 防止生产者速度超过消费者。
+<span class="k">class</span> <span class="f">BackpressureController</span>:
+    <span class="s">"""背压控制器 —— 防止生产者速度超过消费者。
 
     生产者-消费者队列，内置流控机制。
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, max_size: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>100</span>):
-        <span class=<span class="s">"k"</span>>self</span>.queue = asyncio.Queue(maxsize=max_size)
-        <span class=<span class="s">"k"</span>>self</span>.dropped = <span class=<span class="s">"n"</span>>0</span>  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 丢弃的事件数</span>
-        <span class=<span class="s">"k"</span>>self</span>.total = <span class=<span class="s">"n"</span>>0</span>
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, max_size: <span class="b">int</span> = <span class="n">100</span>):
+        <span class="k">self</span>.queue = asyncio.Queue(maxsize=max_size)
+        <span class="k">self</span>.dropped = <span class="n">0</span>  <span class="h"># 丢弃的事件数</span>
+        <span class="k">self</span>.total = <span class="n">0</span>
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>produce</span>(<span class=<span class="s">"k"</span>>self</span>, event: AgentEvent) -&gt; bool:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"生产者：发布事件。
+    <span class="k">async</span> <span class="k">def</span> <span class="f">produce</span>(<span class="k">self</span>, event: AgentEvent) -&gt; bool:
+        <span class="s">"""生产者：发布事件。
 
         Returns:
             是否成功入队。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.total += <span class=<span class="s">"n"</span>>1</span>
-        <span class=<span class="s">"k"</span>>try</span>:
-            <span class=<span class="s">"k"</span>>self</span>.queue.put_nowait(event)
-            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>True</span>
-        <span class=<span class="s">"k"</span>>except</span> asyncio.QueueFull:
-            <span class=<span class="s">"k"</span>>self</span>.dropped += <span class=<span class="s">"n"</span>>1</span>
-            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>False</span>
+        """</span>
+        <span class="k">self</span>.total += <span class="n">1</span>
+        <span class="k">try</span>:
+            <span class="k">self</span>.queue.put_nowait(event)
+            <span class="k">return</span> <span class="k">True</span>
+        <span class="k">except</span> asyncio.QueueFull:
+            <span class="k">self</span>.dropped += <span class="n">1</span>
+            <span class="k">return</span> <span class="k">False</span>
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>consume</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; AgentEvent:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"消费者：取出事件。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>await</span> <span class=<span class="s">"k"</span>>self</span>.queue.get()
+    <span class="k">async</span> <span class="k">def</span> <span class="f">consume</span>(<span class="k">self</span>) -&gt; AgentEvent:
+        <span class="s">"""消费者：取出事件。"""</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="k">self</span>.queue.get()
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>stats</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"背压统计。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> {
-            <span class="s">"queue_size"</span>: <span class=<span class="s">"k"</span>>self</span>.queue.qsize(),
-            <span class="s">"total_produced"</span>: <span class=<span class="s">"k"</span>>self</span>.total,
-            <span class="s">"dropped"</span>: <span class=<span class="s">"k"</span>>self</span>.dropped,
-            <span class="s">"drop_rate"</span>: <span class=<span class="s">"k"</span>>self</span>.dropped / <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"k"</span>>self</span>.total, <span class=<span class="s">"n"</span>>1</span>),
+    <span class="k">def</span> <span class="f">stats</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""背压统计。"""</span>
+        <span class="k">return</span> {
+            <span class="s">"queue_size"</span>: <span class="k">self</span>.queue.qsize(),
+            <span class="s">"total_produced"</span>: <span class="k">self</span>.total,
+            <span class="s">"dropped"</span>: <span class="k">self</span>.dropped,
+            <span class="s">"drop_rate"</span>: <span class="k">self</span>.dropped / <span class="b">max</span>(<span class="k">self</span>.total, <span class="n">1</span>),
         }
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_event_driven_agent</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示事件驱动 Agent 的完整流程。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  事件驱动 + 动态中断 演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_event_driven_agent</span>():
+    <span class="s">"""演示事件驱动 Agent 的完整流程。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  事件驱动 + 动态中断 演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     bus = EventBus()
     state = AgentStateManager(<span class="s">"demo_session"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 注册事件处理器</span>
+    <span class="h"># 注册事件处理器</span>
     event_log = []
-    bus.subscribe(<span class="s">"*"</span>, <span class=<span class="s">"k"</span>>lambda</span> e: event_log.append(
+    bus.subscribe(<span class="s">"*"</span>, <span class="k">lambda</span> e: event_log.append(
         f<span class="s">"[{e.event_type}] {e.data}"</span>
     ))
 
     bus.subscribe(<span class="s">"thinking"</span>,
-                  <span class=<span class="s">"k"</span>>lambda</span> e: state.reduce(e))
+                  <span class="k">lambda</span> e: state.reduce(e))
     bus.subscribe(<span class="s">"tool_call_start"</span>,
-                  <span class=<span class="s">"k"</span>>lambda</span> e: state.reduce(e))
+                  <span class="k">lambda</span> e: state.reduce(e))
     bus.subscribe(<span class="s">"tool_call_end"</span>,
-                  <span class=<span class="s">"k"</span>>lambda</span> e: state.reduce(e))
+                  <span class="k">lambda</span> e: state.reduce(e))
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟 Agent 执行流程</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  🔄 模拟 Agent 执行..."</span>)
+    <span class="h"># 模拟 Agent 执行流程</span>
+    <span class="b">print</span>(<span class="s">"\n  🔄 模拟 Agent 执行..."</span>)
     steps = [
         (<span class="s">"thinking"</span>, <span class="s">"正在分析任务..."</span>),
         (<span class="s">"tool_call_start"</span>, {<span class="s">"tool_name"</span>: <span class="s">"search"</span>, <span class="s">"args"</span>: {<span class="s">"q"</span>: <span class="s">"AI"</span>}}),
-        (<span class="s">"tool_call_end"</span>, <span class="s">"找到 <span class="</span>n<span class="s">">5</span> 条结果"</span>),
+        (<span class="s">"tool_call_end"</span>, <span class="s">"找到 5 条结果"</span>),
         (<span class="s">"thinking"</span>, <span class="s">"正在整理答案..."</span>),
         (<span class="s">"user_interrupt"</span>, <span class="s">"等等，换一个方向！"</span>),
     ]
 
-    <span class=<span class="s">"k"</span>>for</span> etype, data <span class=<span class="s">"k"</span>>in</span> steps:
+    <span class="k">for</span> etype, data <span class="k">in</span> steps:
         event = AgentEvent(etype, data, session_id=<span class="s">"demo_session"</span>)
         bus.publish(event)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  📡 事件: {etype} → 状态: {state.get_status_display()[<span class='s'>'status'</span>]}"</span>)
+        <span class="b">print</span>(f<span class="s">"  📡 事件: {etype} → 状态: {state.get_status_display()['status']}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  📋 事件历史 ({<span class="</span>b<span class="s">">len</span>(event_log)} 条):"</span>)
-    <span class=<span class="s">"k"</span>>for</span> entry <span class=<span class="s">"k"</span>>in</span> event_log:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {entry}"</span>)
+    <span class="b">print</span>(f<span class="s">"\n  📋 事件历史 ({len(event_log)} 条):"</span>)
+    <span class="k">for</span> entry <span class="k">in</span> event_log:
+        <span class="b">print</span>(f<span class="s">"    {entry}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 演示中断</span>
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  ⚡ 中断检测: {state.should_interrupt()}"</span>)
+    <span class="h"># 演示中断</span>
+    <span class="b">print</span>(f<span class="s">"\n  ⚡ 中断检测: {state.should_interrupt()}"</span>)
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>21.6</span> 本章总结
+<span class="s">"""
+21.6 本章总结
 ━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class=<span class="s">"n"</span>>1</span>. Event-Driven = Agent 实时交互的基础
+1. Event-Driven = Agent 实时交互的基础
    - EventBus 解耦各组件
    - StateManager 做唯一数据源
    - 事件驱动使中断、流式输出、工具调用可见成为可能
 
-<span class=<span class="s">"n"</span>>2</span>. 动态中断
+2. 动态中断
    - 用户可以在 Agent 执行中途「注入」新指令
    - 核心机制：EventBus + should_interrupt() 检查
    - 粒度控制：每步结束时检查（最优平衡）
 
-<span class=<span class="s">"n"</span>>3</span>. 背压控制
+3. 背压控制
    - 生产者（LLM）vs 消费者（前端）速度不匹配
    - 解决方案：有界队列 + 自适应降频
    - 这是从 Demo 到 Production 的关键一步
 
-<span class=<span class="s">"n"</span>>4</span>. 架构和 Ch8/Ch13 的关系
+4. 架构和 Ch8/Ch13 的关系
    - Ch8 Claude Code h2A：一种具体的实现
    - Ch13 SSE/WebSocket：传输层实现
    - Ch21 EventBus：架构层抽象（本章）
 
 面试速记：
-  <span class="s">"Agent 怎么让用户可以中途介入？"</span>
+  "Agent 怎么让用户可以中途介入？"
   → Event-Driven 架构 + EventBus
   → Agent 每步检查 interrupt 信号
   → h2A 双缓冲队列是 Claude Code 的具体实现
   → 关键是中断粒度：每步结束时检查
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第21章：Streaming &amp; 实时 Agent 架构                   ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  EventBus · 动态中断 · 背压控制 · 状态机             ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第21章：Streaming &amp; 实时 Agent 架构                   ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  EventBus · 动态中断 · 背压控制 · 状态机             ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_event_driven_agent()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ Agent 关键事件类型"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ Agent 关键事件类型"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     events = [
         (<span class="s">"user_input"</span>, <span class="s">"用户发送消息"</span>),
         (<span class="s">"thinking"</span>, <span class="s">"Agent 思考中"</span>),
@@ -1234,11 +1234,11 @@ EventBus 的优势：
         (<span class="s">"error"</span>, <span class="s">"错误发生"</span>),
         (<span class="s">"done"</span>, <span class="s">"任务完成"</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> etype, desc <span class=<span class="s">"k"</span>>in</span> events:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {etype:15s} → {desc}"</span>)
+    <span class="k">for</span> etype, desc <span class="k">in</span> events:
+        <span class="b">print</span>(f<span class="s">"  {etype:15s} → {desc}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ 实时架构 Checklist"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 实时架构 Checklist"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     items = [
         <span class="s">"EventBus 解耦组件通信"</span>,
         <span class="s">"StateManager 单一数据源（纯函数 Reducer）"</span>,
@@ -1246,10 +1246,10 @@ EventBus 的优势：
         <span class="s">"背压控制防止生产者超过消费者"</span>,
         <span class="s">"事件历史用于 Tracing 和调试"</span>,
     ]
-    <span class=<span class="s">"k"</span>>for</span> item <span class=<span class="s">"k"</span>>in</span> items:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✅ {item}"</span>)
+    <span class="k">for</span> item <span class="k">in</span> items:
+        <span class="b">print</span>(f<span class="s">"  ✅ {item}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第21章完成！"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第21章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_20_context_engineering/20_context_engineering.html" title="Context Engineering — Context Rot·预算管理·XML Prompt">← 第20章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

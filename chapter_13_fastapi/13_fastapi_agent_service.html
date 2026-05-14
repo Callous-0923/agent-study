@@ -165,103 +165,103 @@ body {
 <li>自动生成 OpenAPI 文档（/docs）</li>
 <li>内置 SSE / WebSocket 支持</li>
 <li>类型安全（Pydantic v2）</li>
-<li>异步并发（async/await 原生支持）</li></div><div class="code-section"><details open><summary>💻 代码 (17 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> sqlite3
-<span class=<span class="s">"k"</span>>import</span> asyncio
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> datetime <span class=<span class="s">"k"</span>>import</span> datetime
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional, AsyncGenerator
-<span class=<span class="s">"k"</span>>from</span> contextlib <span class=<span class="s">"k"</span>>import</span> asynccontextmanager
+<li>异步并发（async/await 原生支持）</li></div><div class="code-section"><details open><summary>💻 代码 (17 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> sqlite3
+<span class="k">import</span> asyncio
+<span class="k">import</span> hashlib
+<span class="k">from</span> datetime <span class="k">import</span> datetime
+<span class="k">from</span> typing <span class="k">import</span> Optional, AsyncGenerator
+<span class="k">from</span> contextlib <span class="k">import</span> asynccontextmanager
 
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
-<span class=<span class="s">"k"</span>>from</span> fastapi <span class=<span class="s">"k"</span>>import</span> FastAPI, HTTPException, Request
-<span class=<span class="s">"k"</span>>from</span> fastapi.responses <span class=<span class="s">"k"</span>>import</span> StreamingResponse, HTMLResponse
-<span class=<span class="s">"k"</span>>from</span> fastapi.middleware.cors <span class=<span class="s">"k"</span>>import</span> CORSMiddleware
-<span class=<span class="s">"k"</span>>from</span> pydantic <span class=<span class="s">"k"</span>>import</span> BaseModel, Field
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+<span class="k">from</span> fastapi <span class="k">import</span> FastAPI, HTTPException, Request
+<span class="k">from</span> fastapi.responses <span class="k">import</span> StreamingResponse, HTMLResponse
+<span class="k">from</span> fastapi.middleware.cors <span class="k">import</span> CORSMiddleware
+<span class="k">from</span> pydantic <span class="k">import</span> BaseModel, Field
 
-load_dotenv()</pre></div></details></div><div class="lecture"><h2>13.2 数据模型定义（Pydantic v2）</h2></div><div class="code-section"><details open><summary>💻 代码 (47 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> sqlite3
-<span class=<span class="s">"k"</span>>import</span> asyncio
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> datetime <span class=<span class="s">"k"</span>>import</span> datetime
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional, AsyncGenerator
-<span class=<span class="s">"k"</span>>from</span> contextlib <span class=<span class="s">"k"</span>>import</span> asynccontextmanager
+load_dotenv()</pre></div></details></div><div class="lecture"><h2>13.2 数据模型定义（Pydantic v2）</h2></div><div class="code-section"><details open><summary>💻 代码 (47 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> sqlite3
+<span class="k">import</span> asyncio
+<span class="k">import</span> hashlib
+<span class="k">from</span> datetime <span class="k">import</span> datetime
+<span class="k">from</span> typing <span class="k">import</span> Optional, AsyncGenerator
+<span class="k">from</span> contextlib <span class="k">import</span> asynccontextmanager
 
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
-<span class=<span class="s">"k"</span>>from</span> fastapi <span class=<span class="s">"k"</span>>import</span> FastAPI, HTTPException, Request
-<span class=<span class="s">"k"</span>>from</span> fastapi.responses <span class=<span class="s">"k"</span>>import</span> StreamingResponse, HTMLResponse
-<span class=<span class="s">"k"</span>>from</span> fastapi.middleware.cors <span class=<span class="s">"k"</span>>import</span> CORSMiddleware
-<span class=<span class="s">"k"</span>>from</span> pydantic <span class=<span class="s">"k"</span>>import</span> BaseModel, Field
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+<span class="k">from</span> fastapi <span class="k">import</span> FastAPI, HTTPException, Request
+<span class="k">from</span> fastapi.responses <span class="k">import</span> StreamingResponse, HTMLResponse
+<span class="k">from</span> fastapi.middleware.cors <span class="k">import</span> CORSMiddleware
+<span class="k">from</span> pydantic <span class="k">import</span> BaseModel, Field
 
 load_dotenv()
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentRequest</span>(BaseModel):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Agent API 请求体。
+<span class="k">class</span> <span class="f">AgentRequest</span>(BaseModel):
+    <span class="s">"""Agent API 请求体。
 
     FastAPI + Pydantic 自动完成：
-      <span class=<span class="s">"n"</span>>1</span>. JSON 解析
-      <span class=<span class="s">"n"</span>>2</span>. 类型校验
-      <span class=<span class="s">"n"</span>>3</span>. 生成 OpenAPI 文档
-    <span class="s">""</span>"</span>
-    message: <span class=<span class="s">"b"</span>>str</span> = Field(..., min_length=<span class=<span class="s">"n"</span>>1</span>, max_length=<span class=<span class="s">"n"</span>>10000</span>,
+      1. JSON 解析
+      2. 类型校验
+      3. 生成 OpenAPI 文档
+    """</span>
+    message: <span class="b">str</span> = Field(..., min_length=<span class="n">1</span>, max_length=<span class="n">10000</span>,
                          description=<span class="s">"用户输入的消息"</span>)
-    session_id: Optional[<span class=<span class="s">"b"</span>>str</span>] = Field(<span class=<span class="s">"k"</span>>None</span>,
+    session_id: Optional[<span class="b">str</span>] = Field(<span class="k">None</span>,
                                        description=<span class="s">"会话ID，不传则自动创建"</span>)
-    stream: bool = Field(<span class=<span class="s">"k"</span>>False</span>,
+    stream: bool = Field(<span class="k">False</span>,
                          description=<span class="s">"是否使用 SSE 流式返回"</span>)
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentResponse</span>(BaseModel):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Agent API 响应体。"</span><span class="s">""</span></span>
-    session_id: <span class=<span class="s">"b"</span>>str</span>
-    answer: <span class=<span class="s">"b"</span>>str</span>
-    tool_calls_made: <span class=<span class="s">"b"</span>>int</span>
-    elapsed_seconds: <span class=<span class="s">"b"</span>>float</span>
-    timestamp: <span class=<span class="s">"b"</span>>str</span>
+<span class="k">class</span> <span class="f">AgentResponse</span>(BaseModel):
+    <span class="s">"""Agent API 响应体。"""</span>
+    session_id: <span class="b">str</span>
+    answer: <span class="b">str</span>
+    tool_calls_made: <span class="b">int</span>
+    elapsed_seconds: <span class="b">float</span>
+    timestamp: <span class="b">str</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>SSEEvent</span>(BaseModel):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"SSE 事件格式。"</span><span class="s">""</span></span>
-    event: <span class=<span class="s">"b"</span>>str</span>                      <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># <span class="s">"thinking"</span> | <span class="s">"tool_call"</span> | <span class="s">"tool_result"</span> | <span class="s">"done"</span> | <span class="s">"error"</span></span>
-    data: <span class=<span class="s">"b"</span>>str</span>                       <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># JSON 字符串</span></pre></div></details></div><div class="lecture"><h2>13.3 模拟 Agent 引擎（不依赖外部 API）</h2></div><div class="code-section"><details open><summary>💻 代码 (85 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> sqlite3
-<span class=<span class="s">"k"</span>>import</span> asyncio
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> datetime <span class=<span class="s">"k"</span>>import</span> datetime
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional, AsyncGenerator
-<span class=<span class="s">"k"</span>>from</span> contextlib <span class=<span class="s">"k"</span>>import</span> asynccontextmanager
+<span class="k">class</span> <span class="f">SSEEvent</span>(BaseModel):
+    <span class="s">"""SSE 事件格式。"""</span>
+    event: <span class="b">str</span>                      <span class="h"># "thinking" | "tool_call" | "tool_result" | "done" | "error"</span>
+    data: <span class="b">str</span>                       <span class="h"># JSON 字符串</span></pre></div></details></div><div class="lecture"><h2>13.3 模拟 Agent 引擎（不依赖外部 API）</h2></div><div class="code-section"><details open><summary>💻 代码 (85 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> sqlite3
+<span class="k">import</span> asyncio
+<span class="k">import</span> hashlib
+<span class="k">from</span> datetime <span class="k">import</span> datetime
+<span class="k">from</span> typing <span class="k">import</span> Optional, AsyncGenerator
+<span class="k">from</span> contextlib <span class="k">import</span> asynccontextmanager
 
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
-<span class=<span class="s">"k"</span>>from</span> fastapi <span class=<span class="s">"k"</span>>import</span> FastAPI, HTTPException, Request
-<span class=<span class="s">"k"</span>>from</span> fastapi.responses <span class=<span class="s">"k"</span>>import</span> StreamingResponse, HTMLResponse
-<span class=<span class="s">"k"</span>>from</span> fastapi.middleware.cors <span class=<span class="s">"k"</span>>import</span> CORSMiddleware
-<span class=<span class="s">"k"</span>>from</span> pydantic <span class=<span class="s">"k"</span>>import</span> BaseModel, Field
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+<span class="k">from</span> fastapi <span class="k">import</span> FastAPI, HTTPException, Request
+<span class="k">from</span> fastapi.responses <span class="k">import</span> StreamingResponse, HTMLResponse
+<span class="k">from</span> fastapi.middleware.cors <span class="k">import</span> CORSMiddleware
+<span class="k">from</span> pydantic <span class="k">import</span> BaseModel, Field
 
 load_dotenv()
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>SimulatedAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 Agent —— 演示 Agent 的逐步执行过程。
+<span class="k">class</span> <span class="f">SimulatedAgent</span>:
+    <span class="s">"""模拟 Agent —— 演示 Agent 的逐步执行过程。
 
     实际项目中替换为 LangChain Agent / LangGraph / 自定义 Agent。
     这里模拟的思考-行动-观察循环，展示 SSE 推送的完整过程。
-    <span class="s">""</span>"</span>
+    """</span>
 
     MOCK_TOOLS = {
-        <span class="s">"search"</span>: <span class=<span class="s">"k"</span>>lambda</span> q: f<span class="s">"搜索结果: 关于「{q}」的最新信息..."</span>,
-        <span class="s">"calculate"</span>: <span class=<span class="s">"k"</span>>lambda</span> e: f<span class="s">"计算结果: {eval(e) <span class="</span>k<span class="s">">if</span> <span class="</span>b<span class="s">">all</span>(c <span class="</span>k<span class="s">">in</span> <span class='s'>'<span class="</span>n<span class="s">">0123456789</span>+-*/().% '</span> <span class="</span>k<span class="s">">for</span> c <span class="</span>k<span class="s">">in</span> e) <span class="</span>k<span class="s">">else</span> <span class='s'>'表达式错误'</span>}"</span>,
-        <span class="s">"get_time"</span>: <span class=<span class="s">"k"</span>>lambda</span> _: f<span class="s">"当前时间: {datetime.now().strftime(<span class='s'>'%Y-%m-%d %H:%M:%S'</span>)}"</span>,
+        <span class="s">"search"</span>: <span class="k">lambda</span> q: f<span class="s">"搜索结果: 关于「{q}」的最新信息..."</span>,
+        <span class="s">"calculate"</span>: <span class="k">lambda</span> e: f<span class="s">"计算结果: {eval(e) if all(c in '0123456789+-*/().% ' for c in e) else '表达式错误'}"</span>,
+        <span class="s">"get_time"</span>: <span class="k">lambda</span> _: f<span class="s">"当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"</span>,
     }
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run_streaming</span>(
-        <span class=<span class="s">"k"</span>>self</span>, message: <span class=<span class="s">"b"</span>>str</span>
-    ) -&gt; AsyncGenerator[<span class=<span class="s">"b"</span>>dict</span>, <span class=<span class="s">"k"</span>>None</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"流式执行 Agent，每步通过 <span class="</span>k">yield</span> 推送状态。
+    <span class="k">async</span> <span class="k">def</span> <span class="f">run_streaming</span>(
+        <span class="k">self</span>, message: <span class="b">str</span>
+    ) -&gt; AsyncGenerator[<span class="b">dict</span>, <span class="k">None</span>]:
+        <span class="s">"""流式执行 Agent，每步通过 yield 推送状态。
 
         这是 SSE 的核心：不是等所有步骤完成再返回，
         而是每完成一步就推送一个事件。
@@ -271,82 +271,82 @@ load_dotenv()
 
         Yields:
             每步的状态事件字典。
-        <span class="s">""</span>"</span>
+        """</span>
         steps = []
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第1步：思考阶段</span>
-        <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"event"</span>: <span class="s">"thinking"</span>, <span class="s">"data"</span>: <span class="s">"正在分析用户意图..."</span>}
-        <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.3</span>)
+        <span class="h"># 第1步：思考阶段</span>
+        <span class="k">yield</span> {<span class="s">"event"</span>: <span class="s">"thinking"</span>, <span class="s">"data"</span>: <span class="s">"正在分析用户意图..."</span>}
+        <span class="k">await</span> asyncio.sleep(<span class="n">0.3</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 判断需要哪些工具</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"搜索"</span> <span class=<span class="s">"k"</span>>in</span> message <span class=<span class="s">"k"</span>>or</span> <span class="s">"查"</span> <span class=<span class="s">"k"</span>>in</span> message:
-            keyword = message.replace(<span class="s">"搜索"</span>, <span class="s">""</span>).replace(<span class="s">"查"</span>, <span class="s">""</span>).strip() <span class=<span class="s">"k"</span>>or</span> <span class="s">"AI Agent"</span>
+        <span class="h"># 判断需要哪些工具</span>
+        <span class="k">if</span> <span class="s">"搜索"</span> <span class="k">in</span> message <span class="k">or</span> <span class="s">"查"</span> <span class="k">in</span> message:
+            keyword = message.replace(<span class="s">"搜索"</span>, <span class="s">""</span>).replace(<span class="s">"查"</span>, <span class="s">""</span>).strip() <span class="k">or</span> <span class="s">"AI Agent"</span>
             steps.append((<span class="s">"search"</span>, keyword))
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"算"</span> <span class=<span class="s">"k"</span>>in</span> message <span class=<span class="s">"k"</span>>or</span> <span class="s">"计算"</span> <span class=<span class="s">"k"</span>>in</span> message <span class=<span class="s">"k"</span>>or</span> <span class="s">"+"</span> <span class=<span class="s">"k"</span>>in</span> message <span class=<span class="s">"k"</span>>or</span> <span class="s">"*"</span> <span class=<span class="s">"k"</span>>in</span> message:
+        <span class="k">if</span> <span class="s">"算"</span> <span class="k">in</span> message <span class="k">or</span> <span class="s">"计算"</span> <span class="k">in</span> message <span class="k">or</span> <span class="s">"+"</span> <span class="k">in</span> message <span class="k">or</span> <span class="s">"*"</span> <span class="k">in</span> message:
             steps.append((<span class="s">"calculate"</span>, message))
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"时间"</span> <span class=<span class="s">"k"</span>>in</span> message <span class=<span class="s">"k"</span>>or</span> <span class="s">"几点"</span> <span class=<span class="s">"k"</span>>in</span> message:
+        <span class="k">if</span> <span class="s">"时间"</span> <span class="k">in</span> message <span class="k">or</span> <span class="s">"几点"</span> <span class="k">in</span> message:
             steps.append((<span class="s">"get_time"</span>, <span class="s">""</span>))
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第2步：工具调用阶段</span>
-        <span class=<span class="s">"k"</span>>for</span> i, (tool_name, arg) <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(steps):
-            <span class=<span class="s">"k"</span>>yield</span> {
+        <span class="h"># 第2步：工具调用阶段</span>
+        <span class="k">for</span> i, (tool_name, arg) <span class="k">in</span> <span class="b">enumerate</span>(steps):
+            <span class="k">yield</span> {
                 <span class="s">"event"</span>: <span class="s">"tool_call"</span>,
-                <span class="s">"data"</span>: json.dumps({<span class="s">"step"</span>: i+<span class=<span class="s">"n"</span>>1</span>, <span class="s">"tool"</span>: tool_name, <span class="s">"args"</span>: arg}, ensure_ascii=<span class=<span class="s">"k"</span>>False</span>),
+                <span class="s">"data"</span>: json.dumps({<span class="s">"step"</span>: i+<span class="n">1</span>, <span class="s">"tool"</span>: tool_name, <span class="s">"args"</span>: arg}, ensure_ascii=<span class="k">False</span>),
             }
-            <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.2</span>)
+            <span class="k">await</span> asyncio.sleep(<span class="n">0.2</span>)
 
-            result = <span class=<span class="s">"k"</span>>self</span>.MOCK_TOOLS[tool_name](arg)
-            <span class=<span class="s">"k"</span>>yield</span> {
+            result = <span class="k">self</span>.MOCK_TOOLS[tool_name](arg)
+            <span class="k">yield</span> {
                 <span class="s">"event"</span>: <span class="s">"tool_result"</span>,
-                <span class="s">"data"</span>: json.dumps({<span class="s">"step"</span>: i+<span class=<span class="s">"n"</span>>1</span>, <span class="s">"tool"</span>: tool_name, <span class="s">"result"</span>: result}, ensure_ascii=<span class=<span class="s">"k"</span>>False</span>),
+                <span class="s">"data"</span>: json.dumps({<span class="s">"step"</span>: i+<span class="n">1</span>, <span class="s">"tool"</span>: tool_name, <span class="s">"result"</span>: result}, ensure_ascii=<span class="k">False</span>),
             }
-            <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.2</span>)
+            <span class="k">await</span> asyncio.sleep(<span class="n">0.2</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第3步：生成最终回答</span>
-        <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"event"</span>: <span class="s">"thinking"</span>, <span class="s">"data"</span>: <span class="s">"正在组织最终回答..."</span>}
-        <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.3</span>)
+        <span class="h"># 第3步：生成最终回答</span>
+        <span class="k">yield</span> {<span class="s">"event"</span>: <span class="s">"thinking"</span>, <span class="s">"data"</span>: <span class="s">"正在组织最终回答..."</span>}
+        <span class="k">await</span> asyncio.sleep(<span class="n">0.3</span>)
 
-        <span class=<span class="s">"k"</span>>if</span> steps:
-            answer = f<span class="s">"已完成 {<span class="</span>b<span class="s">">len</span>(steps)} 个工具调用来回答您的问题。"</span>
-        <span class=<span class="s">"k"</span>>else</span>:
+        <span class="k">if</span> steps:
+            answer = f<span class="s">"已完成 {len(steps)} 个工具调用来回答您的问题。"</span>
+        <span class="k">else</span>:
             answer = f<span class="s">"您好！您的问题「{message}」已收到。这是一个模拟 Agent 回复。"</span>
 
-        <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"event"</span>: <span class="s">"done"</span>, <span class="s">"data"</span>: answer, <span class="s">"tool_calls_made"</span>: <span class=<span class="s">"b"</span>>len</span>(steps)}</pre></div></details></div><div class="lecture"><h2>13.4 FastAPI 应用主体</h2></div><div class="code-section"><details open><summary>💻 代码 (205 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> sqlite3
-<span class=<span class="s">"k"</span>>import</span> asyncio
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> datetime <span class=<span class="s">"k"</span>>import</span> datetime
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional, AsyncGenerator
-<span class=<span class="s">"k"</span>>from</span> contextlib <span class=<span class="s">"k"</span>>import</span> asynccontextmanager
+        <span class="k">yield</span> {<span class="s">"event"</span>: <span class="s">"done"</span>, <span class="s">"data"</span>: answer, <span class="s">"tool_calls_made"</span>: <span class="b">len</span>(steps)}</pre></div></details></div><div class="lecture"><h2>13.4 FastAPI 应用主体</h2></div><div class="code-section"><details open><summary>💻 代码 (205 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> sqlite3
+<span class="k">import</span> asyncio
+<span class="k">import</span> hashlib
+<span class="k">from</span> datetime <span class="k">import</span> datetime
+<span class="k">from</span> typing <span class="k">import</span> Optional, AsyncGenerator
+<span class="k">from</span> contextlib <span class="k">import</span> asynccontextmanager
 
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
-<span class=<span class="s">"k"</span>>from</span> fastapi <span class=<span class="s">"k"</span>>import</span> FastAPI, HTTPException, Request
-<span class=<span class="s">"k"</span>>from</span> fastapi.responses <span class=<span class="s">"k"</span>>import</span> StreamingResponse, HTMLResponse
-<span class=<span class="s">"k"</span>>from</span> fastapi.middleware.cors <span class=<span class="s">"k"</span>>import</span> CORSMiddleware
-<span class=<span class="s">"k"</span>>from</span> pydantic <span class=<span class="s">"k"</span>>import</span> BaseModel, Field
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+<span class="k">from</span> fastapi <span class="k">import</span> FastAPI, HTTPException, Request
+<span class="k">from</span> fastapi.responses <span class="k">import</span> StreamingResponse, HTMLResponse
+<span class="k">from</span> fastapi.middleware.cors <span class="k">import</span> CORSMiddleware
+<span class="k">from</span> pydantic <span class="k">import</span> BaseModel, Field
 
 load_dotenv()
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 应用生命周期管理</span>
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@asynccontextmanager</span>
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>lifespan</span>(app: FastAPI):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"应用启动和关闭时的操作。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"🚀 Agent 服务启动中..."</span>)
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 启动时：初始化数据库连接池、加载配置等</span>
-    <span class=<span class="s">"k"</span>>yield</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"👋 Agent 服务关闭中..."</span>)
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 关闭时：清理资源、关闭连接等</span>
+<span class="h"># 应用生命周期管理</span>
+<span <span class="k">class</span>="d">@asynccontextmanager</span>
+<span class="k">async</span> <span class="k">def</span> <span class="f">lifespan</span>(app: FastAPI):
+    <span class="s">"""应用启动和关闭时的操作。"""</span>
+    <span class="b">print</span>(<span class="s">"🚀 Agent 服务启动中..."</span>)
+    <span class="h"># 启动时：初始化数据库连接池、加载配置等</span>
+    <span class="k">yield</span>
+    <span class="b">print</span>(<span class="s">"👋 Agent 服务关闭中..."</span>)
+    <span class="h"># 关闭时：清理资源、关闭连接等</span>
 
 app = FastAPI(
     title=<span class="s">"AI Agent API Service"</span>,
     description=<span class="s">"一个完整的 Agent 服务化部署示例"</span>,
-    version=<span class="s">"<span class="</span>n<span class="s">">1.0</span>.<span class="</span>n<span class="s">">0</span>"</span>,
+    version=<span class="s">"1.0.0"</span>,
     lifespan=lifespan,
 )
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># CORS 中间件（允许前端跨域调用）</span>
+<span class="h"># CORS 中间件（允许前端跨域调用）</span>
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[<span class="s">"*"</span>],
@@ -357,11 +357,11 @@ app.add_middleware(
 agent = SimulatedAgent()
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ==================== REST API 端点 ====================</span>
+<span class="h"># ==================== REST API 端点 ====================</span>
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@app</span>.post(<span class="s">"/agent/chat"</span>, response_model=AgentResponse)
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>agent_chat</span>(request: AgentRequest):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"标准 REST API：一次请求，一次完整响应。
+<span <span class="k">class</span>="d">@app</span>.post(<span class="s">"/agent/chat"</span>, response_model=AgentResponse)
+<span class="k">async</span> <span class="k">def</span> <span class="f">agent_chat</span>(request: AgentRequest):
+    <span class="s">"""标准 REST API：一次请求，一次完整响应。
 
     适用场景：
       - 简单问答（用户不关心中间过程）
@@ -369,32 +369,32 @@ agent = SimulatedAgent()
       - 与其他微服务集成
 
     测试：
-      curl -X POST http://localhost:<span class=<span class="s">"n"</span>>8000</span>/agent/chat \
-        -H <span class="s">"Content-Type: application/json"</span> \
-        -d <span class='s'>'{<span class="s">"message"</span>: <span class="s">"搜索AI Agent并计算3+<span class="</span>n<span class="s">">5</span>"</span>}'</span>
-    <span class="s">""</span>"</span>
+      curl -X POST http://localhost:8000/agent/chat \
+        -H "Content-Type: application/json" \
+        -d '{"message": "搜索AI Agent并计算3+5"}'
+    """</span>
     start = time.time()
-    session_id = request.session_id <span class=<span class="s">"k"</span>>or</span> _generate_session_id()
-    tool_calls_made = <span class=<span class="s">"n"</span>>0</span>
+    session_id = request.session_id <span class="k">or</span> _generate_session_id()
+    tool_calls_made = <span class="n">0</span>
     answer = <span class="s">""</span>
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>for</span> event <span class=<span class="s">"k"</span>>in</span> agent.run_streaming(request.message):
-        <span class=<span class="s">"k"</span>>if</span> event[<span class="s">"event"</span>] == <span class="s">"done"</span>:
+    <span class="k">async</span> <span class="k">for</span> event <span class="k">in</span> agent.run_streaming(request.message):
+        <span class="k">if</span> event[<span class="s">"event"</span>] == <span class="s">"done"</span>:
             answer = event[<span class="s">"data"</span>]
-            tool_calls_made = event.get(<span class="s">"tool_calls_made"</span>, <span class=<span class="s">"n"</span>>0</span>)
+            tool_calls_made = event.get(<span class="s">"tool_calls_made"</span>, <span class="n">0</span>)
 
-    <span class=<span class="s">"k"</span>>return</span> AgentResponse(
+    <span class="k">return</span> AgentResponse(
         session_id=session_id,
         answer=answer,
         tool_calls_made=tool_calls_made,
-        elapsed_seconds=<span class=<span class="s">"b"</span>>round</span>(time.time() - start, <span class=<span class="s">"n"</span>>2</span>),
+        elapsed_seconds=<span class="b">round</span>(time.time() - start, <span class="n">2</span>),
         timestamp=datetime.now().isoformat(),
     )
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@app</span>.post(<span class="s">"/agent/chat/stream"</span>)
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>agent_chat_stream</span>(request: AgentRequest):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"SSE 流式 API：逐步推送 Agent 的思考过程。
+<span <span class="k">class</span>="d">@app</span>.post(<span class="s">"/agent/chat/stream"</span>)
+<span class="k">async</span> <span class="k">def</span> <span class="f">agent_chat_stream</span>(request: AgentRequest):
+    <span class="s">"""SSE 流式 API：逐步推送 Agent 的思考过程。
 
     适用场景：
       - 用户需要看到 Agent 的实时状态（「正在搜索...」）
@@ -402,44 +402,44 @@ agent = SimulatedAgent()
       - 前端需要展示工具调用动画
 
     测试：
-      curl -N -X POST http://localhost:<span class=<span class="s">"n"</span>>8000</span>/agent/chat/stream \
-        -H <span class="s">"Content-Type: application/json"</span> \
-        -d <span class='s'>'{<span class="s">"message"</span>: <span class="s">"搜索AI Agent并算3+<span class="</span>n<span class="s">">5</span>"</span>}'</span>
-    <span class="s">""</span>"</span>
+      curl -N -X POST http://localhost:8000/agent/chat/stream \
+        -H "Content-Type: application/json" \
+        -d '{"message": "搜索AI Agent并算3+5"}'
+    """</span>
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>event_generator</span>():
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"SSE 事件生成器。
+    <span class="k">async</span> <span class="k">def</span> <span class="f">event_generator</span>():
+        <span class="s">"""SSE 事件生成器。
 
         SSE 协议格式：
           event: &lt;事件类型&gt;
           data: &lt;JSON 数据&gt;
           \n
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>for</span> event <span class=<span class="s">"k"</span>>in</span> agent.run_streaming(request.message):
+        """</span>
+        <span class="k">async</span> <span class="k">for</span> event <span class="k">in</span> agent.run_streaming(request.message):
             event_type = event[<span class="s">"event"</span>]
             data = event[<span class="s">"data"</span>]
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># SSE 标准格式</span>
-            <span class=<span class="s">"k"</span>>yield</span> f<span class="s">"event: {event_type}\ndata: {data}\n\n"</span>
+            <span class="h"># SSE 标准格式</span>
+            <span class="k">yield</span> f<span class="s">"event: {event_type}\ndata: {data}\n\n"</span>
 
-            <span class=<span class="s">"k"</span>>if</span> event_type == <span class="s">"done"</span>:
-                <span class=<span class="s">"k"</span>>yield</span> f<span class="s">"event: close\ndata: stream_end\n\n"</span>
+            <span class="k">if</span> event_type == <span class="s">"done"</span>:
+                <span class="k">yield</span> f<span class="s">"event: close\ndata: stream_end\n\n"</span>
 
-    <span class=<span class="s">"k"</span>>return</span> StreamingResponse(
+    <span class="k">return</span> StreamingResponse(
         event_generator(),
         media_type=<span class="s">"text/event-stream"</span>,
         headers={
             <span class="s">"Cache-Control"</span>: <span class="s">"no-cache"</span>,
             <span class="s">"Connection"</span>: <span class="s">"keep-alive"</span>,
-            <span class="s">"X-Accel-Buffering"</span>: <span class="s">"no"</span>,  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Nginx 禁用缓冲</span>
+            <span class="s">"X-Accel-Buffering"</span>: <span class="s">"no"</span>,  <span class="h"># Nginx 禁用缓冲</span>
         },
     )
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ==================== WebSocket 端点 ====================</span>
+<span class="h"># ==================== WebSocket 端点 ====================</span>
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@app</span>.websocket(<span class="s">"/agent/ws"</span>)
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>agent_websocket</span>(websocket):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"WebSocket 双向通信端点。
+<span <span class="k">class</span>="d">@app</span>.websocket(<span class="s">"/agent/ws"</span>)
+<span class="k">async</span> <span class="k">def</span> <span class="f">agent_websocket</span>(websocket):
+    <span class="s">"""WebSocket 双向通信端点。
 
     与 SSE 的区别：
       - SSE：服务器 → 客户端（单向推送）
@@ -451,53 +451,53 @@ agent = SimulatedAgent()
       - 实时协作场景
 
     测试：
-      websocat ws://localhost:<span class=<span class="s">"n"</span>>8000</span>/agent/ws
-    <span class="s">""</span>"</span>
-    <span class=<span class="s">"k"</span>>await</span> websocket.accept()
-    <span class=<span class="s">"k"</span>>await</span> websocket.send_json({
+      websocat ws://localhost:8000/agent/ws
+    """</span>
+    <span class="k">await</span> websocket.accept()
+    <span class="k">await</span> websocket.send_json({
         <span class="s">"event"</span>: <span class="s">"connected"</span>,
         <span class="s">"data"</span>: <span class="s">"WebSocket 连接已建立"</span>,
     })
 
-    <span class=<span class="s">"k"</span>>try</span>:
-        <span class=<span class="s">"k"</span>>while</span> <span class=<span class="s">"k"</span>>True</span>:
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 接收用户消息</span>
-            raw = <span class=<span class="s">"k"</span>>await</span> websocket.receive_text()
+    <span class="k">try</span>:
+        <span class="k">while</span> <span class="k">True</span>:
+            <span class="h"># 接收用户消息</span>
+            raw = <span class="k">await</span> websocket.receive_text()
             data = json.loads(raw)
             message = data.get(<span class="s">"message"</span>, <span class="s">""</span>)
 
-            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> message:
-                <span class=<span class="s">"k"</span>>continue</span>
+            <span class="k">if</span> <span class="k">not</span> message:
+                <span class="k">continue</span>
 
-            <span class=<span class="s">"k"</span>>await</span> websocket.send_json({
+            <span class="k">await</span> websocket.send_json({
                 <span class="s">"event"</span>: <span class="s">"received"</span>,
                 <span class="s">"data"</span>: f<span class="s">"收到: {message}"</span>,
             })
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 流式执行 Agent</span>
-            <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>for</span> event <span class=<span class="s">"k"</span>>in</span> agent.run_streaming(message):
-                <span class=<span class="s">"k"</span>>await</span> websocket.send_json(event)
+            <span class="h"># 流式执行 Agent</span>
+            <span class="k">async</span> <span class="k">for</span> event <span class="k">in</span> agent.run_streaming(message):
+                <span class="k">await</span> websocket.send_json(event)
 
-            <span class=<span class="s">"k"</span>>await</span> websocket.send_json({
+            <span class="k">await</span> websocket.send_json({
                 <span class="s">"event"</span>: <span class="s">"ready"</span>,
                 <span class="s">"data"</span>: <span class="s">"等待下一条消息..."</span>,
             })
-    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"WebSocket 断开: {e}"</span>)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="b">print</span>(f<span class="s">"WebSocket 断开: {e}"</span>)
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ==================== 管理端点 ====================</span>
+<span class="h"># ==================== 管理端点 ====================</span>
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@app</span>.get(<span class="s">"/health"</span>)
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>health_check</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"健康检查端点（Kubernetes / 负载均衡器）。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"k"</span>>return</span> {<span class="s">"status"</span>: <span class="s">"healthy"</span>, <span class="s">"timestamp"</span>: datetime.now().isoformat()}
+<span <span class="k">class</span>="d">@app</span>.get(<span class="s">"/health"</span>)
+<span class="k">async</span> <span class="k">def</span> <span class="f">health_check</span>():
+    <span class="s">"""健康检查端点（Kubernetes / 负载均衡器）。"""</span>
+    <span class="k">return</span> {<span class="s">"status"</span>: <span class="s">"healthy"</span>, <span class="s">"timestamp"</span>: datetime.now().isoformat()}
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@app</span>.get(<span class="s">"/"</span>)
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>root</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"根路径 → 跳转到 API 文档。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"k"</span>>return</span> {
+<span <span class="k">class</span>="d">@app</span>.get(<span class="s">"/"</span>)
+<span class="k">async</span> <span class="k">def</span> <span class="f">root</span>():
+    <span class="s">"""根路径 → 跳转到 API 文档。"""</span>
+    <span class="k">return</span> {
         <span class="s">"service"</span>: <span class="s">"AI Agent API Service"</span>,
         <span class="s">"docs"</span>: <span class="s">"/docs"</span>,
         <span class="s">"endpoints"</span>: {
@@ -509,13 +509,13 @@ agent = SimulatedAgent()
     }
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ==================== 辅助函数 ====================</span>
+<span class="h"># ==================== 辅助函数 ====================</span>
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_generate_session_id</span>() -&gt; <span class=<span class="s">"b"</span>>str</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"生成唯一会话 ID。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"k"</span>>return</span> hashlib.md5(
-        f<span class="s">"{time.time()}-{os.urandom(<span class="</span>n<span class="s">">8</span>).hex()}"</span>.encode()
-    ).hexdigest()[:<span class=<span class="s">"n"</span>>16</span>]</pre></div></details></div><div class="lecture"><h2>13.5 生产部署架构</h2>
+<span class="k">def</span> <span class="f">_generate_session_id</span>() -&gt; <span class="b">str</span>:
+    <span class="s">"""生成唯一会话 ID。"""</span>
+    <span class="k">return</span> hashlib.md5(
+        f<span class="s">"{time.time()}-{os.urandom(8).hex()}"</span>.encode()
+    ).hexdigest()[:<span class="n">16</span>]</pre></div></details></div><div class="lecture"><h2>13.5 生产部署架构</h2>
 <p>&nbsp;</p>
 <pre>  ┌──────────────────────────────────────────────────────┐
   │                     Nginx (反向代理)                   │
@@ -602,54 +602,54 @@ agent = SimulatedAgent()
 <p>"Agent 怎么做成 API 服务？"</p>
 <p>→ FastAPI + uvicorn 异步框架</p>
 <p>→ SSE 做流式推送，WebSocket 做双向通信</p>
-<p>→ Nginx 反代 + 多 Worker + 健康检查</p></div><div class="code-section"><details open><summary>💻 代码 (38 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> sqlite3
-<span class=<span class="s">"k"</span>>import</span> asyncio
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> datetime <span class=<span class="s">"k"</span>>import</span> datetime
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional, AsyncGenerator
-<span class=<span class="s">"k"</span>>from</span> contextlib <span class=<span class="s">"k"</span>>import</span> asynccontextmanager
+<p>→ Nginx 反代 + 多 Worker + 健康检查</p></div><div class="code-section"><details open><summary>💻 代码 (38 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> sqlite3
+<span class="k">import</span> asyncio
+<span class="k">import</span> hashlib
+<span class="k">from</span> datetime <span class="k">import</span> datetime
+<span class="k">from</span> typing <span class="k">import</span> Optional, AsyncGenerator
+<span class="k">from</span> contextlib <span class="k">import</span> asynccontextmanager
 
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
-<span class=<span class="s">"k"</span>>from</span> fastapi <span class=<span class="s">"k"</span>>import</span> FastAPI, HTTPException, Request
-<span class=<span class="s">"k"</span>>from</span> fastapi.responses <span class=<span class="s">"k"</span>>import</span> StreamingResponse, HTMLResponse
-<span class=<span class="s">"k"</span>>from</span> fastapi.middleware.cors <span class=<span class="s">"k"</span>>import</span> CORSMiddleware
-<span class=<span class="s">"k"</span>>from</span> pydantic <span class=<span class="s">"k"</span>>import</span> BaseModel, Field
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+<span class="k">from</span> fastapi <span class="k">import</span> FastAPI, HTTPException, Request
+<span class="k">from</span> fastapi.responses <span class="k">import</span> StreamingResponse, HTMLResponse
+<span class="k">from</span> fastapi.middleware.cors <span class="k">import</span> CORSMiddleware
+<span class="k">from</span> pydantic <span class="k">import</span> BaseModel, Field
 
 load_dotenv()
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ==================== 启动入口 ====================</span>
+<span class="h"># ==================== 启动入口 ====================</span>
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"k"</span>>import</span> uvicorn
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第13章：FastAPI + Agent 服务化部署                    ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  REST API · SSE流式 · WebSocket · 生产架构           ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
-    <span class=<span class="s">"b"</span>>print</span>()
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"启动后访问以下地址："</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  📖 API 文档:        http://localhost:<span class="</span>n<span class="s">">8000</span>/docs"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  🏠 服务主页:        http://localhost:<span class="</span>n<span class="s">">8000</span>/"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  ❤️  健康检查:       http://localhost:<span class="</span>n<span class="s">">8000</span>/health"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  💬 REST 聊天:       POST http://localhost:<span class="</span>n<span class="s">">8000</span>/agent/chat"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  📡 SSE 流式:        POST http://localhost:<span class="</span>n<span class="s">">8000</span>/agent/chat/stream"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  🔌 WebSocket:       ws://localhost:<span class="</span>n<span class="s">">8000</span>/agent/ws"</span>)
-    <span class=<span class="s">"b"</span>>print</span>()
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="k">import</span> uvicorn
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第13章：FastAPI + Agent 服务化部署                    ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  REST API · SSE流式 · WebSocket · 生产架构           ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    <span class="b">print</span>()
+    <span class="b">print</span>(<span class="s">"启动后访问以下地址："</span>)
+    <span class="b">print</span>(<span class="s">"  📖 API 文档:        http://localhost:8000/docs"</span>)
+    <span class="b">print</span>(<span class="s">"  🏠 服务主页:        http://localhost:8000/"</span>)
+    <span class="b">print</span>(<span class="s">"  ❤️  健康检查:       http://localhost:8000/health"</span>)
+    <span class="b">print</span>(<span class="s">"  💬 REST 聊天:       POST http://localhost:8000/agent/chat"</span>)
+    <span class="b">print</span>(<span class="s">"  📡 SSE 流式:        POST http://localhost:8000/agent/chat/stream"</span>)
+    <span class="b">print</span>(<span class="s">"  🔌 WebSocket:       ws://localhost:8000/agent/ws"</span>)
+    <span class="b">print</span>()
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 非阻塞启动（不调用外部 API，可独立运行）</span>
-    uvicorn.run(app, host=<span class="s">"<span class="</span>n<span class="s">">0.0</span>.<span class="</span>n<span class="s">">0.0</span>"</span>, port=<span class=<span class="s">"n"</span>>8000</span>, log_level=<span class="s">"info"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (487 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+    <span class="h"># 非阻塞启动（不调用外部 API，可独立运行）</span>
+    uvicorn.run(app, host=<span class="s">"0.0.0.0"</span>, port=<span class="n">8000</span>, log_level=<span class="s">"info"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (487 行)</summary><div class="code-block"><pre><span class="s">"""
 第13章：FastAPI + Agent 服务化部署
 ===================================
 
 📌 本章目标：
-  <span class=<span class="s">"n"</span>>1</span>. 用 FastAPI 将 Agent 封装为 RESTful API 服务
-  <span class=<span class="s">"n"</span>>2</span>. 实现 SSE (Server-Sent Events) 流式推送 Agent 执行过程
-  <span class=<span class="s">"n"</span>>3</span>. 实现 WebSocket 双向实时通信
-  <span class=<span class="s">"n"</span>>4</span>. 掌握 Agent Webhook 回调模式
-  <span class=<span class="s">"n"</span>>5</span>. 理解 Agent 微服务的部署架构（Docker / 负载均衡）
-  <span class=<span class="s">"n"</span>>6</span>. 创建一个可直接运行的完整 Agent 服务
+  1. 用 FastAPI 将 Agent 封装为 RESTful API 服务
+  2. 实现 SSE (Server-Sent Events) 流式推送 Agent 执行过程
+  3. 实现 WebSocket 双向实时通信
+  4. 掌握 Agent Webhook 回调模式
+  5. 理解 Agent 微服务的部署架构（Docker / 负载均衡）
+  6. 创建一个可直接运行的完整 Agent 服务
 
 📌 面试高频点：
   - Agent 怎么做成 API 服务？有哪些关键设计决策？
@@ -660,11 +660,11 @@ load_dotenv()
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 本章需要安装：pip install fastapi uvicorn pydantic
 运行服务：python chapter_13_fastapi/13_fastapi_agent_service.py
-测试地址：http://localhost:<span class=<span class="s">"n"</span>>8000</span>/docs
+测试地址：http://localhost:8000/docs
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-<span class=<span class="s">"n"</span>>13.1</span> 为什么需要把 Agent 做成 API 服务？
+13.1 为什么需要把 Agent 做成 API 服务？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 裸写 Agent 脚本的问题：
@@ -678,89 +678,89 @@ FastAPI 方案的优势：
   - 自动生成 OpenAPI 文档（/docs）
   - 内置 SSE / WebSocket 支持
   - 类型安全（Pydantic v2）
-  - 异步并发（<span class=<span class="s">"k"</span>>async</span>/<span class=<span class="s">"k"</span>>await</span> 原生支持）
-<span class="s">""</span>"</span>
+  - 异步并发（async/await 原生支持）
+"""</span>
 
-<span class=<span class="s">"k"</span>>import</span> os
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> sqlite3
-<span class=<span class="s">"k"</span>>import</span> asyncio
-<span class=<span class="s">"k"</span>>import</span> hashlib
-<span class=<span class="s">"k"</span>>from</span> datetime <span class=<span class="s">"k"</span>>import</span> datetime
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional, AsyncGenerator
-<span class=<span class="s">"k"</span>>from</span> contextlib <span class=<span class="s">"k"</span>>import</span> asynccontextmanager
+<span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> sqlite3
+<span class="k">import</span> asyncio
+<span class="k">import</span> hashlib
+<span class="k">from</span> datetime <span class="k">import</span> datetime
+<span class="k">from</span> typing <span class="k">import</span> Optional, AsyncGenerator
+<span class="k">from</span> contextlib <span class="k">import</span> asynccontextmanager
 
-<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
-<span class=<span class="s">"k"</span>>from</span> fastapi <span class=<span class="s">"k"</span>>import</span> FastAPI, HTTPException, Request
-<span class=<span class="s">"k"</span>>from</span> fastapi.responses <span class=<span class="s">"k"</span>>import</span> StreamingResponse, HTMLResponse
-<span class=<span class="s">"k"</span>>from</span> fastapi.middleware.cors <span class=<span class="s">"k"</span>>import</span> CORSMiddleware
-<span class=<span class="s">"k"</span>>from</span> pydantic <span class=<span class="s">"k"</span>>import</span> BaseModel, Field
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+<span class="k">from</span> fastapi <span class="k">import</span> FastAPI, HTTPException, Request
+<span class="k">from</span> fastapi.responses <span class="k">import</span> StreamingResponse, HTMLResponse
+<span class="k">from</span> fastapi.middleware.cors <span class="k">import</span> CORSMiddleware
+<span class="k">from</span> pydantic <span class="k">import</span> BaseModel, Field
 
 load_dotenv()
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>13.2</span> 数据模型定义（Pydantic v2）
+13.2 数据模型定义（Pydantic v2）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentRequest</span>(BaseModel):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Agent API 请求体。
+<span class="k">class</span> <span class="f">AgentRequest</span>(BaseModel):
+    <span class="s">"""Agent API 请求体。
 
     FastAPI + Pydantic 自动完成：
-      <span class=<span class="s">"n"</span>>1</span>. JSON 解析
-      <span class=<span class="s">"n"</span>>2</span>. 类型校验
-      <span class=<span class="s">"n"</span>>3</span>. 生成 OpenAPI 文档
-    <span class="s">""</span>"</span>
-    message: <span class=<span class="s">"b"</span>>str</span> = Field(..., min_length=<span class=<span class="s">"n"</span>>1</span>, max_length=<span class=<span class="s">"n"</span>>10000</span>,
+      1. JSON 解析
+      2. 类型校验
+      3. 生成 OpenAPI 文档
+    """</span>
+    message: <span class="b">str</span> = Field(..., min_length=<span class="n">1</span>, max_length=<span class="n">10000</span>,
                          description=<span class="s">"用户输入的消息"</span>)
-    session_id: Optional[<span class=<span class="s">"b"</span>>str</span>] = Field(<span class=<span class="s">"k"</span>>None</span>,
+    session_id: Optional[<span class="b">str</span>] = Field(<span class="k">None</span>,
                                        description=<span class="s">"会话ID，不传则自动创建"</span>)
-    stream: bool = Field(<span class=<span class="s">"k"</span>>False</span>,
+    stream: bool = Field(<span class="k">False</span>,
                          description=<span class="s">"是否使用 SSE 流式返回"</span>)
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentResponse</span>(BaseModel):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Agent API 响应体。"</span><span class="s">""</span></span>
-    session_id: <span class=<span class="s">"b"</span>>str</span>
-    answer: <span class=<span class="s">"b"</span>>str</span>
-    tool_calls_made: <span class=<span class="s">"b"</span>>int</span>
-    elapsed_seconds: <span class=<span class="s">"b"</span>>float</span>
-    timestamp: <span class=<span class="s">"b"</span>>str</span>
+<span class="k">class</span> <span class="f">AgentResponse</span>(BaseModel):
+    <span class="s">"""Agent API 响应体。"""</span>
+    session_id: <span class="b">str</span>
+    answer: <span class="b">str</span>
+    tool_calls_made: <span class="b">int</span>
+    elapsed_seconds: <span class="b">float</span>
+    timestamp: <span class="b">str</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>SSEEvent</span>(BaseModel):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"SSE 事件格式。"</span><span class="s">""</span></span>
-    event: <span class=<span class="s">"b"</span>>str</span>                      <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># <span class="s">"thinking"</span> | <span class="s">"tool_call"</span> | <span class="s">"tool_result"</span> | <span class="s">"done"</span> | <span class="s">"error"</span></span>
-    data: <span class=<span class="s">"b"</span>>str</span>                       <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># JSON 字符串</span>
+<span class="k">class</span> <span class="f">SSEEvent</span>(BaseModel):
+    <span class="s">"""SSE 事件格式。"""</span>
+    event: <span class="b">str</span>                      <span class="h"># "thinking" | "tool_call" | "tool_result" | "done" | "error"</span>
+    data: <span class="b">str</span>                       <span class="h"># JSON 字符串</span>
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>13.3</span> 模拟 Agent 引擎（不依赖外部 API）
+13.3 模拟 Agent 引擎（不依赖外部 API）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>SimulatedAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 Agent —— 演示 Agent 的逐步执行过程。
+<span class="k">class</span> <span class="f">SimulatedAgent</span>:
+    <span class="s">"""模拟 Agent —— 演示 Agent 的逐步执行过程。
 
     实际项目中替换为 LangChain Agent / LangGraph / 自定义 Agent。
     这里模拟的思考-行动-观察循环，展示 SSE 推送的完整过程。
-    <span class="s">""</span>"</span>
+    """</span>
 
     MOCK_TOOLS = {
-        <span class="s">"search"</span>: <span class=<span class="s">"k"</span>>lambda</span> q: f<span class="s">"搜索结果: 关于「{q}」的最新信息..."</span>,
-        <span class="s">"calculate"</span>: <span class=<span class="s">"k"</span>>lambda</span> e: f<span class="s">"计算结果: {eval(e) <span class="</span>k<span class="s">">if</span> <span class="</span>b<span class="s">">all</span>(c <span class="</span>k<span class="s">">in</span> <span class='s'>'<span class="</span>n<span class="s">">0123456789</span>+-*/().% '</span> <span class="</span>k<span class="s">">for</span> c <span class="</span>k<span class="s">">in</span> e) <span class="</span>k<span class="s">">else</span> <span class='s'>'表达式错误'</span>}"</span>,
-        <span class="s">"get_time"</span>: <span class=<span class="s">"k"</span>>lambda</span> _: f<span class="s">"当前时间: {datetime.now().strftime(<span class='s'>'%Y-%m-%d %H:%M:%S'</span>)}"</span>,
+        <span class="s">"search"</span>: <span class="k">lambda</span> q: f<span class="s">"搜索结果: 关于「{q}」的最新信息..."</span>,
+        <span class="s">"calculate"</span>: <span class="k">lambda</span> e: f<span class="s">"计算结果: {eval(e) if all(c in '0123456789+-*/().% ' for c in e) else '表达式错误'}"</span>,
+        <span class="s">"get_time"</span>: <span class="k">lambda</span> _: f<span class="s">"当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"</span>,
     }
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run_streaming</span>(
-        <span class=<span class="s">"k"</span>>self</span>, message: <span class=<span class="s">"b"</span>>str</span>
-    ) -&gt; AsyncGenerator[<span class=<span class="s">"b"</span>>dict</span>, <span class=<span class="s">"k"</span>>None</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"流式执行 Agent，每步通过 <span class="</span>k">yield</span> 推送状态。
+    <span class="k">async</span> <span class="k">def</span> <span class="f">run_streaming</span>(
+        <span class="k">self</span>, message: <span class="b">str</span>
+    ) -&gt; AsyncGenerator[<span class="b">dict</span>, <span class="k">None</span>]:
+        <span class="s">"""流式执行 Agent，每步通过 yield 推送状态。
 
         这是 SSE 的核心：不是等所有步骤完成再返回，
         而是每完成一步就推送一个事件。
@@ -770,73 +770,73 @@ load_dotenv()
 
         Yields:
             每步的状态事件字典。
-        <span class="s">""</span>"</span>
+        """</span>
         steps = []
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第1步：思考阶段</span>
-        <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"event"</span>: <span class="s">"thinking"</span>, <span class="s">"data"</span>: <span class="s">"正在分析用户意图..."</span>}
-        <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.3</span>)
+        <span class="h"># 第1步：思考阶段</span>
+        <span class="k">yield</span> {<span class="s">"event"</span>: <span class="s">"thinking"</span>, <span class="s">"data"</span>: <span class="s">"正在分析用户意图..."</span>}
+        <span class="k">await</span> asyncio.sleep(<span class="n">0.3</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 判断需要哪些工具</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"搜索"</span> <span class=<span class="s">"k"</span>>in</span> message <span class=<span class="s">"k"</span>>or</span> <span class="s">"查"</span> <span class=<span class="s">"k"</span>>in</span> message:
-            keyword = message.replace(<span class="s">"搜索"</span>, <span class="s">""</span>).replace(<span class="s">"查"</span>, <span class="s">""</span>).strip() <span class=<span class="s">"k"</span>>or</span> <span class="s">"AI Agent"</span>
+        <span class="h"># 判断需要哪些工具</span>
+        <span class="k">if</span> <span class="s">"搜索"</span> <span class="k">in</span> message <span class="k">or</span> <span class="s">"查"</span> <span class="k">in</span> message:
+            keyword = message.replace(<span class="s">"搜索"</span>, <span class="s">""</span>).replace(<span class="s">"查"</span>, <span class="s">""</span>).strip() <span class="k">or</span> <span class="s">"AI Agent"</span>
             steps.append((<span class="s">"search"</span>, keyword))
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"算"</span> <span class=<span class="s">"k"</span>>in</span> message <span class=<span class="s">"k"</span>>or</span> <span class="s">"计算"</span> <span class=<span class="s">"k"</span>>in</span> message <span class=<span class="s">"k"</span>>or</span> <span class="s">"+"</span> <span class=<span class="s">"k"</span>>in</span> message <span class=<span class="s">"k"</span>>or</span> <span class="s">"*"</span> <span class=<span class="s">"k"</span>>in</span> message:
+        <span class="k">if</span> <span class="s">"算"</span> <span class="k">in</span> message <span class="k">or</span> <span class="s">"计算"</span> <span class="k">in</span> message <span class="k">or</span> <span class="s">"+"</span> <span class="k">in</span> message <span class="k">or</span> <span class="s">"*"</span> <span class="k">in</span> message:
             steps.append((<span class="s">"calculate"</span>, message))
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"时间"</span> <span class=<span class="s">"k"</span>>in</span> message <span class=<span class="s">"k"</span>>or</span> <span class="s">"几点"</span> <span class=<span class="s">"k"</span>>in</span> message:
+        <span class="k">if</span> <span class="s">"时间"</span> <span class="k">in</span> message <span class="k">or</span> <span class="s">"几点"</span> <span class="k">in</span> message:
             steps.append((<span class="s">"get_time"</span>, <span class="s">""</span>))
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第2步：工具调用阶段</span>
-        <span class=<span class="s">"k"</span>>for</span> i, (tool_name, arg) <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(steps):
-            <span class=<span class="s">"k"</span>>yield</span> {
+        <span class="h"># 第2步：工具调用阶段</span>
+        <span class="k">for</span> i, (tool_name, arg) <span class="k">in</span> <span class="b">enumerate</span>(steps):
+            <span class="k">yield</span> {
                 <span class="s">"event"</span>: <span class="s">"tool_call"</span>,
-                <span class="s">"data"</span>: json.dumps({<span class="s">"step"</span>: i+<span class=<span class="s">"n"</span>>1</span>, <span class="s">"tool"</span>: tool_name, <span class="s">"args"</span>: arg}, ensure_ascii=<span class=<span class="s">"k"</span>>False</span>),
+                <span class="s">"data"</span>: json.dumps({<span class="s">"step"</span>: i+<span class="n">1</span>, <span class="s">"tool"</span>: tool_name, <span class="s">"args"</span>: arg}, ensure_ascii=<span class="k">False</span>),
             }
-            <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.2</span>)
+            <span class="k">await</span> asyncio.sleep(<span class="n">0.2</span>)
 
-            result = <span class=<span class="s">"k"</span>>self</span>.MOCK_TOOLS[tool_name](arg)
-            <span class=<span class="s">"k"</span>>yield</span> {
+            result = <span class="k">self</span>.MOCK_TOOLS[tool_name](arg)
+            <span class="k">yield</span> {
                 <span class="s">"event"</span>: <span class="s">"tool_result"</span>,
-                <span class="s">"data"</span>: json.dumps({<span class="s">"step"</span>: i+<span class=<span class="s">"n"</span>>1</span>, <span class="s">"tool"</span>: tool_name, <span class="s">"result"</span>: result}, ensure_ascii=<span class=<span class="s">"k"</span>>False</span>),
+                <span class="s">"data"</span>: json.dumps({<span class="s">"step"</span>: i+<span class="n">1</span>, <span class="s">"tool"</span>: tool_name, <span class="s">"result"</span>: result}, ensure_ascii=<span class="k">False</span>),
             }
-            <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.2</span>)
+            <span class="k">await</span> asyncio.sleep(<span class="n">0.2</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第3步：生成最终回答</span>
-        <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"event"</span>: <span class="s">"thinking"</span>, <span class="s">"data"</span>: <span class="s">"正在组织最终回答..."</span>}
-        <span class=<span class="s">"k"</span>>await</span> asyncio.sleep(<span class=<span class="s">"n"</span>>0.3</span>)
+        <span class="h"># 第3步：生成最终回答</span>
+        <span class="k">yield</span> {<span class="s">"event"</span>: <span class="s">"thinking"</span>, <span class="s">"data"</span>: <span class="s">"正在组织最终回答..."</span>}
+        <span class="k">await</span> asyncio.sleep(<span class="n">0.3</span>)
 
-        <span class=<span class="s">"k"</span>>if</span> steps:
-            answer = f<span class="s">"已完成 {<span class="</span>b<span class="s">">len</span>(steps)} 个工具调用来回答您的问题。"</span>
-        <span class=<span class="s">"k"</span>>else</span>:
+        <span class="k">if</span> steps:
+            answer = f<span class="s">"已完成 {len(steps)} 个工具调用来回答您的问题。"</span>
+        <span class="k">else</span>:
             answer = f<span class="s">"您好！您的问题「{message}」已收到。这是一个模拟 Agent 回复。"</span>
 
-        <span class=<span class="s">"k"</span>>yield</span> {<span class="s">"event"</span>: <span class="s">"done"</span>, <span class="s">"data"</span>: answer, <span class="s">"tool_calls_made"</span>: <span class=<span class="s">"b"</span>>len</span>(steps)}
+        <span class="k">yield</span> {<span class="s">"event"</span>: <span class="s">"done"</span>, <span class="s">"data"</span>: answer, <span class="s">"tool_calls_made"</span>: <span class="b">len</span>(steps)}
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>13.4</span> FastAPI 应用主体
+13.4 FastAPI 应用主体
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="s">""</span>"</span>
+"""</span>
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 应用生命周期管理</span>
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@asynccontextmanager</span>
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>lifespan</span>(app: FastAPI):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"应用启动和关闭时的操作。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"🚀 Agent 服务启动中..."</span>)
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 启动时：初始化数据库连接池、加载配置等</span>
-    <span class=<span class="s">"k"</span>>yield</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"👋 Agent 服务关闭中..."</span>)
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 关闭时：清理资源、关闭连接等</span>
+<span class="h"># 应用生命周期管理</span>
+<span <span class="k">class</span>="d">@asynccontextmanager</span>
+<span class="k">async</span> <span class="k">def</span> <span class="f">lifespan</span>(app: FastAPI):
+    <span class="s">"""应用启动和关闭时的操作。"""</span>
+    <span class="b">print</span>(<span class="s">"🚀 Agent 服务启动中..."</span>)
+    <span class="h"># 启动时：初始化数据库连接池、加载配置等</span>
+    <span class="k">yield</span>
+    <span class="b">print</span>(<span class="s">"👋 Agent 服务关闭中..."</span>)
+    <span class="h"># 关闭时：清理资源、关闭连接等</span>
 
 app = FastAPI(
     title=<span class="s">"AI Agent API Service"</span>,
     description=<span class="s">"一个完整的 Agent 服务化部署示例"</span>,
-    version=<span class="s">"<span class="</span>n<span class="s">">1.0</span>.<span class="</span>n<span class="s">">0</span>"</span>,
+    version=<span class="s">"1.0.0"</span>,
     lifespan=lifespan,
 )
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># CORS 中间件（允许前端跨域调用）</span>
+<span class="h"># CORS 中间件（允许前端跨域调用）</span>
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[<span class="s">"*"</span>],
@@ -847,11 +847,11 @@ app.add_middleware(
 agent = SimulatedAgent()
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ==================== REST API 端点 ====================</span>
+<span class="h"># ==================== REST API 端点 ====================</span>
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@app</span>.post(<span class="s">"/agent/chat"</span>, response_model=AgentResponse)
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>agent_chat</span>(request: AgentRequest):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"标准 REST API：一次请求，一次完整响应。
+<span <span class="k">class</span>="d">@app</span>.post(<span class="s">"/agent/chat"</span>, response_model=AgentResponse)
+<span class="k">async</span> <span class="k">def</span> <span class="f">agent_chat</span>(request: AgentRequest):
+    <span class="s">"""标准 REST API：一次请求，一次完整响应。
 
     适用场景：
       - 简单问答（用户不关心中间过程）
@@ -859,32 +859,32 @@ agent = SimulatedAgent()
       - 与其他微服务集成
 
     测试：
-      curl -X POST http://localhost:<span class=<span class="s">"n"</span>>8000</span>/agent/chat \
-        -H <span class="s">"Content-Type: application/json"</span> \
-        -d <span class='s'>'{<span class="s">"message"</span>: <span class="s">"搜索AI Agent并计算3+<span class="</span>n<span class="s">">5</span>"</span>}'</span>
-    <span class="s">""</span>"</span>
+      curl -X POST http://localhost:8000/agent/chat \
+        -H "Content-Type: application/json" \
+        -d '{"message": "搜索AI Agent并计算3+5"}'
+    """</span>
     start = time.time()
-    session_id = request.session_id <span class=<span class="s">"k"</span>>or</span> _generate_session_id()
-    tool_calls_made = <span class=<span class="s">"n"</span>>0</span>
+    session_id = request.session_id <span class="k">or</span> _generate_session_id()
+    tool_calls_made = <span class="n">0</span>
     answer = <span class="s">""</span>
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>for</span> event <span class=<span class="s">"k"</span>>in</span> agent.run_streaming(request.message):
-        <span class=<span class="s">"k"</span>>if</span> event[<span class="s">"event"</span>] == <span class="s">"done"</span>:
+    <span class="k">async</span> <span class="k">for</span> event <span class="k">in</span> agent.run_streaming(request.message):
+        <span class="k">if</span> event[<span class="s">"event"</span>] == <span class="s">"done"</span>:
             answer = event[<span class="s">"data"</span>]
-            tool_calls_made = event.get(<span class="s">"tool_calls_made"</span>, <span class=<span class="s">"n"</span>>0</span>)
+            tool_calls_made = event.get(<span class="s">"tool_calls_made"</span>, <span class="n">0</span>)
 
-    <span class=<span class="s">"k"</span>>return</span> AgentResponse(
+    <span class="k">return</span> AgentResponse(
         session_id=session_id,
         answer=answer,
         tool_calls_made=tool_calls_made,
-        elapsed_seconds=<span class=<span class="s">"b"</span>>round</span>(time.time() - start, <span class=<span class="s">"n"</span>>2</span>),
+        elapsed_seconds=<span class="b">round</span>(time.time() - start, <span class="n">2</span>),
         timestamp=datetime.now().isoformat(),
     )
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@app</span>.post(<span class="s">"/agent/chat/stream"</span>)
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>agent_chat_stream</span>(request: AgentRequest):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"SSE 流式 API：逐步推送 Agent 的思考过程。
+<span <span class="k">class</span>="d">@app</span>.post(<span class="s">"/agent/chat/stream"</span>)
+<span class="k">async</span> <span class="k">def</span> <span class="f">agent_chat_stream</span>(request: AgentRequest):
+    <span class="s">"""SSE 流式 API：逐步推送 Agent 的思考过程。
 
     适用场景：
       - 用户需要看到 Agent 的实时状态（「正在搜索...」）
@@ -892,44 +892,44 @@ agent = SimulatedAgent()
       - 前端需要展示工具调用动画
 
     测试：
-      curl -N -X POST http://localhost:<span class=<span class="s">"n"</span>>8000</span>/agent/chat/stream \
-        -H <span class="s">"Content-Type: application/json"</span> \
-        -d <span class='s'>'{<span class="s">"message"</span>: <span class="s">"搜索AI Agent并算3+<span class="</span>n<span class="s">">5</span>"</span>}'</span>
-    <span class="s">""</span>"</span>
+      curl -N -X POST http://localhost:8000/agent/chat/stream \
+        -H "Content-Type: application/json" \
+        -d '{"message": "搜索AI Agent并算3+5"}'
+    """</span>
 
-    <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>event_generator</span>():
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"SSE 事件生成器。
+    <span class="k">async</span> <span class="k">def</span> <span class="f">event_generator</span>():
+        <span class="s">"""SSE 事件生成器。
 
         SSE 协议格式：
           event: &lt;事件类型&gt;
           data: &lt;JSON 数据&gt;
           \n
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>for</span> event <span class=<span class="s">"k"</span>>in</span> agent.run_streaming(request.message):
+        """</span>
+        <span class="k">async</span> <span class="k">for</span> event <span class="k">in</span> agent.run_streaming(request.message):
             event_type = event[<span class="s">"event"</span>]
             data = event[<span class="s">"data"</span>]
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># SSE 标准格式</span>
-            <span class=<span class="s">"k"</span>>yield</span> f<span class="s">"event: {event_type}\ndata: {data}\n\n"</span>
+            <span class="h"># SSE 标准格式</span>
+            <span class="k">yield</span> f<span class="s">"event: {event_type}\ndata: {data}\n\n"</span>
 
-            <span class=<span class="s">"k"</span>>if</span> event_type == <span class="s">"done"</span>:
-                <span class=<span class="s">"k"</span>>yield</span> f<span class="s">"event: close\ndata: stream_end\n\n"</span>
+            <span class="k">if</span> event_type == <span class="s">"done"</span>:
+                <span class="k">yield</span> f<span class="s">"event: close\ndata: stream_end\n\n"</span>
 
-    <span class=<span class="s">"k"</span>>return</span> StreamingResponse(
+    <span class="k">return</span> StreamingResponse(
         event_generator(),
         media_type=<span class="s">"text/event-stream"</span>,
         headers={
             <span class="s">"Cache-Control"</span>: <span class="s">"no-cache"</span>,
             <span class="s">"Connection"</span>: <span class="s">"keep-alive"</span>,
-            <span class="s">"X-Accel-Buffering"</span>: <span class="s">"no"</span>,  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Nginx 禁用缓冲</span>
+            <span class="s">"X-Accel-Buffering"</span>: <span class="s">"no"</span>,  <span class="h"># Nginx 禁用缓冲</span>
         },
     )
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ==================== WebSocket 端点 ====================</span>
+<span class="h"># ==================== WebSocket 端点 ====================</span>
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@app</span>.websocket(<span class="s">"/agent/ws"</span>)
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>agent_websocket</span>(websocket):
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"WebSocket 双向通信端点。
+<span <span class="k">class</span>="d">@app</span>.websocket(<span class="s">"/agent/ws"</span>)
+<span class="k">async</span> <span class="k">def</span> <span class="f">agent_websocket</span>(websocket):
+    <span class="s">"""WebSocket 双向通信端点。
 
     与 SSE 的区别：
       - SSE：服务器 → 客户端（单向推送）
@@ -941,53 +941,53 @@ agent = SimulatedAgent()
       - 实时协作场景
 
     测试：
-      websocat ws://localhost:<span class=<span class="s">"n"</span>>8000</span>/agent/ws
-    <span class="s">""</span>"</span>
-    <span class=<span class="s">"k"</span>>await</span> websocket.accept()
-    <span class=<span class="s">"k"</span>>await</span> websocket.send_json({
+      websocat ws://localhost:8000/agent/ws
+    """</span>
+    <span class="k">await</span> websocket.accept()
+    <span class="k">await</span> websocket.send_json({
         <span class="s">"event"</span>: <span class="s">"connected"</span>,
         <span class="s">"data"</span>: <span class="s">"WebSocket 连接已建立"</span>,
     })
 
-    <span class=<span class="s">"k"</span>>try</span>:
-        <span class=<span class="s">"k"</span>>while</span> <span class=<span class="s">"k"</span>>True</span>:
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 接收用户消息</span>
-            raw = <span class=<span class="s">"k"</span>>await</span> websocket.receive_text()
+    <span class="k">try</span>:
+        <span class="k">while</span> <span class="k">True</span>:
+            <span class="h"># 接收用户消息</span>
+            raw = <span class="k">await</span> websocket.receive_text()
             data = json.loads(raw)
             message = data.get(<span class="s">"message"</span>, <span class="s">""</span>)
 
-            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> message:
-                <span class=<span class="s">"k"</span>>continue</span>
+            <span class="k">if</span> <span class="k">not</span> message:
+                <span class="k">continue</span>
 
-            <span class=<span class="s">"k"</span>>await</span> websocket.send_json({
+            <span class="k">await</span> websocket.send_json({
                 <span class="s">"event"</span>: <span class="s">"received"</span>,
                 <span class="s">"data"</span>: f<span class="s">"收到: {message}"</span>,
             })
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 流式执行 Agent</span>
-            <span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>for</span> event <span class=<span class="s">"k"</span>>in</span> agent.run_streaming(message):
-                <span class=<span class="s">"k"</span>>await</span> websocket.send_json(event)
+            <span class="h"># 流式执行 Agent</span>
+            <span class="k">async</span> <span class="k">for</span> event <span class="k">in</span> agent.run_streaming(message):
+                <span class="k">await</span> websocket.send_json(event)
 
-            <span class=<span class="s">"k"</span>>await</span> websocket.send_json({
+            <span class="k">await</span> websocket.send_json({
                 <span class="s">"event"</span>: <span class="s">"ready"</span>,
                 <span class="s">"data"</span>: <span class="s">"等待下一条消息..."</span>,
             })
-    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"WebSocket 断开: {e}"</span>)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="b">print</span>(f<span class="s">"WebSocket 断开: {e}"</span>)
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ==================== 管理端点 ====================</span>
+<span class="h"># ==================== 管理端点 ====================</span>
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@app</span>.get(<span class="s">"/health"</span>)
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>health_check</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"健康检查端点（Kubernetes / 负载均衡器）。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"k"</span>>return</span> {<span class="s">"status"</span>: <span class="s">"healthy"</span>, <span class="s">"timestamp"</span>: datetime.now().isoformat()}
+<span <span class="k">class</span>="d">@app</span>.get(<span class="s">"/health"</span>)
+<span class="k">async</span> <span class="k">def</span> <span class="f">health_check</span>():
+    <span class="s">"""健康检查端点（Kubernetes / 负载均衡器）。"""</span>
+    <span class="k">return</span> {<span class="s">"status"</span>: <span class="s">"healthy"</span>, <span class="s">"timestamp"</span>: datetime.now().isoformat()}
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@app</span>.get(<span class="s">"/"</span>)
-<span class=<span class="s">"k"</span>>async</span> <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>root</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"根路径 → 跳转到 API 文档。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"k"</span>>return</span> {
+<span <span class="k">class</span>="d">@app</span>.get(<span class="s">"/"</span>)
+<span class="k">async</span> <span class="k">def</span> <span class="f">root</span>():
+    <span class="s">"""根路径 → 跳转到 API 文档。"""</span>
+    <span class="k">return</span> {
         <span class="s">"service"</span>: <span class="s">"AI Agent API Service"</span>,
         <span class="s">"docs"</span>: <span class="s">"/docs"</span>,
         <span class="s">"endpoints"</span>: {
@@ -999,31 +999,31 @@ agent = SimulatedAgent()
     }
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ==================== 辅助函数 ====================</span>
+<span class="h"># ==================== 辅助函数 ====================</span>
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_generate_session_id</span>() -&gt; <span class=<span class="s">"b"</span>>str</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"生成唯一会话 ID。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"k"</span>>return</span> hashlib.md5(
-        f<span class="s">"{time.time()}-{os.urandom(<span class="</span>n<span class="s">">8</span>).hex()}"</span>.encode()
-    ).hexdigest()[:<span class=<span class="s">"n"</span>>16</span>]
+<span class="k">def</span> <span class="f">_generate_session_id</span>() -&gt; <span class="b">str</span>:
+    <span class="s">"""生成唯一会话 ID。"""</span>
+    <span class="k">return</span> hashlib.md5(
+        f<span class="s">"{time.time()}-{os.urandom(8).hex()}"</span>.encode()
+    ).hexdigest()[:<span class="n">16</span>]
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class="s">"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>13.5</span> 生产部署架构
+13.5 生产部署架构
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   ┌──────────────────────────────────────────────────────┐
   │                     Nginx (反向代理)                   │
   │  • SSL 终止                                           │
-  │  • 负载均衡 (<span class=<span class="s">"b"</span>>round</span>-robin / least-connections)         │
+  │  • 负载均衡 (round-robin / least-connections)         │
   │  • Rate Limiting                                      │
   │  • WebSocket 升级 (Connection: Upgrade)               │
   └──────────┬───────────┬───────────┬───────────────────┘
              │           │           │
     ┌────────▼──┐ ┌──────▼───┐ ┌───▼────────┐
     │  Agent    │ │  Agent   │ │  Agent     │
-    │  Worker <span class=<span class="s">"n"</span>>1</span> │ │  Worker <span class=<span class="s">"n"</span>>2</span>│ │  Worker <span class=<span class="s">"n"</span>>3</span>  │
+    │  Worker 1 │ │  Worker 2│ │  Worker 3  │
     │ (FastAPI) │ │ (FastAPI)│ │  (FastAPI) │
     └───────────┘ └──────────┘ └────────────┘
              │           │           │
@@ -1038,22 +1038,22 @@ agent = SimulatedAgent()
               └─────────────────────┘
 
 Docker 部署示例：
-  FROM python:<span class=<span class="s">"n"</span>>3.12</span>-slim
+  FROM python:3.12-slim
   WORKDIR /app
   COPY requirements.txt .
   RUN pip install -r requirements.txt
   COPY . .
-  EXPOSE <span class=<span class="s">"n"</span>>8000</span>
-  CMD [<span class="s">"uvicorn"</span>, <span class="s">"13_fastapi_agent_service:app"</span>, <span class="s">"--host"</span>, <span class="s">"<span class="</span>n<span class="s">">0.0</span>.<span class="</span>n<span class="s">">0.0</span>"</span>, <span class="s">"--port"</span>, <span class="s">"<span class="</span>n<span class="s">">8000</span>"</span>]
+  EXPOSE 8000
+  CMD ["uvicorn", "13_fastapi_agent_service:app", "--host", "0.0.0.0", "--port", "8000"]
 
 Kubernetes 部署要点：
   - Readiness Probe: GET /health
   - Liveness Probe: GET /health
-  - Horizontal Pod Autoscaler: CPU &gt; <span class=<span class="s">"n"</span>>70</span>% → 扩容
+  - Horizontal Pod Autoscaler: CPU &gt; 70% → 扩容
   - 使用 ConfigMap 管理 Agent 配置
 
 
-<span class=<span class="s">"n"</span>>13.6</span> SSE vs WebSocket vs 普通 HTTP —— 该怎么选？
+13.6 SSE vs WebSocket vs 普通 HTTP —— 该怎么选？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ┌──────────────┬───────────────┬───────────────┬────────────────┐
@@ -1076,55 +1076,55 @@ Agent 场景推荐：
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class=<span class="s">"n"</span>>13.7</span> 本章总结
+13.7 本章总结
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class=<span class="s">"n"</span>>1</span>. FastAPI 是最适合 Agent 的 Python Web 框架
+1. FastAPI 是最适合 Agent 的 Python Web 框架
    - 原生异步支持（Agent 的 LLM 调用就是异步的）
    - 自动文档生成
    - SSE / WebSocket 开箱即用
 
-<span class=<span class="s">"n"</span>>2</span>. 三种通信模式各有适用场景
+2. 三种通信模式各有适用场景
    - REST API: 简单问答 → 一次请求一次响应
    - SSE: 流式输出 → 展示 Agent 思考过程
    - WebSocket: 实时双向 → 用户可中途介入
 
-<span class=<span class="s">"n"</span>>3</span>. 生产部署核心组件
+3. 生产部署核心组件
    - Nginx: SSL + 负载均衡 + WebSocket 升级
    - 多 Worker: 水平扩展
    - 消息队列: 异步任务解耦
    - 健康检查: 自动故障恢复
 
 面试速记：
-  <span class="s">"Agent 怎么做成 API 服务？"</span>
+  "Agent 怎么做成 API 服务？"
   → FastAPI + uvicorn 异步框架
   → SSE 做流式推送，WebSocket 做双向通信
   → Nginx 反代 + 多 Worker + 健康检查
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ==================== 启动入口 ====================</span>
+<span class="h"># ==================== 启动入口 ====================</span>
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"k"</span>>import</span> uvicorn
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第13章：FastAPI + Agent 服务化部署                    ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  REST API · SSE流式 · WebSocket · 生产架构           ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
-    <span class=<span class="s">"b"</span>>print</span>()
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"启动后访问以下地址："</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  📖 API 文档:        http://localhost:<span class="</span>n<span class="s">">8000</span>/docs"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  🏠 服务主页:        http://localhost:<span class="</span>n<span class="s">">8000</span>/"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  ❤️  健康检查:       http://localhost:<span class="</span>n<span class="s">">8000</span>/health"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  💬 REST 聊天:       POST http://localhost:<span class="</span>n<span class="s">">8000</span>/agent/chat"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  📡 SSE 流式:        POST http://localhost:<span class="</span>n<span class="s">">8000</span>/agent/chat/stream"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  🔌 WebSocket:       ws://localhost:<span class="</span>n<span class="s">">8000</span>/agent/ws"</span>)
-    <span class=<span class="s">"b"</span>>print</span>()
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="k">import</span> uvicorn
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第13章：FastAPI + Agent 服务化部署                    ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  REST API · SSE流式 · WebSocket · 生产架构           ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    <span class="b">print</span>()
+    <span class="b">print</span>(<span class="s">"启动后访问以下地址："</span>)
+    <span class="b">print</span>(<span class="s">"  📖 API 文档:        http://localhost:8000/docs"</span>)
+    <span class="b">print</span>(<span class="s">"  🏠 服务主页:        http://localhost:8000/"</span>)
+    <span class="b">print</span>(<span class="s">"  ❤️  健康检查:       http://localhost:8000/health"</span>)
+    <span class="b">print</span>(<span class="s">"  💬 REST 聊天:       POST http://localhost:8000/agent/chat"</span>)
+    <span class="b">print</span>(<span class="s">"  📡 SSE 流式:        POST http://localhost:8000/agent/chat/stream"</span>)
+    <span class="b">print</span>(<span class="s">"  🔌 WebSocket:       ws://localhost:8000/agent/ws"</span>)
+    <span class="b">print</span>()
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 非阻塞启动（不调用外部 API，可独立运行）</span>
-    uvicorn.run(app, host=<span class="s">"<span class="</span>n<span class="s">">0.0</span>.<span class="</span>n<span class="s">">0.0</span>"</span>, port=<span class=<span class="s">"n"</span>>8000</span>, log_level=<span class="s">"info"</span>)
+    <span class="h"># 非阻塞启动（不调用外部 API，可独立运行）</span>
+    uvicorn.run(app, host=<span class="s">"0.0.0.0"</span>, port=<span class="n">8000</span>, log_level=<span class="s">"info"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_12_infrastructure/12_infrastructure.html" title="Agent 生产基础设施 — OpenClaw·Harness·Checklist">← 第12章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

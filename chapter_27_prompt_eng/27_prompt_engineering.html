@@ -191,70 +191,70 @@ body {
 <output_format>
   输出格式要求...
 </output_format></pre>
-<p></system></p></div><div class="code-section"><details open><summary>💻 代码 (64 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass
+<p></system></p></div><div class="code-section"><details open><summary>💻 代码 (64 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentPromptBuilder</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Agent Prompt 构建器 —— 按模块组装，而非手写字符串。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">AgentPromptBuilder</span>:
+    <span class="s">"""Agent Prompt 构建器 —— 按模块组装，而非手写字符串。"""</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, role: <span class=<span class="s">"b"</span>>str</span> = <span class="s">"AI 助手"</span>):
-        <span class=<span class="s">"k"</span>>self</span>.role = role
-        <span class=<span class="s">"k"</span>>self</span>.sections = {}
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, role: <span class="b">str</span> = <span class="s">"AI 助手"</span>):
+        <span class="k">self</span>.role = role
+        <span class="k">self</span>.sections = {}
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_capabilities</span>(<span class=<span class="s">"k"</span>>self</span>, tools: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加工具能力声明。"</span><span class="s">""</span></span>
+    <span class="k">def</span> <span class="f">add_capabilities</span>(<span class="k">self</span>, tools: <span class="b">list</span>[<span class="b">dict</span>]):
+        <span class="s">"""添加工具能力声明。"""</span>
         tool_lines = []
-        <span class=<span class="s">"k"</span>>for</span> t <span class=<span class="s">"k"</span>>in</span> tools:
-            tool_lines.append(f<span class="s">"- {t[<span class='s'>'name'</span>]}: {t.get(<span class='s'>'description'</span>, <span class='s'>''</span>)}"</span>)
-        <span class=<span class="s">"k"</span>>self</span>.sections[<span class="s">"capabilities"</span>] = <span class="s">"\n"</span>.join(tool_lines)
+        <span class="k">for</span> t <span class="k">in</span> tools:
+            tool_lines.append(f<span class="s">"- {t['name']}: {t.get('description', '')}"</span>)
+        <span class="k">self</span>.sections[<span class="s">"capabilities"</span>] = <span class="s">"\n"</span>.join(tool_lines)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_tool_guidance</span>(<span class=<span class="s">"k"</span>>self</span>, guidance: <span class=<span class="s">"b"</span>>dict</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>str</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加工具选择指引（什么时候用哪个工具）。"</span><span class="s">""</span></span>
+    <span class="k">def</span> <span class="f">add_tool_guidance</span>(<span class="k">self</span>, guidance: <span class="b">dict</span>[<span class="b">str</span>, <span class="b">str</span>]):
+        <span class="s">"""添加工具选择指引（什么时候用哪个工具）。"""</span>
         lines = []
-        <span class=<span class="s">"k"</span>>for</span> tool_name, guide <span class=<span class="s">"k"</span>>in</span> guidance.items():
-            lines.append(f<span class="s">"<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">">### {tool_name}\n{guide}"</span>)</span>
-        <span class=<span class="s">"k"</span>>self</span>.sections[<span class="s">"tool_guidance"</span>] = <span class="s">"\n\n"</span>.join(lines)
+        <span class="k">for</span> tool_name, guide <span class="k">in</span> guidance.items():
+            lines.append(f"<span class="h">### {tool_name}\n{guide}")</span>
+        <span class="k">self</span>.sections[<span class="s">"tool_guidance"</span>] = <span class="s">"\n\n"</span>.join(lines)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_workflow</span>(<span class=<span class="s">"k"</span>>self</span>, steps: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加工作流程。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.sections[<span class="s">"workflow"</span>] = <span class="s">"\n"</span>.join(
-            f<span class="s">"{i+<span class="</span>n<span class="s">">1</span>}. {step}"</span> <span class=<span class="s">"k"</span>>for</span> i, step <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(steps)
+    <span class="k">def</span> <span class="f">add_workflow</span>(<span class="k">self</span>, steps: <span class="b">list</span>[<span class="b">str</span>]):
+        <span class="s">"""添加工作流程。"""</span>
+        <span class="k">self</span>.sections[<span class="s">"workflow"</span>] = <span class="s">"\n"</span>.join(
+            f<span class="s">"{i+1}. {step}"</span> <span class="k">for</span> i, step <span class="k">in</span> <span class="b">enumerate</span>(steps)
         )
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_constraints</span>(<span class=<span class="s">"k"</span>>self</span>, constraints: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加安全约束。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.sections[<span class="s">"constraints"</span>] = <span class="s">"\n"</span>.join(
-            f<span class="s">"- {c}"</span> <span class=<span class="s">"k"</span>>for</span> c <span class=<span class="s">"k"</span>>in</span> constraints
+    <span class="k">def</span> <span class="f">add_constraints</span>(<span class="k">self</span>, constraints: <span class="b">list</span>[<span class="b">str</span>]):
+        <span class="s">"""添加安全约束。"""</span>
+        <span class="k">self</span>.sections[<span class="s">"constraints"</span>] = <span class="s">"\n"</span>.join(
+            f<span class="s">"- {c}"</span> <span class="k">for</span> c <span class="k">in</span> constraints
         )
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_output_format</span>(<span class=<span class="s">"k"</span>>self</span>, fmt_desc: <span class=<span class="s">"b"</span>>str</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加输出格式。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.sections[<span class="s">"output_format"</span>] = fmt_desc
+    <span class="k">def</span> <span class="f">add_output_format</span>(<span class="k">self</span>, fmt_desc: <span class="b">str</span>):
+        <span class="s">"""添加输出格式。"""</span>
+        <span class="k">self</span>.sections[<span class="s">"output_format"</span>] = fmt_desc
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>build</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"构建完整的 Agent System Prompt。"</span><span class="s">""</span></span>
+    <span class="k">def</span> <span class="f">build</span>(<span class="k">self</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""构建完整的 Agent System Prompt。"""</span>
         parts = [<span class="s">"&lt;system&gt;"</span>]
-        parts.append(f<span class="s">"  &lt;role&gt;{<span class="</span>k<span class="s">">self</span>.role}&lt;/role&gt;"</span>)
+        parts.append(f<span class="s">"  &lt;role&gt;{self.role}&lt;/role&gt;"</span>)
 
-        <span class=<span class="s">"k"</span>>for</span> key <span class=<span class="s">"k"</span>>in</span> [<span class="s">"capabilities"</span>, <span class="s">"tool_guidance"</span>, <span class="s">"workflow"</span>,
+        <span class="k">for</span> key <span class="k">in</span> [<span class="s">"capabilities"</span>, <span class="s">"tool_guidance"</span>, <span class="s">"workflow"</span>,
                      <span class="s">"constraints"</span>, <span class="s">"output_format"</span>]:
-            <span class=<span class="s">"k"</span>>if</span> key <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.sections:
-                tag = key.replace(<span class="s">"_"</span>, <span class="s">"-"</span>)  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># tool_guidance → tool-guidance</span>
-                <span class=<span class="s">"k"</span>>if</span> tag == <span class="s">"capabilities"</span>:
+            <span class="k">if</span> key <span class="k">in</span> <span class="k">self</span>.sections:
+                tag = key.replace(<span class="s">"_"</span>, <span class="s">"-"</span>)  <span class="h"># tool_guidance → tool-guidance</span>
+                <span class="k">if</span> tag == <span class="s">"capabilities"</span>:
                     tag = <span class="s">"capabilities"</span>
                 parts.append(f<span class="s">"  &lt;{tag}&gt;"</span>)
-                parts.append(<span class=<span class="s">"k"</span>>self</span>.sections[key])
+                parts.append(<span class="k">self</span>.sections[key])
                 parts.append(f<span class="s">"  &lt;/{tag}&gt;"</span>)
 
         parts.append(<span class="s">"&lt;/system&gt;"</span>)
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"\n"</span>.join(parts)
+        <span class="k">return</span> <span class="s">"\n"</span>.join(parts)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>estimate_tokens</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>int</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"估算 Prompt 的 token 数。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.build()) // <span class=<span class="s">"n"</span>>4</span></pre></div></details></div><div class="lecture"><h2>27.3 工具描述 = Prompt 工程 —— 本章核心！</h2>
+    <span class="k">def</span> <span class="f">estimate_tokens</span>(<span class="k">self</span>) -&gt; <span class="b">int</span>:
+        <span class="s">"""估算 Prompt 的 token 数。"""</span>
+        <span class="k">return</span> <span class="b">len</span>(<span class="k">self</span>.build()) // <span class="n">4</span></pre></div></details></div><div class="lecture"><h2>27.3 工具描述 = Prompt 工程 —— 本章核心！</h2>
 <p>&nbsp;</p>
 <p>工具描述不是给开发者看的文档，是给 LLM 看的「使用说明」。</p>
 <p>&nbsp;</p>
@@ -280,29 +280,29 @@ body {
   │ 有调用示例                │ +1       │
   │ 参数有 enum 限制          │ +2       │
   │ 参数有详细描述            │ +1       │
-  └────────────────────────┴──────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (113 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass
+  └────────────────────────┴──────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (113 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ToolDescriptionOptimizer</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"工具描述优化器 —— 系统化提升工具调用准确率。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">ToolDescriptionOptimizer</span>:
+    <span class="s">"""工具描述优化器 —— 系统化提升工具调用准确率。"""</span>
 
     BAD_EXAMPLES = [
         {
             <span class="s">"name"</span>: <span class="s">"do_stuff"</span>,
             <span class="s">"description"</span>: <span class="s">"处理数据"</span>,
             <span class="s">"parameters"</span>: {
-                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {<span class="s">"data"</span>: {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>}},
+                <span class="s">"type"</span>: <span class="s">"object"</span>,
+                <span class="s">"properties"</span>: {<span class="s">"data"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>}},
             },
         },
         {
             <span class="s">"name"</span>: <span class="s">"search"</span>,
             <span class="s">"description"</span>: <span class="s">"搜索"</span>,
             <span class="s">"parameters"</span>: {
-                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {<span class="s">"q"</span>: {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>}},
+                <span class="s">"type"</span>: <span class="s">"object"</span>,
+                <span class="s">"properties"</span>: {<span class="s">"q"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>}},
             },
         },
     ]
@@ -313,21 +313,21 @@ body {
             <span class="s">"description"</span>: (
                 <span class="s">"向指定邮箱发送邮件。适用于发送通知、报告、提醒等场景。"</span>
                 <span class="s">"不支持发送带附件的邮件。收件人地址必须包含 @。"</span>
-                <span class="s">"示例：send_email(to=<span class='s'>'user<span <span class="</span>k<span class="s">">class</span>="</span>d<span class="s">">@example</span>.com'</span>, subject=<span class='s'>'日报'</span>, body=<span class='s'>'...'</span>)"</span>
+                <span class="s">"示例：send_email(to='user@example.com', subject='日报', body='...')"</span>
             ),
             <span class="s">"parameters"</span>: {
-                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
+                <span class="s">"type"</span>: <span class="s">"object"</span>,
                 <span class="s">"properties"</span>: {
                     <span class="s">"to"</span>: {
-                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
-                        <span class="s">"description"</span>: <span class="s">"收件人邮箱，如 user<span <span class="</span>k<span class="s">">class</span>="</span>d<span class="s">">@example</span>.com"</span>,
+                        <span class="s">"type"</span>: <span class="s">"string"</span>,
+                        <span class="s">"description"</span>: <span class="s">"收件人邮箱，如 user@example.com"</span>,
                     },
                     <span class="s">"subject"</span>: {
-                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
-                        <span class="s">"description"</span>: <span class="s">"邮件主题，不超过 <span class="</span>n<span class="s">">100</span> 字"</span>,
+                        <span class="s">"type"</span>: <span class="s">"string"</span>,
+                        <span class="s">"description"</span>: <span class="s">"邮件主题，不超过 100 字"</span>,
                     },
                     <span class="s">"body"</span>: {
-                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
+                        <span class="s">"type"</span>: <span class="s">"string"</span>,
                         <span class="s">"description"</span>: <span class="s">"邮件正文，纯文本格式"</span>,
                     },
                 },
@@ -339,13 +339,13 @@ body {
             <span class="s">"description"</span>: (
                 <span class="s">"查询股票实时价格。适用于查询个股当前报价。"</span>
                 <span class="s">"不支持历史价格查询和批量查询。"</span>
-                <span class="s">"示例：get_stock_price(symbol=<span class='s'>'AAPL'</span>) 返回 <span class='s'>'<span class="</span>n<span class="s">">185.50</span> USD'</span>"</span>
+                <span class="s">"示例：get_stock_price(symbol='AAPL') 返回 '185.50 USD'"</span>
             ),
             <span class="s">"parameters"</span>: {
-                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
+                <span class="s">"type"</span>: <span class="s">"object"</span>,
                 <span class="s">"properties"</span>: {
                     <span class="s">"symbol"</span>: {
-                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
+                        <span class="s">"type"</span>: <span class="s">"string"</span>,
                         <span class="s">"description"</span>: <span class="s">"股票代码，如 AAPL、TSLA、BABA"</span>,
                         <span class="s">"enum"</span>: [<span class="s">"AAPL"</span>, <span class="s">"TSLA"</span>, <span class="s">"GOOGL"</span>, <span class="s">"MSFT"</span>, <span class="s">"BABA"</span>],
                     },
@@ -355,44 +355,44 @@ body {
         },
     ]
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>score_tool_description</span>(cls, tool: <span class=<span class="s">"b"</span>>dict</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"评估工具描述的质量。
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">score_tool_description</span>(cls, tool: <span class="b">dict</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""评估工具描述的质量。
 
         Returns:
             评分详情。
-        <span class="s">""</span>"</span>
+        """</span>
         desc = tool.get(<span class="s">"description"</span>, <span class="s">""</span>)
         params = tool.get(<span class="s">"parameters"</span>, {}).get(<span class="s">"properties"</span>, {})
         scores = {
-            <span class="s">"has_description"</span>: <span class=<span class="s">"b"</span>>len</span>(desc) &gt; <span class=<span class="s">"n"</span>>10</span>,
-            <span class="s">"has_use_case"</span>: <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> desc <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"适用于"</span>, <span class="s">"用于"</span>, <span class="s">"当你"</span>, <span class="s">"when"</span>]),
-            <span class="s">"has_boundary"</span>: <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> desc <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"不支持"</span>, <span class="s">"不支持"</span>, <span class="s">"不适用于"</span>]),
-            <span class="s">"has_example"</span>: <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> desc <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"示例"</span>, <span class="s">"example"</span>, <span class="s">"e.g."</span>]),
-            <span class="s">"has_enum"</span>: <span class=<span class="s">"b"</span>>any</span>(<span class="s">"enum"</span> <span class=<span class="s">"k"</span>>in</span> p <span class=<span class="s">"k"</span>>for</span> p <span class=<span class="s">"k"</span>>in</span> params.values()),
-            <span class="s">"has_param_desc"</span>: <span class=<span class="s">"b"</span>>all</span>(
-                <span class="s">"description"</span> <span class=<span class="s">"k"</span>>in</span> p <span class=<span class="s">"k"</span>>for</span> p <span class=<span class="s">"k"</span>>in</span> params.values()
-            ) <span class=<span class="s">"k"</span>>if</span> params <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"k"</span>>False</span>,
+            <span class="s">"has_description"</span>: <span class="b">len</span>(desc) &gt; <span class="n">10</span>,
+            <span class="s">"has_use_case"</span>: <span class="b">any</span>(w <span class="k">in</span> desc <span class="k">for</span> w <span class="k">in</span> [<span class="s">"适用于"</span>, <span class="s">"用于"</span>, <span class="s">"当你"</span>, <span class="s">"when"</span>]),
+            <span class="s">"has_boundary"</span>: <span class="b">any</span>(w <span class="k">in</span> desc <span class="k">for</span> w <span class="k">in</span> [<span class="s">"不支持"</span>, <span class="s">"不支持"</span>, <span class="s">"不适用于"</span>]),
+            <span class="s">"has_example"</span>: <span class="b">any</span>(w <span class="k">in</span> desc <span class="k">for</span> w <span class="k">in</span> [<span class="s">"示例"</span>, <span class="s">"example"</span>, <span class="s">"e.g."</span>]),
+            <span class="s">"has_enum"</span>: <span class="b">any</span>(<span class="s">"enum"</span> <span class="k">in</span> p <span class="k">for</span> p <span class="k">in</span> params.values()),
+            <span class="s">"has_param_desc"</span>: <span class="b">all</span>(
+                <span class="s">"description"</span> <span class="k">in</span> p <span class="k">for</span> p <span class="k">in</span> params.values()
+            ) <span class="k">if</span> params <span class="k">else</span> <span class="k">False</span>,
         }
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"tool_name"</span>: tool.get(<span class="s">"name"</span>, <span class="s">"unknown"</span>),
             <span class="s">"scores"</span>: scores,
-            <span class="s">"total"</span>: <span class=<span class="s">"b"</span>>sum</span>(scores.values()),
-            <span class="s">"<span class="</span>b<span class="s">">max</span>"</span>: <span class=<span class="s">"b"</span>>len</span>(scores),
-            <span class="s">"grade"</span>: cls._grade(<span class=<span class="s">"b"</span>>sum</span>(scores.values()), <span class=<span class="s">"b"</span>>len</span>(scores)),
+            <span class="s">"total"</span>: <span class="b">sum</span>(scores.values()),
+            <span class="s">"max"</span>: <span class="b">len</span>(scores),
+            <span class="s">"grade"</span>: cls._grade(<span class="b">sum</span>(scores.values()), <span class="b">len</span>(scores)),
         }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_grade</span>(cls, score: <span class=<span class="s">"b"</span>>int</span>, total: <span class=<span class="s">"b"</span>>int</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">_grade</span>(cls, score: <span class="b">int</span>, total: <span class="b">int</span>) -&gt; <span class="b">str</span>:
         pct = score / total
-        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"n"</span>>0.8</span>:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"A (生产级)"</span>
-        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"n"</span>>0.5</span>:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"B (可用)"</span>
-        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"n"</span>>0.3</span>:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"C (需改进)"</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"D (不可用)"</span></pre></div></details></div><div class="lecture"><h2>27.4 对话模板优化 —— 平衡信息密度</h2>
+        <span class="k">if</span> pct &gt;= <span class="n">0.8</span>:
+            <span class="k">return</span> <span class="s">"A (生产级)"</span>
+        <span class="k">if</span> pct &gt;= <span class="n">0.5</span>:
+            <span class="k">return</span> <span class="s">"B (可用)"</span>
+        <span class="k">if</span> pct &gt;= <span class="n">0.3</span>:
+            <span class="k">return</span> <span class="s">"C (需改进)"</span>
+        <span class="k">return</span> <span class="s">"D (不可用)"</span></pre></div></details></div><div class="lecture"><h2>27.4 对话模板优化 —— 平衡信息密度</h2>
 <p>&nbsp;</p>
 <p>Prompt 不是越长越好，需要权衡：</p>
 <p>&nbsp;</p>
@@ -421,18 +421,18 @@ body {
 <p>「Agent 的 System Prompt 怎么设计？」</p>
 <p>→ 6 模块模板：role/capabilities/tool_guidance/workflow/constraints/output</p>
 <p>→ 核心：工具描述 = Prompt 工程（告诉 LLM 何时用、何时不用）</p>
-<p>→ 用 enum 限制参数 → 减少幻觉</p></div><div class="code-section"><details open><summary>💻 代码 (75 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass
+<p>→ 用 enum 限制参数 → 减少幻觉</p></div><div class="code-section"><details open><summary>💻 代码 (75 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_prompt_engineering</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 Agent Prompt 工程。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Agent Prompt 构建演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_prompt_engineering</span>():
+    <span class="s">"""演示 Agent Prompt 工程。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Agent Prompt 构建演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 构建一个完整的 Agent Prompt</span>
+    <span class="h"># 构建一个完整的 Agent Prompt</span>
     builder = AgentPromptBuilder(<span class="s">"专业的客服 Agent"</span>)
 
     tools = [
@@ -463,30 +463,30 @@ body {
     builder.add_output_format(<span class="s">"Markdown 格式，含要点列表"</span>)
 
     prompt = builder.build()
-    <span class=<span class="s">"b"</span>>print</span>(prompt)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  📏 估算 Token: {builder.estimate_tokens()}"</span>)
+    <span class="b">print</span>(prompt)
+    <span class="b">print</span>(f<span class="s">"\n  📏 估算 Token: {builder.estimate_tokens()}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 工具描述评分</span>
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  工具描述质量评估"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-    <span class=<span class="s">"k"</span>>for</span> tool <span class=<span class="s">"k"</span>>in</span> ToolDescriptionOptimizer.BAD_EXAMPLES:
+    <span class="h"># 工具描述评分</span>
+    <span class="b">print</span>(f<span class="s">"\n{'='*60}"</span>)
+    <span class="b">print</span>(f<span class="s">"  工具描述质量评估"</span>)
+    <span class="b">print</span>(f<span class="s">"{'='*60}"</span>)
+    <span class="k">for</span> tool <span class="k">in</span> ToolDescriptionOptimizer.BAD_EXAMPLES:
         result = ToolDescriptionOptimizer.score_tool_description(tool)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {result[<span class='s'>'tool_name'</span>]}: {result[<span class='s'>'total'</span>]}/{result[<span class='s'>'<span class="</span>b<span class="s">">max</span>'</span>]} = {result[<span class='s'>'grade'</span>]}"</span>)
+        <span class="b">print</span>(f<span class="s">"  {result['tool_name']}: {result['total']}/{result['max']} = {result['grade']}"</span>)
 
-    <span class=<span class="s">"k"</span>>for</span> tool <span class=<span class="s">"k"</span>>in</span> ToolDescriptionOptimizer.GOOD_EXAMPLES:
+    <span class="k">for</span> tool <span class="k">in</span> ToolDescriptionOptimizer.GOOD_EXAMPLES:
         result = ToolDescriptionOptimizer.score_tool_description(tool)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {result[<span class='s'>'tool_name'</span>]}: {result[<span class='s'>'total'</span>]}/{result[<span class='s'>'<span class="</span>b<span class="s">">max</span>'</span>]} = {result[<span class='s'>'grade'</span>]}"</span>)
+        <span class="b">print</span>(f<span class="s">"  {result['tool_name']}: {result['total']}/{result['max']} = {result['grade']}"</span>)
 
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第27章：Agent Prompt 工程                              ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  System Prompt 模板 · 工具描述 · Few-shot             ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第27章：Agent Prompt 工程                              ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  System Prompt 模板 · 工具描述 · Few-shot             ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
     demo_prompt_engineering()
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ 工具描述 Checklist"</span>)
-    <span class=<span class="s">"k"</span>>for</span> item <span class=<span class="s">"k"</span>>in</span> [
+    <span class="b">print</span>(<span class="s">"\n▶ 工具描述 Checklist"</span>)
+    <span class="k">for</span> item <span class="k">in</span> [
         <span class="s">"✅ 有功能描述"</span>,
         <span class="s">"✅ 有使用场景（什么时候用）"</span>,
         <span class="s">"✅ 有边界条件（什么时候不用）"</span>,
@@ -494,16 +494,16 @@ body {
         <span class="s">"✅ 参数有 enum 限制"</span>,
         <span class="s">"✅ 参数有详细描述"</span>,
     ]:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {item}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第27章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (381 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+        <span class="b">print</span>(f<span class="s">"  {item}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第27章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (381 行)</summary><div class="code-block"><pre><span class="s">"""
 第27章：Agent Prompt 工程 —— 工具描述也是 Prompt
 ===================================================
 
 📌 本章目标：
-  <span class=<span class="s">"n"</span>>1</span>. 掌握 Agent System Prompt 的结构化设计模板
-  <span class=<span class="s">"n"</span>>2</span>. 理解「工具描述 = Prompt 工程」的核心理念
-  <span class=<span class="s">"n"</span>>3</span>. 学会 Few-shot 在 Agent 工具调用中的应用
-  <span class=<span class="s">"n"</span>>4</span>. 掌握 Chain-of-Thought 在 Agent 规划中的使用
+  1. 掌握 Agent System Prompt 的结构化设计模板
+  2. 理解「工具描述 = Prompt 工程」的核心理念
+  3. 学会 Few-shot 在 Agent 工具调用中的应用
+  4. 掌握 Chain-of-Thought 在 Agent 规划中的使用
 
 📌 面试高频点：
   - 「Agent 的 System Prompt 和普通 LLM 的有什么不同？」
@@ -515,7 +515,7 @@ body {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-<span class=<span class="s">"n"</span>>27.1</span> Agent Prompt 和普通 Prompt 的区别
+27.1 Agent Prompt 和普通 Prompt 的区别
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 普通 LLM Prompt：
@@ -523,21 +523,21 @@ body {
 
 Agent Prompt：
   需要告诉模型：
-    <span class=<span class="s">"n"</span>>1</span>. 你是谁（角色）
-    <span class=<span class="s">"n"</span>>2</span>. 你能做什么（工具列表）
-    <span class=<span class="s">"n"</span>>3</span>. 什么时候该做什么（工具选择逻辑）
-    <span class=<span class="s">"n"</span>>4</span>. 什么不该做（边界/安全约束）
-    <span class=<span class="s">"n"</span>>5</span>. 输出格式是什么
+    1. 你是谁（角色）
+    2. 你能做什么（工具列表）
+    3. 什么时候该做什么（工具选择逻辑）
+    4. 什么不该做（边界/安全约束）
+    5. 输出格式是什么
 
 类比：
   普通 Prompt = 给厨师一个菜名
   Agent Prompt = 给厨师菜谱 + 厨房设备清单 + 工作流程
 
 
-<span class=<span class="s">"n"</span>>27.2</span> Agent System Prompt 模板（面试送分题！）
+27.2 Agent System Prompt 模板（面试送分题！）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-标准化模板（基于 Anthropic <span class=<span class="s">"n"</span>>2025</span> 推荐）：
+标准化模板（基于 Anthropic 2025 推荐）：
 
   &lt;system&gt;
     &lt;role&gt;
@@ -559,124 +559,124 @@ Agent Prompt：
       输出格式要求...
     &lt;/output_format&gt;
   &lt;/system&gt;
-<span class="s">""</span>"</span>
+"""</span>
 
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentPromptBuilder</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Agent Prompt 构建器 —— 按模块组装，而非手写字符串。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">AgentPromptBuilder</span>:
+    <span class="s">"""Agent Prompt 构建器 —— 按模块组装，而非手写字符串。"""</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, role: <span class=<span class="s">"b"</span>>str</span> = <span class="s">"AI 助手"</span>):
-        <span class=<span class="s">"k"</span>>self</span>.role = role
-        <span class=<span class="s">"k"</span>>self</span>.sections = {}
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, role: <span class="b">str</span> = <span class="s">"AI 助手"</span>):
+        <span class="k">self</span>.role = role
+        <span class="k">self</span>.sections = {}
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_capabilities</span>(<span class=<span class="s">"k"</span>>self</span>, tools: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加工具能力声明。"</span><span class="s">""</span></span>
+    <span class="k">def</span> <span class="f">add_capabilities</span>(<span class="k">self</span>, tools: <span class="b">list</span>[<span class="b">dict</span>]):
+        <span class="s">"""添加工具能力声明。"""</span>
         tool_lines = []
-        <span class=<span class="s">"k"</span>>for</span> t <span class=<span class="s">"k"</span>>in</span> tools:
-            tool_lines.append(f<span class="s">"- {t[<span class='s'>'name'</span>]}: {t.get(<span class='s'>'description'</span>, <span class='s'>''</span>)}"</span>)
-        <span class=<span class="s">"k"</span>>self</span>.sections[<span class="s">"capabilities"</span>] = <span class="s">"\n"</span>.join(tool_lines)
+        <span class="k">for</span> t <span class="k">in</span> tools:
+            tool_lines.append(f<span class="s">"- {t['name']}: {t.get('description', '')}"</span>)
+        <span class="k">self</span>.sections[<span class="s">"capabilities"</span>] = <span class="s">"\n"</span>.join(tool_lines)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_tool_guidance</span>(<span class=<span class="s">"k"</span>>self</span>, guidance: <span class=<span class="s">"b"</span>>dict</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>str</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加工具选择指引（什么时候用哪个工具）。"</span><span class="s">""</span></span>
+    <span class="k">def</span> <span class="f">add_tool_guidance</span>(<span class="k">self</span>, guidance: <span class="b">dict</span>[<span class="b">str</span>, <span class="b">str</span>]):
+        <span class="s">"""添加工具选择指引（什么时候用哪个工具）。"""</span>
         lines = []
-        <span class=<span class="s">"k"</span>>for</span> tool_name, guide <span class=<span class="s">"k"</span>>in</span> guidance.items():
-            lines.append(f<span class="s">"<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">">### {tool_name}\n{guide}"</span>)</span>
-        <span class=<span class="s">"k"</span>>self</span>.sections[<span class="s">"tool_guidance"</span>] = <span class="s">"\n\n"</span>.join(lines)
+        <span class="k">for</span> tool_name, guide <span class="k">in</span> guidance.items():
+            lines.append(f"<span class="h">### {tool_name}\n{guide}")</span>
+        <span class="k">self</span>.sections[<span class="s">"tool_guidance"</span>] = <span class="s">"\n\n"</span>.join(lines)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_workflow</span>(<span class=<span class="s">"k"</span>>self</span>, steps: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加工作流程。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.sections[<span class="s">"workflow"</span>] = <span class="s">"\n"</span>.join(
-            f<span class="s">"{i+<span class="</span>n<span class="s">">1</span>}. {step}"</span> <span class=<span class="s">"k"</span>>for</span> i, step <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(steps)
+    <span class="k">def</span> <span class="f">add_workflow</span>(<span class="k">self</span>, steps: <span class="b">list</span>[<span class="b">str</span>]):
+        <span class="s">"""添加工作流程。"""</span>
+        <span class="k">self</span>.sections[<span class="s">"workflow"</span>] = <span class="s">"\n"</span>.join(
+            f<span class="s">"{i+1}. {step}"</span> <span class="k">for</span> i, step <span class="k">in</span> <span class="b">enumerate</span>(steps)
         )
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_constraints</span>(<span class=<span class="s">"k"</span>>self</span>, constraints: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加安全约束。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.sections[<span class="s">"constraints"</span>] = <span class="s">"\n"</span>.join(
-            f<span class="s">"- {c}"</span> <span class=<span class="s">"k"</span>>for</span> c <span class=<span class="s">"k"</span>>in</span> constraints
+    <span class="k">def</span> <span class="f">add_constraints</span>(<span class="k">self</span>, constraints: <span class="b">list</span>[<span class="b">str</span>]):
+        <span class="s">"""添加安全约束。"""</span>
+        <span class="k">self</span>.sections[<span class="s">"constraints"</span>] = <span class="s">"\n"</span>.join(
+            f<span class="s">"- {c}"</span> <span class="k">for</span> c <span class="k">in</span> constraints
         )
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_output_format</span>(<span class=<span class="s">"k"</span>>self</span>, fmt_desc: <span class=<span class="s">"b"</span>>str</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加输出格式。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>.sections[<span class="s">"output_format"</span>] = fmt_desc
+    <span class="k">def</span> <span class="f">add_output_format</span>(<span class="k">self</span>, fmt_desc: <span class="b">str</span>):
+        <span class="s">"""添加输出格式。"""</span>
+        <span class="k">self</span>.sections[<span class="s">"output_format"</span>] = fmt_desc
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>build</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"构建完整的 Agent System Prompt。"</span><span class="s">""</span></span>
+    <span class="k">def</span> <span class="f">build</span>(<span class="k">self</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""构建完整的 Agent System Prompt。"""</span>
         parts = [<span class="s">"&lt;system&gt;"</span>]
-        parts.append(f<span class="s">"  &lt;role&gt;{<span class="</span>k<span class="s">">self</span>.role}&lt;/role&gt;"</span>)
+        parts.append(f<span class="s">"  &lt;role&gt;{self.role}&lt;/role&gt;"</span>)
 
-        <span class=<span class="s">"k"</span>>for</span> key <span class=<span class="s">"k"</span>>in</span> [<span class="s">"capabilities"</span>, <span class="s">"tool_guidance"</span>, <span class="s">"workflow"</span>,
+        <span class="k">for</span> key <span class="k">in</span> [<span class="s">"capabilities"</span>, <span class="s">"tool_guidance"</span>, <span class="s">"workflow"</span>,
                      <span class="s">"constraints"</span>, <span class="s">"output_format"</span>]:
-            <span class=<span class="s">"k"</span>>if</span> key <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.sections:
-                tag = key.replace(<span class="s">"_"</span>, <span class="s">"-"</span>)  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># tool_guidance → tool-guidance</span>
-                <span class=<span class="s">"k"</span>>if</span> tag == <span class="s">"capabilities"</span>:
+            <span class="k">if</span> key <span class="k">in</span> <span class="k">self</span>.sections:
+                tag = key.replace(<span class="s">"_"</span>, <span class="s">"-"</span>)  <span class="h"># tool_guidance → tool-guidance</span>
+                <span class="k">if</span> tag == <span class="s">"capabilities"</span>:
                     tag = <span class="s">"capabilities"</span>
                 parts.append(f<span class="s">"  &lt;{tag}&gt;"</span>)
-                parts.append(<span class=<span class="s">"k"</span>>self</span>.sections[key])
+                parts.append(<span class="k">self</span>.sections[key])
                 parts.append(f<span class="s">"  &lt;/{tag}&gt;"</span>)
 
         parts.append(<span class="s">"&lt;/system&gt;"</span>)
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"\n"</span>.join(parts)
+        <span class="k">return</span> <span class="s">"\n"</span>.join(parts)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>estimate_tokens</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>int</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"估算 Prompt 的 token 数。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.build()) // <span class=<span class="s">"n"</span>>4</span>
+    <span class="k">def</span> <span class="f">estimate_tokens</span>(<span class="k">self</span>) -&gt; <span class="b">int</span>:
+        <span class="s">"""估算 Prompt 的 token 数。"""</span>
+        <span class="k">return</span> <span class="b">len</span>(<span class="k">self</span>.build()) // <span class="n">4</span>
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>27.3</span> 工具描述 = Prompt 工程 —— 本章核心！
+<span class="s">"""
+27.3 工具描述 = Prompt 工程 —— 本章核心！
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 工具描述不是给开发者看的文档，是给 LLM 看的「使用说明」。
 
 好工具描述的三个要素：
-  <span class=<span class="s">"n"</span>>1</span>. 做什么：准确描述工具的功能
-  <span class=<span class="s">"n"</span>>2</span>. 什么时候用：描述适用的场景
-  <span class=<span class="s">"n"</span>>3</span>. 什么时候不用：描述边界条件
+  1. 做什么：准确描述工具的功能
+  2. 什么时候用：描述适用的场景
+  3. 什么时候不用：描述边界条件
 
 对比（面试金句！）：
 
-  ✗ 差： <span class="s">"查询天气"</span>
+  ✗ 差： "查询天气"
   ✅ 好： "查询指定城市当天的实时天气，包括气温、湿度、风力。
           适用于用户询问天气相关问题时。不支持未来天气预报。
-          示例调用：get_weather(city=<span class='s'>'北京'</span>)"
+          示例调用：get_weather(city='北京')"
 
 工具描述评分卡：
   ┌────────────────────────┬──────────┐
   │ 描述要素                  │ 加分      │
   ├────────────────────────┼──────────┤
-  │ 有功能描述                │ +<span class=<span class="s">"n"</span>>1</span>       │
-  │ 有使用场景                │ +<span class=<span class="s">"n"</span>>2</span>       │
-  │ 有边界条件                │ +<span class=<span class="s">"n"</span>>2</span>       │
-  │ 有调用示例                │ +<span class=<span class="s">"n"</span>>1</span>       │
-  │ 参数有 enum 限制          │ +<span class=<span class="s">"n"</span>>2</span>       │
-  │ 参数有详细描述            │ +<span class=<span class="s">"n"</span>>1</span>       │
+  │ 有功能描述                │ +1       │
+  │ 有使用场景                │ +2       │
+  │ 有边界条件                │ +2       │
+  │ 有调用示例                │ +1       │
+  │ 参数有 enum 限制          │ +2       │
+  │ 参数有详细描述            │ +1       │
   └────────────────────────┴──────────┘
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ToolDescriptionOptimizer</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"工具描述优化器 —— 系统化提升工具调用准确率。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">ToolDescriptionOptimizer</span>:
+    <span class="s">"""工具描述优化器 —— 系统化提升工具调用准确率。"""</span>
 
     BAD_EXAMPLES = [
         {
             <span class="s">"name"</span>: <span class="s">"do_stuff"</span>,
             <span class="s">"description"</span>: <span class="s">"处理数据"</span>,
             <span class="s">"parameters"</span>: {
-                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {<span class="s">"data"</span>: {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>}},
+                <span class="s">"type"</span>: <span class="s">"object"</span>,
+                <span class="s">"properties"</span>: {<span class="s">"data"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>}},
             },
         },
         {
             <span class="s">"name"</span>: <span class="s">"search"</span>,
             <span class="s">"description"</span>: <span class="s">"搜索"</span>,
             <span class="s">"parameters"</span>: {
-                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {<span class="s">"q"</span>: {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>}},
+                <span class="s">"type"</span>: <span class="s">"object"</span>,
+                <span class="s">"properties"</span>: {<span class="s">"q"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>}},
             },
         },
     ]
@@ -687,21 +687,21 @@ Agent Prompt：
             <span class="s">"description"</span>: (
                 <span class="s">"向指定邮箱发送邮件。适用于发送通知、报告、提醒等场景。"</span>
                 <span class="s">"不支持发送带附件的邮件。收件人地址必须包含 @。"</span>
-                <span class="s">"示例：send_email(to=<span class='s'>'user<span <span class="</span>k<span class="s">">class</span>="</span>d<span class="s">">@example</span>.com'</span>, subject=<span class='s'>'日报'</span>, body=<span class='s'>'...'</span>)"</span>
+                <span class="s">"示例：send_email(to='user@example.com', subject='日报', body='...')"</span>
             ),
             <span class="s">"parameters"</span>: {
-                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
+                <span class="s">"type"</span>: <span class="s">"object"</span>,
                 <span class="s">"properties"</span>: {
                     <span class="s">"to"</span>: {
-                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
-                        <span class="s">"description"</span>: <span class="s">"收件人邮箱，如 user<span <span class="</span>k<span class="s">">class</span>="</span>d<span class="s">">@example</span>.com"</span>,
+                        <span class="s">"type"</span>: <span class="s">"string"</span>,
+                        <span class="s">"description"</span>: <span class="s">"收件人邮箱，如 user@example.com"</span>,
                     },
                     <span class="s">"subject"</span>: {
-                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
-                        <span class="s">"description"</span>: <span class="s">"邮件主题，不超过 <span class="</span>n<span class="s">">100</span> 字"</span>,
+                        <span class="s">"type"</span>: <span class="s">"string"</span>,
+                        <span class="s">"description"</span>: <span class="s">"邮件主题，不超过 100 字"</span>,
                     },
                     <span class="s">"body"</span>: {
-                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
+                        <span class="s">"type"</span>: <span class="s">"string"</span>,
                         <span class="s">"description"</span>: <span class="s">"邮件正文，纯文本格式"</span>,
                     },
                 },
@@ -713,13 +713,13 @@ Agent Prompt：
             <span class="s">"description"</span>: (
                 <span class="s">"查询股票实时价格。适用于查询个股当前报价。"</span>
                 <span class="s">"不支持历史价格查询和批量查询。"</span>
-                <span class="s">"示例：get_stock_price(symbol=<span class='s'>'AAPL'</span>) 返回 <span class='s'>'<span class="</span>n<span class="s">">185.50</span> USD'</span>"</span>
+                <span class="s">"示例：get_stock_price(symbol='AAPL') 返回 '185.50 USD'"</span>
             ),
             <span class="s">"parameters"</span>: {
-                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
+                <span class="s">"type"</span>: <span class="s">"object"</span>,
                 <span class="s">"properties"</span>: {
                     <span class="s">"symbol"</span>: {
-                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
+                        <span class="s">"type"</span>: <span class="s">"string"</span>,
                         <span class="s">"description"</span>: <span class="s">"股票代码，如 AAPL、TSLA、BABA"</span>,
                         <span class="s">"enum"</span>: [<span class="s">"AAPL"</span>, <span class="s">"TSLA"</span>, <span class="s">"GOOGL"</span>, <span class="s">"MSFT"</span>, <span class="s">"BABA"</span>],
                     },
@@ -729,48 +729,48 @@ Agent Prompt：
         },
     ]
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>score_tool_description</span>(cls, tool: <span class=<span class="s">"b"</span>>dict</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"评估工具描述的质量。
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">score_tool_description</span>(cls, tool: <span class="b">dict</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""评估工具描述的质量。
 
         Returns:
             评分详情。
-        <span class="s">""</span>"</span>
+        """</span>
         desc = tool.get(<span class="s">"description"</span>, <span class="s">""</span>)
         params = tool.get(<span class="s">"parameters"</span>, {}).get(<span class="s">"properties"</span>, {})
         scores = {
-            <span class="s">"has_description"</span>: <span class=<span class="s">"b"</span>>len</span>(desc) &gt; <span class=<span class="s">"n"</span>>10</span>,
-            <span class="s">"has_use_case"</span>: <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> desc <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"适用于"</span>, <span class="s">"用于"</span>, <span class="s">"当你"</span>, <span class="s">"when"</span>]),
-            <span class="s">"has_boundary"</span>: <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> desc <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"不支持"</span>, <span class="s">"不支持"</span>, <span class="s">"不适用于"</span>]),
-            <span class="s">"has_example"</span>: <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> desc <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"示例"</span>, <span class="s">"example"</span>, <span class="s">"e.g."</span>]),
-            <span class="s">"has_enum"</span>: <span class=<span class="s">"b"</span>>any</span>(<span class="s">"enum"</span> <span class=<span class="s">"k"</span>>in</span> p <span class=<span class="s">"k"</span>>for</span> p <span class=<span class="s">"k"</span>>in</span> params.values()),
-            <span class="s">"has_param_desc"</span>: <span class=<span class="s">"b"</span>>all</span>(
-                <span class="s">"description"</span> <span class=<span class="s">"k"</span>>in</span> p <span class=<span class="s">"k"</span>>for</span> p <span class=<span class="s">"k"</span>>in</span> params.values()
-            ) <span class=<span class="s">"k"</span>>if</span> params <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"k"</span>>False</span>,
+            <span class="s">"has_description"</span>: <span class="b">len</span>(desc) &gt; <span class="n">10</span>,
+            <span class="s">"has_use_case"</span>: <span class="b">any</span>(w <span class="k">in</span> desc <span class="k">for</span> w <span class="k">in</span> [<span class="s">"适用于"</span>, <span class="s">"用于"</span>, <span class="s">"当你"</span>, <span class="s">"when"</span>]),
+            <span class="s">"has_boundary"</span>: <span class="b">any</span>(w <span class="k">in</span> desc <span class="k">for</span> w <span class="k">in</span> [<span class="s">"不支持"</span>, <span class="s">"不支持"</span>, <span class="s">"不适用于"</span>]),
+            <span class="s">"has_example"</span>: <span class="b">any</span>(w <span class="k">in</span> desc <span class="k">for</span> w <span class="k">in</span> [<span class="s">"示例"</span>, <span class="s">"example"</span>, <span class="s">"e.g."</span>]),
+            <span class="s">"has_enum"</span>: <span class="b">any</span>(<span class="s">"enum"</span> <span class="k">in</span> p <span class="k">for</span> p <span class="k">in</span> params.values()),
+            <span class="s">"has_param_desc"</span>: <span class="b">all</span>(
+                <span class="s">"description"</span> <span class="k">in</span> p <span class="k">for</span> p <span class="k">in</span> params.values()
+            ) <span class="k">if</span> params <span class="k">else</span> <span class="k">False</span>,
         }
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"tool_name"</span>: tool.get(<span class="s">"name"</span>, <span class="s">"unknown"</span>),
             <span class="s">"scores"</span>: scores,
-            <span class="s">"total"</span>: <span class=<span class="s">"b"</span>>sum</span>(scores.values()),
-            <span class="s">"<span class="</span>b<span class="s">">max</span>"</span>: <span class=<span class="s">"b"</span>>len</span>(scores),
-            <span class="s">"grade"</span>: cls._grade(<span class=<span class="s">"b"</span>>sum</span>(scores.values()), <span class=<span class="s">"b"</span>>len</span>(scores)),
+            <span class="s">"total"</span>: <span class="b">sum</span>(scores.values()),
+            <span class="s">"max"</span>: <span class="b">len</span>(scores),
+            <span class="s">"grade"</span>: cls._grade(<span class="b">sum</span>(scores.values()), <span class="b">len</span>(scores)),
         }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_grade</span>(cls, score: <span class=<span class="s">"b"</span>>int</span>, total: <span class=<span class="s">"b"</span>>int</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class="k">class</span>="d">@classmethod</span>
+    <span class="k">def</span> <span class="f">_grade</span>(cls, score: <span class="b">int</span>, total: <span class="b">int</span>) -&gt; <span class="b">str</span>:
         pct = score / total
-        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"n"</span>>0.8</span>:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"A (生产级)"</span>
-        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"n"</span>>0.5</span>:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"B (可用)"</span>
-        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"n"</span>>0.3</span>:
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"C (需改进)"</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"D (不可用)"</span>
+        <span class="k">if</span> pct &gt;= <span class="n">0.8</span>:
+            <span class="k">return</span> <span class="s">"A (生产级)"</span>
+        <span class="k">if</span> pct &gt;= <span class="n">0.5</span>:
+            <span class="k">return</span> <span class="s">"B (可用)"</span>
+        <span class="k">if</span> pct &gt;= <span class="n">0.3</span>:
+            <span class="k">return</span> <span class="s">"C (需改进)"</span>
+        <span class="k">return</span> <span class="s">"D (不可用)"</span>
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>27.4</span> 对话模板优化 —— 平衡信息密度
+<span class="s">"""
+27.4 对话模板优化 —— 平衡信息密度
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Prompt 不是越长越好，需要权衡：
@@ -779,39 +779,39 @@ Prompt 不是越长越好，需要权衡：
   太长 → 信息过载，LLM 抓不住重点
 
 Golden Zone：
-  System Prompt: <span class=<span class="s">"n"</span>>200</span>-<span class=<span class="s">"n"</span>>800</span> tokens
-  工具描述: 每个工具 <span class=<span class="s">"n"</span>>50</span>-<span class=<span class="s">"n"</span>>200</span> tokens
-  总上下文: 不超过窗口的 <span class=<span class="s">"n"</span>>70</span>%（留空间给对话历史和生成）
+  System Prompt: 200-800 tokens
+  工具描述: 每个工具 50-200 tokens
+  总上下文: 不超过窗口的 70%（留空间给对话历史和生成）
 
 面试金句：
-  "好 Prompt 的标准不是<span class='s'>'全'</span>，是<span class='s'>'精'</span>。
+  "好 Prompt 的标准不是'全'，是'精'。
    每条信息都要有明确的 token 价值 vs 成本评估。"
 
 
-<span class=<span class="s">"n"</span>>27.5</span> 本章总结
+27.5 本章总结
 ━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class=<span class="s">"n"</span>>1</span>. Agent Prompt 需要结构化 <span class=<span class="s">"n"</span>>6</span> 个模块
-<span class=<span class="s">"n"</span>>2</span>. 工具描述是 Agent Prompt 工程的核心
-<span class=<span class="s">"n"</span>>3</span>. 好工具描述 = 做什么 + 什么时候用 + 什么时候不用 + 示例
+1. Agent Prompt 需要结构化 6 个模块
+2. 工具描述是 Agent Prompt 工程的核心
+3. 好工具描述 = 做什么 + 什么时候用 + 什么时候不用 + 示例
 
 面试速记：
   「Agent 的 System Prompt 怎么设计？」
-  → <span class=<span class="s">"n"</span>>6</span> 模块模板：role/capabilities/tool_guidance/workflow/constraints/output
+  → 6 模块模板：role/capabilities/tool_guidance/workflow/constraints/output
   → 核心：工具描述 = Prompt 工程（告诉 LLM 何时用、何时不用）
   → 用 enum 限制参数 → 减少幻觉
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_prompt_engineering</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 Agent Prompt 工程。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Agent Prompt 构建演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_prompt_engineering</span>():
+    <span class="s">"""演示 Agent Prompt 工程。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Agent Prompt 构建演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 构建一个完整的 Agent Prompt</span>
+    <span class="h"># 构建一个完整的 Agent Prompt</span>
     builder = AgentPromptBuilder(<span class="s">"专业的客服 Agent"</span>)
 
     tools = [
@@ -842,30 +842,30 @@ Golden Zone：
     builder.add_output_format(<span class="s">"Markdown 格式，含要点列表"</span>)
 
     prompt = builder.build()
-    <span class=<span class="s">"b"</span>>print</span>(prompt)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  📏 估算 Token: {builder.estimate_tokens()}"</span>)
+    <span class="b">print</span>(prompt)
+    <span class="b">print</span>(f<span class="s">"\n  📏 估算 Token: {builder.estimate_tokens()}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 工具描述评分</span>
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  工具描述质量评估"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
-    <span class=<span class="s">"k"</span>>for</span> tool <span class=<span class="s">"k"</span>>in</span> ToolDescriptionOptimizer.BAD_EXAMPLES:
+    <span class="h"># 工具描述评分</span>
+    <span class="b">print</span>(f<span class="s">"\n{'='*60}"</span>)
+    <span class="b">print</span>(f<span class="s">"  工具描述质量评估"</span>)
+    <span class="b">print</span>(f<span class="s">"{'='*60}"</span>)
+    <span class="k">for</span> tool <span class="k">in</span> ToolDescriptionOptimizer.BAD_EXAMPLES:
         result = ToolDescriptionOptimizer.score_tool_description(tool)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {result[<span class='s'>'tool_name'</span>]}: {result[<span class='s'>'total'</span>]}/{result[<span class='s'>'<span class="</span>b<span class="s">">max</span>'</span>]} = {result[<span class='s'>'grade'</span>]}"</span>)
+        <span class="b">print</span>(f<span class="s">"  {result['tool_name']}: {result['total']}/{result['max']} = {result['grade']}"</span>)
 
-    <span class=<span class="s">"k"</span>>for</span> tool <span class=<span class="s">"k"</span>>in</span> ToolDescriptionOptimizer.GOOD_EXAMPLES:
+    <span class="k">for</span> tool <span class="k">in</span> ToolDescriptionOptimizer.GOOD_EXAMPLES:
         result = ToolDescriptionOptimizer.score_tool_description(tool)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {result[<span class='s'>'tool_name'</span>]}: {result[<span class='s'>'total'</span>]}/{result[<span class='s'>'<span class="</span>b<span class="s">">max</span>'</span>]} = {result[<span class='s'>'grade'</span>]}"</span>)
+        <span class="b">print</span>(f<span class="s">"  {result['tool_name']}: {result['total']}/{result['max']} = {result['grade']}"</span>)
 
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第27章：Agent Prompt 工程                              ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  System Prompt 模板 · 工具描述 · Few-shot             ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第27章：Agent Prompt 工程                              ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  System Prompt 模板 · 工具描述 · Few-shot             ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
     demo_prompt_engineering()
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ 工具描述 Checklist"</span>)
-    <span class=<span class="s">"k"</span>>for</span> item <span class=<span class="s">"k"</span>>in</span> [
+    <span class="b">print</span>(<span class="s">"\n▶ 工具描述 Checklist"</span>)
+    <span class="k">for</span> item <span class="k">in</span> [
         <span class="s">"✅ 有功能描述"</span>,
         <span class="s">"✅ 有使用场景（什么时候用）"</span>,
         <span class="s">"✅ 有边界条件（什么时候不用）"</span>,
@@ -873,8 +873,8 @@ Golden Zone：
         <span class="s">"✅ 参数有 enum 限制"</span>,
         <span class="s">"✅ 参数有详细描述"</span>,
     ]:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {item}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第27章完成！"</span>)
+        <span class="b">print</span>(f<span class="s">"  {item}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第27章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_26_model_routing/26_model_routing.html" title="模型路由策略 — Threshold·Cascade·Semantic·Cost-Aware">← 第26章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

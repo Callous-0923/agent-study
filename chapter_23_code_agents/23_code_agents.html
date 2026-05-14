@@ -327,120 +327,120 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
   │     → 运行测试                               │
   │     → 如果失败 → 回到第 2 步                 │
   │                                             │
-  └──────────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (114 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> time
+  └──────────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (114 行)</summary><div class="code-block"><pre><span class="k">import</span> time
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>CodeAgentSimulator</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟代码 Agent 的通用工作流。
+<span class="k">class</span> <span class="f">CodeAgentSimulator</span>:
+    <span class="s">"""模拟代码 Agent 的通用工作流。
 
-    展示任意代码 Agent 必须经历的 <span class=<span class="s">"n"</span>>5</span> 个阶段。
-    <span class="s">""</span>"</span>
+    展示任意代码 Agent 必须经历的 5 个阶段。
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>, architecture: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.name = name
-        <span class=<span class="s">"k"</span>>self</span>.architecture = architecture
-        <span class=<span class="s">"k"</span>>self</span>.steps_log = []
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, name: <span class="b">str</span>, architecture: <span class="b">str</span>):
+        <span class="k">self</span>.name = name
+        <span class="k">self</span>.architecture = architecture
+        <span class="k">self</span>.steps_log = []
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>understand</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"阶段 <span class="</span>n<span class="s">">1</span>：理解任务。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"understand"</span>, f<span class="s">"分析任务: {task[:<span class="</span>n<span class="s">">60</span>]}..."</span>)
-        <span class=<span class="s">"k"</span>>return</span> {<span class="s">"task_type"</span>: <span class="s">"bugfix"</span>, <span class="s">"scope"</span>: <span class="s">"medium"</span>}
+    <span class="k">def</span> <span class="f">understand</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""阶段 1：理解任务。"""</span>
+        <span class="k">self</span>._log(<span class="s">"understand"</span>, f<span class="s">"分析任务: {task[:60]}..."</span>)
+        <span class="k">return</span> {<span class="s">"task_type"</span>: <span class="s">"bugfix"</span>, <span class="s">"scope"</span>: <span class="s">"medium"</span>}
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>localize</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, understanding: <span class=<span class="s">"b"</span>>dict</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"阶段 <span class="</span>n<span class="s">">2</span>：定位问题。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"localize"</span>, <span class="s">"搜索相关的文件和代码"</span>)
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟：基于关键词猜测文件位置</span>
+    <span class="k">def</span> <span class="f">localize</span>(<span class="k">self</span>, task: <span class="b">str</span>, understanding: <span class="b">dict</span>) -&gt; <span class="b">list</span>[<span class="b">str</span>]:
+        <span class="s">"""阶段 2：定位问题。"""</span>
+        <span class="k">self</span>._log(<span class="s">"localize"</span>, <span class="s">"搜索相关的文件和代码"</span>)
+        <span class="h"># 模拟：基于关键词猜测文件位置</span>
         keywords = task.lower().split()
-        files = [f<span class="s">"src/{w}.py"</span> <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> keywords <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(w) &gt; <span class=<span class="s">"n"</span>>3</span>][:<span class=<span class="s">"n"</span>>2</span>]
-        <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"localize_result"</span>, f<span class="s">"定位到: {files}"</span>)
-        <span class=<span class="s">"k"</span>>return</span> files <span class=<span class="s">"k"</span>>or</span> [<span class="s">"src/main.py"</span>]
+        files = [f<span class="s">"src/{w}.py"</span> <span class="k">for</span> w <span class="k">in</span> keywords <span class="k">if</span> <span class="b">len</span>(w) &gt; <span class="n">3</span>][:<span class="n">2</span>]
+        <span class="k">self</span>._log(<span class="s">"localize_result"</span>, f<span class="s">"定位到: {files}"</span>)
+        <span class="k">return</span> files <span class="k">or</span> [<span class="s">"src/main.py"</span>]
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>plan</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, files: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"阶段 <span class="</span>n<span class="s">">3</span>：制定方案。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"plan"</span>, f<span class="s">"针对 {<span class="</span>b<span class="s">">len</span>(files)} 个文件制定修改方案"</span>)
-        <span class=<span class="s">"k"</span>>return</span> [
-            {<span class="s">"file"</span>: f, <span class="s">"action"</span>: <span class="s">"edit"</span>, <span class="s">"lines"</span>: <span class="s">"<span class="</span>n<span class="s">">45</span>-<span class="</span>n<span class="s">">60</span>"</span>,
+    <span class="k">def</span> <span class="f">plan</span>(<span class="k">self</span>, task: <span class="b">str</span>, files: <span class="b">list</span>[<span class="b">str</span>]) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""阶段 3：制定方案。"""</span>
+        <span class="k">self</span>._log(<span class="s">"plan"</span>, f<span class="s">"针对 {len(files)} 个文件制定修改方案"</span>)
+        <span class="k">return</span> [
+            {<span class="s">"file"</span>: f, <span class="s">"action"</span>: <span class="s">"edit"</span>, <span class="s">"lines"</span>: <span class="s">"45-60"</span>,
              <span class="s">"reason"</span>: <span class="s">"函数逻辑需要修改"</span>}
-            <span class=<span class="s">"k"</span>>for</span> f <span class=<span class="s">"k"</span>>in</span> files
+            <span class="k">for</span> f <span class="k">in</span> files
         ]
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>implement</span>(<span class=<span class="s">"k"</span>>self</span>, plan: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"阶段 <span class="</span>n<span class="s">">4</span>：实施修改。"</span><span class="s">""</span></span>
+    <span class="k">def</span> <span class="f">implement</span>(<span class="k">self</span>, plan: <span class="b">list</span>[<span class="b">dict</span>]) -&gt; <span class="b">list</span>[<span class="b">str</span>]:
+        <span class="s">"""阶段 4：实施修改。"""</span>
         patches = []
-        <span class=<span class="s">"k"</span>>for</span> step <span class=<span class="s">"k"</span>>in</span> plan:
-            <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"edit"</span>, f<span class="s">"修改 {step[<span class='s'>'file'</span>]} L{step[<span class='s'>'lines'</span>]}"</span>)
-            patches.append(f<span class="s">"--- {step[<span class='s'>'file'</span>]}\n+++ {step[<span class='s'>'file'</span>]}\n@@ -<span class="</span>n<span class="s">">50</span>,<span class="</span>n<span class="s">">10</span> +<span class="</span>n<span class="s">">50</span>,<span class="</span>n<span class="s">">10</span> @@"</span>)
-        <span class=<span class="s">"k"</span>>return</span> patches
+        <span class="k">for</span> step <span class="k">in</span> plan:
+            <span class="k">self</span>._log(<span class="s">"edit"</span>, f<span class="s">"修改 {step['file']} L{step['lines']}"</span>)
+            patches.append(f<span class="s">"--- {step['file']}\n+++ {step['file']}\n@@ -50,10 +50,10 @@"</span>)
+        <span class="k">return</span> patches
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>verify</span>(<span class=<span class="s">"k"</span>>self</span>, patches: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>],
-               task: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>) -&gt; <span class=<span class="s">"b"</span>>tuple</span>[bool, <span class=<span class="s">"b"</span>>str</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"阶段 <span class="</span>n<span class="s">">5</span>：验证。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"test"</span>, <span class="s">"运行测试..."</span>)
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟：<span class=<span class="s">"n"</span>>70</span>% 概率通过</span>
-        passed = <span class=<span class="s">"b"</span>>hash</span>(task) % <span class=<span class="s">"n"</span>>10</span> &lt; <span class=<span class="s">"n"</span>>7</span>
-        <span class=<span class="s">"k"</span>>if</span> passed:
-            <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"verify_pass"</span>, <span class="s">"所有测试通过"</span>)
-        <span class=<span class="s">"k"</span>>else</span>:
-            <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"verify_fail"</span>, <span class="s">"测试失败，需要修改"</span>)
-        <span class=<span class="s">"k"</span>>return</span> passed, <span class="s">"<span class="</span>n<span class="s">">3</span>/<span class="</span>n<span class="s">">3</span> tests passed"</span> <span class=<span class="s">"k"</span>>if</span> passed <span class=<span class="s">"k"</span>>else</span> <span class="s">"<span class="</span>n<span class="s">">1</span>/<span class="</span>n<span class="s">">3</span> tests failed"</span>
+    <span class="k">def</span> <span class="f">verify</span>(<span class="k">self</span>, patches: <span class="b">list</span>[<span class="b">str</span>],
+               task: <span class="b">str</span> = <span class="s">""</span>) -&gt; <span class="b">tuple</span>[bool, <span class="b">str</span>]:
+        <span class="s">"""阶段 5：验证。"""</span>
+        <span class="k">self</span>._log(<span class="s">"test"</span>, <span class="s">"运行测试..."</span>)
+        <span class="h"># 模拟：70% 概率通过</span>
+        passed = <span class="b">hash</span>(task) % <span class="n">10</span> &lt; <span class="n">7</span>
+        <span class="k">if</span> passed:
+            <span class="k">self</span>._log(<span class="s">"verify_pass"</span>, <span class="s">"所有测试通过"</span>)
+        <span class="k">else</span>:
+            <span class="k">self</span>._log(<span class="s">"verify_fail"</span>, <span class="s">"测试失败，需要修改"</span>)
+        <span class="k">return</span> passed, <span class="s">"3/3 tests passed"</span> <span class="k">if</span> passed <span class="k">else</span> <span class="s">"1/3 tests failed"</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, max_iterations: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>3</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"运行完整的代码修复流程。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  🤖 {<span class="</span>k<span class="s">">self</span>.name} ({<span class="</span>k<span class="s">">self</span>.architecture})"</span>)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  📋 任务: {task[:<span class="</span>n<span class="s">">80</span>]}..."</span>)
+    <span class="k">def</span> <span class="f">run</span>(<span class="k">self</span>, task: <span class="b">str</span>, max_iterations: <span class="b">int</span> = <span class="n">3</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""运行完整的代码修复流程。"""</span>
+        <span class="b">print</span>(f<span class="s">"\n  🤖 {self.name} ({self.architecture})"</span>)
+        <span class="b">print</span>(f<span class="s">"  📋 任务: {task[:80]}..."</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 阶段 <span class=<span class="s">"n"</span>>1</span>-<span class=<span class="s">"n"</span>>3</span>：准备</span>
-        understanding = <span class=<span class="s">"k"</span>>self</span>.understand(task)
-        files = <span class=<span class="s">"k"</span>>self</span>.localize(task, understanding)
+        <span class="h"># 阶段 1-3：准备</span>
+        understanding = <span class="k">self</span>.understand(task)
+        files = <span class="k">self</span>.localize(task, understanding)
 
-        <span class=<span class="s">"k"</span>>for</span> iteration <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>1</span>, max_iterations + <span class=<span class="s">"n"</span>>1</span>):
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  ── 第 {iteration} 轮 ──"</span>)
-            plan = <span class=<span class="s">"k"</span>>self</span>.plan(task, files)
-            patches = <span class=<span class="s">"k"</span>>self</span>.implement(plan)
-            passed, message = <span class=<span class="s">"k"</span>>self</span>.verify(patches, task)
+        <span class="k">for</span> iteration <span class="k">in</span> <span class="b">range</span>(<span class="n">1</span>, max_iterations + <span class="n">1</span>):
+            <span class="b">print</span>(f<span class="s">"\n  ── 第 {iteration} 轮 ──"</span>)
+            plan = <span class="k">self</span>.plan(task, files)
+            patches = <span class="k">self</span>.implement(plan)
+            passed, message = <span class="k">self</span>.verify(patches, task)
 
-            <span class=<span class="s">"k"</span>>if</span> passed:
-                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✅ 修复成功！（{iteration} 轮）"</span>)
-                <span class=<span class="s">"k"</span>>return</span> {
-                    <span class="s">"success"</span>: <span class=<span class="s">"k"</span>>True</span>,
+            <span class="k">if</span> passed:
+                <span class="b">print</span>(f<span class="s">"  ✅ 修复成功！（{iteration} 轮）"</span>)
+                <span class="k">return</span> {
+                    <span class="s">"success"</span>: <span class="k">True</span>,
                     <span class="s">"iterations"</span>: iteration,
                     <span class="s">"patches"</span>: patches,
-                    <span class="s">"steps"</span>: <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.steps_log),
+                    <span class="s">"steps"</span>: <span class="b">len</span>(<span class="k">self</span>.steps_log),
                 }
-            <span class=<span class="s">"k"</span>>else</span>:
-                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ❌ {message}，继续修改..."</span>)
-                files = <span class=<span class="s">"k"</span>>self</span>.localize(task + <span class="s">" "</span> + message, understanding)
+            <span class="k">else</span>:
+                <span class="b">print</span>(f<span class="s">"  ❌ {message}，继续修改..."</span>)
+                files = <span class="k">self</span>.localize(task + <span class="s">" "</span> + message, understanding)
 
-        <span class=<span class="s">"k"</span>>return</span> {<span class="s">"success"</span>: <span class=<span class="s">"k"</span>>False</span>, <span class="s">"iterations"</span>: max_iterations}
+        <span class="k">return</span> {<span class="s">"success"</span>: <span class="k">False</span>, <span class="s">"iterations"</span>: max_iterations}
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_log</span>(<span class=<span class="s">"k"</span>>self</span>, action: <span class=<span class="s">"b"</span>>str</span>, detail: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.steps_log.append({
+    <span class="k">def</span> <span class="f">_log</span>(<span class="k">self</span>, action: <span class="b">str</span>, detail: <span class="b">str</span>):
+        <span class="k">self</span>.steps_log.append({
             <span class="s">"action"</span>: action,
             <span class="s">"detail"</span>: detail,
             <span class="s">"time"</span>: time.time(),
         })
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{action:15s}] {detail}"</span>)
+        <span class="b">print</span>(f<span class="s">"    [{action:15s}] {detail}"</span>)
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_code_agents</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示代码 Agent 的通用工作流。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  代码 Agent 通用工作流演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_code_agents</span>():
+    <span class="s">"""演示代码 Agent 的通用工作流。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  代码 Agent 通用工作流演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 测试不同架构的 Agent</span>
+    <span class="h"># 测试不同架构的 Agent</span>
     agents = [
-        CodeAgentSimulator(<span class="s">"ClaudeCode"</span>, <span class="s">"React-<span class="</span>k<span class="s">">and</span>-Iterate"</span>),
-        CodeAgentSimulator(<span class="s">"OpenHands"</span>, <span class="s">"Code-<span class="</span>k<span class="s">">as</span>-Action"</span>),
+        CodeAgentSimulator(<span class="s">"ClaudeCode"</span>, <span class="s">"React-and-Iterate"</span>),
+        CodeAgentSimulator(<span class="s">"OpenHands"</span>, <span class="s">"Code-as-Action"</span>),
         CodeAgentSimulator(<span class="s">"SWE-Agent"</span>, <span class="s">"Agent-Computer Interface"</span>),
     ]
 
-    task = <span class="s">"修复 login.py 中的空指针异常：当 user 为 <span class="</span>k<span class="s">">None</span> 时访问 user.name 会崩溃"</span>
+    task = <span class="s">"修复 login.py 中的空指针异常：当 user 为 None 时访问 user.name 会崩溃"</span>
 
-    <span class=<span class="s">"k"</span>>for</span> agent <span class=<span class="s">"k"</span>>in</span> agents:
+    <span class="k">for</span> agent <span class="k">in</span> agents:
         result = agent.run(task)
-        status = <span class="s">"✅ 成功"</span> <span class=<span class="s">"k"</span>>if</span> result[<span class="s">"success"</span>] <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌ 失败"</span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {status} | 迭代: {result[<span class='s'>'iterations'</span>]} | 步骤: {result[<span class='s'>'steps'</span>]}"</span>)</pre></div></details></div><div class="lecture"><h2>23.6 选型指南</h2>
+        status = <span class="s">"✅ 成功"</span> <span class="k">if</span> result[<span class="s">"success"</span>] <span class="k">else</span> <span class="s">"❌ 失败"</span>
+        <span class="b">print</span>(f<span class="s">"  {status} | 迭代: {result['iterations']} | 步骤: {result['steps']}"</span>)</pre></div></details></div><div class="lecture"><h2>23.6 选型指南</h2>
 <p>&nbsp;</p>
 <pre>  ┌───────────────────┬────────────────────────────────────┐
   │       场景         │              推荐                    │
@@ -473,43 +473,43 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
 <p>→ 4 种架构 + 每个代表 + 选型场景</p>
 <p>→ 提到 SWE-bench 评测体系</p>
 <p>→ Agentless 的「返璞归真」启示</p>
-<p>→ Claude Code 的简单至上哲学</p></div><div class="code-section"><details open><summary>💻 代码 (29 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> time
+<p>→ Claude Code 的简单至上哲学</p></div><div class="code-section"><details open><summary>💻 代码 (29 行)</summary><div class="code-block"><pre><span class="k">import</span> time
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第23章：代码 Agent 架构横评                            ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  CodeAct · ACI · Plan-Execute · SWE-bench           ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第23章：代码 Agent 架构横评                            ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  CodeAct · ACI · Plan-Execute · SWE-bench           ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_code_agents()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ 四种架构模式对比"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 四种架构模式对比"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     archs = [
         (<span class="s">"CodeAct (OpenHands)"</span>, <span class="s">"用代码脚本替代预定义工具"</span>),
         (<span class="s">"ACI (SWE-Agent)"</span>, <span class="s">"为 LLM 设计专用交互界面"</span>),
         (<span class="s">"Plan-Execute (Devin)"</span>, <span class="s">"先规划→审核→沙箱执行"</span>),
         (<span class="s">"React-Iterate (Claude Code)"</span>, <span class="s">"像人类一样渐进式解决问题"</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> name, desc <span class=<span class="s">"k"</span>>in</span> archs:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {name:25s} → {desc}"</span>)
+    <span class="k">for</span> name, desc <span class="k">in</span> archs:
+        <span class="b">print</span>(f<span class="s">"  {name:25s} → {desc}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ SWE-bench Verified 成绩"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Claude Code (Sonnet <span class="</span>n<span class="s">">4</span>)   ~<span class="</span>n<span class="s">">72</span>%     ~$<span class="</span>n<span class="s">">5</span>/task"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  OpenHands                 ~<span class="</span>n<span class="s">">72</span>%     ~$<span class="</span>n<span class="s">">3</span>/task"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  SWE-Agent                 ~<span class="</span>n<span class="s">">45</span>%     ~$<span class="</span>n<span class="s">">1</span>/task"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Agentless (无Agent!)      ~<span class="</span>n<span class="s">">32</span>%     $<span class="</span>n<span class="s">">0.70</span>"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ SWE-bench Verified 成绩"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="b">print</span>(<span class="s">"  Claude Code (Sonnet 4)   ~72%     ~$5/task"</span>)
+    <span class="b">print</span>(<span class="s">"  OpenHands                 ~72%     ~$3/task"</span>)
+    <span class="b">print</span>(<span class="s">"  SWE-Agent                 ~45%     ~$1/task"</span>)
+    <span class="b">print</span>(<span class="s">"  Agentless (无Agent!)      ~32%     $0.70"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第23章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (390 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+    <span class="b">print</span>(<span class="s">"\n✅ 第23章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (390 行)</summary><div class="code-block"><pre><span class="s">"""
 第23章：代码 Agent 架构横评 —— 谁是最好的 AI 程序员？
 ========================================================
 
 📌 本章目标：
-  <span class=<span class="s">"n"</span>>1</span>. 理解代码 Agent 的 <span class=<span class="s">"n"</span>>4</span> 种核心架构模式
-  <span class=<span class="s">"n"</span>>2</span>. 掌握主要代码 Agent 的架构差异和选型策略
-  <span class=<span class="s">"n"</span>>3</span>. 理解 SWE-bench 评测体系
-  <span class=<span class="s">"n"</span>>4</span>. 学会「Agentless vs Agent」的设计哲学辩论
+  1. 理解代码 Agent 的 4 种核心架构模式
+  2. 掌握主要代码 Agent 的架构差异和选型策略
+  3. 理解 SWE-bench 评测体系
+  4. 学会「Agentless vs Agent」的设计哲学辩论
 
 📌 面试高频点：
   - 「代码 Agent 有哪些架构类型？」
@@ -518,15 +518,15 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
   - 「SWE-bench 是怎么评测的？」
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-基于 <span class=<span class="s">"n"</span>>2025</span>-<span class=<span class="s">"n"</span>>2026</span> 年最新代码 Agent 生态全景
+基于 2025-2026 年最新代码 Agent 生态全景
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-<span class=<span class="s">"n"</span>>23.1</span> 代码 Agent 生态全景图
+23.1 代码 Agent 生态全景图
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   ┌──────────────────────────────────────────────────────┐
-  │              代码 Agent 生态 (<span class=<span class="s">"n"</span>>2025</span>-<span class=<span class="s">"n"</span>>2026</span>)              │
+  │              代码 Agent 生态 (2025-2026)              │
   │                                                       │
   │  第一梯队（商业/闭源）     第二梯队（开源）             │
   │  ┌──────────────────┐  ┌──────────────────┐         │
@@ -549,26 +549,26 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
   └──────────────────────────────────────────────────────┘
 
 
-<span class=<span class="s">"n"</span>>23.2</span> 四种核心架构模式
+23.2 四种核心架构模式
 ━━━━━━━━━━━━━━━━━━━━
 
 ┌─────────────────┬─────────────────────┬──────────────────────┐
 │    架构          │      代表            │       核心思想         │
 ├─────────────────┼─────────────────────┼──────────────────────┤
-│ Code-<span class=<span class="s">"k"</span>>as</span>-Action  │ OpenHands (CodeAct) │ 用代码本身作为工具接口   │
+│ Code-as-Action  │ OpenHands (CodeAct) │ 用代码本身作为工具接口   │
 │ (CodeAct)       │                     │ 不预定义工具，写脚本执行  │
 ├─────────────────┼─────────────────────┼──────────────────────┤
 │ Agent-Computer  │ SWE-Agent           │ 为 LLM 设计专用交互界面  │
 │ Interface (ACI) │                     │ 像 HCI，但针对 AI 优化   │
 ├─────────────────┼─────────────────────┼──────────────────────┤
-│ Plan-<span class=<span class="s">"k"</span>>and</span>-Execute│ Devin, Plandex      │ 先制定计划，人工审核后执行│
+│ Plan-and-Execute│ Devin, Plandex      │ 先制定计划，人工审核后执行│
 │                 │                     │ 安全优先，可审计         │
 ├─────────────────┼─────────────────────┼──────────────────────┤
-│ React-<span class=<span class="s">"k"</span>>and</span>-Iterate│ Claude Code, Aider │ 观察→推理→行动→观察    │
+│ React-and-Iterate│ Claude Code, Aider │ 观察→推理→行动→观察    │
 │                 │ Cline, Roo Code     │ 最像人类的开发流程      │
 └─────────────────┴─────────────────────┴──────────────────────┘
 
-<span class=<span class="s">"n"</span>>1</span>. Code-<span class=<span class="s">"k"</span>>as</span>-Action (CodeAct)
+1. Code-as-Action (CodeAct)
 
   OpenHands 的创新：
     不预定义 read_file/write_file 等固定工具
@@ -576,12 +576,12 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
 
   对比传统 tool-calling：
     传统: tools = [read_file, grep, edit, ...]
-    CodeAct: Agent 写 `<span class=<span class="s">"k"</span>>for</span> f <span class=<span class="s">"k"</span>>in</span> glob(<span class="s">"*.py"</span>): ...` 来操作
+    CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作
 
   优势：无限可扩展（任何脚本能做的事 Agent 都能做）
   劣势：可靠性低（执行任意代码的失败面更大）
 
-<span class=<span class="s">"n"</span>>2</span>. Agent-Computer Interface (ACI)
+2. Agent-Computer Interface (ACI)
 
   SWE-Agent 的创新（Princeton）：
     像设计 HCI（人机交互界面）一样设计 AI 的交互界面
@@ -593,19 +593,19 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
     - 搜索结果带上下文
     - 命令执行结果被结构化
 
-<span class=<span class="s">"n"</span>>3</span>. Plan-<span class=<span class="s">"k"</span>>and</span>-Execute
+3. Plan-and-Execute
 
   代表：Devin
   安全优先：先规划 → 人工审核 → 沙箱执行
   适合企业级场景（不能允许 Agent 自己删文件）
 
-<span class=<span class="s">"n"</span>>4</span>. React-<span class=<span class="s">"k"</span>>and</span>-Iterate（也即标准 ReAct）
+4. React-and-Iterate（也即标准 ReAct）
 
   代表：Claude Code（Ch8 深入讲过）
   像程序员一样工作：搜索 → 读代码 → 改 → 测试 → 修
 
 
-<span class=<span class="s">"n"</span>>23.3</span> SWE-bench 评测体系
+23.3 SWE-bench 评测体系
 ━━━━━━━━━━━━━━━━━━━━━━
 
 SWE-bench 是代码 Agent 的「ImageNet」。
@@ -615,34 +615,34 @@ SWE-bench 是代码 Agent 的「ImageNet」。
 
 两个版本：
 
-  SWE-bench Full (<span class=<span class="s">"n"</span>>2294</span> 个任务)：
+  SWE-bench Full (2294 个任务)：
     所有真实 issue，但部分 issue 描述不清晰
 
-  SWE-bench Verified (<span class=<span class="s">"n"</span>>500</span> 个任务)：
+  SWE-bench Verified (500 个任务)：
     人工精选，确保问题描述准确、可独立复现
 
-  SWE-bench Lite (<span class=<span class="s">"n"</span>>300</span> 个任务)：
+  SWE-bench Lite (300 个任务)：
     进一步精简，适合快速评测
 
 评测流程：
-  <span class=<span class="s">"n"</span>>1</span>. 给 Agent GitHub Issue 描述
-  <span class=<span class="s">"n"</span>>2</span>. Agent 需要在代码库中找到问题 → 修复
-  <span class=<span class="s">"n"</span>>3</span>. 生成 patch → 运行原始测试 → 看是否通过
+  1. 给 Agent GitHub Issue 描述
+  2. Agent 需要在代码库中找到问题 → 修复
+  3. 生成 patch → 运行原始测试 → 看是否通过
 
-SWE-bench Verified 成绩对比 (<span class=<span class="s">"n"</span>>2025</span> 数据)：
+SWE-bench Verified 成绩对比 (2025 数据)：
 
   ┌──────────────────────┬───────────┬──────────┐
   │ Agent                 │ 解决率     │  成本     │
   ├──────────────────────┼───────────┼──────────┤
-  │ Claude Code (Sonnet <span class=<span class="s">"n"</span>>4</span>)│  ~<span class=<span class="s">"n"</span>>72</span>%     │  ~$<span class=<span class="s">"n"</span>>5</span>/任务 │
-  │ OpenHands             │  ~<span class=<span class="s">"n"</span>>72</span>%     │  ~$<span class=<span class="s">"n"</span>>3</span>/任务 │
-  │ SWE-Agent             │  ~<span class=<span class="s">"n"</span>>45</span>%     │  ~$<span class=<span class="s">"n"</span>>1</span>/任务 │
-  │ Agentless (无 Agent!)  │  ~<span class=<span class="s">"n"</span>>32</span>%     │  $<span class=<span class="s">"n"</span>>0.70</span>    │
+  │ Claude Code (Sonnet 4)│  ~72%     │  ~$5/任务 │
+  │ OpenHands             │  ~72%     │  ~$3/任务 │
+  │ SWE-Agent             │  ~45%     │  ~$1/任务 │
+  │ Agentless (无 Agent!)  │  ~32%     │  $0.70    │
   │ Devin                 │  未公开    │  订阅制    │
   └──────────────────────┴───────────┴──────────┘
 
 
-<span class=<span class="s">"n"</span>>23.4</span> Agentless 的颠覆性发现
+23.4 Agentless 的颠覆性发现
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 2025年 Illinois 的论文：Agentless
@@ -652,9 +652,9 @@ SWE-bench Verified 成绩对比 (<span class=<span class="s">"n"</span>>2025</sp
   不让 LLM 做任何自主决策！
 
   Agentless 的三阶段流程：
-    <span class=<span class="s">"n"</span>>1</span>. Localization（定位）：LLM 扫描文件，找出需要修改的位置
-    <span class=<span class="s">"n"</span>>2</span>. Repair（修复）：LLM 生成 patch
-    <span class=<span class="s">"n"</span>>3</span>. Validation（验证）：运行测试
+    1. Localization（定位）：LLM 扫描文件，找出需要修改的位置
+    2. Repair（修复）：LLM 生成 patch
+    3. Validation（验证）：运行测试
 
   和 Agent 的关键区别：
     ✗ 没有循环
@@ -664,9 +664,9 @@ SWE-bench Verified 成绩对比 (<span class=<span class="s">"n"</span>>2025</sp
 
   为什么？
 
-  <span class=<span class="s">"n"</span>>1</span>. LLM 还不够「聪明」到能做好的自主决策
-  <span class=<span class="s">"n"</span>>2</span>. Agent 循环增加了出错机会（多做多错）
-  <span class=<span class="s">"n"</span>>3</span>. Agent 消耗了 token 在「思考过程」而非「解决问题」上
+  1. LLM 还不够「聪明」到能做好的自主决策
+  2. Agent 循环增加了出错机会（多做多错）
+  3. Agent 消耗了 token 在「思考过程」而非「解决问题」上
 
   Anthropic 的回应（在 Claude Code 的优化中）：
     「做最简单的事」
@@ -677,154 +677,154 @@ SWE-bench Verified 成绩对比 (<span class=<span class="s">"n"</span>>2025</sp
   这条哲学和 Agentless 的发现是一致的。
 
 
-<span class=<span class="s">"n"</span>>23.5</span> 代码 Agent 的通用工作流
+23.5 代码 Agent 的通用工作流
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 不管什么架构，代码 Agent 的执行流程都可以抽象为：
 
   ┌──────────────────────────────────────────┐
   │                                             │
-  │  <span class=<span class="s">"n"</span>>1</span>. 理解任务 (Understand)                   │
+  │  1. 理解任务 (Understand)                   │
   │     → 读取 Issue / PR 描述                   │
   │     → 分析项目结构                           │
   │                                             │
-  │  <span class=<span class="s">"n"</span>>2</span>. 定位问题 (Localize)                     │
+  │  2. 定位问题 (Localize)                     │
   │     → Grep 搜索相关代码                      │
   │     → 阅读相关文件                           │
   │     → 理解调用关系                           │
   │                                             │
-  │  <span class=<span class="s">"n"</span>>3</span>. 制定方案 (Plan)                         │
+  │  3. 制定方案 (Plan)                         │
   │     → 确定修改哪些文件                       │
   │     → 确定怎么改                             │
   │                                             │
-  │  <span class=<span class="s">"n"</span>>4</span>. 实施修改 (Implement)                    │
+  │  4. 实施修改 (Implement)                    │
   │     → 编辑文件                               │
   │                                             │
-  │  <span class=<span class="s">"n"</span>>5</span>. 验证 (Verify)                           │
+  │  5. 验证 (Verify)                           │
   │     → 运行测试                               │
-  │     → 如果失败 → 回到第 <span class=<span class="s">"n"</span>>2</span> 步                 │
+  │     → 如果失败 → 回到第 2 步                 │
   │                                             │
   └──────────────────────────────────────────┘
-<span class="s">""</span>"</span>
+"""</span>
 
-<span class=<span class="s">"k"</span>>import</span> time
+<span class="k">import</span> time
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>CodeAgentSimulator</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟代码 Agent 的通用工作流。
+<span class="k">class</span> <span class="f">CodeAgentSimulator</span>:
+    <span class="s">"""模拟代码 Agent 的通用工作流。
 
-    展示任意代码 Agent 必须经历的 <span class=<span class="s">"n"</span>>5</span> 个阶段。
-    <span class="s">""</span>"</span>
+    展示任意代码 Agent 必须经历的 5 个阶段。
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>, architecture: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.name = name
-        <span class=<span class="s">"k"</span>>self</span>.architecture = architecture
-        <span class=<span class="s">"k"</span>>self</span>.steps_log = []
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, name: <span class="b">str</span>, architecture: <span class="b">str</span>):
+        <span class="k">self</span>.name = name
+        <span class="k">self</span>.architecture = architecture
+        <span class="k">self</span>.steps_log = []
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>understand</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"阶段 <span class="</span>n<span class="s">">1</span>：理解任务。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"understand"</span>, f<span class="s">"分析任务: {task[:<span class="</span>n<span class="s">">60</span>]}..."</span>)
-        <span class=<span class="s">"k"</span>>return</span> {<span class="s">"task_type"</span>: <span class="s">"bugfix"</span>, <span class="s">"scope"</span>: <span class="s">"medium"</span>}
+    <span class="k">def</span> <span class="f">understand</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""阶段 1：理解任务。"""</span>
+        <span class="k">self</span>._log(<span class="s">"understand"</span>, f<span class="s">"分析任务: {task[:60]}..."</span>)
+        <span class="k">return</span> {<span class="s">"task_type"</span>: <span class="s">"bugfix"</span>, <span class="s">"scope"</span>: <span class="s">"medium"</span>}
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>localize</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, understanding: <span class=<span class="s">"b"</span>>dict</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"阶段 <span class="</span>n<span class="s">">2</span>：定位问题。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"localize"</span>, <span class="s">"搜索相关的文件和代码"</span>)
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟：基于关键词猜测文件位置</span>
+    <span class="k">def</span> <span class="f">localize</span>(<span class="k">self</span>, task: <span class="b">str</span>, understanding: <span class="b">dict</span>) -&gt; <span class="b">list</span>[<span class="b">str</span>]:
+        <span class="s">"""阶段 2：定位问题。"""</span>
+        <span class="k">self</span>._log(<span class="s">"localize"</span>, <span class="s">"搜索相关的文件和代码"</span>)
+        <span class="h"># 模拟：基于关键词猜测文件位置</span>
         keywords = task.lower().split()
-        files = [f<span class="s">"src/{w}.py"</span> <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> keywords <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(w) &gt; <span class=<span class="s">"n"</span>>3</span>][:<span class=<span class="s">"n"</span>>2</span>]
-        <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"localize_result"</span>, f<span class="s">"定位到: {files}"</span>)
-        <span class=<span class="s">"k"</span>>return</span> files <span class=<span class="s">"k"</span>>or</span> [<span class="s">"src/main.py"</span>]
+        files = [f<span class="s">"src/{w}.py"</span> <span class="k">for</span> w <span class="k">in</span> keywords <span class="k">if</span> <span class="b">len</span>(w) &gt; <span class="n">3</span>][:<span class="n">2</span>]
+        <span class="k">self</span>._log(<span class="s">"localize_result"</span>, f<span class="s">"定位到: {files}"</span>)
+        <span class="k">return</span> files <span class="k">or</span> [<span class="s">"src/main.py"</span>]
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>plan</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, files: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"阶段 <span class="</span>n<span class="s">">3</span>：制定方案。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"plan"</span>, f<span class="s">"针对 {<span class="</span>b<span class="s">">len</span>(files)} 个文件制定修改方案"</span>)
-        <span class=<span class="s">"k"</span>>return</span> [
-            {<span class="s">"file"</span>: f, <span class="s">"action"</span>: <span class="s">"edit"</span>, <span class="s">"lines"</span>: <span class="s">"<span class="</span>n<span class="s">">45</span>-<span class="</span>n<span class="s">">60</span>"</span>,
+    <span class="k">def</span> <span class="f">plan</span>(<span class="k">self</span>, task: <span class="b">str</span>, files: <span class="b">list</span>[<span class="b">str</span>]) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""阶段 3：制定方案。"""</span>
+        <span class="k">self</span>._log(<span class="s">"plan"</span>, f<span class="s">"针对 {len(files)} 个文件制定修改方案"</span>)
+        <span class="k">return</span> [
+            {<span class="s">"file"</span>: f, <span class="s">"action"</span>: <span class="s">"edit"</span>, <span class="s">"lines"</span>: <span class="s">"45-60"</span>,
              <span class="s">"reason"</span>: <span class="s">"函数逻辑需要修改"</span>}
-            <span class=<span class="s">"k"</span>>for</span> f <span class=<span class="s">"k"</span>>in</span> files
+            <span class="k">for</span> f <span class="k">in</span> files
         ]
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>implement</span>(<span class=<span class="s">"k"</span>>self</span>, plan: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"阶段 <span class="</span>n<span class="s">">4</span>：实施修改。"</span><span class="s">""</span></span>
+    <span class="k">def</span> <span class="f">implement</span>(<span class="k">self</span>, plan: <span class="b">list</span>[<span class="b">dict</span>]) -&gt; <span class="b">list</span>[<span class="b">str</span>]:
+        <span class="s">"""阶段 4：实施修改。"""</span>
         patches = []
-        <span class=<span class="s">"k"</span>>for</span> step <span class=<span class="s">"k"</span>>in</span> plan:
-            <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"edit"</span>, f<span class="s">"修改 {step[<span class='s'>'file'</span>]} L{step[<span class='s'>'lines'</span>]}"</span>)
-            patches.append(f<span class="s">"--- {step[<span class='s'>'file'</span>]}\n+++ {step[<span class='s'>'file'</span>]}\n@@ -<span class="</span>n<span class="s">">50</span>,<span class="</span>n<span class="s">">10</span> +<span class="</span>n<span class="s">">50</span>,<span class="</span>n<span class="s">">10</span> @@"</span>)
-        <span class=<span class="s">"k"</span>>return</span> patches
+        <span class="k">for</span> step <span class="k">in</span> plan:
+            <span class="k">self</span>._log(<span class="s">"edit"</span>, f<span class="s">"修改 {step['file']} L{step['lines']}"</span>)
+            patches.append(f<span class="s">"--- {step['file']}\n+++ {step['file']}\n@@ -50,10 +50,10 @@"</span>)
+        <span class="k">return</span> patches
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>verify</span>(<span class=<span class="s">"k"</span>>self</span>, patches: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>],
-               task: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>) -&gt; <span class=<span class="s">"b"</span>>tuple</span>[bool, <span class=<span class="s">"b"</span>>str</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"阶段 <span class="</span>n<span class="s">">5</span>：验证。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"test"</span>, <span class="s">"运行测试..."</span>)
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟：<span class=<span class="s">"n"</span>>70</span>% 概率通过</span>
-        passed = <span class=<span class="s">"b"</span>>hash</span>(task) % <span class=<span class="s">"n"</span>>10</span> &lt; <span class=<span class="s">"n"</span>>7</span>
-        <span class=<span class="s">"k"</span>>if</span> passed:
-            <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"verify_pass"</span>, <span class="s">"所有测试通过"</span>)
-        <span class=<span class="s">"k"</span>>else</span>:
-            <span class=<span class="s">"k"</span>>self</span>._log(<span class="s">"verify_fail"</span>, <span class="s">"测试失败，需要修改"</span>)
-        <span class=<span class="s">"k"</span>>return</span> passed, <span class="s">"<span class="</span>n<span class="s">">3</span>/<span class="</span>n<span class="s">">3</span> tests passed"</span> <span class=<span class="s">"k"</span>>if</span> passed <span class=<span class="s">"k"</span>>else</span> <span class="s">"<span class="</span>n<span class="s">">1</span>/<span class="</span>n<span class="s">">3</span> tests failed"</span>
+    <span class="k">def</span> <span class="f">verify</span>(<span class="k">self</span>, patches: <span class="b">list</span>[<span class="b">str</span>],
+               task: <span class="b">str</span> = <span class="s">""</span>) -&gt; <span class="b">tuple</span>[bool, <span class="b">str</span>]:
+        <span class="s">"""阶段 5：验证。"""</span>
+        <span class="k">self</span>._log(<span class="s">"test"</span>, <span class="s">"运行测试..."</span>)
+        <span class="h"># 模拟：70% 概率通过</span>
+        passed = <span class="b">hash</span>(task) % <span class="n">10</span> &lt; <span class="n">7</span>
+        <span class="k">if</span> passed:
+            <span class="k">self</span>._log(<span class="s">"verify_pass"</span>, <span class="s">"所有测试通过"</span>)
+        <span class="k">else</span>:
+            <span class="k">self</span>._log(<span class="s">"verify_fail"</span>, <span class="s">"测试失败，需要修改"</span>)
+        <span class="k">return</span> passed, <span class="s">"3/3 tests passed"</span> <span class="k">if</span> passed <span class="k">else</span> <span class="s">"1/3 tests failed"</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, max_iterations: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>3</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"运行完整的代码修复流程。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  🤖 {<span class="</span>k<span class="s">">self</span>.name} ({<span class="</span>k<span class="s">">self</span>.architecture})"</span>)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  📋 任务: {task[:<span class="</span>n<span class="s">">80</span>]}..."</span>)
+    <span class="k">def</span> <span class="f">run</span>(<span class="k">self</span>, task: <span class="b">str</span>, max_iterations: <span class="b">int</span> = <span class="n">3</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""运行完整的代码修复流程。"""</span>
+        <span class="b">print</span>(f<span class="s">"\n  🤖 {self.name} ({self.architecture})"</span>)
+        <span class="b">print</span>(f<span class="s">"  📋 任务: {task[:80]}..."</span>)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 阶段 <span class=<span class="s">"n"</span>>1</span>-<span class=<span class="s">"n"</span>>3</span>：准备</span>
-        understanding = <span class=<span class="s">"k"</span>>self</span>.understand(task)
-        files = <span class=<span class="s">"k"</span>>self</span>.localize(task, understanding)
+        <span class="h"># 阶段 1-3：准备</span>
+        understanding = <span class="k">self</span>.understand(task)
+        files = <span class="k">self</span>.localize(task, understanding)
 
-        <span class=<span class="s">"k"</span>>for</span> iteration <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>1</span>, max_iterations + <span class=<span class="s">"n"</span>>1</span>):
-            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  ── 第 {iteration} 轮 ──"</span>)
-            plan = <span class=<span class="s">"k"</span>>self</span>.plan(task, files)
-            patches = <span class=<span class="s">"k"</span>>self</span>.implement(plan)
-            passed, message = <span class=<span class="s">"k"</span>>self</span>.verify(patches, task)
+        <span class="k">for</span> iteration <span class="k">in</span> <span class="b">range</span>(<span class="n">1</span>, max_iterations + <span class="n">1</span>):
+            <span class="b">print</span>(f<span class="s">"\n  ── 第 {iteration} 轮 ──"</span>)
+            plan = <span class="k">self</span>.plan(task, files)
+            patches = <span class="k">self</span>.implement(plan)
+            passed, message = <span class="k">self</span>.verify(patches, task)
 
-            <span class=<span class="s">"k"</span>>if</span> passed:
-                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✅ 修复成功！（{iteration} 轮）"</span>)
-                <span class=<span class="s">"k"</span>>return</span> {
-                    <span class="s">"success"</span>: <span class=<span class="s">"k"</span>>True</span>,
+            <span class="k">if</span> passed:
+                <span class="b">print</span>(f<span class="s">"  ✅ 修复成功！（{iteration} 轮）"</span>)
+                <span class="k">return</span> {
+                    <span class="s">"success"</span>: <span class="k">True</span>,
                     <span class="s">"iterations"</span>: iteration,
                     <span class="s">"patches"</span>: patches,
-                    <span class="s">"steps"</span>: <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.steps_log),
+                    <span class="s">"steps"</span>: <span class="b">len</span>(<span class="k">self</span>.steps_log),
                 }
-            <span class=<span class="s">"k"</span>>else</span>:
-                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ❌ {message}，继续修改..."</span>)
-                files = <span class=<span class="s">"k"</span>>self</span>.localize(task + <span class="s">" "</span> + message, understanding)
+            <span class="k">else</span>:
+                <span class="b">print</span>(f<span class="s">"  ❌ {message}，继续修改..."</span>)
+                files = <span class="k">self</span>.localize(task + <span class="s">" "</span> + message, understanding)
 
-        <span class=<span class="s">"k"</span>>return</span> {<span class="s">"success"</span>: <span class=<span class="s">"k"</span>>False</span>, <span class="s">"iterations"</span>: max_iterations}
+        <span class="k">return</span> {<span class="s">"success"</span>: <span class="k">False</span>, <span class="s">"iterations"</span>: max_iterations}
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_log</span>(<span class=<span class="s">"k"</span>>self</span>, action: <span class=<span class="s">"b"</span>>str</span>, detail: <span class=<span class="s">"b"</span>>str</span>):
-        <span class=<span class="s">"k"</span>>self</span>.steps_log.append({
+    <span class="k">def</span> <span class="f">_log</span>(<span class="k">self</span>, action: <span class="b">str</span>, detail: <span class="b">str</span>):
+        <span class="k">self</span>.steps_log.append({
             <span class="s">"action"</span>: action,
             <span class="s">"detail"</span>: detail,
             <span class="s">"time"</span>: time.time(),
         })
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{action:15s}] {detail}"</span>)
+        <span class="b">print</span>(f<span class="s">"    [{action:15s}] {detail}"</span>)
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_code_agents</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示代码 Agent 的通用工作流。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  代码 Agent 通用工作流演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_code_agents</span>():
+    <span class="s">"""演示代码 Agent 的通用工作流。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  代码 Agent 通用工作流演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 测试不同架构的 Agent</span>
+    <span class="h"># 测试不同架构的 Agent</span>
     agents = [
-        CodeAgentSimulator(<span class="s">"ClaudeCode"</span>, <span class="s">"React-<span class="</span>k<span class="s">">and</span>-Iterate"</span>),
-        CodeAgentSimulator(<span class="s">"OpenHands"</span>, <span class="s">"Code-<span class="</span>k<span class="s">">as</span>-Action"</span>),
+        CodeAgentSimulator(<span class="s">"ClaudeCode"</span>, <span class="s">"React-and-Iterate"</span>),
+        CodeAgentSimulator(<span class="s">"OpenHands"</span>, <span class="s">"Code-as-Action"</span>),
         CodeAgentSimulator(<span class="s">"SWE-Agent"</span>, <span class="s">"Agent-Computer Interface"</span>),
     ]
 
-    task = <span class="s">"修复 login.py 中的空指针异常：当 user 为 <span class="</span>k<span class="s">">None</span> 时访问 user.name 会崩溃"</span>
+    task = <span class="s">"修复 login.py 中的空指针异常：当 user 为 None 时访问 user.name 会崩溃"</span>
 
-    <span class=<span class="s">"k"</span>>for</span> agent <span class=<span class="s">"k"</span>>in</span> agents:
+    <span class="k">for</span> agent <span class="k">in</span> agents:
         result = agent.run(task)
-        status = <span class="s">"✅ 成功"</span> <span class=<span class="s">"k"</span>>if</span> result[<span class="s">"success"</span>] <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌ 失败"</span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {status} | 迭代: {result[<span class='s'>'iterations'</span>]} | 步骤: {result[<span class='s'>'steps'</span>]}"</span>)
+        status = <span class="s">"✅ 成功"</span> <span class="k">if</span> result[<span class="s">"success"</span>] <span class="k">else</span> <span class="s">"❌ 失败"</span>
+        <span class="b">print</span>(f<span class="s">"  {status} | 迭代: {result['iterations']} | 步骤: {result['steps']}"</span>)
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>23.6</span> 选型指南
+<span class="s">"""
+23.6 选型指南
 ━━━━━━━━━━━━
 
   ┌───────────────────┬────────────────────────────────────┐
@@ -832,64 +832,64 @@ SWE-bench Verified 成绩对比 (<span class=<span class="s">"n"</span>>2025</sp
   ├───────────────────┼────────────────────────────────────┤
   │ 个人开发者日常     │ Claude Code / Aider                 │
   │ 企业级代码审查     │ OpenHands (企业版)                  │
-  │ 安全关键系统       │ Plan-<span class=<span class="s">"k"</span>>and</span>-Execute (人工审核)         │
+  │ 安全关键系统       │ Plan-and-Execute (人工审核)         │
   │ 研究和实验         │ SWE-Agent (ACI 研究)               │
   │ 定制化 CI/CD      │ 自建 (参考 Agentless 简洁方案)       │
   │ IDE 深度集成      │ Cursor Agent / GitHub Copilot Agent  │
   │ 多文件重构         │ Claude Code / OpenHands             │
   └───────────────────┴────────────────────────────────────┘
 
-<span class=<span class="s">"n"</span>>23.7</span> 本章总结
+23.7 本章总结
 ━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class=<span class="s">"n"</span>>1</span>. <span class=<span class="s">"n"</span>>4</span> 种架构模式
-   CodeAct / ACI / Plan-Execute / React-<span class=<span class="s">"k"</span>>and</span>-Iterate
+1. 4 种架构模式
+   CodeAct / ACI / Plan-Execute / React-and-Iterate
 
-<span class=<span class="s">"n"</span>>2</span>. SWE-bench 是代码 Agent 的标准评测
+2. SWE-bench 是代码 Agent 的标准评测
    Verified 版最可靠，Lite 版适合快速验证
 
-<span class=<span class="s">"n"</span>>3</span>. Agentless 的启示
+3. Agentless 的启示
    简单方案常比复杂 Agent 更好
    验证了 Anthropic「做最简单的事」的哲学
 
 面试速记：
-  <span class="s">"你了解哪些代码 Agent？"</span>
-  → <span class=<span class="s">"n"</span>>4</span> 种架构 + 每个代表 + 选型场景
+  "你了解哪些代码 Agent？"
+  → 4 种架构 + 每个代表 + 选型场景
   → 提到 SWE-bench 评测体系
   → Agentless 的「返璞归真」启示
   → Claude Code 的简单至上哲学
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第23章：代码 Agent 架构横评                            ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  CodeAct · ACI · Plan-Execute · SWE-bench           ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第23章：代码 Agent 架构横评                            ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  CodeAct · ACI · Plan-Execute · SWE-bench           ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_code_agents()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ 四种架构模式对比"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 四种架构模式对比"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     archs = [
         (<span class="s">"CodeAct (OpenHands)"</span>, <span class="s">"用代码脚本替代预定义工具"</span>),
         (<span class="s">"ACI (SWE-Agent)"</span>, <span class="s">"为 LLM 设计专用交互界面"</span>),
         (<span class="s">"Plan-Execute (Devin)"</span>, <span class="s">"先规划→审核→沙箱执行"</span>),
         (<span class="s">"React-Iterate (Claude Code)"</span>, <span class="s">"像人类一样渐进式解决问题"</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> name, desc <span class=<span class="s">"k"</span>>in</span> archs:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {name:25s} → {desc}"</span>)
+    <span class="k">for</span> name, desc <span class="k">in</span> archs:
+        <span class="b">print</span>(f<span class="s">"  {name:25s} → {desc}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ SWE-bench Verified 成绩"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Claude Code (Sonnet <span class="</span>n<span class="s">">4</span>)   ~<span class="</span>n<span class="s">">72</span>%     ~$<span class="</span>n<span class="s">">5</span>/task"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  OpenHands                 ~<span class="</span>n<span class="s">">72</span>%     ~$<span class="</span>n<span class="s">">3</span>/task"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  SWE-Agent                 ~<span class="</span>n<span class="s">">45</span>%     ~$<span class="</span>n<span class="s">">1</span>/task"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Agentless (无Agent!)      ~<span class="</span>n<span class="s">">32</span>%     $<span class="</span>n<span class="s">">0.70</span>"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ SWE-bench Verified 成绩"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="b">print</span>(<span class="s">"  Claude Code (Sonnet 4)   ~72%     ~$5/task"</span>)
+    <span class="b">print</span>(<span class="s">"  OpenHands                 ~72%     ~$3/task"</span>)
+    <span class="b">print</span>(<span class="s">"  SWE-Agent                 ~45%     ~$1/task"</span>)
+    <span class="b">print</span>(<span class="s">"  Agentless (无Agent!)      ~32%     $0.70"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第23章完成！"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第23章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_22_dspy/22_dspy.html" title="DSPy 自动优化 — Signature·Module·Optimizer">← 第22章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

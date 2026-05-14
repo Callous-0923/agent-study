@@ -195,11 +195,11 @@ body {
 │ 涉及资金/数据安全的操作     │ Human-in-the-Loop            │
 │ 路径不可预测的复杂推理      │ 纯 ReAct Agent               │
 │ 简单、步骤固定的任务        │ 不需要 Agent！直接用 LLM 调用  │
-└────────────────────────────┴──────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (5 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> re
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field</pre></div></details></div><div class="lecture"><h2>19.3 Reflection 模式 —— 自我批评，迭代改进</h2>
+└────────────────────────────┴──────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (5 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field</pre></div></details></div><div class="lecture"><h2>19.3 Reflection 模式 —— 自我批评，迭代改进</h2>
 <p>&nbsp;</p>
 <p>核心理念：</p>
 <p>不满足于 LLM 的第一次输出，让 LLM 自己批评自己，然后改进。</p>
@@ -214,114 +214,114 @@ body {
 <p>&nbsp;</p>
 <p>类比：</p>
 <p>就像作家写完初稿后，自己很难发现错字</p>
-<p>需要一个编辑来审阅</p></div><div class="code-section"><details open><summary>💻 代码 (110 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> re
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<p>需要一个编辑来审阅</p></div><div class="code-section"><details open><summary>💻 代码 (110 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ReflectionAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Reflection 模式实现 —— Generator + Critic 双角色。
+<span class="k">class</span> <span class="f">ReflectionAgent</span>:
+    <span class="s">"""Reflection 模式实现 —— Generator + Critic 双角色。
 
     流程：
       Generator 生成 → Critic 审查 → 如果不够好 → Generator 修订 → ...
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, quality_threshold: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>8</span>, max_rounds: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>3</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, quality_threshold: <span class="b">int</span> = <span class="n">8</span>, max_rounds: <span class="b">int</span> = <span class="n">3</span>):
+        <span class="s">"""
         Args:
-            quality_threshold: 质量阈值（<span class=<span class="s">"n"</span>>1</span>-<span class=<span class="s">"n"</span>>10</span>），达到即停止。
+            quality_threshold: 质量阈值（1-10），达到即停止。
             max_rounds: 最大迭代轮数。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.threshold = quality_threshold
-        <span class=<span class="s">"k"</span>>self</span>.max_rounds = max_rounds
+        """</span>
+        <span class="k">self</span>.threshold = quality_threshold
+        <span class="k">self</span>.max_rounds = max_rounds
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>generate</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, previous: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>,
-                 feedback: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Generator：生成/修订输出（模拟）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> previous:
-            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>._generate_initial(task)
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>._revise(task, previous, feedback)
+    <span class="k">def</span> <span class="f">generate</span>(<span class="k">self</span>, task: <span class="b">str</span>, previous: <span class="b">str</span> = <span class="s">""</span>,
+                 feedback: <span class="b">str</span> = <span class="s">""</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""Generator：生成/修订输出（模拟）。"""</span>
+        <span class="k">if</span> <span class="k">not</span> previous:
+            <span class="k">return</span> <span class="k">self</span>._generate_initial(task)
+        <span class="k">return</span> <span class="k">self</span>._revise(task, previous, feedback)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>critique</span>(<span class=<span class="s">"k"</span>>self</span>, output: <span class=<span class="s">"b"</span>>str</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Critic：以角色分离的方式审查输出。
+    <span class="k">def</span> <span class="f">critique</span>(<span class="k">self</span>, output: <span class="b">str</span>, task: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""Critic：以角色分离的方式审查输出。
 
         真实实现中用不同的 system prompt 或不同的模型。
-        <span class="s">""</span>"</span>
+        """</span>
         issues = []
-        score = <span class=<span class="s">"n"</span>>10</span>
+        score = <span class="n">10</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 规则检查（模拟 LLM-<span class=<span class="s">"k"</span>>as</span>-Critic）</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(output) &lt; <span class=<span class="s">"n"</span>>50</span>:
+        <span class="h"># 规则检查（模拟 LLM-as-Critic）</span>
+        <span class="k">if</span> <span class="b">len</span>(output) &lt; <span class="n">50</span>:
             issues.append(<span class="s">"输出太短，缺乏细节"</span>)
-            score -= <span class=<span class="s">"n"</span>>3</span>
+            score -= <span class="n">3</span>
 
-        <span class=<span class="s">"k"</span>>if</span> task.lower() <span class=<span class="s">"k"</span>>in</span> output.lower():
-            <span class=<span class="s">"k"</span>>pass</span>  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 回应了任务</span>
-        <span class=<span class="s">"k"</span>>else</span>:
+        <span class="k">if</span> task.lower() <span class="k">in</span> output.lower():
+            <span class="k">pass</span>  <span class="h"># 回应了任务</span>
+        <span class="k">else</span>:
             issues.append(<span class="s">"没有直接回应任务要求"</span>)
-            score -= <span class=<span class="s">"n"</span>>2</span>
+            score -= <span class="n">2</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查是否包含推测性语言</span>
+        <span class="h"># 检查是否包含推测性语言</span>
         uncertain_patterns = [<span class="s">"可能"</span>, <span class="s">"也许"</span>, <span class="s">"大概"</span>, <span class="s">"似乎"</span>]
-        uncertain_count = <span class=<span class="s">"b"</span>>sum</span>(
-            <span class=<span class="s">"n"</span>>1</span> <span class=<span class="s">"k"</span>>for</span> p <span class=<span class="s">"k"</span>>in</span> uncertain_patterns <span class=<span class="s">"k"</span>>if</span> p <span class=<span class="s">"k"</span>>in</span> output
+        uncertain_count = <span class="b">sum</span>(
+            <span class="n">1</span> <span class="k">for</span> p <span class="k">in</span> uncertain_patterns <span class="k">if</span> p <span class="k">in</span> output
         )
-        <span class=<span class="s">"k"</span>>if</span> uncertain_count &gt;= <span class=<span class="s">"n"</span>>3</span>:
+        <span class="k">if</span> uncertain_count &gt;= <span class="n">3</span>:
             issues.append(f<span class="s">"包含 {uncertain_count} 处不确定表述"</span>)
-            score -= <span class=<span class="s">"n"</span>>1</span>
+            score -= <span class="n">1</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查结构</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"\n"</span> <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>in</span> output <span class=<span class="s">"k"</span>>or</span> <span class=<span class="s">"b"</span>>len</span>(output.split(<span class="s">"\n"</span>)) &lt; <span class=<span class="s">"n"</span>>3</span>:
+        <span class="h"># 检查结构</span>
+        <span class="k">if</span> <span class="s">"\n"</span> <span class="k">not</span> <span class="k">in</span> output <span class="k">or</span> <span class="b">len</span>(output.split(<span class="s">"\n"</span>)) &lt; <span class="n">3</span>:
             issues.append(<span class="s">"缺少段落结构，可读性差"</span>)
-            score -= <span class=<span class="s">"n"</span>>1</span>
+            score -= <span class="n">1</span>
 
-        <span class=<span class="s">"k"</span>>return</span> {
-            <span class="s">"score"</span>: <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"n"</span>>1</span>, score),
+        <span class="k">return</span> {
+            <span class="s">"score"</span>: <span class="b">max</span>(<span class="n">1</span>, score),
             <span class="s">"issues"</span>: issues,
-            <span class="s">"passed"</span>: score &gt;= <span class=<span class="s">"k"</span>>self</span>.threshold,
+            <span class="s">"passed"</span>: score &gt;= <span class="k">self</span>.threshold,
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"执行完整的 Reflection 循环。
+    <span class="k">def</span> <span class="f">run</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""执行完整的 Reflection 循环。
 
         Returns:
             包含最终输出和迭代记录的字典。
-        <span class="s">""</span>"</span>
+        """</span>
         history = []
-        output = <span class=<span class="s">"k"</span>>self</span>.generate(task)
+        output = <span class="k">self</span>.generate(task)
 
-        <span class=<span class="s">"k"</span>>for</span> round_num <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>1</span>, <span class=<span class="s">"k"</span>>self</span>.max_rounds + <span class=<span class="s">"n"</span>>1</span>):
-            review = <span class=<span class="s">"k"</span>>self</span>.critique(output, task)
+        <span class="k">for</span> round_num <span class="k">in</span> <span class="b">range</span>(<span class="n">1</span>, <span class="k">self</span>.max_rounds + <span class="n">1</span>):
+            review = <span class="k">self</span>.critique(output, task)
             history.append({
-                <span class="s">"<span class="</span>b<span class="s">">round</span>"</span>: round_num,
+                <span class="s">"round"</span>: round_num,
                 <span class="s">"score"</span>: review[<span class="s">"score"</span>],
                 <span class="s">"issues"</span>: review[<span class="s">"issues"</span>],
             })
 
-            <span class=<span class="s">"k"</span>>if</span> review[<span class="s">"passed"</span>]:
-                <span class=<span class="s">"k"</span>>break</span>
+            <span class="k">if</span> review[<span class="s">"passed"</span>]:
+                <span class="k">break</span>
 
-            <span class=<span class="s">"k"</span>>if</span> round_num &lt; <span class=<span class="s">"k"</span>>self</span>.max_rounds:
+            <span class="k">if</span> round_num &lt; <span class="k">self</span>.max_rounds:
                 feedback = <span class="s">"；"</span>.join(review[<span class="s">"issues"</span>])
-                output = <span class=<span class="s">"k"</span>>self</span>.generate(
+                output = <span class="k">self</span>.generate(
                     task, previous=output, feedback=feedback
                 )
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"task"</span>: task,
             <span class="s">"final_output"</span>: output,
             <span class="s">"history"</span>: history,
-            <span class="s">"rounds"</span>: <span class=<span class="s">"b"</span>>len</span>(history),
-            <span class="s">"passed"</span>: history[-<span class=<span class="s">"n"</span>>1</span>][<span class="s">"score"</span>] &gt;= <span class=<span class="s">"k"</span>>self</span>.threshold,
+            <span class="s">"rounds"</span>: <span class="b">len</span>(history),
+            <span class="s">"passed"</span>: history[-<span class="n">1</span>][<span class="s">"score"</span>] &gt;= <span class="k">self</span>.threshold,
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_generate_initial</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span class=<span class="s">"k"</span>>return</span> f<span class="s">"关于「{task}」，AI Agent 是一种能够自主感知环境、"</span> \
+    <span class="k">def</span> <span class="f">_generate_initial</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="k">return</span> f<span class="s">"关于「{task}」，AI Agent 是一种能够自主感知环境、"</span> \
                f<span class="s">"做出决策并执行行动的智能系统。"</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_revise</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, previous: <span class=<span class="s">"b"</span>>str</span>, feedback: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span class=<span class="s">"k"</span>>return</span> f<span class="s">"修订版（收到反馈: {feedback}）：\n{previous}\n"</span> \
+    <span class="k">def</span> <span class="f">_revise</span>(<span class="k">self</span>, task: <span class="b">str</span>, previous: <span class="b">str</span>, feedback: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="k">return</span> f<span class="s">"修订版（收到反馈: {feedback}）：\n{previous}\n"</span> \
                f<span class="s">"补充说明：AI Agent 主要由 LLM、规划器、记忆系统和"</span> \
                f<span class="s">"工具调用四部分组成，通过 ReAct 循环协调工作。"</span></pre></div></details></div><div class="lecture"><h2>19.4 Routing 模式 —— 分类 → 分发</h2>
 <p>&nbsp;</p>
@@ -339,64 +339,64 @@ body {
 <p>关键决策：</p>
 <li>路由的依据是什么？（关键词/语义/复杂度评分？）</li>
 <li>每个路由目标用不同模型、不同 prompt、不同工具集</li>
-<li>可以实现成本优化（简单问题用小模型，复杂问题用大模型）</li></div><div class="code-section"><details open><summary>💻 代码 (58 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> re
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<li>可以实现成本优化（简单问题用小模型，复杂问题用大模型）</li></div><div class="code-section"><details open><summary>💻 代码 (58 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>RoutingAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Routing 模式 —— 根据任务特征选择最合适的处理器。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">RoutingAgent</span>:
+    <span class="s">"""Routing 模式 —— 根据任务特征选择最合适的处理器。"""</span>
 
     ROUTE_TABLE = {
-        <span class="s">"简单问答"</span>: {<span class="s">"model"</span>: <span class="s">"小模型"</span>, <span class="s">"max_tokens"</span>: <span class=<span class="s">"n"</span>>256</span>},
-        <span class="s">"代码相关"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class=<span class="s">"n"</span>>2048</span>, <span class="s">"tools"</span>: [<span class="s">"code_exec"</span>]},
-        <span class="s">"数据分析"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class=<span class="s">"n"</span>>4096</span>, <span class="s">"tools"</span>: [<span class="s">"sql"</span>, <span class="s">"chart"</span>]},
-        <span class="s">"复杂推理"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class=<span class="s">"n"</span>>8192</span>, <span class="s">"tools"</span>: [<span class="s">"search"</span>, <span class="s">"calculator"</span>]},
-        <span class="s">"安全敏感"</span>: {<span class="s">"model"</span>: <span class="s">"审核模型"</span>, <span class="s">"human_review"</span>: <span class=<span class="s">"k"</span>>True</span>},
+        <span class="s">"简单问答"</span>: {<span class="s">"model"</span>: <span class="s">"小模型"</span>, <span class="s">"max_tokens"</span>: <span class="n">256</span>},
+        <span class="s">"代码相关"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class="n">2048</span>, <span class="s">"tools"</span>: [<span class="s">"code_exec"</span>]},
+        <span class="s">"数据分析"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class="n">4096</span>, <span class="s">"tools"</span>: [<span class="s">"sql"</span>, <span class="s">"chart"</span>]},
+        <span class="s">"复杂推理"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class="n">8192</span>, <span class="s">"tools"</span>: [<span class="s">"search"</span>, <span class="s">"calculator"</span>]},
+        <span class="s">"安全敏感"</span>: {<span class="s">"model"</span>: <span class="s">"审核模型"</span>, <span class="s">"human_review"</span>: <span class="k">True</span>},
     }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@staticmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>classify</span>(task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"分类器：分析任务特征，决定路由目标。
+    <span <span class="k">class</span>="d">@staticmethod</span>
+    <span class="k">def</span> <span class="f">classify</span>(task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""分类器：分析任务特征，决定路由目标。
 
         真实实现中用 LLM 做分类：
-          prompt = f<span class="s">"将以下任务分类为 [简单问答/代码相关/数据分析/复杂推理/安全敏感]: {task}"</span>
-        <span class="s">""</span>"</span>
+          prompt = f"将以下任务分类为 [简单问答/代码相关/数据分析/复杂推理/安全敏感]: {task}"
+        """</span>
         task_lower = task.lower()
 
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> task_lower <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"代码"</span>, <span class="s">"debug"</span>, <span class="s">"写一个"</span>, <span class="s">"实现"</span>]):
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"代码相关"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> task_lower <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"分析"</span>, <span class="s">"统计"</span>, <span class="s">"趋势"</span>, <span class="s">"报表"</span>, <span class="s">"数据"</span>]):
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"数据分析"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> task_lower <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"删除"</span>, <span class="s">"密码"</span>, <span class="s">"转账"</span>, <span class="s">"admin"</span>]):
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"安全敏感"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(task) &gt; <span class=<span class="s">"n"</span>>100</span> <span class=<span class="s">"k"</span>>or</span> <span class=<span class="s">"b"</span>>any</span>(
-            w <span class=<span class="s">"k"</span>>in</span> task_lower <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"为什么"</span>, <span class="s">"如何"</span>, <span class="s">"解释"</span>, <span class="s">"原因"</span>]
+        <span class="k">if</span> <span class="b">any</span>(w <span class="k">in</span> task_lower <span class="k">for</span> w <span class="k">in</span> [<span class="s">"代码"</span>, <span class="s">"debug"</span>, <span class="s">"写一个"</span>, <span class="s">"实现"</span>]):
+            <span class="k">return</span> <span class="s">"代码相关"</span>
+        <span class="k">if</span> <span class="b">any</span>(w <span class="k">in</span> task_lower <span class="k">for</span> w <span class="k">in</span> [<span class="s">"分析"</span>, <span class="s">"统计"</span>, <span class="s">"趋势"</span>, <span class="s">"报表"</span>, <span class="s">"数据"</span>]):
+            <span class="k">return</span> <span class="s">"数据分析"</span>
+        <span class="k">if</span> <span class="b">any</span>(w <span class="k">in</span> task_lower <span class="k">for</span> w <span class="k">in</span> [<span class="s">"删除"</span>, <span class="s">"密码"</span>, <span class="s">"转账"</span>, <span class="s">"admin"</span>]):
+            <span class="k">return</span> <span class="s">"安全敏感"</span>
+        <span class="k">if</span> <span class="b">len</span>(task) &gt; <span class="n">100</span> <span class="k">or</span> <span class="b">any</span>(
+            w <span class="k">in</span> task_lower <span class="k">for</span> w <span class="k">in</span> [<span class="s">"为什么"</span>, <span class="s">"如何"</span>, <span class="s">"解释"</span>, <span class="s">"原因"</span>]
         ):
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"复杂推理"</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"简单问答"</span>
+            <span class="k">return</span> <span class="s">"复杂推理"</span>
+        <span class="k">return</span> <span class="s">"简单问答"</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@staticmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>route</span>(task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"路由：分类 → 选择配置 → 返回处理方案。
+    <span <span class="k">class</span>="d">@staticmethod</span>
+    <span class="k">def</span> <span class="f">route</span>(task: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""路由：分类 → 选择配置 → 返回处理方案。
 
         Returns:
             包含路由决策的字典。
-        <span class="s">""</span>"</span>
+        """</span>
         category = RoutingAgent.classify(task)
         config = RoutingAgent.ROUTE_TABLE[category].copy()
         config[<span class="s">"category"</span>] = category
         config[<span class="s">"task"</span>] = task
         config[<span class="s">"estimated_cost"</span>] = _estimate_cost(config)
-        <span class=<span class="s">"k"</span>>return</span> config
+        <span class="k">return</span> config
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_estimate_cost</span>(config: <span class=<span class="s">"b"</span>>dict</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"估算处理成本（模拟）。"</span><span class="s">""</span></span>
-    base = {<span class="s">"简单问答"</span>: <span class=<span class="s">"n"</span>>0.001</span>, <span class="s">"代码相关"</span>: <span class=<span class="s">"n"</span>>0.01</span>,
-            <span class="s">"数据分析"</span>: <span class=<span class="s">"n"</span>>0.05</span>, <span class="s">"复杂推理"</span>: <span class=<span class="s">"n"</span>>0.10</span>, <span class="s">"安全敏感"</span>: <span class=<span class="s">"n"</span>>0.02</span>}
-    <span class=<span class="s">"k"</span>>return</span> base.get(config[<span class="s">"category"</span>], <span class=<span class="s">"n"</span>>0.01</span>)</pre></div></details></div><div class="lecture"><h2>19.5 Planning 模式 —— 先规划，再执行</h2>
+<span class="k">def</span> <span class="f">_estimate_cost</span>(config: <span class="b">dict</span>) -&gt; <span class="b">float</span>:
+    <span class="s">"""估算处理成本（模拟）。"""</span>
+    base = {<span class="s">"简单问答"</span>: <span class="n">0.001</span>, <span class="s">"代码相关"</span>: <span class="n">0.01</span>,
+            <span class="s">"数据分析"</span>: <span class="n">0.05</span>, <span class="s">"复杂推理"</span>: <span class="n">0.10</span>, <span class="s">"安全敏感"</span>: <span class="n">0.02</span>}
+    <span class="k">return</span> base.get(config[<span class="s">"category"</span>], <span class="n">0.01</span>)</pre></div></details></div><div class="lecture"><h2>19.5 Planning 模式 —— 先规划，再执行</h2>
 <p>&nbsp;</p>
 <p>和 Ch3 中 Plan-Execute 的关系：</p>
 <p>这是更高层的抽象，规划出来的每个子步骤可以由 ReAct Agent 执行。</p>
@@ -407,76 +407,76 @@ body {
 <p>关键洞察：</p>
 <li>规划用 LLM（灵活），执行按计划（可靠）</li>
 <li>规划不是「一次性」的 —— 执行中可以根据反馈调整计划</li>
-<li>规划质量取决于分解粒度（太粗执行不了，太细浪费 token）</li></div><div class="code-section"><details open><summary>💻 代码 (70 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> re
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<li>规划质量取决于分解粒度（太粗执行不了，太细浪费 token）</li></div><div class="code-section"><details open><summary>💻 代码 (70 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>PlanningAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Planning 模式 —— 任务分解 + 分步执行。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">PlanningAgent</span>:
+    <span class="s">"""Planning 模式 —— 任务分解 + 分步执行。"""</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@staticmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>decompose</span>(task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"任务分解：将复杂任务拆成子步骤。
+    <span <span class="k">class</span>="d">@staticmethod</span>
+    <span class="k">def</span> <span class="f">decompose</span>(task: <span class="b">str</span>) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""任务分解：将复杂任务拆成子步骤。
 
         真实实现用 LLM：
-          f<span class="s">"将以下任务分解为 <span class="</span>n<span class="s">">3</span>-<span class="</span>n<span class="s">">6</span> 个可独立执行的子步骤: {task}"</span>
-        <span class="s">""</span>"</span>
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟分解逻辑</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"分析"</span> <span class=<span class="s">"k"</span>>in</span> task <span class=<span class="s">"k"</span>>and</span> <span class="s">"写"</span> <span class=<span class="s">"k"</span>>in</span> task:
-            <span class=<span class="s">"k"</span>>return</span> [
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"action"</span>: <span class="s">"research"</span>, <span class="s">"desc"</span>: <span class="s">"搜索相关资料"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>2</span>, <span class="s">"action"</span>: <span class="s">"analyze"</span>, <span class="s">"desc"</span>: <span class="s">"分析关键信息"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>1</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>3</span>, <span class="s">"action"</span>: <span class="s">"outline"</span>, <span class="s">"desc"</span>: <span class="s">"制定文章大纲"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>2</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>4</span>, <span class="s">"action"</span>: <span class="s">"write"</span>, <span class="s">"desc"</span>: <span class="s">"撰写初稿"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>3</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>5</span>, <span class="s">"action"</span>: <span class="s">"review"</span>, <span class="s">"desc"</span>: <span class="s">"自我审查并修订"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>4</span>]},
+          f"将以下任务分解为 3-6 个可独立执行的子步骤: {task}"
+        """</span>
+        <span class="h"># 模拟分解逻辑</span>
+        <span class="k">if</span> <span class="s">"分析"</span> <span class="k">in</span> task <span class="k">and</span> <span class="s">"写"</span> <span class="k">in</span> task:
+            <span class="k">return</span> [
+                {<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"action"</span>: <span class="s">"research"</span>, <span class="s">"desc"</span>: <span class="s">"搜索相关资料"</span>},
+                {<span class="s">"id"</span>: <span class="n">2</span>, <span class="s">"action"</span>: <span class="s">"analyze"</span>, <span class="s">"desc"</span>: <span class="s">"分析关键信息"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">1</span>]},
+                {<span class="s">"id"</span>: <span class="n">3</span>, <span class="s">"action"</span>: <span class="s">"outline"</span>, <span class="s">"desc"</span>: <span class="s">"制定文章大纲"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">2</span>]},
+                {<span class="s">"id"</span>: <span class="n">4</span>, <span class="s">"action"</span>: <span class="s">"write"</span>, <span class="s">"desc"</span>: <span class="s">"撰写初稿"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">3</span>]},
+                {<span class="s">"id"</span>: <span class="n">5</span>, <span class="s">"action"</span>: <span class="s">"review"</span>, <span class="s">"desc"</span>: <span class="s">"自我审查并修订"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">4</span>]},
             ]
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"搭建"</span> <span class=<span class="s">"k"</span>>in</span> task <span class=<span class="s">"k"</span>>or</span> <span class="s">"构建"</span> <span class=<span class="s">"k"</span>>in</span> task:
-            <span class=<span class="s">"k"</span>>return</span> [
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"action"</span>: <span class="s">"analyze"</span>, <span class="s">"desc"</span>: <span class="s">"分析需求和约束"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>2</span>, <span class="s">"action"</span>: <span class="s">"design"</span>, <span class="s">"desc"</span>: <span class="s">"设计架构"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>1</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>3</span>, <span class="s">"action"</span>: <span class="s">"implement"</span>, <span class="s">"desc"</span>: <span class="s">"编码实现"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>2</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>4</span>, <span class="s">"action"</span>: <span class="s">"test"</span>, <span class="s">"desc"</span>: <span class="s">"编写测试"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>3</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>5</span>, <span class="s">"action"</span>: <span class="s">"document"</span>, <span class="s">"desc"</span>: <span class="s">"编写文档"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>4</span>]},
+        <span class="k">if</span> <span class="s">"搭建"</span> <span class="k">in</span> task <span class="k">or</span> <span class="s">"构建"</span> <span class="k">in</span> task:
+            <span class="k">return</span> [
+                {<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"action"</span>: <span class="s">"analyze"</span>, <span class="s">"desc"</span>: <span class="s">"分析需求和约束"</span>},
+                {<span class="s">"id"</span>: <span class="n">2</span>, <span class="s">"action"</span>: <span class="s">"design"</span>, <span class="s">"desc"</span>: <span class="s">"设计架构"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">1</span>]},
+                {<span class="s">"id"</span>: <span class="n">3</span>, <span class="s">"action"</span>: <span class="s">"implement"</span>, <span class="s">"desc"</span>: <span class="s">"编码实现"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">2</span>]},
+                {<span class="s">"id"</span>: <span class="n">4</span>, <span class="s">"action"</span>: <span class="s">"test"</span>, <span class="s">"desc"</span>: <span class="s">"编写测试"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">3</span>]},
+                {<span class="s">"id"</span>: <span class="n">5</span>, <span class="s">"action"</span>: <span class="s">"document"</span>, <span class="s">"desc"</span>: <span class="s">"编写文档"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">4</span>]},
             ]
-        <span class=<span class="s">"k"</span>>return</span> [
-            {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"action"</span>: <span class="s">"execute"</span>, <span class="s">"desc"</span>: task},
+        <span class="k">return</span> [
+            {<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"action"</span>: <span class="s">"execute"</span>, <span class="s">"desc"</span>: task},
         ]
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@staticmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>execute_plan</span>(plan: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"按计划执行（模拟）。
+    <span <span class="k">class</span>="d">@staticmethod</span>
+    <span class="k">def</span> <span class="f">execute_plan</span>(plan: <span class="b">list</span>[<span class="b">dict</span>]) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""按计划执行（模拟）。
 
         真实实现中每个步骤调用 ReAct Agent 或直接调 LLM。
-        <span class="s">""</span>"</span>
+        """</span>
         results = []
-        <span class=<span class="s">"k"</span>>for</span> step <span class=<span class="s">"k"</span>>in</span> plan:
+        <span class="k">for</span> step <span class="k">in</span> plan:
             deps = step.get(<span class="s">"depends_on"</span>, [])
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查依赖是否完成</span>
-            dep_results = [r <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> results <span class=<span class="s">"k"</span>>if</span> r[<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>] <span class=<span class="s">"k"</span>>in</span> deps]
-            <span class=<span class="s">"k"</span>>if</span> deps <span class=<span class="s">"k"</span>>and</span> <span class=<span class="s">"b"</span>>len</span>(dep_results) != <span class=<span class="s">"b"</span>>len</span>(deps):
+            <span class="h"># 检查依赖是否完成</span>
+            dep_results = [r <span class="k">for</span> r <span class="k">in</span> results <span class="k">if</span> r[<span class="s">"id"</span>] <span class="k">in</span> deps]
+            <span class="k">if</span> deps <span class="k">and</span> <span class="b">len</span>(dep_results) != <span class="b">len</span>(deps):
                 results.append({
                     **step, <span class="s">"status"</span>: <span class="s">"blocked"</span>,
                     <span class="s">"reason"</span>: f<span class="s">"依赖步骤 {deps} 未完成"</span>,
                 })
-                <span class=<span class="s">"k"</span>>continue</span>
+                <span class="k">continue</span>
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟执行</span>
+            <span class="h"># 模拟执行</span>
             results.append({
                 **step,
                 <span class="s">"status"</span>: <span class="s">"completed"</span>,
-                <span class="s">"output"</span>: f<span class="s">"已完成: {step[<span class='s'>'desc'</span>]}"</span>,
+                <span class="s">"output"</span>: f<span class="s">"已完成: {step['desc']}"</span>,
             })
-        <span class=<span class="s">"k"</span>>return</span> results</pre></div></details></div><div class="lecture"><h2>19.6 Orchestrator-Worker 模式</h2>
+        <span class="k">return</span> results</pre></div></details></div><div class="lecture"><h2>19.6 Orchestrator-Worker 模式</h2>
 <p>&nbsp;</p>
 <p>核心理念：</p>
 <p>一个聪明的 Orchestrator（有状态）管理多个无状态 Worker。</p>
@@ -492,96 +492,96 @@ body {
 <li>Orchestrator 有状态（记住任务上下文）</li>
 <li>Worker 无状态（每次只处理一个子任务）</li>
 <li>Worker 之间隔离（可以并行，可以不同权限）</li>
-<li>易于水平扩展（加 Worker 即可）</li></div><div class="code-section"><details open><summary>💻 代码 (91 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> re
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<li>易于水平扩展（加 Worker 即可）</li></div><div class="code-section"><details open><summary>💻 代码 (91 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>OrchestratorWorker</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Orchestrator-Worker 模式实现。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">OrchestratorWorker</span>:
+    <span class="s">"""Orchestrator-Worker 模式实现。"""</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
-        <span class=<span class="s">"k"</span>>self</span>.workers = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># {name: {permissions, handler}}</span>
-        <span class=<span class="s">"k"</span>>self</span>.task_state = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 全局任务状态</span>
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>.workers = {}  <span class="h"># {name: {permissions, handler}}</span>
+        <span class="k">self</span>.task_state = {}  <span class="h"># 全局任务状态</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>register_worker</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>, permissions: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"注册一个 Worker。
+    <span class="k">def</span> <span class="f">register_worker</span>(<span class="k">self</span>, name: <span class="b">str</span>, permissions: <span class="b">list</span>[<span class="b">str</span>]):
+        <span class="s">"""注册一个 Worker。
 
         Args:
             name: Worker 名称。
             permissions: 拥有的权限列表。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.workers[name] = {
+        """</span>
+        <span class="k">self</span>.workers[name] = {
             <span class="s">"permissions"</span>: permissions,
             <span class="s">"status"</span>: <span class="s">"idle"</span>,
-            <span class="s">"completed_tasks"</span>: <span class=<span class="s">"n"</span>>0</span>,
+            <span class="s">"completed_tasks"</span>: <span class="n">0</span>,
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>orchestrate</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Orchestrator：分析任务 → 分解 → 分配给 Worker。
+    <span class="k">def</span> <span class="f">orchestrate</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""Orchestrator：分析任务 → 分解 → 分配给 Worker。
 
         Returns:
             完整的执行记录。
-        <span class="s">""</span>"</span>
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第1步：Orchestrator 分析任务</span>
-        subtasks = <span class=<span class="s">"k"</span>>self</span>._decompose(task)
+        """</span>
+        <span class="h"># 第1步：Orchestrator 分析任务</span>
+        subtasks = <span class="k">self</span>._decompose(task)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第2步：分配给 Worker</span>
+        <span class="h"># 第2步：分配给 Worker</span>
         results = []
-        <span class=<span class="s">"k"</span>>for</span> sub <span class=<span class="s">"k"</span>>in</span> subtasks:
-            worker = <span class=<span class="s">"k"</span>>self</span>._select_worker(sub)
-            <span class=<span class="s">"k"</span>>if</span> worker <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+        <span class="k">for</span> sub <span class="k">in</span> subtasks:
+            worker = <span class="k">self</span>._select_worker(sub)
+            <span class="k">if</span> worker <span class="k">is</span> <span class="k">None</span>:
                 results.append({**sub, <span class="s">"status"</span>: <span class="s">"unassigned"</span>})
-                <span class=<span class="s">"k"</span>>continue</span>
+                <span class="k">continue</span>
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Worker 执行（模拟）</span>
-            <span class=<span class="s">"k"</span>>self</span>.workers[worker][<span class="s">"status"</span>] = <span class="s">"working"</span>
-            result = <span class=<span class="s">"k"</span>>self</span>._execute(sub, worker)
-            <span class=<span class="s">"k"</span>>self</span>.workers[worker][<span class="s">"status"</span>] = <span class="s">"idle"</span>
-            <span class=<span class="s">"k"</span>>self</span>.workers[worker][<span class="s">"completed_tasks"</span>] += <span class=<span class="s">"n"</span>>1</span>
+            <span class="h"># Worker 执行（模拟）</span>
+            <span class="k">self</span>.workers[worker][<span class="s">"status"</span>] = <span class="s">"working"</span>
+            result = <span class="k">self</span>._execute(sub, worker)
+            <span class="k">self</span>.workers[worker][<span class="s">"status"</span>] = <span class="s">"idle"</span>
+            <span class="k">self</span>.workers[worker][<span class="s">"completed_tasks"</span>] += <span class="n">1</span>
             results.append(result)
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"task"</span>: task,
-            <span class="s">"subtasks"</span>: <span class=<span class="s">"b"</span>>len</span>(subtasks),
+            <span class="s">"subtasks"</span>: <span class="b">len</span>(subtasks),
             <span class="s">"results"</span>: results,
-            <span class="s">"workers_used"</span>: <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"b"</span>>set</span>(r.get(<span class="s">"worker"</span>) <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> results)),
+            <span class="s">"workers_used"</span>: <span class="b">len</span>(<span class="b">set</span>(r.get(<span class="s">"worker"</span>) <span class="k">for</span> r <span class="k">in</span> results)),
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_decompose</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Orchestrator 分解任务。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"代码"</span> <span class=<span class="s">"k"</span>>in</span> task <span class=<span class="s">"k"</span>>and</span> <span class="s">"文档"</span> <span class=<span class="s">"k"</span>>in</span> task:
-            <span class=<span class="s">"k"</span>>return</span> [
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"code"</span>, <span class="s">"desc"</span>: <span class="s">"编写代码"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>2</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"docs"</span>, <span class="s">"desc"</span>: <span class="s">"编写文档"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>3</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"test"</span>, <span class="s">"desc"</span>: <span class="s">"运行测试"</span>},
+    <span class="k">def</span> <span class="f">_decompose</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""Orchestrator 分解任务。"""</span>
+        <span class="k">if</span> <span class="s">"代码"</span> <span class="k">in</span> task <span class="k">and</span> <span class="s">"文档"</span> <span class="k">in</span> task:
+            <span class="k">return</span> [
+                {<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"type"</span>: <span class="s">"code"</span>, <span class="s">"desc"</span>: <span class="s">"编写代码"</span>},
+                {<span class="s">"id"</span>: <span class="n">2</span>, <span class="s">"type"</span>: <span class="s">"docs"</span>, <span class="s">"desc"</span>: <span class="s">"编写文档"</span>},
+                {<span class="s">"id"</span>: <span class="n">3</span>, <span class="s">"type"</span>: <span class="s">"test"</span>, <span class="s">"desc"</span>: <span class="s">"运行测试"</span>},
             ]
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"全栈"</span> <span class=<span class="s">"k"</span>>in</span> task:
-            <span class=<span class="s">"k"</span>>return</span> [
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"frontend"</span>, <span class="s">"desc"</span>: <span class="s">"前端开发"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>2</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"backend"</span>, <span class="s">"desc"</span>: <span class="s">"后端开发"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>3</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"database"</span>, <span class="s">"desc"</span>: <span class="s">"数据库设计"</span>},
+        <span class="k">if</span> <span class="s">"全栈"</span> <span class="k">in</span> task:
+            <span class="k">return</span> [
+                {<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"type"</span>: <span class="s">"frontend"</span>, <span class="s">"desc"</span>: <span class="s">"前端开发"</span>},
+                {<span class="s">"id"</span>: <span class="n">2</span>, <span class="s">"type"</span>: <span class="s">"backend"</span>, <span class="s">"desc"</span>: <span class="s">"后端开发"</span>},
+                {<span class="s">"id"</span>: <span class="n">3</span>, <span class="s">"type"</span>: <span class="s">"database"</span>, <span class="s">"desc"</span>: <span class="s">"数据库设计"</span>},
             ]
-        <span class=<span class="s">"k"</span>>return</span> [{<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"general"</span>, <span class="s">"desc"</span>: task}]
+        <span class="k">return</span> [{<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"type"</span>: <span class="s">"general"</span>, <span class="s">"desc"</span>: task}]
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_select_worker</span>(<span class=<span class="s">"k"</span>>self</span>, subtask: <span class=<span class="s">"b"</span>>dict</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>str</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"根据子任务类型选择合适的 Worker。"</span><span class="s">""</span></span>
+    <span class="k">def</span> <span class="f">_select_worker</span>(<span class="k">self</span>, subtask: <span class="b">dict</span>) -&gt; Optional[<span class="b">str</span>]:
+        <span class="s">"""根据子任务类型选择合适的 Worker。"""</span>
         type_map = {
             <span class="s">"code"</span>: <span class="s">"coder"</span>, <span class="s">"docs"</span>: <span class="s">"writer"</span>, <span class="s">"test"</span>: <span class="s">"tester"</span>,
             <span class="s">"frontend"</span>: <span class="s">"frontend_dev"</span>, <span class="s">"backend"</span>: <span class="s">"backend_dev"</span>,
             <span class="s">"database"</span>: <span class="s">"db_admin"</span>, <span class="s">"general"</span>: <span class="s">"general_assistant"</span>,
         }
-        target = type_map.get(subtask[<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>], <span class="s">"general_assistant"</span>)
-        <span class=<span class="s">"k"</span>>return</span> target <span class=<span class="s">"k"</span>>if</span> target <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.workers <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"k"</span>>None</span>
+        target = type_map.get(subtask[<span class="s">"type"</span>], <span class="s">"general_assistant"</span>)
+        <span class="k">return</span> target <span class="k">if</span> target <span class="k">in</span> <span class="k">self</span>.workers <span class="k">else</span> <span class="k">None</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_execute</span>(<span class=<span class="s">"k"</span>>self</span>, subtask: <span class=<span class="s">"b"</span>>dict</span>, worker: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span class=<span class="s">"k"</span>>return</span> {
+    <span class="k">def</span> <span class="f">_execute</span>(<span class="k">self</span>, subtask: <span class="b">dict</span>, worker: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="k">return</span> {
             **subtask,
             <span class="s">"worker"</span>: worker,
-            <span class="s">"permissions"</span>: <span class=<span class="s">"k"</span>>self</span>.workers[worker][<span class="s">"permissions"</span>],
+            <span class="s">"permissions"</span>: <span class="k">self</span>.workers[worker][<span class="s">"permissions"</span>],
             <span class="s">"status"</span>: <span class="s">"completed"</span>,
-            <span class="s">"output"</span>: f<span class="s">"[{worker}] 已完成: {subtask[<span class='s'>'desc'</span>]}"</span>,
+            <span class="s">"output"</span>: f<span class="s">"[{worker}] 已完成: {subtask['desc']}"</span>,
         }</pre></div></details></div><div class="lecture"><h2>19.7 Evaluator-Optimizer 模式</h2>
 <p>&nbsp;</p>
 <p>核心理念：</p>
@@ -637,60 +637,60 @@ body {
 <p>用 Routing 模式分流：FAQ 走 RAG + 小模型；工单走 Tool Use；</p>
 <p>投诉需要升级（Human-in-the-Loop）。</p>
 <p>在工单处理中用 Reflection 确保回复质量。</p>
-<p>敏感操作（退款）需要双重确认。」</p></div><div class="code-section"><details open><summary>💻 代码 (54 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> re
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<p>敏感操作（退款）需要双重确认。」</p></div><div class="code-section"><details open><summary>💻 代码 (54 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_all_patterns</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示所有设计模式。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Agentic Workflow 设计模式综合演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_all_patterns</span>():
+    <span class="s">"""演示所有设计模式。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Agentic Workflow 设计模式综合演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Reflection</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── Reflection 模式 ──"</span>)
-    agent = ReflectionAgent(quality_threshold=<span class=<span class="s">"n"</span>>8</span>, max_rounds=<span class=<span class="s">"n"</span>>3</span>)
+    <span class="h"># Reflection</span>
+    <span class="b">print</span>(<span class="s">"\n  ── Reflection 模式 ──"</span>)
+    agent = ReflectionAgent(quality_threshold=<span class="n">8</span>, max_rounds=<span class="n">3</span>)
     result = agent.run(<span class="s">"解释 AI Agent 的核心组成"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  任务: {result[<span class='s'>'task'</span>]}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  轮数: {result[<span class='s'>'rounds'</span>]}"</span>)
-    <span class=<span class="s">"k"</span>>for</span> h <span class=<span class="s">"k"</span>>in</span> result[<span class="s">"history"</span>]:
-        icon = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> h[<span class="s">"score"</span>] &gt;= <span class=<span class="s">"n"</span>>8</span> <span class=<span class="s">"k"</span>>else</span> <span class="s">"🔄"</span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {icon} 第{h[<span class='s'>'<span class="</span>b<span class="s">">round</span>'</span>]}轮: {h[<span class='s'>'score'</span>]}/<span class="</span>n<span class="s">">10</span> | {h[<span class='s'>'issues'</span>]}"</span>)
+    <span class="b">print</span>(f<span class="s">"  任务: {result['task']}"</span>)
+    <span class="b">print</span>(f<span class="s">"  轮数: {result['rounds']}"</span>)
+    <span class="k">for</span> h <span class="k">in</span> result[<span class="s">"history"</span>]:
+        icon = <span class="s">"✅"</span> <span class="k">if</span> h[<span class="s">"score"</span>] &gt;= <span class="n">8</span> <span class="k">else</span> <span class="s">"🔄"</span>
+        <span class="b">print</span>(f<span class="s">"    {icon} 第{h['round']}轮: {h['score']}/10 | {h['issues']}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Routing</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── Routing 模式 ──"</span>)
+    <span class="h"># Routing</span>
+    <span class="b">print</span>(<span class="s">"\n  ── Routing 模式 ──"</span>)
     test_tasks = [
         <span class="s">"帮我写一个 Python 快速排序函数"</span>,
         <span class="s">"分析最近一个月的销售数据趋势"</span>,
         <span class="s">"什么是机器学习？"</span>,
         <span class="s">"删除用户 admin 的所有数据"</span>,
     ]
-    <span class=<span class="s">"k"</span>>for</span> task <span class=<span class="s">"k"</span>>in</span> test_tasks:
+    <span class="k">for</span> task <span class="k">in</span> test_tasks:
         decision = RoutingAgent.route(task)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  「{task[:<span class="</span>n<span class="s">">30</span>]}...」→ {decision[<span class='s'>'category'</span>]} "</span>
-              f<span class="s">"| 模型: {decision.get(<span class='s'>'model'</span>,<span class='s'>''</span>)} "</span>
-              f<span class="s">"| 成本: ${decision.get(<span class='s'>'estimated_cost'</span>, <span class="</span>n<span class="s">">0</span>):.3f}"</span>)
+        <span class="b">print</span>(f<span class="s">"  「{task[:30]}...」→ {decision['category']} "</span>
+              f<span class="s">"| 模型: {decision.get('model','')} "</span>
+              f<span class="s">"| 成本: ${decision.get('estimated_cost', 0):.3f}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Planning</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── Planning 模式 ──"</span>)
+    <span class="h"># Planning</span>
+    <span class="b">print</span>(<span class="s">"\n  ── Planning 模式 ──"</span>)
     plan = PlanningAgent.decompose(<span class="s">"分析AI Agent市场并写一份报告"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  分解为 {<span class="</span>b<span class="s">">len</span>(plan)} 个步骤:"</span>)
-    <span class=<span class="s">"k"</span>>for</span> step <span class=<span class="s">"k"</span>>in</span> plan:
-        deps = f<span class="s">" (依赖步骤 {step[<span class='s'>'depends_on'</span>]})"</span> <span class=<span class="s">"k"</span>>if</span> step.get(<span class="s">"depends_on"</span>) <span class=<span class="s">"k"</span>>else</span> <span class="s">""</span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    Step {step[<span class='s'>'<span class="</span>b<span class="s">">id</span>'</span>]}: {step[<span class='s'>'desc'</span>]}{deps}"</span>)
+    <span class="b">print</span>(f<span class="s">"  分解为 {len(plan)} 个步骤:"</span>)
+    <span class="k">for</span> step <span class="k">in</span> plan:
+        deps = f<span class="s">" (依赖步骤 {step['depends_on']})"</span> <span class="k">if</span> step.get(<span class="s">"depends_on"</span>) <span class="k">else</span> <span class="s">""</span>
+        <span class="b">print</span>(f<span class="s">"    Step {step['id']}: {step['desc']}{deps}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Orchestrator-Worker</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── Orchestrator-Worker 模式 ──"</span>)
+    <span class="h"># Orchestrator-Worker</span>
+    <span class="b">print</span>(<span class="s">"\n  ── Orchestrator-Worker 模式 ──"</span>)
     ow = OrchestratorWorker()
     ow.register_worker(<span class="s">"coder"</span>, [<span class="s">"read"</span>, <span class="s">"write"</span>, <span class="s">"execute"</span>])
     ow.register_worker(<span class="s">"writer"</span>, [<span class="s">"read"</span>, <span class="s">"write"</span>])
     ow.register_worker(<span class="s">"tester"</span>, [<span class="s">"execute"</span>])
     result = ow.orchestrate(<span class="s">"开发一个功能并写文档，确保代码和文档都完整"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  子任务: {result[<span class='s'>'subtasks'</span>]} | 使用 Worker: {result[<span class='s'>'workers_used'</span>]}"</span>)
-    <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> result[<span class="s">"results"</span>]:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{r.get(<span class='s'>'worker'</span>, <span class='s'>'?'</span>)}] {r[<span class='s'>'desc'</span>]} → {r[<span class='s'>'status'</span>]}"</span>)</pre></div></details></div><div class="lecture"><h2>19.11 本章总结</h2>
+    <span class="b">print</span>(f<span class="s">"  子任务: {result['subtasks']} | 使用 Worker: {result['workers_used']}"</span>)
+    <span class="k">for</span> r <span class="k">in</span> result[<span class="s">"results"</span>]:
+        <span class="b">print</span>(f<span class="s">"    [{r.get('worker', '?')}] {r['desc']} → {r['status']}"</span>)</pre></div></details></div><div class="lecture"><h2>19.11 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
@@ -715,47 +715,47 @@ body {
 <p>"你用过哪些 Agent 设计模式？"</p>
 <p>→ 说出 4+ 种 + 每种的使用场景 + 对比</p>
 <p>→ 重点说 Reflection（双角色分离）和 Routing（成本优化）</p>
-<p>→ 结尾：Anthropic 原则「简单优先，够用就好」</p></div><div class="code-section"><details open><summary>💻 代码 (29 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> re
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<p>→ 结尾：Anthropic 原则「简单优先，够用就好」</p></div><div class="code-section"><details open><summary>💻 代码 (29 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第19章：Agentic Workflow 设计模式                     ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Reflection · Routing · Planning · Orchestrator      ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第19章：Agentic Workflow 设计模式                     ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  Reflection · Routing · Planning · Orchestrator      ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_all_patterns()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ 模式选择速查表"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 模式选择速查表"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     choices = [
         (<span class="s">"输出质量 &gt; 速度"</span>, <span class="s">"Reflection"</span>),
         (<span class="s">"多种可分类任务"</span>, <span class="s">"Routing"</span>),
         (<span class="s">"复杂多步骤任务"</span>, <span class="s">"Planning + ReAct"</span>),
         (<span class="s">"可并行子任务"</span>, <span class="s">"Orchestrator-Worker"</span>),
         (<span class="s">"量化优化"</span>, <span class="s">"Evaluator-Optimizer"</span>),
-        (<span class="s">"安全关键操作"</span>, <span class="s">"Human-<span class="</span>k<span class="s">">in</span>-the-Loop"</span>),
+        (<span class="s">"安全关键操作"</span>, <span class="s">"Human-in-the-Loop"</span>),
         (<span class="s">"简单固定步骤"</span>, <span class="s">"直接 LLM（不用 Agent）"</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> scene, pattern <span class=<span class="s">"k"</span>>in</span> choices:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {scene:20s} → {pattern}"</span>)
+    <span class="k">for</span> scene, pattern <span class="k">in</span> choices:
+        <span class="b">print</span>(f<span class="s">"  {scene:20s} → {pattern}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第19章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (653 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+    <span class="b">print</span>(<span class="s">"\n✅ 第19章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (653 行)</summary><div class="code-block"><pre><span class="s">"""
 第19章：Agentic Workflow 设计模式 —— 系统设计的万能框架
 ========================================================
 
 📌 本章目标：
-  <span class=<span class="s">"n"</span>>1</span>. 掌握 <span class=<span class="s">"n"</span>>7</span> 种核心 Agentic 设计模式及其适用场景
-  <span class=<span class="s">"n"</span>>2</span>. 理解每种模式的执行流程、代价和权衡
-  <span class=<span class="s">"n"</span>>3</span>. 能用 LangGraph 实现关键模式
-  <span class=<span class="s">"n"</span>>4</span>. 建立系统设计题的模式选择框架
-  <span class=<span class="s">"n"</span>>5</span>. 学会避免 Top <span class=<span class="s">"n"</span>>3</span> 常见错误
+  1. 掌握 7 种核心 Agentic 设计模式及其适用场景
+  2. 理解每种模式的执行流程、代价和权衡
+  3. 能用 LangGraph 实现关键模式
+  4. 建立系统设计题的模式选择框架
+  5. 学会避免 Top 3 常见错误
 
 📌 面试高频点：
-  - 「你用过哪些 Agent 设计模式？」—— 必须能说出 <span class=<span class="s">"n"</span>>4</span>+ 种并对比
+  - 「你用过哪些 Agent 设计模式？」—— 必须能说出 4+ 种并对比
   - 「Reflection 模式怎么实现？和纯 LLM 有什么区别？」
   - 「Routing 和 Orchestrator-Worker 的区别？」
   - 「什么时候不该用 Agent？」—— Anthropic 核心理念
@@ -766,7 +766,7 @@ body {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-<span class=<span class="s">"n"</span>>19.1</span> Workflows vs Agents —— 先搞清楚概念
+19.1 Workflows vs Agents —— 先搞清楚概念
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Anthropic 的核心区分（面试必考！）：
@@ -780,23 +780,23 @@ Anthropic 的核心区分（面试必考！）：
     → 步骤不可预测时使用
 
 关键原则（面试金句）：
-  <span class="s">"When building applications <span class="</span>k">with</span> LLMs, we recommend finding the
-   simplest solution possible, <span class=<span class="s">"k"</span>>and</span> only increasing complexity when
-   needed. This might mean <span class=<span class="s">"k"</span>>not</span> building agentic systems at <span class=<span class="s">"b"</span>>all</span>."
+  "When building applications with LLMs, we recommend finding the
+   simplest solution possible, and only increasing complexity when
+   needed. This might mean not building agentic systems at all."
 
-<span class=<span class="s">"n"</span>>19.2</span> 设计模式全景图
+19.2 设计模式全景图
 ━━━━━━━━━━━━━━━━━━
 
 ┌──────────────────────────────────────────────────────────────┐
 │                  Agentic Design Patterns                       │
 ├────────────┬─────────────────────────────────────────────────┤
-│ <span class=<span class="s">"n"</span>>1</span>. ReAct   │ 推理-行动循环，最通用（Ch3/Ch8 已深入讲过）       │
-│ <span class=<span class="s">"n"</span>>2</span>. Reflection│ 自我批评 → 迭代改进（本章19.<span class=<span class="s">"n"</span>>3</span>）                │
-│ <span class=<span class="s">"n"</span>>3</span>. Routing  │ 按任务特征路由到不同处理器（本章19.<span class=<span class="s">"n"</span>>4</span>）           │
-│ <span class=<span class="s">"n"</span>>4</span>. Planning │ 先制定计划再执行（本章19.<span class=<span class="s">"n"</span>>5</span>）                    │
-│ <span class=<span class="s">"n"</span>>5</span>. Orchestrator│ 协调者分发任务给专业 Worker（本章19.<span class=<span class="s">"n"</span>>6</span>）       │
-│ <span class=<span class="s">"n"</span>>6</span>. Evaluator │ 评估-优化双循环（本章19.<span class=<span class="s">"n"</span>>7</span>）                   │
-│ <span class=<span class="s">"n"</span>>7</span>. Human-<span class=<span class="s">"k"</span>>in</span>- │ 关键节点人工确认（本章19.<span class=<span class="s">"n"</span>>8</span>）                  │
+│ 1. ReAct   │ 推理-行动循环，最通用（Ch3/Ch8 已深入讲过）       │
+│ 2. Reflection│ 自我批评 → 迭代改进（本章19.3）                │
+│ 3. Routing  │ 按任务特征路由到不同处理器（本章19.4）           │
+│ 4. Planning │ 先制定计划再执行（本章19.5）                    │
+│ 5. Orchestrator│ 协调者分发任务给专业 Worker（本章19.6）       │
+│ 6. Evaluator │ 评估-优化双循环（本章19.7）                   │
+│ 7. Human-in- │ 关键节点人工确认（本章19.8）                  │
 │    the-Loop │                                                 │
 └────────────┴─────────────────────────────────────────────────┘
 
@@ -809,21 +809,21 @@ Anthropic 的核心区分（面试必考！）：
 │ 复杂的多步骤任务            │ Planning + ReAct             │
 │ 可分解为独立子任务          │ Orchestrator-Worker          │
 │ 需要通过评测指标迭代优化    │ Evaluator-Optimizer          │
-│ 涉及资金/数据安全的操作     │ Human-<span class=<span class="s">"k"</span>>in</span>-the-Loop            │
+│ 涉及资金/数据安全的操作     │ Human-in-the-Loop            │
 │ 路径不可预测的复杂推理      │ 纯 ReAct Agent               │
 │ 简单、步骤固定的任务        │ 不需要 Agent！直接用 LLM 调用  │
 └────────────────────────────┴──────────────────────────────┘
-<span class="s">""</span>"</span>
+"""</span>
 
-<span class=<span class="s">"k"</span>>import</span> json
-<span class=<span class="s">"k"</span>>import</span> time
-<span class=<span class="s">"k"</span>>import</span> re
-<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
-<span class=<span class="s">"k"</span>>from</span> dataclasses <span class=<span class="s">"k"</span>>import</span> dataclass, field
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>19.3</span> Reflection 模式 —— 自我批评，迭代改进
+<span class="s">"""
+19.3 Reflection 模式 —— 自我批评，迭代改进
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 核心理念：
@@ -840,117 +840,117 @@ Anthropic 的核心区分（面试必考！）：
 类比：
   就像作家写完初稿后，自己很难发现错字
   需要一个编辑来审阅
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ReflectionAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Reflection 模式实现 —— Generator + Critic 双角色。
+<span class="k">class</span> <span class="f">ReflectionAgent</span>:
+    <span class="s">"""Reflection 模式实现 —— Generator + Critic 双角色。
 
     流程：
       Generator 生成 → Critic 审查 → 如果不够好 → Generator 修订 → ...
-    <span class="s">""</span>"</span>
+    """</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, quality_threshold: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>8</span>, max_rounds: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>3</span>):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, quality_threshold: <span class="b">int</span> = <span class="n">8</span>, max_rounds: <span class="b">int</span> = <span class="n">3</span>):
+        <span class="s">"""
         Args:
-            quality_threshold: 质量阈值（<span class=<span class="s">"n"</span>>1</span>-<span class=<span class="s">"n"</span>>10</span>），达到即停止。
+            quality_threshold: 质量阈值（1-10），达到即停止。
             max_rounds: 最大迭代轮数。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.threshold = quality_threshold
-        <span class=<span class="s">"k"</span>>self</span>.max_rounds = max_rounds
+        """</span>
+        <span class="k">self</span>.threshold = quality_threshold
+        <span class="k">self</span>.max_rounds = max_rounds
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>generate</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, previous: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>,
-                 feedback: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Generator：生成/修订输出（模拟）。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> previous:
-            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>._generate_initial(task)
-        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>._revise(task, previous, feedback)
+    <span class="k">def</span> <span class="f">generate</span>(<span class="k">self</span>, task: <span class="b">str</span>, previous: <span class="b">str</span> = <span class="s">""</span>,
+                 feedback: <span class="b">str</span> = <span class="s">""</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""Generator：生成/修订输出（模拟）。"""</span>
+        <span class="k">if</span> <span class="k">not</span> previous:
+            <span class="k">return</span> <span class="k">self</span>._generate_initial(task)
+        <span class="k">return</span> <span class="k">self</span>._revise(task, previous, feedback)
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>critique</span>(<span class=<span class="s">"k"</span>>self</span>, output: <span class=<span class="s">"b"</span>>str</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Critic：以角色分离的方式审查输出。
+    <span class="k">def</span> <span class="f">critique</span>(<span class="k">self</span>, output: <span class="b">str</span>, task: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""Critic：以角色分离的方式审查输出。
 
         真实实现中用不同的 system prompt 或不同的模型。
-        <span class="s">""</span>"</span>
+        """</span>
         issues = []
-        score = <span class=<span class="s">"n"</span>>10</span>
+        score = <span class="n">10</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 规则检查（模拟 LLM-<span class=<span class="s">"k"</span>>as</span>-Critic）</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(output) &lt; <span class=<span class="s">"n"</span>>50</span>:
+        <span class="h"># 规则检查（模拟 LLM-as-Critic）</span>
+        <span class="k">if</span> <span class="b">len</span>(output) &lt; <span class="n">50</span>:
             issues.append(<span class="s">"输出太短，缺乏细节"</span>)
-            score -= <span class=<span class="s">"n"</span>>3</span>
+            score -= <span class="n">3</span>
 
-        <span class=<span class="s">"k"</span>>if</span> task.lower() <span class=<span class="s">"k"</span>>in</span> output.lower():
-            <span class=<span class="s">"k"</span>>pass</span>  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 回应了任务</span>
-        <span class=<span class="s">"k"</span>>else</span>:
+        <span class="k">if</span> task.lower() <span class="k">in</span> output.lower():
+            <span class="k">pass</span>  <span class="h"># 回应了任务</span>
+        <span class="k">else</span>:
             issues.append(<span class="s">"没有直接回应任务要求"</span>)
-            score -= <span class=<span class="s">"n"</span>>2</span>
+            score -= <span class="n">2</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查是否包含推测性语言</span>
+        <span class="h"># 检查是否包含推测性语言</span>
         uncertain_patterns = [<span class="s">"可能"</span>, <span class="s">"也许"</span>, <span class="s">"大概"</span>, <span class="s">"似乎"</span>]
-        uncertain_count = <span class=<span class="s">"b"</span>>sum</span>(
-            <span class=<span class="s">"n"</span>>1</span> <span class=<span class="s">"k"</span>>for</span> p <span class=<span class="s">"k"</span>>in</span> uncertain_patterns <span class=<span class="s">"k"</span>>if</span> p <span class=<span class="s">"k"</span>>in</span> output
+        uncertain_count = <span class="b">sum</span>(
+            <span class="n">1</span> <span class="k">for</span> p <span class="k">in</span> uncertain_patterns <span class="k">if</span> p <span class="k">in</span> output
         )
-        <span class=<span class="s">"k"</span>>if</span> uncertain_count &gt;= <span class=<span class="s">"n"</span>>3</span>:
+        <span class="k">if</span> uncertain_count &gt;= <span class="n">3</span>:
             issues.append(f<span class="s">"包含 {uncertain_count} 处不确定表述"</span>)
-            score -= <span class=<span class="s">"n"</span>>1</span>
+            score -= <span class="n">1</span>
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查结构</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"\n"</span> <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>in</span> output <span class=<span class="s">"k"</span>>or</span> <span class=<span class="s">"b"</span>>len</span>(output.split(<span class="s">"\n"</span>)) &lt; <span class=<span class="s">"n"</span>>3</span>:
+        <span class="h"># 检查结构</span>
+        <span class="k">if</span> <span class="s">"\n"</span> <span class="k">not</span> <span class="k">in</span> output <span class="k">or</span> <span class="b">len</span>(output.split(<span class="s">"\n"</span>)) &lt; <span class="n">3</span>:
             issues.append(<span class="s">"缺少段落结构，可读性差"</span>)
-            score -= <span class=<span class="s">"n"</span>>1</span>
+            score -= <span class="n">1</span>
 
-        <span class=<span class="s">"k"</span>>return</span> {
-            <span class="s">"score"</span>: <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"n"</span>>1</span>, score),
+        <span class="k">return</span> {
+            <span class="s">"score"</span>: <span class="b">max</span>(<span class="n">1</span>, score),
             <span class="s">"issues"</span>: issues,
-            <span class="s">"passed"</span>: score &gt;= <span class=<span class="s">"k"</span>>self</span>.threshold,
+            <span class="s">"passed"</span>: score &gt;= <span class="k">self</span>.threshold,
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"执行完整的 Reflection 循环。
+    <span class="k">def</span> <span class="f">run</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""执行完整的 Reflection 循环。
 
         Returns:
             包含最终输出和迭代记录的字典。
-        <span class="s">""</span>"</span>
+        """</span>
         history = []
-        output = <span class=<span class="s">"k"</span>>self</span>.generate(task)
+        output = <span class="k">self</span>.generate(task)
 
-        <span class=<span class="s">"k"</span>>for</span> round_num <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>1</span>, <span class=<span class="s">"k"</span>>self</span>.max_rounds + <span class=<span class="s">"n"</span>>1</span>):
-            review = <span class=<span class="s">"k"</span>>self</span>.critique(output, task)
+        <span class="k">for</span> round_num <span class="k">in</span> <span class="b">range</span>(<span class="n">1</span>, <span class="k">self</span>.max_rounds + <span class="n">1</span>):
+            review = <span class="k">self</span>.critique(output, task)
             history.append({
-                <span class="s">"<span class="</span>b<span class="s">">round</span>"</span>: round_num,
+                <span class="s">"round"</span>: round_num,
                 <span class="s">"score"</span>: review[<span class="s">"score"</span>],
                 <span class="s">"issues"</span>: review[<span class="s">"issues"</span>],
             })
 
-            <span class=<span class="s">"k"</span>>if</span> review[<span class="s">"passed"</span>]:
-                <span class=<span class="s">"k"</span>>break</span>
+            <span class="k">if</span> review[<span class="s">"passed"</span>]:
+                <span class="k">break</span>
 
-            <span class=<span class="s">"k"</span>>if</span> round_num &lt; <span class=<span class="s">"k"</span>>self</span>.max_rounds:
+            <span class="k">if</span> round_num &lt; <span class="k">self</span>.max_rounds:
                 feedback = <span class="s">"；"</span>.join(review[<span class="s">"issues"</span>])
-                output = <span class=<span class="s">"k"</span>>self</span>.generate(
+                output = <span class="k">self</span>.generate(
                     task, previous=output, feedback=feedback
                 )
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"task"</span>: task,
             <span class="s">"final_output"</span>: output,
             <span class="s">"history"</span>: history,
-            <span class="s">"rounds"</span>: <span class=<span class="s">"b"</span>>len</span>(history),
-            <span class="s">"passed"</span>: history[-<span class=<span class="s">"n"</span>>1</span>][<span class="s">"score"</span>] &gt;= <span class=<span class="s">"k"</span>>self</span>.threshold,
+            <span class="s">"rounds"</span>: <span class="b">len</span>(history),
+            <span class="s">"passed"</span>: history[-<span class="n">1</span>][<span class="s">"score"</span>] &gt;= <span class="k">self</span>.threshold,
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_generate_initial</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span class=<span class="s">"k"</span>>return</span> f<span class="s">"关于「{task}」，AI Agent 是一种能够自主感知环境、"</span> \
+    <span class="k">def</span> <span class="f">_generate_initial</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="k">return</span> f<span class="s">"关于「{task}」，AI Agent 是一种能够自主感知环境、"</span> \
                f<span class="s">"做出决策并执行行动的智能系统。"</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_revise</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, previous: <span class=<span class="s">"b"</span>>str</span>, feedback: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span class=<span class="s">"k"</span>>return</span> f<span class="s">"修订版（收到反馈: {feedback}）：\n{previous}\n"</span> \
+    <span class="k">def</span> <span class="f">_revise</span>(<span class="k">self</span>, task: <span class="b">str</span>, previous: <span class="b">str</span>, feedback: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="k">return</span> f<span class="s">"修订版（收到反馈: {feedback}）：\n{previous}\n"</span> \
                f<span class="s">"补充说明：AI Agent 主要由 LLM、规划器、记忆系统和"</span> \
                f<span class="s">"工具调用四部分组成，通过 ReAct 循环协调工作。"</span>
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>19.4</span> Routing 模式 —— 分类 → 分发
+<span class="s">"""
+19.4 Routing 模式 —— 分类 → 分发
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 核心理念：
@@ -968,65 +968,65 @@ Anthropic 的核心区分（面试必考！）：
   - 路由的依据是什么？（关键词/语义/复杂度评分？）
   - 每个路由目标用不同模型、不同 prompt、不同工具集
   - 可以实现成本优化（简单问题用小模型，复杂问题用大模型）
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>RoutingAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Routing 模式 —— 根据任务特征选择最合适的处理器。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">RoutingAgent</span>:
+    <span class="s">"""Routing 模式 —— 根据任务特征选择最合适的处理器。"""</span>
 
     ROUTE_TABLE = {
-        <span class="s">"简单问答"</span>: {<span class="s">"model"</span>: <span class="s">"小模型"</span>, <span class="s">"max_tokens"</span>: <span class=<span class="s">"n"</span>>256</span>},
-        <span class="s">"代码相关"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class=<span class="s">"n"</span>>2048</span>, <span class="s">"tools"</span>: [<span class="s">"code_exec"</span>]},
-        <span class="s">"数据分析"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class=<span class="s">"n"</span>>4096</span>, <span class="s">"tools"</span>: [<span class="s">"sql"</span>, <span class="s">"chart"</span>]},
-        <span class="s">"复杂推理"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class=<span class="s">"n"</span>>8192</span>, <span class="s">"tools"</span>: [<span class="s">"search"</span>, <span class="s">"calculator"</span>]},
-        <span class="s">"安全敏感"</span>: {<span class="s">"model"</span>: <span class="s">"审核模型"</span>, <span class="s">"human_review"</span>: <span class=<span class="s">"k"</span>>True</span>},
+        <span class="s">"简单问答"</span>: {<span class="s">"model"</span>: <span class="s">"小模型"</span>, <span class="s">"max_tokens"</span>: <span class="n">256</span>},
+        <span class="s">"代码相关"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class="n">2048</span>, <span class="s">"tools"</span>: [<span class="s">"code_exec"</span>]},
+        <span class="s">"数据分析"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class="n">4096</span>, <span class="s">"tools"</span>: [<span class="s">"sql"</span>, <span class="s">"chart"</span>]},
+        <span class="s">"复杂推理"</span>: {<span class="s">"model"</span>: <span class="s">"大模型"</span>, <span class="s">"max_tokens"</span>: <span class="n">8192</span>, <span class="s">"tools"</span>: [<span class="s">"search"</span>, <span class="s">"calculator"</span>]},
+        <span class="s">"安全敏感"</span>: {<span class="s">"model"</span>: <span class="s">"审核模型"</span>, <span class="s">"human_review"</span>: <span class="k">True</span>},
     }
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@staticmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>classify</span>(task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"分类器：分析任务特征，决定路由目标。
+    <span <span class="k">class</span>="d">@staticmethod</span>
+    <span class="k">def</span> <span class="f">classify</span>(task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""分类器：分析任务特征，决定路由目标。
 
         真实实现中用 LLM 做分类：
-          prompt = f<span class="s">"将以下任务分类为 [简单问答/代码相关/数据分析/复杂推理/安全敏感]: {task}"</span>
-        <span class="s">""</span>"</span>
+          prompt = f"将以下任务分类为 [简单问答/代码相关/数据分析/复杂推理/安全敏感]: {task}"
+        """</span>
         task_lower = task.lower()
 
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> task_lower <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"代码"</span>, <span class="s">"debug"</span>, <span class="s">"写一个"</span>, <span class="s">"实现"</span>]):
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"代码相关"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> task_lower <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"分析"</span>, <span class="s">"统计"</span>, <span class="s">"趋势"</span>, <span class="s">"报表"</span>, <span class="s">"数据"</span>]):
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"数据分析"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>any</span>(w <span class=<span class="s">"k"</span>>in</span> task_lower <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"删除"</span>, <span class="s">"密码"</span>, <span class="s">"转账"</span>, <span class="s">"admin"</span>]):
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"安全敏感"</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(task) &gt; <span class=<span class="s">"n"</span>>100</span> <span class=<span class="s">"k"</span>>or</span> <span class=<span class="s">"b"</span>>any</span>(
-            w <span class=<span class="s">"k"</span>>in</span> task_lower <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> [<span class="s">"为什么"</span>, <span class="s">"如何"</span>, <span class="s">"解释"</span>, <span class="s">"原因"</span>]
+        <span class="k">if</span> <span class="b">any</span>(w <span class="k">in</span> task_lower <span class="k">for</span> w <span class="k">in</span> [<span class="s">"代码"</span>, <span class="s">"debug"</span>, <span class="s">"写一个"</span>, <span class="s">"实现"</span>]):
+            <span class="k">return</span> <span class="s">"代码相关"</span>
+        <span class="k">if</span> <span class="b">any</span>(w <span class="k">in</span> task_lower <span class="k">for</span> w <span class="k">in</span> [<span class="s">"分析"</span>, <span class="s">"统计"</span>, <span class="s">"趋势"</span>, <span class="s">"报表"</span>, <span class="s">"数据"</span>]):
+            <span class="k">return</span> <span class="s">"数据分析"</span>
+        <span class="k">if</span> <span class="b">any</span>(w <span class="k">in</span> task_lower <span class="k">for</span> w <span class="k">in</span> [<span class="s">"删除"</span>, <span class="s">"密码"</span>, <span class="s">"转账"</span>, <span class="s">"admin"</span>]):
+            <span class="k">return</span> <span class="s">"安全敏感"</span>
+        <span class="k">if</span> <span class="b">len</span>(task) &gt; <span class="n">100</span> <span class="k">or</span> <span class="b">any</span>(
+            w <span class="k">in</span> task_lower <span class="k">for</span> w <span class="k">in</span> [<span class="s">"为什么"</span>, <span class="s">"如何"</span>, <span class="s">"解释"</span>, <span class="s">"原因"</span>]
         ):
-            <span class=<span class="s">"k"</span>>return</span> <span class="s">"复杂推理"</span>
-        <span class=<span class="s">"k"</span>>return</span> <span class="s">"简单问答"</span>
+            <span class="k">return</span> <span class="s">"复杂推理"</span>
+        <span class="k">return</span> <span class="s">"简单问答"</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@staticmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>route</span>(task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"路由：分类 → 选择配置 → 返回处理方案。
+    <span <span class="k">class</span>="d">@staticmethod</span>
+    <span class="k">def</span> <span class="f">route</span>(task: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""路由：分类 → 选择配置 → 返回处理方案。
 
         Returns:
             包含路由决策的字典。
-        <span class="s">""</span>"</span>
+        """</span>
         category = RoutingAgent.classify(task)
         config = RoutingAgent.ROUTE_TABLE[category].copy()
         config[<span class="s">"category"</span>] = category
         config[<span class="s">"task"</span>] = task
         config[<span class="s">"estimated_cost"</span>] = _estimate_cost(config)
-        <span class=<span class="s">"k"</span>>return</span> config
+        <span class="k">return</span> config
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_estimate_cost</span>(config: <span class=<span class="s">"b"</span>>dict</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"估算处理成本（模拟）。"</span><span class="s">""</span></span>
-    base = {<span class="s">"简单问答"</span>: <span class=<span class="s">"n"</span>>0.001</span>, <span class="s">"代码相关"</span>: <span class=<span class="s">"n"</span>>0.01</span>,
-            <span class="s">"数据分析"</span>: <span class=<span class="s">"n"</span>>0.05</span>, <span class="s">"复杂推理"</span>: <span class=<span class="s">"n"</span>>0.10</span>, <span class="s">"安全敏感"</span>: <span class=<span class="s">"n"</span>>0.02</span>}
-    <span class=<span class="s">"k"</span>>return</span> base.get(config[<span class="s">"category"</span>], <span class=<span class="s">"n"</span>>0.01</span>)
+<span class="k">def</span> <span class="f">_estimate_cost</span>(config: <span class="b">dict</span>) -&gt; <span class="b">float</span>:
+    <span class="s">"""估算处理成本（模拟）。"""</span>
+    base = {<span class="s">"简单问答"</span>: <span class="n">0.001</span>, <span class="s">"代码相关"</span>: <span class="n">0.01</span>,
+            <span class="s">"数据分析"</span>: <span class="n">0.05</span>, <span class="s">"复杂推理"</span>: <span class="n">0.10</span>, <span class="s">"安全敏感"</span>: <span class="n">0.02</span>}
+    <span class="k">return</span> base.get(config[<span class="s">"category"</span>], <span class="n">0.01</span>)
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>19.5</span> Planning 模式 —— 先规划，再执行
+<span class="s">"""
+19.5 Planning 模式 —— 先规划，再执行
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 和 Ch3 中 Plan-Execute 的关系：
@@ -1036,189 +1036,189 @@ Anthropic 的核心区分（面试必考！）：
   复杂任务 → 分解为子步骤 → 每个子步骤独立执行 → 汇总结果
 
 关键洞察：
-  <span class=<span class="s">"n"</span>>1</span>. 规划用 LLM（灵活），执行按计划（可靠）
-  <span class=<span class="s">"n"</span>>2</span>. 规划不是「一次性」的 —— 执行中可以根据反馈调整计划
-  <span class=<span class="s">"n"</span>>3</span>. 规划质量取决于分解粒度（太粗执行不了，太细浪费 token）
-<span class="s">""</span>"</span>
+  1. 规划用 LLM（灵活），执行按计划（可靠）
+  2. 规划不是「一次性」的 —— 执行中可以根据反馈调整计划
+  3. 规划质量取决于分解粒度（太粗执行不了，太细浪费 token）
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>PlanningAgent</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Planning 模式 —— 任务分解 + 分步执行。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">PlanningAgent</span>:
+    <span class="s">"""Planning 模式 —— 任务分解 + 分步执行。"""</span>
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@staticmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>decompose</span>(task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"任务分解：将复杂任务拆成子步骤。
+    <span <span class="k">class</span>="d">@staticmethod</span>
+    <span class="k">def</span> <span class="f">decompose</span>(task: <span class="b">str</span>) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""任务分解：将复杂任务拆成子步骤。
 
         真实实现用 LLM：
-          f<span class="s">"将以下任务分解为 <span class="</span>n<span class="s">">3</span>-<span class="</span>n<span class="s">">6</span> 个可独立执行的子步骤: {task}"</span>
-        <span class="s">""</span>"</span>
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟分解逻辑</span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"分析"</span> <span class=<span class="s">"k"</span>>in</span> task <span class=<span class="s">"k"</span>>and</span> <span class="s">"写"</span> <span class=<span class="s">"k"</span>>in</span> task:
-            <span class=<span class="s">"k"</span>>return</span> [
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"action"</span>: <span class="s">"research"</span>, <span class="s">"desc"</span>: <span class="s">"搜索相关资料"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>2</span>, <span class="s">"action"</span>: <span class="s">"analyze"</span>, <span class="s">"desc"</span>: <span class="s">"分析关键信息"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>1</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>3</span>, <span class="s">"action"</span>: <span class="s">"outline"</span>, <span class="s">"desc"</span>: <span class="s">"制定文章大纲"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>2</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>4</span>, <span class="s">"action"</span>: <span class="s">"write"</span>, <span class="s">"desc"</span>: <span class="s">"撰写初稿"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>3</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>5</span>, <span class="s">"action"</span>: <span class="s">"review"</span>, <span class="s">"desc"</span>: <span class="s">"自我审查并修订"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>4</span>]},
+          f"将以下任务分解为 3-6 个可独立执行的子步骤: {task}"
+        """</span>
+        <span class="h"># 模拟分解逻辑</span>
+        <span class="k">if</span> <span class="s">"分析"</span> <span class="k">in</span> task <span class="k">and</span> <span class="s">"写"</span> <span class="k">in</span> task:
+            <span class="k">return</span> [
+                {<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"action"</span>: <span class="s">"research"</span>, <span class="s">"desc"</span>: <span class="s">"搜索相关资料"</span>},
+                {<span class="s">"id"</span>: <span class="n">2</span>, <span class="s">"action"</span>: <span class="s">"analyze"</span>, <span class="s">"desc"</span>: <span class="s">"分析关键信息"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">1</span>]},
+                {<span class="s">"id"</span>: <span class="n">3</span>, <span class="s">"action"</span>: <span class="s">"outline"</span>, <span class="s">"desc"</span>: <span class="s">"制定文章大纲"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">2</span>]},
+                {<span class="s">"id"</span>: <span class="n">4</span>, <span class="s">"action"</span>: <span class="s">"write"</span>, <span class="s">"desc"</span>: <span class="s">"撰写初稿"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">3</span>]},
+                {<span class="s">"id"</span>: <span class="n">5</span>, <span class="s">"action"</span>: <span class="s">"review"</span>, <span class="s">"desc"</span>: <span class="s">"自我审查并修订"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">4</span>]},
             ]
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"搭建"</span> <span class=<span class="s">"k"</span>>in</span> task <span class=<span class="s">"k"</span>>or</span> <span class="s">"构建"</span> <span class=<span class="s">"k"</span>>in</span> task:
-            <span class=<span class="s">"k"</span>>return</span> [
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"action"</span>: <span class="s">"analyze"</span>, <span class="s">"desc"</span>: <span class="s">"分析需求和约束"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>2</span>, <span class="s">"action"</span>: <span class="s">"design"</span>, <span class="s">"desc"</span>: <span class="s">"设计架构"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>1</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>3</span>, <span class="s">"action"</span>: <span class="s">"implement"</span>, <span class="s">"desc"</span>: <span class="s">"编码实现"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>2</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>4</span>, <span class="s">"action"</span>: <span class="s">"test"</span>, <span class="s">"desc"</span>: <span class="s">"编写测试"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>3</span>]},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>5</span>, <span class="s">"action"</span>: <span class="s">"document"</span>, <span class="s">"desc"</span>: <span class="s">"编写文档"</span>,
-                 <span class="s">"depends_on"</span>: [<span class=<span class="s">"n"</span>>4</span>]},
+        <span class="k">if</span> <span class="s">"搭建"</span> <span class="k">in</span> task <span class="k">or</span> <span class="s">"构建"</span> <span class="k">in</span> task:
+            <span class="k">return</span> [
+                {<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"action"</span>: <span class="s">"analyze"</span>, <span class="s">"desc"</span>: <span class="s">"分析需求和约束"</span>},
+                {<span class="s">"id"</span>: <span class="n">2</span>, <span class="s">"action"</span>: <span class="s">"design"</span>, <span class="s">"desc"</span>: <span class="s">"设计架构"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">1</span>]},
+                {<span class="s">"id"</span>: <span class="n">3</span>, <span class="s">"action"</span>: <span class="s">"implement"</span>, <span class="s">"desc"</span>: <span class="s">"编码实现"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">2</span>]},
+                {<span class="s">"id"</span>: <span class="n">4</span>, <span class="s">"action"</span>: <span class="s">"test"</span>, <span class="s">"desc"</span>: <span class="s">"编写测试"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">3</span>]},
+                {<span class="s">"id"</span>: <span class="n">5</span>, <span class="s">"action"</span>: <span class="s">"document"</span>, <span class="s">"desc"</span>: <span class="s">"编写文档"</span>,
+                 <span class="s">"depends_on"</span>: [<span class="n">4</span>]},
             ]
-        <span class=<span class="s">"k"</span>>return</span> [
-            {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"action"</span>: <span class="s">"execute"</span>, <span class="s">"desc"</span>: task},
+        <span class="k">return</span> [
+            {<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"action"</span>: <span class="s">"execute"</span>, <span class="s">"desc"</span>: task},
         ]
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@staticmethod</span>
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>execute_plan</span>(plan: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"按计划执行（模拟）。
+    <span <span class="k">class</span>="d">@staticmethod</span>
+    <span class="k">def</span> <span class="f">execute_plan</span>(plan: <span class="b">list</span>[<span class="b">dict</span>]) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""按计划执行（模拟）。
 
         真实实现中每个步骤调用 ReAct Agent 或直接调 LLM。
-        <span class="s">""</span>"</span>
+        """</span>
         results = []
-        <span class=<span class="s">"k"</span>>for</span> step <span class=<span class="s">"k"</span>>in</span> plan:
+        <span class="k">for</span> step <span class="k">in</span> plan:
             deps = step.get(<span class="s">"depends_on"</span>, [])
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 检查依赖是否完成</span>
-            dep_results = [r <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> results <span class=<span class="s">"k"</span>>if</span> r[<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>] <span class=<span class="s">"k"</span>>in</span> deps]
-            <span class=<span class="s">"k"</span>>if</span> deps <span class=<span class="s">"k"</span>>and</span> <span class=<span class="s">"b"</span>>len</span>(dep_results) != <span class=<span class="s">"b"</span>>len</span>(deps):
+            <span class="h"># 检查依赖是否完成</span>
+            dep_results = [r <span class="k">for</span> r <span class="k">in</span> results <span class="k">if</span> r[<span class="s">"id"</span>] <span class="k">in</span> deps]
+            <span class="k">if</span> deps <span class="k">and</span> <span class="b">len</span>(dep_results) != <span class="b">len</span>(deps):
                 results.append({
                     **step, <span class="s">"status"</span>: <span class="s">"blocked"</span>,
                     <span class="s">"reason"</span>: f<span class="s">"依赖步骤 {deps} 未完成"</span>,
                 })
-                <span class=<span class="s">"k"</span>>continue</span>
+                <span class="k">continue</span>
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟执行</span>
+            <span class="h"># 模拟执行</span>
             results.append({
                 **step,
                 <span class="s">"status"</span>: <span class="s">"completed"</span>,
-                <span class="s">"output"</span>: f<span class="s">"已完成: {step[<span class='s'>'desc'</span>]}"</span>,
+                <span class="s">"output"</span>: f<span class="s">"已完成: {step['desc']}"</span>,
             })
-        <span class=<span class="s">"k"</span>>return</span> results
+        <span class="k">return</span> results
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>19.6</span> Orchestrator-Worker 模式
+<span class="s">"""
+19.6 Orchestrator-Worker 模式
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 核心理念：
   一个聪明的 Orchestrator（有状态）管理多个无状态 Worker。
   Worker 之间不直接通信，通过 Orchestrator 协调。
 
-这是 Claude Code <span class=<span class="s">"n"</span>>1.0</span>.<span class=<span class="s">"n"</span>>60</span>+ SubAgent 系统的本质（参见 Ch8）。
+这是 Claude Code 1.0.60+ SubAgent 系统的本质（参见 Ch8）。
 
 对比 Planning 模式：
   Planning：预先分解，固定执行
   Orchestrator-Worker：动态分配，Worker 独立运行
 
 关键特性：
-  <span class=<span class="s">"n"</span>>1</span>. Orchestrator 有状态（记住任务上下文）
-  <span class=<span class="s">"n"</span>>2</span>. Worker 无状态（每次只处理一个子任务）
-  <span class=<span class="s">"n"</span>>3</span>. Worker 之间隔离（可以并行，可以不同权限）
-  <span class=<span class="s">"n"</span>>4</span>. 易于水平扩展（加 Worker 即可）
-<span class="s">""</span>"</span>
+  1. Orchestrator 有状态（记住任务上下文）
+  2. Worker 无状态（每次只处理一个子任务）
+  3. Worker 之间隔离（可以并行，可以不同权限）
+  4. 易于水平扩展（加 Worker 即可）
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>OrchestratorWorker</span>:
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Orchestrator-Worker 模式实现。"</span><span class="s">""</span></span>
+<span class="k">class</span> <span class="f">OrchestratorWorker</span>:
+    <span class="s">"""Orchestrator-Worker 模式实现。"""</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
-        <span class=<span class="s">"k"</span>>self</span>.workers = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># {name: {permissions, handler}}</span>
-        <span class=<span class="s">"k"</span>>self</span>.task_state = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 全局任务状态</span>
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>.workers = {}  <span class="h"># {name: {permissions, handler}}</span>
+        <span class="k">self</span>.task_state = {}  <span class="h"># 全局任务状态</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>register_worker</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>, permissions: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]):
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"注册一个 Worker。
+    <span class="k">def</span> <span class="f">register_worker</span>(<span class="k">self</span>, name: <span class="b">str</span>, permissions: <span class="b">list</span>[<span class="b">str</span>]):
+        <span class="s">"""注册一个 Worker。
 
         Args:
             name: Worker 名称。
             permissions: 拥有的权限列表。
-        <span class="s">""</span>"</span>
-        <span class=<span class="s">"k"</span>>self</span>.workers[name] = {
+        """</span>
+        <span class="k">self</span>.workers[name] = {
             <span class="s">"permissions"</span>: permissions,
             <span class="s">"status"</span>: <span class="s">"idle"</span>,
-            <span class="s">"completed_tasks"</span>: <span class=<span class="s">"n"</span>>0</span>,
+            <span class="s">"completed_tasks"</span>: <span class="n">0</span>,
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>orchestrate</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Orchestrator：分析任务 → 分解 → 分配给 Worker。
+    <span class="k">def</span> <span class="f">orchestrate</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""Orchestrator：分析任务 → 分解 → 分配给 Worker。
 
         Returns:
             完整的执行记录。
-        <span class="s">""</span>"</span>
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第1步：Orchestrator 分析任务</span>
-        subtasks = <span class=<span class="s">"k"</span>>self</span>._decompose(task)
+        """</span>
+        <span class="h"># 第1步：Orchestrator 分析任务</span>
+        subtasks = <span class="k">self</span>._decompose(task)
 
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 第2步：分配给 Worker</span>
+        <span class="h"># 第2步：分配给 Worker</span>
         results = []
-        <span class=<span class="s">"k"</span>>for</span> sub <span class=<span class="s">"k"</span>>in</span> subtasks:
-            worker = <span class=<span class="s">"k"</span>>self</span>._select_worker(sub)
-            <span class=<span class="s">"k"</span>>if</span> worker <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+        <span class="k">for</span> sub <span class="k">in</span> subtasks:
+            worker = <span class="k">self</span>._select_worker(sub)
+            <span class="k">if</span> worker <span class="k">is</span> <span class="k">None</span>:
                 results.append({**sub, <span class="s">"status"</span>: <span class="s">"unassigned"</span>})
-                <span class=<span class="s">"k"</span>>continue</span>
+                <span class="k">continue</span>
 
-            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Worker 执行（模拟）</span>
-            <span class=<span class="s">"k"</span>>self</span>.workers[worker][<span class="s">"status"</span>] = <span class="s">"working"</span>
-            result = <span class=<span class="s">"k"</span>>self</span>._execute(sub, worker)
-            <span class=<span class="s">"k"</span>>self</span>.workers[worker][<span class="s">"status"</span>] = <span class="s">"idle"</span>
-            <span class=<span class="s">"k"</span>>self</span>.workers[worker][<span class="s">"completed_tasks"</span>] += <span class=<span class="s">"n"</span>>1</span>
+            <span class="h"># Worker 执行（模拟）</span>
+            <span class="k">self</span>.workers[worker][<span class="s">"status"</span>] = <span class="s">"working"</span>
+            result = <span class="k">self</span>._execute(sub, worker)
+            <span class="k">self</span>.workers[worker][<span class="s">"status"</span>] = <span class="s">"idle"</span>
+            <span class="k">self</span>.workers[worker][<span class="s">"completed_tasks"</span>] += <span class="n">1</span>
             results.append(result)
 
-        <span class=<span class="s">"k"</span>>return</span> {
+        <span class="k">return</span> {
             <span class="s">"task"</span>: task,
-            <span class="s">"subtasks"</span>: <span class=<span class="s">"b"</span>>len</span>(subtasks),
+            <span class="s">"subtasks"</span>: <span class="b">len</span>(subtasks),
             <span class="s">"results"</span>: results,
-            <span class="s">"workers_used"</span>: <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"b"</span>>set</span>(r.get(<span class="s">"worker"</span>) <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> results)),
+            <span class="s">"workers_used"</span>: <span class="b">len</span>(<span class="b">set</span>(r.get(<span class="s">"worker"</span>) <span class="k">for</span> r <span class="k">in</span> results)),
         }
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_decompose</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>dict</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Orchestrator 分解任务。"</span><span class="s">""</span></span>
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"代码"</span> <span class=<span class="s">"k"</span>>in</span> task <span class=<span class="s">"k"</span>>and</span> <span class="s">"文档"</span> <span class=<span class="s">"k"</span>>in</span> task:
-            <span class=<span class="s">"k"</span>>return</span> [
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"code"</span>, <span class="s">"desc"</span>: <span class="s">"编写代码"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>2</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"docs"</span>, <span class="s">"desc"</span>: <span class="s">"编写文档"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>3</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"test"</span>, <span class="s">"desc"</span>: <span class="s">"运行测试"</span>},
+    <span class="k">def</span> <span class="f">_decompose</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">list</span>[<span class="b">dict</span>]:
+        <span class="s">"""Orchestrator 分解任务。"""</span>
+        <span class="k">if</span> <span class="s">"代码"</span> <span class="k">in</span> task <span class="k">and</span> <span class="s">"文档"</span> <span class="k">in</span> task:
+            <span class="k">return</span> [
+                {<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"type"</span>: <span class="s">"code"</span>, <span class="s">"desc"</span>: <span class="s">"编写代码"</span>},
+                {<span class="s">"id"</span>: <span class="n">2</span>, <span class="s">"type"</span>: <span class="s">"docs"</span>, <span class="s">"desc"</span>: <span class="s">"编写文档"</span>},
+                {<span class="s">"id"</span>: <span class="n">3</span>, <span class="s">"type"</span>: <span class="s">"test"</span>, <span class="s">"desc"</span>: <span class="s">"运行测试"</span>},
             ]
-        <span class=<span class="s">"k"</span>>if</span> <span class="s">"全栈"</span> <span class=<span class="s">"k"</span>>in</span> task:
-            <span class=<span class="s">"k"</span>>return</span> [
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"frontend"</span>, <span class="s">"desc"</span>: <span class="s">"前端开发"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>2</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"backend"</span>, <span class="s">"desc"</span>: <span class="s">"后端开发"</span>},
-                {<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>3</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"database"</span>, <span class="s">"desc"</span>: <span class="s">"数据库设计"</span>},
+        <span class="k">if</span> <span class="s">"全栈"</span> <span class="k">in</span> task:
+            <span class="k">return</span> [
+                {<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"type"</span>: <span class="s">"frontend"</span>, <span class="s">"desc"</span>: <span class="s">"前端开发"</span>},
+                {<span class="s">"id"</span>: <span class="n">2</span>, <span class="s">"type"</span>: <span class="s">"backend"</span>, <span class="s">"desc"</span>: <span class="s">"后端开发"</span>},
+                {<span class="s">"id"</span>: <span class="n">3</span>, <span class="s">"type"</span>: <span class="s">"database"</span>, <span class="s">"desc"</span>: <span class="s">"数据库设计"</span>},
             ]
-        <span class=<span class="s">"k"</span>>return</span> [{<span class="s">"<span class="</span>b<span class="s">">id</span>"</span>: <span class=<span class="s">"n"</span>>1</span>, <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"general"</span>, <span class="s">"desc"</span>: task}]
+        <span class="k">return</span> [{<span class="s">"id"</span>: <span class="n">1</span>, <span class="s">"type"</span>: <span class="s">"general"</span>, <span class="s">"desc"</span>: task}]
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_select_worker</span>(<span class=<span class="s">"k"</span>>self</span>, subtask: <span class=<span class="s">"b"</span>>dict</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>str</span>]:
-        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"根据子任务类型选择合适的 Worker。"</span><span class="s">""</span></span>
+    <span class="k">def</span> <span class="f">_select_worker</span>(<span class="k">self</span>, subtask: <span class="b">dict</span>) -&gt; Optional[<span class="b">str</span>]:
+        <span class="s">"""根据子任务类型选择合适的 Worker。"""</span>
         type_map = {
             <span class="s">"code"</span>: <span class="s">"coder"</span>, <span class="s">"docs"</span>: <span class="s">"writer"</span>, <span class="s">"test"</span>: <span class="s">"tester"</span>,
             <span class="s">"frontend"</span>: <span class="s">"frontend_dev"</span>, <span class="s">"backend"</span>: <span class="s">"backend_dev"</span>,
             <span class="s">"database"</span>: <span class="s">"db_admin"</span>, <span class="s">"general"</span>: <span class="s">"general_assistant"</span>,
         }
-        target = type_map.get(subtask[<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>], <span class="s">"general_assistant"</span>)
-        <span class=<span class="s">"k"</span>>return</span> target <span class=<span class="s">"k"</span>>if</span> target <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.workers <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"k"</span>>None</span>
+        target = type_map.get(subtask[<span class="s">"type"</span>], <span class="s">"general_assistant"</span>)
+        <span class="k">return</span> target <span class="k">if</span> target <span class="k">in</span> <span class="k">self</span>.workers <span class="k">else</span> <span class="k">None</span>
 
-    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_execute</span>(<span class=<span class="s">"k"</span>>self</span>, subtask: <span class=<span class="s">"b"</span>>dict</span>, worker: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
-        <span class=<span class="s">"k"</span>>return</span> {
+    <span class="k">def</span> <span class="f">_execute</span>(<span class="k">self</span>, subtask: <span class="b">dict</span>, worker: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="k">return</span> {
             **subtask,
             <span class="s">"worker"</span>: worker,
-            <span class="s">"permissions"</span>: <span class=<span class="s">"k"</span>>self</span>.workers[worker][<span class="s">"permissions"</span>],
+            <span class="s">"permissions"</span>: <span class="k">self</span>.workers[worker][<span class="s">"permissions"</span>],
             <span class="s">"status"</span>: <span class="s">"completed"</span>,
-            <span class="s">"output"</span>: f<span class="s">"[{worker}] 已完成: {subtask[<span class='s'>'desc'</span>]}"</span>,
+            <span class="s">"output"</span>: f<span class="s">"[{worker}] 已完成: {subtask['desc']}"</span>,
         }
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>19.7</span> Evaluator-Optimizer 模式
+<span class="s">"""
+19.7 Evaluator-Optimizer 模式
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 核心理念：
@@ -1232,11 +1232,11 @@ Anthropic 的核心区分（面试必考！）：
   - Prompt 自动优化（准确率评分驱动）
 
 这个模式是 DSPy（Ch22 待讲）的核心思想。
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>19.8</span> Human-<span class=<span class="s">"k"</span>>in</span>-the-Loop 模式
+<span class="s">"""
+19.8 Human-in-the-Loop 模式
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 核心理念：
@@ -1250,151 +1250,151 @@ Anthropic 的核心区分（面试必考！）：
   ✓ 查询类操作 → 自动执行
 
 这是 Ch18 Agent 安全的分级确认机制的扩展。
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>19.9</span> Top <span class=<span class="s">"n"</span>>3</span> 常见错误（Tina Huang + Anthropic 总结）
+<span class="s">"""
+19.9 Top 3 常见错误（Tina Huang + Anthropic 总结）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-错误 <span class=<span class="s">"n"</span>>1</span>: 过度工程化 (Over-Engineering)
+错误 1: 过度工程化 (Over-Engineering)
   症状：用 Multi-Agent 做单步就能完成的事
   解法：先问「这真的需要 Agent 吗？」
 
-错误 <span class=<span class="s">"n"</span>>2</span>: 糟糕的 Prompt (Bad Prompting)
+错误 2: 糟糕的 Prompt (Bad Prompting)
   症状：复杂架构但 prompt 写得很随意
   解法：先投入时间优化 prompt，再考虑架构
 
-错误 <span class=<span class="s">"n"</span>>3</span>: 糟糕的系统设计 (Poor System Design)
+错误 3: 糟糕的系统设计 (Poor System Design)
   症状：没有架构图、数据流不清晰、难以调试
   解法：选好架构模式 → 画架构图 → 定义数据流 → 设置错误处理
 
 
-<span class=<span class="s">"n"</span>>19.10</span> 系统设计题的答题框架
+19.10 系统设计题的答题框架
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 面试官：「设计一个智能客服系统」
 
 标准回答结构：
-  <span class=<span class="s">"n"</span>>1</span>. 场景分析（任务特征分类）
-  <span class=<span class="s">"n"</span>>2</span>. 模式选择（主模式 + 辅助模式）
-  <span class=<span class="s">"n"</span>>3</span>. 架构设计（画图！）
-  <span class=<span class="s">"n"</span>>4</span>. 关键决策说明（为什么选这个模式）
-  <span class=<span class="s">"n"</span>>5</span>. 风险与权衡
+  1. 场景分析（任务特征分类）
+  2. 模式选择（主模式 + 辅助模式）
+  3. 架构设计（画图！）
+  4. 关键决策说明（为什么选这个模式）
+  5. 风险与权衡
 
 示例回答：
-  「智能客服有3类请求：FAQ（<span class=<span class="s">"n"</span>>70</span>%）、工单操作（<span class=<span class="s">"n"</span>>20</span>%）、投诉（<span class=<span class="s">"n"</span>>10</span>%）。
+  「智能客服有3类请求：FAQ（70%）、工单操作（20%）、投诉（10%）。
    用 Routing 模式分流：FAQ 走 RAG + 小模型；工单走 Tool Use；
-   投诉需要升级（Human-<span class=<span class="s">"k"</span>>in</span>-the-Loop）。
+   投诉需要升级（Human-in-the-Loop）。
    在工单处理中用 Reflection 确保回复质量。
    敏感操作（退款）需要双重确认。」
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_all_patterns</span>():
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示所有设计模式。"</span><span class="s">""</span></span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Agentic Workflow 设计模式综合演示"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+<span class="k">def</span> <span class="f">demo_all_patterns</span>():
+    <span class="s">"""演示所有设计模式。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Agentic Workflow 设计模式综合演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Reflection</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── Reflection 模式 ──"</span>)
-    agent = ReflectionAgent(quality_threshold=<span class=<span class="s">"n"</span>>8</span>, max_rounds=<span class=<span class="s">"n"</span>>3</span>)
+    <span class="h"># Reflection</span>
+    <span class="b">print</span>(<span class="s">"\n  ── Reflection 模式 ──"</span>)
+    agent = ReflectionAgent(quality_threshold=<span class="n">8</span>, max_rounds=<span class="n">3</span>)
     result = agent.run(<span class="s">"解释 AI Agent 的核心组成"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  任务: {result[<span class='s'>'task'</span>]}"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  轮数: {result[<span class='s'>'rounds'</span>]}"</span>)
-    <span class=<span class="s">"k"</span>>for</span> h <span class=<span class="s">"k"</span>>in</span> result[<span class="s">"history"</span>]:
-        icon = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> h[<span class="s">"score"</span>] &gt;= <span class=<span class="s">"n"</span>>8</span> <span class=<span class="s">"k"</span>>else</span> <span class="s">"🔄"</span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {icon} 第{h[<span class='s'>'<span class="</span>b<span class="s">">round</span>'</span>]}轮: {h[<span class='s'>'score'</span>]}/<span class="</span>n<span class="s">">10</span> | {h[<span class='s'>'issues'</span>]}"</span>)
+    <span class="b">print</span>(f<span class="s">"  任务: {result['task']}"</span>)
+    <span class="b">print</span>(f<span class="s">"  轮数: {result['rounds']}"</span>)
+    <span class="k">for</span> h <span class="k">in</span> result[<span class="s">"history"</span>]:
+        icon = <span class="s">"✅"</span> <span class="k">if</span> h[<span class="s">"score"</span>] &gt;= <span class="n">8</span> <span class="k">else</span> <span class="s">"🔄"</span>
+        <span class="b">print</span>(f<span class="s">"    {icon} 第{h['round']}轮: {h['score']}/10 | {h['issues']}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Routing</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── Routing 模式 ──"</span>)
+    <span class="h"># Routing</span>
+    <span class="b">print</span>(<span class="s">"\n  ── Routing 模式 ──"</span>)
     test_tasks = [
         <span class="s">"帮我写一个 Python 快速排序函数"</span>,
         <span class="s">"分析最近一个月的销售数据趋势"</span>,
         <span class="s">"什么是机器学习？"</span>,
         <span class="s">"删除用户 admin 的所有数据"</span>,
     ]
-    <span class=<span class="s">"k"</span>>for</span> task <span class=<span class="s">"k"</span>>in</span> test_tasks:
+    <span class="k">for</span> task <span class="k">in</span> test_tasks:
         decision = RoutingAgent.route(task)
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  「{task[:<span class="</span>n<span class="s">">30</span>]}...」→ {decision[<span class='s'>'category'</span>]} "</span>
-              f<span class="s">"| 模型: {decision.get(<span class='s'>'model'</span>,<span class='s'>''</span>)} "</span>
-              f<span class="s">"| 成本: ${decision.get(<span class='s'>'estimated_cost'</span>, <span class="</span>n<span class="s">">0</span>):.3f}"</span>)
+        <span class="b">print</span>(f<span class="s">"  「{task[:30]}...」→ {decision['category']} "</span>
+              f<span class="s">"| 模型: {decision.get('model','')} "</span>
+              f<span class="s">"| 成本: ${decision.get('estimated_cost', 0):.3f}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Planning</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── Planning 模式 ──"</span>)
+    <span class="h"># Planning</span>
+    <span class="b">print</span>(<span class="s">"\n  ── Planning 模式 ──"</span>)
     plan = PlanningAgent.decompose(<span class="s">"分析AI Agent市场并写一份报告"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  分解为 {<span class="</span>b<span class="s">">len</span>(plan)} 个步骤:"</span>)
-    <span class=<span class="s">"k"</span>>for</span> step <span class=<span class="s">"k"</span>>in</span> plan:
-        deps = f<span class="s">" (依赖步骤 {step[<span class='s'>'depends_on'</span>]})"</span> <span class=<span class="s">"k"</span>>if</span> step.get(<span class="s">"depends_on"</span>) <span class=<span class="s">"k"</span>>else</span> <span class="s">""</span>
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    Step {step[<span class='s'>'<span class="</span>b<span class="s">">id</span>'</span>]}: {step[<span class='s'>'desc'</span>]}{deps}"</span>)
+    <span class="b">print</span>(f<span class="s">"  分解为 {len(plan)} 个步骤:"</span>)
+    <span class="k">for</span> step <span class="k">in</span> plan:
+        deps = f<span class="s">" (依赖步骤 {step['depends_on']})"</span> <span class="k">if</span> step.get(<span class="s">"depends_on"</span>) <span class="k">else</span> <span class="s">""</span>
+        <span class="b">print</span>(f<span class="s">"    Step {step['id']}: {step['desc']}{deps}"</span>)
 
-    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Orchestrator-Worker</span>
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── Orchestrator-Worker 模式 ──"</span>)
+    <span class="h"># Orchestrator-Worker</span>
+    <span class="b">print</span>(<span class="s">"\n  ── Orchestrator-Worker 模式 ──"</span>)
     ow = OrchestratorWorker()
     ow.register_worker(<span class="s">"coder"</span>, [<span class="s">"read"</span>, <span class="s">"write"</span>, <span class="s">"execute"</span>])
     ow.register_worker(<span class="s">"writer"</span>, [<span class="s">"read"</span>, <span class="s">"write"</span>])
     ow.register_worker(<span class="s">"tester"</span>, [<span class="s">"execute"</span>])
     result = ow.orchestrate(<span class="s">"开发一个功能并写文档，确保代码和文档都完整"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  子任务: {result[<span class='s'>'subtasks'</span>]} | 使用 Worker: {result[<span class='s'>'workers_used'</span>]}"</span>)
-    <span class=<span class="s">"k"</span>>for</span> r <span class=<span class="s">"k"</span>>in</span> result[<span class="s">"results"</span>]:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{r.get(<span class='s'>'worker'</span>, <span class='s'>'?'</span>)}] {r[<span class='s'>'desc'</span>]} → {r[<span class='s'>'status'</span>]}"</span>)
+    <span class="b">print</span>(f<span class="s">"  子任务: {result['subtasks']} | 使用 Worker: {result['workers_used']}"</span>)
+    <span class="k">for</span> r <span class="k">in</span> result[<span class="s">"results"</span>]:
+        <span class="b">print</span>(f<span class="s">"    [{r.get('worker', '?')}] {r['desc']} → {r['status']}"</span>)
 
 
-<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
-<span class=<span class="s">"n"</span>>19.11</span> 本章总结
+<span class="s">"""
+19.11 本章总结
 ━━━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class=<span class="s">"n"</span>>1</span>. Workflow ≠ Agent
+1. Workflow ≠ Agent
    - Workflow: 代码控制流程
    - Agent: LLM 控制流程
    - 能不用 Agent 就不用（Anthropic 核心原则）
 
-<span class=<span class="s">"n"</span>>2</span>. <span class=<span class="s">"n"</span>>7</span> 种核心模式
+2. 7 种核心模式
    - ReAct: 最通用，默认选择
    - Reflection: 质量优先场景
    - Routing: 多种任务类型
    - Planning: 复杂多步骤
    - Orchestrator-Worker: 可并行子任务
    - Evaluator-Optimizer: 量化优化
-   - Human-<span class=<span class="s">"k"</span>>in</span>-the-Loop: 安全关键操作
+   - Human-in-the-Loop: 安全关键操作
 
-<span class=<span class="s">"n"</span>>3</span>. 系统设计答题框架
+3. 系统设计答题框架
    场景分析 → 模式选择 → 架构设计 → 关键决策 → 风险权衡
 
 面试速记：
-  <span class="s">"你用过哪些 Agent 设计模式？"</span>
-  → 说出 <span class=<span class="s">"n"</span>>4</span>+ 种 + 每种的使用场景 + 对比
+  "你用过哪些 Agent 设计模式？"
+  → 说出 4+ 种 + 每种的使用场景 + 对比
   → 重点说 Reflection（双角色分离）和 Routing（成本优化）
   → 结尾：Anthropic 原则「简单优先，够用就好」
-<span class="s">""</span>"</span>
+"""</span>
 
 
-<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第19章：Agentic Workflow 设计模式                     ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Reflection · Routing · Planning · Orchestrator      ║"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第19章：Agentic Workflow 设计模式                     ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  Reflection · Routing · Planning · Orchestrator      ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_all_patterns()
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ 模式选择速查表"</span>)
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 模式选择速查表"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     choices = [
         (<span class="s">"输出质量 &gt; 速度"</span>, <span class="s">"Reflection"</span>),
         (<span class="s">"多种可分类任务"</span>, <span class="s">"Routing"</span>),
         (<span class="s">"复杂多步骤任务"</span>, <span class="s">"Planning + ReAct"</span>),
         (<span class="s">"可并行子任务"</span>, <span class="s">"Orchestrator-Worker"</span>),
         (<span class="s">"量化优化"</span>, <span class="s">"Evaluator-Optimizer"</span>),
-        (<span class="s">"安全关键操作"</span>, <span class="s">"Human-<span class="</span>k<span class="s">">in</span>-the-Loop"</span>),
+        (<span class="s">"安全关键操作"</span>, <span class="s">"Human-in-the-Loop"</span>),
         (<span class="s">"简单固定步骤"</span>, <span class="s">"直接 LLM（不用 Agent）"</span>),
     ]
-    <span class=<span class="s">"k"</span>>for</span> scene, pattern <span class=<span class="s">"k"</span>>in</span> choices:
-        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {scene:20s} → {pattern}"</span>)
+    <span class="k">for</span> scene, pattern <span class="k">in</span> choices:
+        <span class="b">print</span>(f<span class="s">"  {scene:20s} → {pattern}"</span>)
 
-    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第19章完成！"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第19章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_18_security/18_agent_security.html" title="Agent 安全与护栏 — Prompt Injection·权限分级">← 第18章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

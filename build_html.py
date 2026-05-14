@@ -600,15 +600,36 @@ def parse_lecture(docstring: str) -> str:
 
 def highlight_python(code: str) -> str:
     # IDE 风格语法高亮（VS Code Dark+ 配色）
+    # 使用占位符法：先保护字符串和注释，再高亮关键字，最后还原
+    # 彻底避免 HTML 标签被后续正则污染
+
+    # === 第1步：扫描代码，用占位符替换所有字符串和注释 ===
+    placeholders = []
+    counter = [0]
+
+    def add_ph(text, cls):
+        ph = f"\x00PH{len(placeholders)}\x00"
+        escaped = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        placeholders.append((ph, f'<span class="{cls}">{escaped}</span>'))
+        return ph
+
+    # 三引号字符串
+    code = re.sub(r'("""[\s\S]*?""")', lambda m: add_ph(m.group(1), "s"), code)
+    code = re.sub(r"('''[\s\S]*?''')", lambda m: add_ph(m.group(1), "s"), code)
+
+    # 行注释
+    code = re.sub(r'(#[^\n]*)', lambda m: add_ph(m.group(1), "h"), code)
+
+    # 单行字符串  "..." 和 '...'
+    code = re.sub(r'"([^"\\\n]*(\\.[^"\\\n]*)*)"',
+                  lambda m: add_ph(m.group(0), "s"), code)
+    code = re.sub(r"'([^'\\\n]*(\\.[^'\\\n]*)*)'",
+                  lambda m: add_ph(m.group(0), "s"), code)
+
+    # === 第2步：对剩余代码做 HTML 转义 ===
     code = code.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-    # 注释
-    code = re.sub(r'(#[^\n]*)', r'<span class="h">\1</span>', code)
-
-    # 三引号字符串（先处理，避免内部内容被误标）
-    code = re.sub(r'("""[\s\S]*?""")', r'<span class="s">\1</span>', code)
-    code = re.sub(r"('''[\s\S]*?''')", r'<span class="s">\1</span>', code)
-
+    # === 第3步：在已被保护（无字符串干扰）的代码上做高亮 ===
     # 装饰器
     code = re.sub(r'(@\w+)', r'<span class="d">\1</span>', code)
 
@@ -618,11 +639,9 @@ def highlight_python(code: str) -> str:
          r'raise|break|continue|pass|lambda|global|nonlocal|self)\b'
     code = re.sub(kw, r'<span class="k">\1</span>', code)
 
-    # 函数名（def xxx 后面的名称）
+    # 函数名和类名
     code = re.sub(r'(<span class="k">def</span>)\s+(\w+)',
                   r'\1 <span class="f">\2</span>', code)
-
-    # 类名
     code = re.sub(r'(<span class="k">class</span>)\s+(\w+)',
                   r'\1 <span class="f">\2</span>', code)
 
@@ -636,11 +655,9 @@ def highlight_python(code: str) -> str:
     # 数字
     code = re.sub(r'\b(\d+\.?\d*)\b', r'<span class="n">\1</span>', code)
 
-    # 字符串（单引号和双引号）
-    code = re.sub(r'"([^"\\\n]*(\\.[^"\\\n]*)*)"',
-                  r'<span class="s">"\1"</span>', code)
-    code = re.sub(r"'([^'\\\n]*(\\.[^'\\\n]*)*)'",
-                  r"<span class='s'>'\1'</span>", code)
+    # === 第4步：还原所有占位符 ===
+    for ph, replacement in placeholders:
+        code = code.replace(ph, replacement)
 
     return code
 
