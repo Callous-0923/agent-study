@@ -261,22 +261,6 @@ body {
 <p>&nbsp;</p>
 <h2>15.4 模拟 A2A Agent 生态系统</h2>
 <p>&nbsp;</p>
-<p>A2A 协议定义的任务状态。</p>
-<p>&nbsp;</p>
-<p>A2A AgentCard —— Agent 的自我声明文件。</p>
-<p>&nbsp;</p>
-<p>序列化为标准 AgentCard JSON。</p>
-<p>&nbsp;</p>
-<p>A2A Task —— 协议的工作单元。</p>
-<p>&nbsp;</p>
-<p>开始执行任务。</p>
-<p>&nbsp;</p>
-<p>完成任务。</p>
-<p>&nbsp;</p>
-<p>任务失败。</p>
-<p>&nbsp;</p>
-<p>序列化为标准 Task JSON。</p>
-<p>&nbsp;</p>
 <p>模拟 A2A Server —— 演示 Agent-to-Agent 通信。</p>
 <p>&nbsp;</p>
 <pre>完整的 A2A Server 实现：
@@ -284,8 +268,6 @@ body {
   2. 接收任务（POST /a2a tasks/send）
   3. 查询任务状态（POST /a2a tasks/get）
   4. 取消任务（POST /a2a tasks/cancel）</pre>
-<p>&nbsp;</p>
-<p>返回 AgentCard（Agent 发现阶段）。</p>
 <p>&nbsp;</p>
 <p>接收并开始执行一个任务。</p>
 <p>&nbsp;</p>
@@ -346,8 +328,6 @@ body {
 <p>&nbsp;</p>
 <pre>    Returns:
         包含任务结果的字典。</pre>
-<p>&nbsp;</p>
-<p>演示一个完整的 A2A 多 Agent 协作场景。</p>
 <p>&nbsp;</p>
 <h2>15.5 A2A vs MCP 配合：完整的 Agent 协议栈</h2>
 <p>&nbsp;</p>
@@ -417,7 +397,154 @@ body {
 <p>"A2A 是怎么工作的？"</p>
 <p>→ AgentCard 声明能力 → Client 按需发现 → Task 委派</p>
 <p>→ SSE/轮询跟踪进度 → 获取 Artifact</p>
-<p>→ MCP 管工具，A2A 管 Agent 间协作</p></div><div class="code-section"><details open><summary>💻 源代码 (296 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>→ MCP 管工具，A2A 管 Agent 间协作</p></div><div class="code-section"><details open><summary>💻 源代码 (602 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+第15章：Google A2A 协议 —— Agent 之间的「世界语」
+====================================================
+
+📌 本章目标：
+  <span class="n">1</span>. 深入理解 A2A (Agent-to-Agent) 协议的设计哲学
+  <span class="n">2</span>. 掌握 AgentCard / Task / Artifact 三大核心概念
+  <span class="n">3</span>. 理解 A2A 和 MCP 的分工关系（面试高频！）
+  <span class="n">4</span>. 体验完整的 Agent 发现→协商→执行流程
+  <span class="n">5</span>. 了解 Multi-Agent 协作的真实架构模式
+
+📌 面试高频点：
+  - A2A 和 MCP 分别解决什么问题？怎么配合使用？
+  - AgentCard 里包含什么？为什么需要它？
+  - A2A 的 Task 生命周期是怎样的？
+  - 什么时候该用 A2A？什么时候不需要？
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Google 于 2025年4月9日发布 A2A 协议
+联合 <span class="n">50</span>+ 企业：Salesforce、SAP、MongoDB、LangChain...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+<span class="n">15.1</span> A2A 解决了什么核心问题？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MCP 解决：「Agent 怎么和工具/数据库/API 交互？」
+A2A 解决：「Agent 怎么和其他 Agent 交互？」
+
+类比：
+  MCP = 手机和充电器之间的 USB-C 协议
+  A2A  = 手机之间的通信协议（像 4G/5G）
+
+对比 MCP vs A2A（面试必问！）：
+
+  ┌──────────────┬─────────────────────┬─────────────────────┐
+  │     维度      │        MCP           │        A2A           │
+  ├──────────────┼─────────────────────┼─────────────────────┤
+  │ 解决什么      │ Agent ↔ 工具/数据     │ Agent ↔ Agent       │
+  │ 发布方        │ Anthropic (<span class="n">2024.11</span>)  │ Google (<span class="n">2025.04</span>)    │
+  │ 架构          │ Client-Host-Server   │ Client-Server       │
+  │ 核心概念      │ Tools/Resources/Prompts│ AgentCard/Task/Artifact│
+  │ 通信协议      │ JSON-RPC <span class="n">2.0</span>         │ JSON-RPC <span class="n">2.0</span> + HTTP │
+  │ 传输方式      │ stdio / SSE          │ HTTP / SSE          │
+  │ 典型场景      │ 查数据库/调API       │ 多Agent协作/委派任务 │
+  └──────────────┴─────────────────────┴─────────────────────┘
+
+配合使用的示例（面试可以这样描述）：
+  <span class="n">1</span>. 用户 Agent 收到任务「预订去北京的出差行程」
+  <span class="n">2</span>. 用户 Agent 通过 MCP 调用数据库 → 查用户偏好
+  <span class="n">3</span>. 用户 Agent 通过 A2A → 发现「机票预订Agent」
+  <span class="n">4</span>. 用户 Agent 通过 A2A → 将「订机票」子任务委派给机票Agent
+  <span class="n">5</span>. 机票 Agent 通过 MCP → 调用航空公司 API
+  <span class="n">6</span>. 机票 Agent 通过 A2A → 返回预订结果
+
+
+<span class="n">15.2</span> A2A 三大核心概念
+━━━━━━━━━━━━━━━━━━━━━
+
+<span class="n">1</span>. AgentCard —— Agent 的「数字护照」
+
+  每个 A2A Agent 都暴露一个 JSON 文件（/.well-known/agent.json），
+  声明自己的能力、接口、安全要求：
+
+  {
+    <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"TaxAgent"</span>,
+    <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"税务计算和合规分析 Agent"</span>,
+    <span <span class="k">class</span>="s">"url"</span>: <span <span class="k">class</span>="s">"https://tax.example.com"</span>,
+    <span <span class="k">class</span>="s">"capabilities"</span>: {
+      <span <span class="k">class</span>="s">"streaming"</span>: true,
+      <span <span class="k">class</span>="s">"pushNotifications"</span>: false
+    },
+    <span <span class="k">class</span>="s">"skills"</span>: [
+      {
+        <span <span class="k">class</span>="s">"id"</span>: <span <span class="k">class</span>="s">"tax_calculation"</span>,
+        <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"税务计算"</span>,
+        <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"支持中美跨境税务计算"</span>,
+        <span <span class="k">class</span>="s">"inputModes"</span>: [<span <span class="k">class</span>="s">"text"</span>, <span <span class="k">class</span>="s">"file"</span>],
+        <span <span class="k">class</span>="s">"outputModes"</span>: [<span <span class="k">class</span>="s">"text"</span>, <span <span class="k">class</span>="s">"file"</span>]
+      }
+    ],
+    <span <span class="k">class</span>="s">"defaultInputModes"</span>: [<span <span class="k">class</span>="s">"text"</span>],
+    <span <span class="k">class</span>="s">"defaultOutputModes"</span>: [<span <span class="k">class</span>="s">"text"</span>],
+    <span <span class="k">class</span>="s">"interfaces"</span>: [
+      {<span <span class="k">class</span>="s">"url"</span>: <span <span class="k">class</span>="s">"https://tax.example.com/a2a"</span>, <span <span class="k">class</span>="s">"transport"</span>: <span <span class="k">class</span>="s">"JSONRPC"</span>}
+    ]
+  }
+
+<span class="n">2</span>. Task —— A2A 的工作单元
+
+  Task 是整个协议的核心抽象：
+
+  生命周期：pending → working → input-required → completed/failed/cancelled
+
+  Task 数据结构：
+  {
+    <span <span class="k">class</span>="s">"id"</span>: <span <span class="k">class</span>="s">"task_001"</span>,
+    <span <span class="k">class</span>="s">"sessionId"</span>: <span <span class="k">class</span>="s">"session_abc"</span>,
+    <span <span class="k">class</span>="s">"status"</span>: {<span <span class="k">class</span>="s">"state"</span>: <span <span class="k">class</span>="s">"working"</span>, <span <span class="k">class</span>="s">"message"</span>: <span <span class="k">class</span>="s">"正在计算税务..."</span>},
+    <span <span class="k">class</span>="s">"artifacts"</span>: [...],
+    <span <span class="k">class</span>="s">"history"</span>: [...]  // 操作历史
+  }
+
+<span class="n">3</span>. Artifact —— 跨 Agent 的成果物
+
+  Task 完成后的产出，携带 MIME 类型和元数据：
+
+  {
+    <span <span class="k">class</span>="s">"artifactId"</span>: <span <span class="k">class</span>="s">"report_001"</span>,
+    <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"2025Q1税务报告.pdf"</span>,
+    <span <span class="k">class</span>="s">"mimeType"</span>: <span <span class="k">class</span>="s">"application/pdf"</span>,
+    <span <span class="k">class</span>="s">"parts"</span>: [{<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"file"</span>, <span <span class="k">class</span>="s">"file"</span>: {...}}]
+  }
+
+
+<span class="n">15.3</span> A2A 的完整交互流程
+━━━━━━━━━━━━━━━━━━━━━━━
+
+  Client Agent                     Server Agent
+      │                                │
+      │── GET /.well-known/agent.json ─→│  (<span class="n">1</span>) 发现：获取 AgentCard
+      │←── AgentCard ─────────────────│
+      │                                │
+      │── POST /a2a tasks/send ──────→│  (<span class="n">2</span>) 提交任务
+      │   {message: <span <span class="k">class</span>="s">"请计算这笔税的..."</span>, │
+      │    artifacts: [...]}           │
+      │←── Task {status: <span <span class="k">class</span>="s">"working"</span>} ──│
+      │                                │
+      │── POST /a2a tasks/get ────────→│  (<span class="n">3</span>) 查询进度（轮询）
+      │←── Task {status: <span <span class="k">class</span>="s">"working"</span>} ──│
+      │                                │
+      │── POST /a2a tasks/get ────────→│
+      │←── Task {status: <span <span class="k">class</span>="s">"completed"</span>,  │  (<span class="n">4</span>) 获取结果
+      │    artifacts: [计算结果]}      │
+      │                                │
+
+  也可以使用 SSE 做流式推送（替代轮询）：
+      │── POST /a2a (SSE) ───────────→│
+      │←── event: status-update ──────│  (实时推送状态变化)
+      │←── event: artifact-update ────│  (实时推送生成内容)
+      │←── event: task-complete ──────│
+
+
+<span class="n">15.4</span> 模拟 A2A Agent 生态系统
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span <span class="k">class</span>="s">""</span>"</span>
+
+<span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -425,7 +552,8 @@ body {
 
 
 <span class="k">class</span> TaskState(str, Enum):
-PENDING = <span <span class="k">class</span>="s">"pending"</span>
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"A2A 协议定义的任务状态。"</span><span <span class="k">class</span>="s">""</span></span>
+    PENDING = <span <span class="k">class</span>="s">"pending"</span>
     WORKING = <span <span class="k">class</span>="s">"working"</span>
     INPUT_REQUIRED = <span <span class="k">class</span>="s">"input-required"</span>
     COMPLETED = <span <span class="k">class</span>="s">"completed"</span>
@@ -434,7 +562,9 @@ PENDING = <span <span class="k">class</span>="s">"pending"</span>
 
 
 <span class="k">class</span> A2AAgentCard:
-<span class="k">def</span> __init__(self, name: str, description: str,
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"A2A AgentCard —— Agent 的自我声明文件。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    <span class="k">def</span> __init__(self, name: str, description: str,
                  url: str, skills: list[dict]):
         self.name = name
         self.description = description
@@ -449,7 +579,8 @@ PENDING = <span <span class="k">class</span>="s">"pending"</span>
         self.version = <span <span class="k">class</span>="s">"<span class="n">0.2</span>.<span class="n">6</span>"</span>
 
     <span class="k">def</span> to_dict(self) -&gt; dict:
-<span class="k">return</span> {
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"序列化为标准 AgentCard JSON。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">return</span> {
             <span <span class="k">class</span>="s">"name"</span>: self.name,
             <span <span class="k">class</span>="s">"description"</span>: self.description,
             <span <span class="k">class</span>="s">"url"</span>: self.url,
@@ -462,7 +593,9 @@ PENDING = <span <span class="k">class</span>="s">"pending"</span>
 
 
 <span class="k">class</span> A2ATask:
-<span class="k">def</span> __init__(self, task_id: str, session_id: str):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"A2A Task —— 协议的工作单元。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    <span class="k">def</span> __init__(self, task_id: str, session_id: str):
         self.id = task_id
         self.session_id = session_id
         self.state = TaskState.PENDING
@@ -472,23 +605,27 @@ PENDING = <span <span class="k">class</span>="s">"pending"</span>
         self._add_history(<span <span class="k">class</span>="s">"created"</span>, f<span <span class="k">class</span>="s">"Task {task_id} created"</span>)
 
     <span class="k">def</span> start(self):
-self.state = TaskState.WORKING
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"开始执行任务。"</span><span <span class="k">class</span>="s">""</span></span>
+        self.state = TaskState.WORKING
         self.status_message = <span <span class="k">class</span>="s">"任务执行中..."</span>
         self._add_history(<span <span class="k">class</span>="s">"started"</span>, <span <span class="k">class</span>="s">"Task execution started"</span>)
 
     <span class="k">def</span> complete(self, artifacts: list[dict]):
-self.state = TaskState.COMPLETED
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"完成任务。"</span><span <span class="k">class</span>="s">""</span></span>
+        self.state = TaskState.COMPLETED
         self.status_message = <span <span class="k">class</span>="s">"任务已完成"</span>
         self.artifacts = artifacts
         self._add_history(<span <span class="k">class</span>="s">"completed"</span>, f<span <span class="k">class</span>="s">"Produced {len(artifacts)} artifacts"</span>)
 
     <span class="k">def</span> fail(self, reason: str):
-self.state = TaskState.FAILED
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"任务失败。"</span><span <span class="k">class</span>="s">""</span></span>
+        self.state = TaskState.FAILED
         self.status_message = reason
         self._add_history(<span <span class="k">class</span>="s">"failed"</span>, reason)
 
     <span class="k">def</span> to_dict(self) -&gt; dict:
-<span class="k">return</span> {
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"序列化为标准 Task JSON。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">return</span> {
             <span <span class="k">class</span>="s">"id"</span>: self.id,
             <span <span class="k">class</span>="s">"sessionId"</span>: self.session_id,
             <span <span class="k">class</span>="s">"status"</span>: {
@@ -508,16 +645,35 @@ self.state = TaskState.FAILED
 
 
 <span class="k">class</span> SimulatedA2AServer:
-<span class="k">def</span> __init__(self, agent_card: A2AAgentCard):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 A2A Server —— 演示 Agent-to-Agent 通信。
+
+    完整的 A2A Server 实现：
+      <span class="n">1</span>. 暴露 AgentCard（GET /.well-known/agent.json）
+      <span class="n">2</span>. 接收任务（POST /a2a tasks/send）
+      <span class="n">3</span>. 查询任务状态（POST /a2a tasks/get）
+      <span class="n">4</span>. 取消任务（POST /a2a tasks/cancel）
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, agent_card: A2AAgentCard):
         self.agent_card = agent_card
         self.tasks = {}
 
     <span class="k">def</span> get_agent_card(self) -&gt; dict:
-<span class="k">return</span> self.agent_card.to_dict()
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"返回 AgentCard（Agent 发现阶段）。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">return</span> self.agent_card.to_dict()
 
     <span class="k">def</span> send_task(self, message: str,
                   session_id: str = <span class="k">None</span>) -&gt; A2ATask:
-task_id = hashlib.md5(
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"接收并开始执行一个任务。
+
+        Args:
+            message: 任务描述。
+            session_id: 会话 ID（不传则自动生成）。
+
+        Returns:
+            创建的 Task 对象。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        task_id = hashlib.md5(
             f<span <span class="k">class</span>="s">"{message}-{time.time()}"</span>.encode()
         ).hexdigest()[:<span class="n">16</span>]
         <span class="k">if</span> session_id <span class="k">is</span> <span class="k">None</span>:
@@ -550,10 +706,26 @@ task_id = hashlib.md5(
         <span class="k">return</span> task
 
     <span class="k">def</span> get_task(self, task_id: str) -&gt; Optional[A2ATask]:
-<span class="k">return</span> self.tasks.get(task_id)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"查询任务状态。
+
+        Args:
+            task_id: 任务 ID。
+
+        Returns:
+            Task 对象，不存在返回 <span class="k">None</span>。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">return</span> self.tasks.get(task_id)
 
     <span class="k">def</span> cancel_task(self, task_id: str) -&gt; bool:
-task = self.tasks.get(task_id)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"取消任务。
+
+        Args:
+            task_id: 任务 ID。
+
+        Returns:
+            是否成功取消。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        task = self.tasks.get(task_id)
         <span class="k">if</span> task <span class="k">and</span> task.state <span class="k">in</span> (TaskState.PENDING, TaskState.WORKING):
             task.state = TaskState.CANCELLED
             task.status_message = <span <span class="k">class</span>="s">"任务已被取消"</span>
@@ -562,17 +734,41 @@ task = self.tasks.get(task_id)
 
 
 <span class="k">class</span> A2AClient:
-<span class="k">def</span> __init__(self, name: str):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 A2A Client —— 作为「用户 Agent」去调用其他 Agent。
+
+    代表 Agent 完成：
+      <span class="n">1</span>. 发现远程 Agent（获取 AgentCard）
+      <span class="n">2</span>. 评估 skills（是否匹配任务需求）
+      <span class="n">3</span>. 提交任务 + 获取结果
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, name: str):
         self.name = name
         self.known_agents = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># {url: AgentCard}</span>
 
     <span class="k">def</span> discover(self, server: SimulatedA2AServer) -&gt; A2AAgentCard:
-card = server.get_agent_card()
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"发现一个 A2A Agent —— 获取其 AgentCard。
+
+        Args:
+            server: A2A Server 实例。
+
+        Returns:
+            AgentCard 字典。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        card = server.get_agent_card()
         self.known_agents[card[<span <span class="k">class</span>="s">"url"</span>]] = card
         <span class="k">return</span> card
 
     <span class="k">def</span> find_agent_for_skill(self, skill_keyword: str) -&gt; Optional[dict]:
-<span class="k">for</span> _, card <span class="k">in</span> self.known_agents.items():
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"根据需求关键词找到匹配的 Agent。
+
+        Args:
+            skill_keyword: 技能关键词。
+
+        Returns:
+            匹配的 AgentCard，未找到返回 <span class="k">None</span>。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">for</span> _, card <span class="k">in</span> self.known_agents.items():
             <span class="k">for</span> skill <span class="k">in</span> card.get(<span <span class="k">class</span>="s">"skills"</span>, []):
                 <span class="k">if</span> skill_keyword <span class="k">in</span> skill.get(<span <span class="k">class</span>="s">"name"</span>, <span <span class="k">class</span>="s">""</span>).lower() <span class="k">or</span> \
                    skill_keyword <span class="k">in</span> skill.get(<span <span class="k">class</span>="s">"description"</span>, <span <span class="k">class</span>="s">""</span>).lower():
@@ -581,7 +777,19 @@ card = server.get_agent_card()
 
     <span class="k">def</span> delegate_task(self, server: SimulatedA2AServer,
                       message: str) -&gt; dict:
-result = {}
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"将任务委派给远程 Agent。
+
+        完整的 A2A 委派流程：
+          Discover → Evaluate → Send → Wait → Receive
+
+        Args:
+            server: A2A Server 实例。
+            message: 任务描述。
+
+        Returns:
+            包含任务结果的字典。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        result = {}
 
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Step <span class="n">1</span>: 发现</span>
         card = self.discover(server)
@@ -602,7 +810,8 @@ result = {}
 
 
 <span class="k">def</span> demo_a2a_ecosystem():
-print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示一个完整的 A2A 多 Agent 协作场景。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  A2A 多 Agent 协作演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -691,6 +900,83 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
         print(f<span <span class="k">class</span>="s">"  📡 {card[<span <span class="k">class</span>='s'>'name'</span>]} @ {url}"</span>)
         <span class="k">for</span> s <span class="k">in</span> card[<span <span class="k">class</span>="s">"skills"</span>]:
             print(f<span <span class="k">class</span>="s">"      └─ {s[<span <span class="k">class</span>='s'>'name'</span>]}"</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">15.5</span> A2A vs MCP 配合：完整的 Agent 协议栈
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+将它们组合起来：
+
+  ┌────────────────────────────────────────────────────┐
+  │                  Agent Application                   │
+  │                                                      │
+  │  ┌──────────┐  ┌──────────┐  ┌──────────┐         │
+  │  │ MCP Client│  │ MCP Client│  │ A2A Client│         │
+  │  └─────┬────┘  └─────┬────┘  └─────┬────┘         │
+  │        │             │             │                │
+  └────────┼─────────────┼─────────────┼────────────────┘
+           │             │             │
+    MCP协议│      MCP协议│      A2A协议│
+           ▼             ▼             ▼
+  ┌────────────┐ ┌────────────┐ ┌────────────┐
+  │ MCP Server  │ │ MCP Server  │ │ A2A Server  │
+  │  数据库     │ │  文件系统   │ │  税务Agent  │
+  └────────────┘ └────────────┘ └────────────┘
+                                       │
+                                 A2A协议│
+                                       ▼
+                                ┌────────────┐
+                                │ A2A Server  │
+                                │  机票Agent  │
+                                └──────┬─────┘
+                                       │
+                                 MCP协议│
+                                       ▼
+                                ┌────────────┐
+                                │ MCP Server  │
+                                │ 航空公司API │
+                                └────────────┘
+
+面试速记版描述：
+  "MCP 是 Agent 和工具之间的协议，A2A 是 Agent 和 Agent 之间的协议。
+   实际系统中两者配合使用：Agent 通过 MCP 调用数据和工具，
+   通过 A2A 把复杂子任务委派给其他专业的 Agent。"
+
+
+<span class="n">15.6</span> 本章总结
+━━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. A2A = Agent 之间的「世界语」
+   - Google 2025年4月发布，<span class="n">50</span>+ 企业参与
+   - 解决 Agent 间协作的标准化问题
+
+<span class="n">2</span>. 三大核心概念（面试反复问！）
+   - AgentCard: Agent 的自我声明（skills/capabilities/interfaces）
+   - Task: 工作单元（pending→working→completed/failed）
+   - Artifact: 跨 Agent 的成果物封装
+
+<span class="n">3</span>. A2A vs MCP —— 分工明确
+   - MCP: Agent ↔ 工具/数据（Anthropic 发布）
+   - A2A: Agent ↔ Agent（Google 发布）
+   - 互补关系，不是竞争
+
+<span class="n">4</span>. 典型交互流程
+   - 发现 (GET AgentCard)
+   - 委派 (POST tasks/send)
+   - 查询 (POST tasks/get，或 SSE 推送)
+   - 获取 Artifact
+
+面试速记：
+  <span <span class="k">class</span>="s">"A2A 是怎么工作的？"</span>
+  → AgentCard 声明能力 → Client 按需发现 → Task 委派
+  → SSE/轮询跟踪进度 → 获取 Artifact
+  → MCP 管工具，A2A 管 Agent 间协作
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第15章：Google A2A 协议深度剖析                        ║"</span>)
@@ -712,7 +998,8 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
     <span class="k">for</span> state <span class="k">in</span> TaskState:
         print(f<span <span class="k">class</span>="s">"  {state.value}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第15章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+    print(<span <span class="k">class</span>="s">"\n✅ 第15章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_14_sqlite/14_sqlite_agent_storage.html" title="SQLite 持久化 — 5 表 Schema·WAL·审计查询">← 第14章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_16_memgpt/16_memgpt_letta.html" title="MemGPT/Letta 记忆 — Core Memory·Heartbeat·Sleep-Time">第16章 →</a>

@@ -247,8 +247,6 @@ body {
         user_msg: 用户消息。
         assistant_msg: Agent 回复。</pre>
 <p>&nbsp;</p>
-<p>将最早的对话压缩为摘要，存入长期记忆。</p>
-<p>&nbsp;</p>
 <p>写入工作记忆。</p>
 <p>&nbsp;</p>
 <pre>    Args:
@@ -298,8 +296,6 @@ body {
 <li>说明工具不擅长什么（边界条件）</li>
 <li>举例说明典型调用场景</li>
 <p>&nbsp;</p>
-<p>演示高质量工具定义 vs 低质量工具定义。</p>
-<p>&nbsp;</p>
 <h2>2.4 综合演示：三大组件协同工作</h2>
 <p>&nbsp;</p>
 <p>下面演示一个完整流程：</p>
@@ -307,8 +303,6 @@ body {
 <li>记忆系统记录状态</li>
 <li>执行器中调用工具</li>
 <li>反思器自我审查</li>
-<p>&nbsp;</p>
-<p>运行综合演示：组件协同工作。</p>
 <p>&nbsp;</p>
 <h2>2.5 本章总结</h2>
 <p>&nbsp;</p>
@@ -336,7 +330,46 @@ body {
 <p>"请描述 Agent 的核心架构"</p>
 <p>→ Agent = LLM + Planner + Memory + Tools</p>
 <p>→ 通过 ReAct 循环协调各组件工作</p>
-<p>→ 记忆系统解决上下文限制，工具系统扩展能力边界</p></div><div class="code-section"><details open><summary>💻 源代码 (232 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ 记忆系统解决上下文限制，工具系统扩展能力边界</p></div><div class="code-section"><details open><summary>💻 源代码 (487 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+第2章：Agent 核心组件深度解析
+=====================================
+
+📌 本章目标：
+  <span class="n">1</span>. 深入理解 Agent 的三大组件：规划器 / 记忆系统 / 工具调用
+  <span class="n">2</span>. 理解不同规划策略的优劣（ReAct vs Plan-Execute）
+  <span class="n">3</span>. 掌握三种记忆类型：短期 / 长期 / 工作记忆
+  <span class="n">4</span>. 学会设计高质量的 Agent 工具
+
+📌 面试高频点：
+  - Agent 记忆的类型和区别
+  - 如何解决 Agent 的上下文窗口限制
+  - 工具设计的最佳实践（description 怎么写效果好）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">2.1</span> 规划器 (Planner) —— Agent 的「指挥中心」
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+规划器负责决定「下一步该做什么」。
+不同的规划策略适用于不同场景：
+
+┌──────────────────┬──────────────────────┬──────────────────────┐
+│    策略          │       核心思想        │      适用场景         │
+├──────────────────┼──────────────────────┼──────────────────────┤
+│ ReAct           │ 边推理边行动          │ 简单-中等复杂度任务   │
+│ Plan-Execute    │ 先制定整体计划再执行   │ 复杂多步骤任务        │
+│ Reflexion       │ 执行后自我反思改进     │ 需要迭代优化的任务    │
+│ LLMCompiler     │ 分析依赖后并行执行     │ 步骤可并行的任务      │
+└──────────────────┴──────────────────────┴──────────────────────┘
+
+面试常问：「ReAct 和 Plan-Execute 有什么区别？」
+答：
+  ReAct：每一步都重新推理，灵活但效率低。
+  Plan-Execute：一次性规划全部步骤，按计划执行，高效但不灵活。
+  实际项目中常结合使用：高层用 Plan-Execute，每步内用 ReAct。
+<span <span class="k">class</span>="s">""</span>"</span>
+
+<span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -351,7 +384,19 @@ client = OpenAI(
 
 
 <span class="k">def</span> call_llm_with_json(prompt: str, system_msg: str = <span <span class="k">class</span>="s">""</span>) -&gt; dict:
-model = os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"调用 LLM 并强制返回 JSON 格式。
+
+    在 Agent 开发中，经常需要 LLM 返回结构化数据
+    （如规划步骤、实体提取结果等）。
+
+    Args:
+        prompt: 用户提示词。
+        system_msg: 系统消息（可选）。
+
+    Returns:
+        LLM 返回的 JSON 字典。
+    <span <span class="k">class</span>="s">""</span>"</span>
+    model = os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>)
     messages = []
     <span class="k">if</span> system_msg:
         messages.append({<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"content"</span>: system_msg})
@@ -364,8 +409,28 @@ model = os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <sp
         temperature=<span class="n">0.3</span>,
     )
     <span class="k">return</span> json.loads(response.choices[<span class="n">0</span>].message.content)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">2.1</span>.<span class="n">1</span> Plan-Execute 规划器实战
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">def</span> plan_execute(task: str) -&gt; dict:
-system_msg = (
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Plan-Execute 规划器：先制定完整的执行计划。
+
+    适用场景：
+      - 任务明确，不需要动态调整
+      - 多个步骤之间有依赖关系
+      - 需要整体把控任务进度
+
+    Args:
+        task: 用户的任务描述。
+
+    Returns:
+        包含计划步骤的字典。
+    <span <span class="k">class</span>="s">""</span>"</span>
+    system_msg = (
         <span <span class="k">class</span>="s">"你是一个任务规划专家。请将用户的任务分解为可执行的子步骤。"</span>
         <span <span class="k">class</span>="s">"返回严格的 JSON 格式：\n"</span>
         <span <span class="k">class</span>='s'>'{<span <span class="k">class</span>="s">"plan"</span>: [{<span <span class="k">class</span>="s">"step"</span>: <span class="n">1</span>, <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"..."</span>, <span <span class="k">class</span>="s">"tool"</span>: <span <span class="k">class</span>="s">"工具名"</span>, '</span>
@@ -374,8 +439,32 @@ system_msg = (
     )
     prompt = f<span <span class="k">class</span>="s">"任务：{task}\n请制定执行计划。"</span>
     <span class="k">return</span> call_llm_with_json(prompt, system_msg)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">2.1</span>.<span class="n">2</span> Reflexion 反思器实战
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">def</span> reflexion_review(original_answer: str, criteria: str) -&gt; dict:
-system_msg = (
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Reflexion 反思器：对已有的回答进行自我批评和改进。
+
+    核心思想：
+      Agent 完成一个动作后，让 LLM 自己审视结果：
+      - 哪里做得好？
+      - 哪里有不足？
+      - 下次应该怎么改进？
+
+    类比：像学生做了一道题后，自己用红笔批改并写反思。
+
+    Args:
+        original_answer: Agent 的原始输出。
+        criteria: 评估标准。
+
+    Returns:
+        包含反思结果的字典。
+    <span <span class="k">class</span>="s">""</span>"</span>
+    system_msg = (
         <span <span class="k">class</span>="s">"你是一个严格的质量审查员。请审查以下回答，"</span>
         <span <span class="k">class</span>="s">"指出问题和改进建议。返回严格的 JSON 格式：\n"</span>
         <span <span class="k">class</span>='s'>'{<span <span class="k">class</span>="s">"score"</span>: <span class="n">1</span>-<span class="n">10</span>, <span <span class="k">class</span>="s">"issues"</span>: [<span <span class="k">class</span>="s">"问题1"</span>, <span <span class="k">class</span>="s">"问题2"</span>], '</span>
@@ -387,23 +476,75 @@ system_msg = (
         f<span <span class="k">class</span>="s">"请评估并改进。"</span>
     )
     <span class="k">return</span> call_llm_with_json(prompt, system_msg)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">2.2</span> 记忆系统 (Memory) —— Agent 的「大脑存储」
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+记忆系统是 Agent 能力的核心差异点。
+
+三类记忆（类比人类大脑）：
+
+<span class="n">1</span>. 短期记忆 (Short-term Memory)
+   - 即当前对话的上下文（conversation history）
+   - 实现：直接存在 messages 列表里
+   - 局限：受 LLM 上下文窗口限制（如 128K tokens）
+
+<span class="n">2</span>. 长期记忆 (Long-term Memory)
+   - 跨对话的持久化存储
+   - 实现：向量数据库（ChromaDB / Pinecone / Milvus）
+   - 用途：用户偏好、历史知识积累
+
+<span class="n">3</span>. 工作记忆 (Working Memory)
+   - 当前任务的中间状态
+   - 例：已完成的步骤、当前进度、收集到的中间数据
+   - 实现：Python 变量、字典、外部缓存
+
+面试常问：「如何解决 LLM 上下文窗口限制？」
+答：
+  <span class="n">1</span>. 摘要压缩：用 LLM 将长对话总结为摘要
+  <span class="n">2</span>. 滑动窗口：只保留最近 N 轮对话
+  <span class="n">3</span>. 向量检索：将历史存入向量库，按相关性检索
+  <span class="n">4</span>. 混合策略：短期用滑动窗口，长期用向量检索 + 摘要
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> AgentMemory:
-<span class="k">def</span> __init__(self, max_short_term: int = <span class="n">10</span>):
-self.short_term = []          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 短期：最近对话 [(user, assistant), ...]</span>
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Agent 记忆系统 —— 模拟三种记忆类型。
+
+    这是一个简化版实现，帮助理解每种记忆的本质。
+    实际项目中用 LangChain 的 Memory 模块或向量数据库。
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, max_short_term: int = <span class="n">10</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+        Args:
+            max_short_term: 短期记忆最多保留的对话轮数。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.short_term = []          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 短期：最近对话 [(user, assistant), ...]</span>
         self.working = {}             <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 工作记忆：任务中间状态 {key: value}</span>
         self.long_term = []           <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 长期记忆（简化版）：重要信息列表</span>
         self.max_short_term = max_short_term
         self.summary = <span <span class="k">class</span>="s">""</span>             <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 早期对话的摘要</span>
 
     <span class="k">def</span> add_conversation(self, user_msg: str, assistant_msg: str):
-self.short_term.append((user_msg, assistant_msg))
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"添加一轮对话到短期记忆。
+
+        Args:
+            user_msg: 用户消息。
+            assistant_msg: Agent 回复。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.short_term.append((user_msg, assistant_msg))
 
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 超出限制时，压缩最早的对话为摘要</span>
         <span class="k">if</span> len(self.short_term) &gt; self.max_short_term:
             self._compress()
 
     <span class="k">def</span> _compress(self):
-old_pair = self.short_term.pop(<span class="n">0</span>)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"将最早的对话压缩为摘要，存入长期记忆。"</span><span <span class="k">class</span>="s">""</span></span>
+        old_pair = self.short_term.pop(<span class="n">0</span>)
         combined = f<span <span class="k">class</span>="s">"[用户]: {old_pair[<span class="n">0</span>]}\n[助手]: {old_pair[<span class="n">1</span>]}"</span>
         self.long_term.append(combined)
         <span class="k">if</span> <span class="k">not</span> self.summary:
@@ -412,13 +553,34 @@ old_pair = self.short_term.pop(<span class="n">0</span>)
             self.summary += f<span <span class="k">class</span>="s">"\n...\n{combined}"</span>
 
     <span class="k">def</span> set_working(self, key: str, value: str):
-self.working[key] = value
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"写入工作记忆。
+
+        Args:
+            key: 键名。
+            value: 值。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.working[key] = value
 
     <span class="k">def</span> get_working(self, key: str) -&gt; str:
-<span class="k">return</span> self.working.get(key, <span <span class="k">class</span>="s">""</span>)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"读取工作记忆。
+
+        Args:
+            key: 键名。
+
+        Returns:
+            对应的值，不存在则返回空字符串。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">return</span> self.working.get(key, <span <span class="k">class</span>="s">""</span>)
 
     <span class="k">def</span> get_context_for_llm(self) -&gt; str:
-parts = []
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"组装发给 LLM 的完整上下文。
+
+        包含：长期记忆摘要 + 工作记忆 + 最近对话。
+
+        Returns:
+            格式化的上下文字符串。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        parts = []
 
         <span class="k">if</span> self.summary:
             parts.append(f<span <span class="k">class</span>="s">"<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">## 历史摘要\n{self.summary}\n"</span>)</span>
@@ -437,8 +599,44 @@ parts = []
             parts.append(f<span <span class="k">class</span>="s">"<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">## 最近对话\n{recent}"</span>)</span>
 
         <span class="k">return</span> <span <span class="k">class</span>="s">"\n"</span>.join(parts)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">2.3</span> 工具设计 (Tool Design) —— Agent 的「武器库」
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+工具是 Agent 与外部世界交互的唯一方式。
+工具设计的好坏直接影响 Agent 的可用性。
+
+工具设计的「<span class="n">4</span> 条黄金法则」：
+
+<span class="n">1</span>. **描述清晰**：description 是 LLM 选择工具的唯一依据
+   ✗ <span <span class="k">class</span>="s">"查询天气"</span>（太模糊）
+   ✓ <span <span class="k">class</span>="s">"查询指定城市当天的天气，返回温度、湿度、风向信息"</span>
+
+<span class="n">2</span>. **职责单一**：一个工具只做一件事
+   ✗ <span <span class="k">class</span>="s">"search_and_summarize"</span>（两个动作）
+   ✓ 拆成 <span <span class="k">class</span>="s">"search"</span> 和 <span <span class="k">class</span>="s">"summarize"</span> 两个独立工具
+
+<span class="n">3</span>. **错误可读**：返回的错误信息要能帮助 LLM 修正调用
+   ✗ <span class="k">return</span> <span <span class="k">class</span>="s">"Error: <span class="n">404</span>"</span>
+   ✓ <span class="k">return</span> <span <span class="k">class</span>="s">"未找到 <span <span class="k">class</span>='s'>'培京'</span> 的天气数据。您是否指 <span <span class="k">class</span>='s'>'北京'</span>？"</span>
+
+<span class="n">4</span>. **参数限定**：用 enum 限制参数值，减少 LLM 幻觉
+   parameters: {<span <span class="k">class</span>="s">"city"</span>: {<span <span class="k">class</span>="s">"enum"</span>: [<span <span class="k">class</span>="s">"北京"</span>, <span <span class="k">class</span>="s">"上海"</span>, <span <span class="k">class</span>="s">"深圳"</span>]}}
+
+面试常问：「工具描述怎么写才有效？」
+答：
+  - 描述 LLM 什么时候该用这个工具（不是怎么实现）
+  - 说明工具不擅长什么（边界条件）
+  - 举例说明典型调用场景
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">def</span> demonstrate_tool_design():
-print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示高质量工具定义 vs 低质量工具定义。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  工具设计对比：好 vs 坏"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -492,8 +690,24 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
 
     print(<span <span class="k">class</span>="s">"\n✅ 高质量工具定义："</span>)
     print(json.dumps(good_tool, indent=<span class="n">2</span>, ensure_ascii=<span class="k">False</span>))
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">2.4</span> 综合演示：三大组件协同工作
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+下面演示一个完整流程：
+  <span class="n">1</span>. 规划器制定计划
+  <span class="n">2</span>. 记忆系统记录状态
+  <span class="n">3</span>. 执行器中调用工具
+  <span class="n">4</span>. 反思器自我审查
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">def</span> run_full_demo():
-print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"█"</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"运行综合演示：组件协同工作。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"█"</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"█  综合演示：Agent 三大组件协同工作"</span>)
     print(<span <span class="k">class</span>="s">"█"</span> * <span class="n">60</span>)
 
@@ -549,6 +763,41 @@ print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k"
     print(memory.get_context_for_llm())
 
     print(<span <span class="k">class</span>="s">"\n✅ 综合演示完成！"</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">2.5</span> 本章总结
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. 规划器 (Planner)
+   - ReAct: 每步推理，灵活 (面试高频)
+   - Plan-Execute: 先规划后执行，高效
+   - Reflexion: 自我批评改进
+   - 实际项目：组合使用
+
+<span class="n">2</span>. 记忆系统 (Memory)
+   - 短期记忆: 对话上下文，受窗口限制
+   - 长期记忆: 向量数据库持久化
+   - 工作记忆: 当前任务的中间状态
+   - 面试重点：上下文窗口管理策略
+
+<span class="n">3</span>. 工具设计 (Tool Design)
+   - 描述要详细、准确
+   - 职责要单一
+   - 错误信息要可读
+   - 这是区分初级/高级 Agent 工程师的关键技能
+
+面试速记：
+  <span <span class="k">class</span>="s">"请描述 Agent 的核心架构"</span>
+  → Agent = LLM + Planner + Memory + Tools
+  → 通过 ReAct 循环协调各组件工作
+  → 记忆系统解决上下文限制，工具系统扩展能力边界
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║       第2章：Agent 核心组件深度解析                    ║"</span>)
@@ -567,7 +816,8 @@ print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k"
         run_full_demo()
     <span class="k">except</span> Exception <span class="k">as</span> e:
         print(f<span <span class="k">class</span>="s">"\n⚠️ 综合演示需要 API Key，错误信息: {e}"</span>)
-        print(<span <span class="k">class</span>="s">"请确保 .env 文件配置正确后重试。"</span>)</pre></div></details></div><div class="nav-bar">
+        print(<span <span class="k">class</span>="s">"请确保 .env 文件配置正确后重试。"</span>)
+</pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_01_fundamentals/01_hello_agent.html" title="第一个 Agent — 裸写 ReAct 循环">← 第1章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_03_types/03_agent_types.html" title="Agent 类型分类 — ReAct·Plan-Execute·Reflexion">第3章 →</a>

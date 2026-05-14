@@ -369,8 +369,6 @@ body {
 <pre>    Returns:
         是否需要继续。</pre>
 <p>&nbsp;</p>
-<p>演示 MemGPT 的完整工作流。</p>
-<p>&nbsp;</p>
 <h2>16.7 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
@@ -399,15 +397,218 @@ body {
 <p>→ OS 级内存管理：Core Memory + Recall + Archival</p>
 <p>→ 通过工具让 Agent 自己管理自己的记忆</p>
 <p>→ Heartbeat 机制实现自我纠错</p>
-<p>→ 「文件系统就是最好的记忆工具」</p></div><div class="code-section"><details open><summary>💻 源代码 (209 行)</summary><div class="code-block"><pre><span class="k">from</span> typing <span class="k">import</span> Optional
+<p>→ 「文件系统就是最好的记忆工具」</p></div><div class="code-section"><details open><summary>💻 源代码 (504 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+第16章：MemGPT / Letta —— Agent 记忆的「操作系统」
+=====================================================
+
+📌 本章目标：
+  <span class="n">1</span>. 理解 MemGPT 的核心思想：「把 LLM 当作操作系统来管」
+  <span class="n">2</span>. 掌握内存层次结构：Core Memory ↔ Recall Memory ↔ Archival Memory
+  <span class="n">3</span>. 理解 Heartbeat 机制（自我纠错）
+  <span class="n">4</span>. 理解 Sleep-Time Compute（后台记忆整理）
+  <span class="n">5</span>. 了解 Letta Filesystem（2025年最新发现：文件系统做记忆效果惊人）
+
+📌 面试高频点：
+  - MemGPT 怎么解决 LLM 的上下文窗口限制？
+  - Core Memory 和 Archival Memory 的区别？
+  - Heartbeat 是什么？为什么需要它？
+  - Letta 的「文件系统做记忆」为什么效果好？
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+论文: <span <span class="k">class</span>="s">"MemGPT: Towards LLMs <span class="k">as</span> Operating Systems"</span> (<span class="n">2023</span>)
+项目: github.com/letta-ai/letta (原 MemGPT)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+<span class="n">16.1</span> 核心思想：把 LLM 当作操作系统
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+类比：计算机操作系统管理内存的方式
+
+  操作系统内存层次:
+    ┌──────────┐  最快/最小
+    │  寄存器   │
+    ├──────────┤
+    │  L1/L2  │
+    │  Cache   │
+    ├──────────┤
+    │   RAM    │  ← 主内存
+    ├──────────┤
+    │  磁盘     │  ← 持久化
+    └──────────┘  最慢/最大
+
+  MemGPT 的内存层次:
+    ┌──────────────┐  最快/在上下文中
+    │   Core Memory  │  ← 当前对话 + 记忆块
+    │   (上下文内)    │     (类似 RAM)
+    ├──────────────┤
+    │  Recall Memory │  ← 完整对话历史
+    │  (上下文外)     │     (磁盘，可检索)
+    ├──────────────┤
+    │ Archival Memory│  ← 外部知识库
+    │   (向量数据库)  │     (归档存储)
+    └──────────────┘  最慢/最大
+
+核心洞察：
+  - LLM 的上下文窗口 = 操作系统的 RAM
+  - 上下文有限，但通过「换页」技术可以管理无限容量的信息
+  - OS 用虚拟内存换页 → MemGPT 用记忆管理工具换页
+
+
+<span class="n">16.2</span> MemGPT 的内存管理机制
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌────────────────────────────────────────────────────┐
+│                 MemGPT Agent                         │
+│                                                      │
+│  ┌──────────────────────────────────────────────┐  │
+│  │            Core Memory (上下文内)              │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────────┐ │  │
+│  │  │ System   │ │ Memory   │ │ Conversation │ │  │
+│  │  │ Prompt   │ │ Blocks   │ │ History      │ │  │
+│  │  └──────────┘ └──────────┘ └──────────────┘ │  │
+│  └──────────────────────────────────────────────┘  │
+│                       │                             │
+│            ┌──────────┴──────────┐                  │
+│            │   对话历史管理工具     │                  │
+│            │  ─────────────────  │                  │
+│            │  conversation_search │ ← 搜索完整历史    │
+│            │  core_memory_append  │ ← 编辑记忆块      │
+│            │  core_memory_replace │ ← 替换记忆块      │
+│            └─────────────────────┘                  │
+│                       │                             │
+│  ┌────────────────────┴──────────────────────────┐ │
+│  │              外部记忆（上下文外）                │ │
+│  │  ┌────────────────┐  ┌──────────────────────┐ │ │
+│  │  │ Recall Memory   │  │  Archival Memory      │ │ │
+│  │  │ (对话历史全文)    │  │  (向量库 + 知识检索)   │ │ │
+│  │  │ archival_memory │  │  archival_memory     │ │ │
+│  │  │ _search        │  │  _insert             │ │ │
+│  │  └────────────────┘  └──────────────────────┘ │ │
+│  └──────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────┘
+
+核心工具（Agent 通过 Function Calling 调用）：
+  <span class="n">1</span>. send_message: 向用户发送消息（MemGPT 唯一的消息出口）
+  <span class="n">2</span>. core_memory_append: 向 Core Memory 块追加信息
+  <span class="n">3</span>. core_memory_replace: 替换 Core Memory 块的内容
+  <span class="n">4</span>. conversation_search: 搜索完整对话历史
+  <span class="n">5</span>. archival_memory_insert: 将信息存入归档记忆（向量化）
+  <span class="n">6</span>. archival_memory_search: 从归档记忆中检索
+
+
+<span class="n">16.3</span> Heartbeat 机制 —— Agent 的「自我意识」
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+传统 Agent 的问题：
+  工具调用 → 返回结果 → 给用户 → 结束
+  Agent 没有机会检查「我做得对不对」
+
+Heartbeat 的解决方案：
+  每个工具的返回结果中包含一个 request_heartbeat 参数
+  如果设为 true → 工具执行完毕后，控制权交还给 Agent
+  Agent 可以：检查结果 → 发现错误 → 自动重试
+
+代码示意：
+  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 工具返回结果</span>
+  {
+    <span <span class="k">class</span>="s">"tool_call_id"</span>: <span <span class="k">class</span>="s">"call_123"</span>,
+    <span <span class="k">class</span>="s">"content"</span>: <span <span class="k">class</span>="s">"搜索结果为空"</span>,
+    <span <span class="k">class</span>="s">"request_heartbeat"</span>: true  // ← 请求心跳！
+  }
+
+  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Agent 收到心跳后</span>
+  → <span <span class="k">class</span>="s">"搜索结果为空？我换一个关键词试试"</span>
+  → 再次调用 search(<span <span class="k">class</span>="s">"换一个搜索词"</span>)
+  → 这次找到了！
+
+这类似于：
+  你在命令行执行 ls 之后，shell 不会直接退出
+  而是等你输入下一个命令
+  Heartbeat 就是给 Agent 的「命令提示符」
+
+
+<span class="n">16.4</span> Sleep-Time Compute —— 后台记忆整理
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MemGPT v2 的创新（2025年）。
+
+核心思想：
+  Agent 在「休眠」时（用户不互动时），
+  启动一个后台 Agent 来整理记忆。
+
+做什么？
+  <span class="n">1</span>. 浏览最近的对话历史
+  <span class="n">2</span>. 提取重要信息 → 写入 Core Memory
+  <span class="n">3</span>. 删除过时的信息
+  <span class="n">4</span>. 更新用户画像
+  <span class="n">5</span>. 合并重复的记忆
+
+类比：
+  就像你睡觉时，大脑在整理白天的记忆
+  不重要的事情遗忘，重要的事情巩固
+
+效果：
+  Letta 在 LoCoMo 基准测试上达到 <span class="n">74.0</span>% 准确率
+  （仅用文件系统 + GPT-4o-mini）
+
+
+<span class="n">16.5</span> Letta Filesystem ——「文件系统 = 最好的记忆工具」
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2025年8月，Letta 发表了一篇震撼论文：
+  <span <span class="k">class</span>="s">"Is a Filesystem All You Need?"</span>
+  → LoCoMo 基准测试 <span class="n">74.0</span>%（超过专用记忆工具 Mem0 的 <span class="n">68.5</span>%）
+
+为什么文件系统做记忆效果惊人？
+
+  <span class="n">1</span>. 文件操作是 LLM 最熟悉的范式
+     - grep / open / close / search_files
+     - 这些工具在 LLM 训练数据中大量出现
+     - Agent 对它们的使用非常自然
+
+  <span class="n">2</span>. 简单即正确
+     - 专用记忆工具引入额外复杂性
+     - 多了出错的环节
+     - Agent 需要理解专用工具的特殊语义
+
+  <span class="n">3</span>. 无需学习新范式
+     - 每个记忆工具（Mem0/Zep/LangMem）都有自己的 API
+     - LLM 需要「学会」每个新工具
+     - 而文件操作是 LLM 的「母语」
+
+核心启示（面试金句！）：
+  "Agent 的记忆质量取决于 Agent 管理上下文的能力，
+   而不是记忆工具的复杂度。文件系统 + 好用工具 = 最佳记忆方案。"
+
+
+<span class="n">16.6</span> MemGPT 架构的简化实现
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span <span class="k">class</span>="s">""</span>"</span>
+
+<span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 
 
 <span class="k">class</span> MemGPTAgent:
-<span class="k">def</span> __init__(self, system_prompt: str = <span <span class="k">class</span>="s">""</span>):
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Core Memory 块</span>
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"MemGPT 架构的简化实现 —— 展示核心概念。
+
+    实现：
+      <span class="n">1</span>. Core Memory 块（System + Human + Persona）
+      <span class="n">2</span>. 记忆编辑工具（core_memory_append/replace）
+      <span class="n">3</span>. Conversation Search（对话历史搜索）
+      <span class="n">4</span>. 上下文压缩（对话历史过长时自动压缩）
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, system_prompt: str = <span <span class="k">class</span>="s">""</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"初始化 MemGPT Agent。
+
+        Args:
+            system_prompt: 系统提示词。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Core Memory 块</span>
         self.core_memory = {
             <span <span class="k">class</span>="s">"human"</span>: <span <span class="k">class</span>="s">"用户偏好和背景信息"</span>,
             <span <span class="k">class</span>="s">"persona"</span>: <span <span class="k">class</span>="s">"AI助手，专业且友好"</span>,
@@ -424,7 +625,20 @@ body {
         self.compacted_summary = <span <span class="k">class</span>="s">""</span>
 
     <span class="k">def</span> _build_context(self, max_recent: int = <span class="n">10</span>) -&gt; list[dict]:
-context = []
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"构建发给 LLM 的上下文。
+
+        包含：
+          <span class="n">1</span>. Core Memory 块
+          <span class="n">2</span>. 压缩摘要（如果有）
+          <span class="n">3</span>. 最近 N 条对话
+
+        Args:
+            max_recent: 最大保留的最近消息数。
+
+        Returns:
+            上下文消息列表。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        context = []
 
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Core Memory 组装</span>
         core_text = <span <span class="k">class</span>="s">"\n"</span>.join(
@@ -448,28 +662,59 @@ context = []
         <span class="k">return</span> context
 
     <span class="k">def</span> core_memory_append(self, block: str, content: str):
-<span class="k">if</span> block <span class="k">in</span> self.core_memory:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"向 Core Memory 块追加内容。
+
+        Args:
+            block: 块名（human/persona）。
+            content: 追加的内容。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">if</span> block <span class="k">in</span> self.core_memory:
             self.core_memory[block] += <span <span class="k">class</span>="s">"\n"</span> + content
 
     <span class="k">def</span> core_memory_replace(self, block: str, content: str):
-<span class="k">if</span> block <span class="k">in</span> self.core_memory:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"替换 Core Memory 块的内容。
+
+        Args:
+            block: 块名。
+            content: 新内容。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">if</span> block <span class="k">in</span> self.core_memory:
             self.core_memory[block] = content
 
     <span class="k">def</span> archival_memory_insert(self, key: str, content: str):
-self.archival[key] = {
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"向归档记忆插入一条信息。
+
+        Args:
+            key: 检索键。
+            content: 信息内容。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.archival[key] = {
             <span <span class="k">class</span>="s">"content"</span>: content,
             <span <span class="k">class</span>="s">"timestamp"</span>: time.time(),
         }
 
     <span class="k">def</span> archival_memory_search(self, query: str) -&gt; str:
-results = []
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"从归档记忆搜索（简化版关键词匹配）。
+
+        Args:
+            query: 搜索词。
+
+        Returns:
+            匹配的结果。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        results = []
         <span class="k">for</span> key, entry <span class="k">in</span> self.archival.items():
             <span class="k">if</span> query.lower() <span class="k">in</span> key.lower() <span class="k">or</span> query.lower() <span class="k">in</span> entry[<span <span class="k">class</span>="s">"content"</span>].lower():
                 results.append(f<span <span class="k">class</span>="s">"[{key}] {entry[<span <span class="k">class</span>='s'>'content'</span>]}"</span>)
         <span class="k">return</span> <span <span class="k">class</span>="s">"\n"</span>.join(results[-<span class="n">5</span>:]) <span class="k">if</span> results <span class="k">else</span> <span <span class="k">class</span>="s">"未找到相关信息"</span>
 
     <span class="k">def</span> compact_conversation(self):
-<span class="k">if</span> len(self.conversation) &lt;= <span class="n">20</span>:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"对话压缩：早期对话 → 摘要，放入 compacted_summary。
+
+        这是 MemGPT 最核心的操作之一：
+          当对话历史过长时，对早期部分做摘要压缩。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">if</span> len(self.conversation) &lt;= <span class="n">20</span>:
             <span class="k">return</span>
 
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 取最早的 <span class="n">10</span> 条对话做压缩</span>
@@ -493,13 +738,25 @@ results = []
             self.compacted_summary = new_summary
 
     <span class="k">def</span> heartbeat_should_continue(self, last_tool_result: str) -&gt; bool:
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟判断：如果结果包含错误信号</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"判断是否需要 Heartbeat（继续给 Agent 控制权）。
+
+        如果工具调用失败或者返回不充分，
+        返回 <span class="k">True</span> 让 Agent 继续思考和行动。
+
+        Args:
+            last_tool_result: 上一步工具调用的结果。
+
+        Returns:
+            是否需要继续。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟判断：如果结果包含错误信号</span>
         error_signals = [<span <span class="k">class</span>="s">"未找到"</span>, <span <span class="k">class</span>="s">"错误"</span>, <span <span class="k">class</span>="s">"失败"</span>, <span <span class="k">class</span>="s">"抱歉"</span>, <span <span class="k">class</span>="s">"无法"</span>]
         <span class="k">return</span> any(sig <span class="k">in</span> last_tool_result <span class="k">for</span> sig <span class="k">in</span> error_signals)
 
 
 <span class="k">def</span> demo_memgpt_workflow():
-print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 MemGPT 的完整工作流。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  MemGPT 记忆架构演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -589,6 +846,42 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
         role = msg[<span <span class="k">class</span>="s">"role"</span>]
         content = msg[<span <span class="k">class</span>="s">"content"</span>][:<span class="n">80</span>].replace(<span <span class="k">class</span>="s">"\n"</span>, <span <span class="k">class</span>="s">" "</span>)
         print(f<span <span class="k">class</span>="s">"    [{i}] {role}: {content}..."</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">16.7</span> 本章总结
+━━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. MemGPT = 把 LLM 当操作系统管理
+   - Core Memory = RAM（上下文中，快速访问）
+   - Recall Memory = 磁盘（对话历史全文，可检索）
+   - Archival Memory = 归档（向量库 + 外部知识）
+
+<span class="n">2</span>. Heartbeat 机制
+   - 工具调用后把控制权交还给 Agent
+   - Agent 可以检查结果、发现错误、自动重试
+   - 类似命令行的「命令提示符」
+
+<span class="n">3</span>. Sleep-Time Compute (MemGPT v2)
+   - Agent 休眠时后台整理记忆
+   - 提取重要信息、删除冗余、更新画像
+
+<span class="n">4</span>. Letta Filesystem 的启示
+   - 文件系统做记忆 = 简单 + 效果好
+   - LoCoMo <span class="n">74.0</span>%（超过专用工具的 <span class="n">68.5</span>%）
+   - Agent 不需要复杂的记忆工具，需要好用的工具
+
+面试速记：
+  <span <span class="k">class</span>="s">"MemGPT 的核心创新是什么？"</span>
+  → OS 级内存管理：Core Memory + Recall + Archival
+  → 通过工具让 Agent 自己管理自己的记忆
+  → Heartbeat 机制实现自我纠错
+  → 「文件系统就是最好的记忆工具」
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第16章：MemGPT / Letta 记忆架构                        ║"</span>)
@@ -607,7 +900,8 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
     <span class="k">for</span> mem, os, desc <span class="k">in</span> layers:
         print(f<span <span class="k">class</span>="s">"  {mem:18s} ↔ {os:6s} → {desc}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第16章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+    print(<span <span class="k">class</span>="s">"\n✅ 第16章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_15_a2a/15_a2a_protocol.html" title="Google A2A 协议 — AgentCard·Task·Artifact">← 第15章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_17_computer_use/17_computer_use.html" title="Computer Use — Screenshot-Action Loop·安全沙箱">第17章 →</a>

@@ -180,8 +180,6 @@ body {
 <p>&nbsp;</p>
 <p>每道题都附「回答框架」和「得分点」。</p>
 <p>&nbsp;</p>
-<p>打印所有高频面试题的分类摘要。</p>
-<p>&nbsp;</p>
 <h2>7.3 项目准备指南</h2>
 <p>&nbsp;</p>
 <p>面试中最有说服力的永远是你的项目经验。</p>
@@ -268,7 +266,68 @@ body {
 <li>把项目部署上线（Streamlit / Gradio / FastAPI）</li>
 <li>写一篇技术博客分享你的项目（展示技术影响力）</li>
 <li>参加 Agent 相关的 Hackathon</li>
-<li>关注 arXiv 上最新的 Agent 论文</li></div><div class="code-section"><details open><summary>💻 源代码 (432 行)</summary><div class="code-block"><pre>AGENT_INTERVIEW_QUESTIONS = [
+<li>关注 arXiv 上最新的 Agent 论文</li></div><div class="code-section"><details open><summary>💻 源代码 (599 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+第7章：Agent 求职面试准备与行业实践
+===================================
+
+📌 本章目标：
+  <span class="n">1</span>. 了解 Agent 相关岗位的类型和要求
+  <span class="n">2</span>. 掌握 Agent 面试的高频问题和答题框架
+  <span class="n">3</span>. 学会准备有竞争力的项目作品集
+  <span class="n">4</span>. 了解行业趋势和发展方向
+
+📌 注意：
+  本章不包含代码，是一份完整的面试备战手册。
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">7.1</span> Agent 岗位全景图
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+当前市场上 Agent 相关的岗位类型：
+
+┌──────────────────┬─────────────────────────────────────────┐
+│      岗位         │             工作内容与要求                │
+├──────────────────┼─────────────────────────────────────────┤
+│ Agent 应用工程师  │ 用 LangChain/LangGraph 构建 Agent 应用    │
+│                  │ 要求：Python + 框架熟练 + 业务理解力       │
+├──────────────────┼─────────────────────────────────────────┤
+│ Agent 平台工程师  │ 开发 Agent 基础设施（编排/评测/监控）      │
+│                  │ 要求：Python/Go + 分布式系统 + 工程能力    │
+├──────────────────┼─────────────────────────────────────────┤
+│ Agent 产品经理    │ 定义 Agent 产品形态和用户体验             │
+│                  │ 要求：产品感 + Agent 技术理解 + 数据分析   │
+├──────────────────┼─────────────────────────────────────────┤
+│ Prompt 工程师     │ 专门设计和优化 Agent 的提示词             │
+│                  │ 要求：语言学功底 + 系统思维 + 评测经验     │
+├──────────────────┼─────────────────────────────────────────┤
+│ Agent 研究员      │ Agent 学术研究（新架构/新范式）           │
+│                  │ 要求：顶会论文 + 理论基础 + 工程实现能力   │
+└──────────────────┴─────────────────────────────────────────┘
+
+招聘趋势（<span class="n">2024</span>-<span class="n">2025</span>）：
+  - Agent 应用工程师需求量最大（占 <span class="n">60</span>%+）
+  - 岗位从大厂向中厂/创业公司扩散
+  - 薪资范围：一线城市 25K-60K（视经验和公司而定）
+  - 关键技能排序：LangChain/LangGraph &gt; Python &gt; LLM 原理 &gt; 系统设计
+
+主要雇主类型：
+  - 大厂：字节跳动(Coze)、阿里(Tongyi Agent)、腾讯
+  - Agent 创业公司：Dify、扣子、澜码科技
+  - AI 平台公司：智谱AI、百川智能、月之暗面
+  - 传统企业 AI 部门：金融、电商、教育等行业
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">7.2</span> 面试高频问题 TOP <span class="n">20</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+每道题都附「回答框架」和「得分点」。
+<span <span class="k">class</span>="s">""</span>"</span>
+
+AGENT_INTERVIEW_QUESTIONS = [
     <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 基础概念篇（必考 <span class="n">5</span> 题）=====</span>
     {
         <span <span class="k">class</span>="s">"id"</span>: <span class="n">1</span>,
@@ -632,7 +691,8 @@ body {
 
 
 <span class="k">def</span> print_interview_questions():
-categories = {}
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"打印所有高频面试题的分类摘要。"</span><span <span class="k">class</span>="s">""</span></span>
+    categories = {}
     <span class="k">for</span> q <span class="k">in</span> AGENT_INTERVIEW_QUESTIONS:
         cat = q[<span <span class="k">class</span>="s">"category"</span>]
         <span class="k">if</span> cat <span class="k">not</span> <span class="k">in</span> categories:
@@ -647,6 +707,111 @@ categories = {}
             print(f<span <span class="k">class</span>="s">"\n  Q{q[<span <span class="k">class</span>='s'>'id'</span>]}: {q[<span <span class="k">class</span>='s'>'question'</span>]}"</span>)
             print(f<span <span class="k">class</span>="s">"  回答框架: {q[<span <span class="k">class</span>='s'>'framework'</span>][:<span class="n">120</span>]}..."</span>)
             print(f<span <span class="k">class</span>="s">"  得分点: {<span <span class="k">class</span>='s'>', '</span>.join(q[<span <span class="k">class</span>='s'>'scoring_points'</span>][:<span class="n">2</span>])}..."</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">7.3</span> 项目准备指南
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+面试中最有说服力的永远是你的项目经验。
+以下是推荐的 Agent 项目组合：
+
+必做项目（基础)：
+  <span class="n">1</span>. 智能助手 Agent
+     - 功能：搜索 + 计算 + 天气 + 新闻
+     - 技术：LangChain + ReAct Agent
+     - 亮点：展示对 Agent 基本架构的理解
+
+  <span class="n">2</span>. 文档分析 Agent
+     - 功能：上传文档 → 提取关键信息 → 生成摘要 → 回答提问
+     - 技术：RAG + Agent + 向量数据库
+     - 亮点：展示记忆系统和工具调用的整合
+
+进阶项目（加分项）:
+  <span class="n">3</span>. 代码审查 Agent
+     - 功能：Read PR → Static Analysis → Code Review → 生成 Review 报告
+     - 技术：LangGraph + Git API + 代码分析工具
+     - 亮点：展示复杂工作流编排能力
+
+  <span class="n">4</span>. 数据分析 Agent
+     - 功能：自然语言提问 → 生成 SQL → 执行查询 → 可视化
+     - 技术：Text-to-SQL + Pandas + Plotly
+     - 亮点：展示多工具协作 + 结构化输出
+
+  <span class="n">5</span>. Multi-Agent 内容工厂
+     - 功能：策划 → 调研 → 写作 → 编辑 → 配图 → 发布
+     - 技术：crewAI / LangGraph Multi-Agent
+     - 亮点：展示多 Agent 架构设计能力
+
+项目展示技巧：
+  <span class="n">1</span>. 准备一个 <span class="n">3</span> 分钟的「Elevator Pitch」
+  <span class="n">2</span>. 提前画好架构图（面试时分享屏幕/画白板）
+  <span class="n">3</span>. 准备 <span class="n">1</span>-<span class="n">2</span> 个「技术难点 + 解决方案」的故事
+  <span class="n">4</span>. 有性能/成本的量化数据最好（延迟降到 Xms、成本降低 Y%）
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">7.4</span> 面试流程与时间线
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+典型 Agent 工程师面试流程（大厂）:
+
+  第 <span class="n">1</span> 轮：技术电话面试 (<span class="n">45</span> 分钟)
+    - 基础概念考核（本章 <span class="n">7.2</span> 的 Q1-Q5）
+    - 一道简单的手写代码（如工具定义、API 调用）
+
+  第 <span class="n">2</span> 轮：在线编码 (<span class="n">60</span> 分钟)
+    - 实现一个简易 Agent 循环
+    - 设计工具和评估方案
+
+  第 <span class="n">3</span> 轮：系统设计 (<span class="n">60</span> 分钟)
+    - 设计一个特定场景的 Agent 系统
+    - 考量架构合理性、扩展性、安全性
+
+  第 <span class="n">4</span> 轮：项目深挖 (<span class="n">45</span> 分钟)
+    - 详细介绍一个你做过的 Agent 项目
+    - 追问细节：为什么这么做？遇到什么问题？
+
+  第 <span class="n">5</span> 轮：行为面试 (<span class="n">45</span> 分钟)
+    - 团队协作、学习能力、职业规划
+    - STAR 法则回答（Situation-Task-Action-Result）
+
+准备时间线：
+  - 面试前 <span class="n">2</span> 周：回顾第 <span class="n">1</span>-<span class="n">3</span> 章（基础概念）
+  - 面试前 <span class="n">1</span> 周：复习第 <span class="n">4</span>-<span class="n">5</span> 章（框架实战）+ 准备项目故事
+  - 面试前 <span class="n">3</span> 天：过一遍 <span class="n">7.2</span> 的所有问题
+  - 面试前 <span class="n">1</span> 天：Mock Interview + 休息
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">7.5</span> 课程总结
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+回顾整个学习路线：
+
+  Ch0 概览        → 理解 Agent 是什么，搭建环境
+  Ch1 基础        → 手写第一个 Agent，理解 ReAct 循环
+  Ch2 组件        → 深入规划器、记忆系统、工具设计
+  Ch3 类型        → ReAct / Plan-Execute / Reflexion 对比
+  Ch4 框架        → LangChain Agent + LangGraph 实战
+  Ch5 多智能体    → Multi-Agent 架构与协作模式
+  Ch6 评估        → 评测体系、测试策略、生产实践
+  Ch7 求职        → 面试问题、项目准备、行业趋势 ← 你在这里
+
+下一步行动建议：
+  <span class="n">1</span>. 动手做一个完整的 Agent 项目（从本章 <span class="n">7.3</span> 选题）
+  <span class="n">2</span>. 把项目部署上线（Streamlit / Gradio / FastAPI）
+  <span class="n">3</span>. 写一篇技术博客分享你的项目（展示技术影响力）
+  <span class="n">4</span>. 参加 Agent 相关的 Hackathon
+  <span class="n">5</span>. 关注 arXiv 上最新的 Agent 论文
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║    第7章：Agent 求职面试准备与行业实践                 ║"</span>)
@@ -699,7 +864,8 @@ categories = {}
     print(<span <span class="k">class</span>="s">"  成为一名 AI Agent 工程师所需的核心知识体系。"</span>)
     print(<span <span class="k">class</span>="s">"  "</span>)
     print(<span <span class="k">class</span>="s">"  下一步：动手做一个项目，把它展示给面试官。"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)</pre></div></details></div><div class="nav-bar">
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+</pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_06_evaluation/06_evaluation.html" title="评估与测试 — 评测框架·生产 Checklist">← 第6章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html" title="Claude Code 架构 — nO·h2A·压缩·SubAgent">第8章 →</a>

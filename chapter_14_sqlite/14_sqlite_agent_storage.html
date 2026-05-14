@@ -221,126 +221,32 @@ body {
 <li>tool_logs 是独立的审计表（记录每次工具调用的详细信息）</li>
 <li>tasks 表支持异步任务（暂停/恢复/取消）</li>
 <p>&nbsp;</p>
-<p>获取数据库连接（上下文管理器，自动提交/回滚）。</p>
-<p>&nbsp;</p>
 <p>初始化数据库 —— 创建所有表。</p>
 <p>&nbsp;</p>
 <pre>这是 Agent 持久化的第一步。
 每次启动时调用，用 IF NOT EXISTS 保证幂等。</pre>
 <p>&nbsp;</p>
-<p>-- ===== 用户表 =====</p>
-<pre>    CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        email TEXT,
-        api_key_hash TEXT,
-        quota_total INTEGER DEFAULT 100000,
-        quota_used INTEGER DEFAULT 0,
-        preferences_json TEXT DEFAULT '{}',
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );</pre>
+<p>)</p>
+<pre>print("  ✅ 数据库已初始化（WAL模式 + 5张表 + 6个索引）")</pre>
 <p>&nbsp;</p>
-<p>-- ===== 会话表 =====</p>
-<pre>    CREATE TABLE IF NOT EXISTS sessions (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        title TEXT DEFAULT '新对话',
-        status TEXT DEFAULT 'active'
-            CHECK(status IN ('active','paused','completed','cancelled')),
-        model TEXT DEFAULT 'gpt-4o-mini',
-        total_tokens INTEGER DEFAULT 0,
-        total_cost REAL DEFAULT 0.0,
-        message_count INTEGER DEFAULT 0,
-        metadata_json TEXT DEFAULT '{}',
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-        FOREIGN KEY (user_id) REFERENCES users(id)
-    );</pre>
+<p>class AgentStorage:</p>
 <p>&nbsp;</p>
-<p>-- ===== 消息表（核心！）=====</p>
-<pre>    CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        session_id TEXT NOT NULL,
-        role TEXT NOT NULL CHECK(role IN ('system','user','assistant','tool')),
-        content TEXT NOT NULL DEFAULT '',
-        tool_calls_json TEXT,
-        tool_call_id TEXT,
-        token_count INTEGER DEFAULT 0,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        FOREIGN KEY (session_id) REFERENCES sessions(id)
-    );</pre>
+<p># ==================== 用户管理 ====================</p>
 <p>&nbsp;</p>
-<p>-- ===== 任务表（异步任务管理）=====</p>
-<pre>    CREATE TABLE IF NOT EXISTS tasks (
-        id TEXT PRIMARY KEY,
-        session_id TEXT NOT NULL,
-        type TEXT NOT NULL,
-        payload_json TEXT NOT NULL DEFAULT '{}',
-        status TEXT DEFAULT 'pending'
-            CHECK(status IN ('pending','running','paused','completed','failed','cancelled')),
-        result_json TEXT,
-        priority INTEGER DEFAULT 0,
-        max_retries INTEGER DEFAULT 3,
-        retry_count INTEGER DEFAULT 0,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        started_at TEXT,
-        completed_at TEXT,
-        FOREIGN KEY (session_id) REFERENCES sessions(id)
-    );</pre>
+<pre>@staticmethod
+def create_user(name: str, email: str = "",
+                quota_total: int = 100000) -> dict:</pre>
 <p>&nbsp;</p>
-<p>-- ===== 工具调用日志表（审计 + 分析）=====</p>
-<pre>    CREATE TABLE IF NOT EXISTS tool_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        session_id TEXT NOT NULL,
-        message_id INTEGER,
-        tool_name TEXT NOT NULL,
-        input_json TEXT NOT NULL,
-        output_json TEXT,
-        elapsed_ms REAL,
-        success INTEGER DEFAULT 1,
-        error_message TEXT,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        FOREIGN KEY (session_id) REFERENCES sessions(id),
-        FOREIGN KEY (message_id) REFERENCES messages(id)
-    );</pre>
+<p>user_id = hashlib.md5(f"{name}-{time.time()}".encode()).hexdigest()[:16]</p>
+<pre>    with get_db() as conn:
+        conn.execute(
+            "INSERT INTO users (id, name, email, quota_total) VALUES (?,?,?,?)",
+            (user_id, name, email, quota_total),
+        )
+    return {"id": user_id, "name": name, "quota_total": quota_total}</pre>
 <p>&nbsp;</p>
-<p>-- ===== 索引（查询性能关键！）=====</p>
-<pre>    CREATE INDEX IF NOT EXISTS idx_sessions_user
-        ON sessions(user_id);
-    CREATE INDEX IF NOT EXISTS idx_sessions_updated
-        ON sessions(updated_at DESC);
-    CREATE INDEX IF NOT EXISTS idx_messages_session
-        ON messages(session_id, created_at);
-    CREATE INDEX IF NOT EXISTS idx_messages_role
-        ON messages(session_id, role);
-    CREATE INDEX IF NOT EXISTS idx_tasks_status
-        ON tasks(status, priority DESC);
-    CREATE INDEX IF NOT EXISTS idx_tool_logs_session
-        ON tool_logs(session_id, created_at);
-    CREATE INDEX IF NOT EXISTS idx_tool_logs_name
-        ON tool_logs(tool_name, created_at);</pre>
-<p>&nbsp;</p>
-<h2>14.3 Agent 存储层 API</h2>
-<p>&nbsp;</p>
-<p>Agent 持久化存储 —— 封装所有数据库操作。</p>
-<p>&nbsp;</p>
-<pre>设计原则：
-  1. 每个方法完成一个业务操作
-  2. 内部处理事务（外部无需关心）
-  3. 返回 Python 原生类型（dict/list）</pre>
-<p>&nbsp;</p>
-<p>创建用户。</p>
-<p>&nbsp;</p>
-<pre>    Args:
-        name: 用户名。
-        email: 邮箱（可选）。
-        quota_total: Token 配额上限。</pre>
-<p>&nbsp;</p>
-<pre>    Returns:
-        创建的用户信息字典。</pre>
-<p>&nbsp;</p>
-<p>获取用户信息。</p>
+<pre>@staticmethod
+def get_user(user_id: str) -> Optional[dict]:</pre>
 <p>&nbsp;</p>
 <p>检查用户 Token 配额是否充足。</p>
 <p>&nbsp;</p>
@@ -350,8 +256,6 @@ body {
 <p>&nbsp;</p>
 <pre>    Returns:
         是否有足够配额。</pre>
-<p>&nbsp;</p>
-<p>消耗用户配额。</p>
 <p>&nbsp;</p>
 <p>创建新会话。</p>
 <p>&nbsp;</p>
@@ -363,11 +267,6 @@ body {
 <pre>    Returns:
         创建的会话信息。</pre>
 <p>&nbsp;</p>
-<p>INSERT INTO sessions (id, user_id, title, model)</p>
-<pre>               VALUES (?,?,?,?)</pre>
-<p>&nbsp;</p>
-<p>获取会话详情。</p>
-<p>&nbsp;</p>
 <p>列出用户的所有会话（按更新时间倒序）。</p>
 <p>&nbsp;</p>
 <pre>    Args:
@@ -376,15 +275,6 @@ body {
 <p>&nbsp;</p>
 <pre>    Returns:
         会话列表。</pre>
-<p>&nbsp;</p>
-<p>SELECT id, title, status, model, message_count,</p>
-<pre>                      total_tokens, updated_at
-               FROM sessions WHERE user_id=?
-               ORDER BY updated_at DESC LIMIT ?</pre>
-<p>&nbsp;</p>
-<p>暂停会话（暂停 Agent 执行）。</p>
-<p>&nbsp;</p>
-<p>恢复会话。</p>
 <p>&nbsp;</p>
 <p>保存一条消息到对话历史。</p>
 <p>&nbsp;</p>
@@ -398,16 +288,6 @@ body {
         tool_call_id: 工具调用 ID（仅 tool 消息有）。
         token_count: Token 估算值。</pre>
 <p>&nbsp;</p>
-<p>INSERT INTO messages (session_id, role, content,</p>
-<pre>               tool_calls_json, tool_call_id, token_count)
-               VALUES (?,?,?,?,?,?)</pre>
-<p>&nbsp;</p>
-<p>UPDATE sessions SET</p>
-<pre>               message_count = message_count + 1,
-               total_tokens = total_tokens + ?,
-               updated_at = datetime('now')
-               WHERE id=?</pre>
-<p>&nbsp;</p>
 <p>获取会话的最近 N 条消息（用于构建 LLM 上下文）。</p>
 <p>&nbsp;</p>
 <pre>    这是 Agent 记忆系统的核心查询。</pre>
@@ -418,13 +298,6 @@ body {
 <p>&nbsp;</p>
 <pre>    Returns:
         消息列表（按时间正序）。</pre>
-<p>&nbsp;</p>
-<p>SELECT * FROM (</p>
-<pre>                   SELECT role, content, tool_calls_json, tool_call_id,
-                          token_count, created_at
-                   FROM messages WHERE session_id=?
-                   ORDER BY created_at DESC LIMIT ?
-               ) ORDER BY created_at ASC</pre>
 <p>&nbsp;</p>
 <p>记录一次工具调用。</p>
 <p>&nbsp;</p>
@@ -440,10 +313,6 @@ body {
         error_message: 错误信息。
         message_id: 关联的消息 ID。</pre>
 <p>&nbsp;</p>
-<p>INSERT INTO tool_logs (session_id, message_id, tool_name,</p>
-<pre>               input_json, output_json, elapsed_ms, success, error_message)
-               VALUES (?,?,?,?,?,?,?,?)</pre>
-<p>&nbsp;</p>
 <p>创建一个异步任务。</p>
 <p>&nbsp;</p>
 <pre>    Args:
@@ -454,9 +323,6 @@ body {
 <p>&nbsp;</p>
 <pre>    Returns:
         创建的任务信息。</pre>
-<p>&nbsp;</p>
-<p>INSERT INTO tasks (id, session_id, type, payload_json, priority)</p>
-<pre>               VALUES (?,?,?,?,?)</pre>
 <p>&nbsp;</p>
 <p>更新任务状态。</p>
 <p>&nbsp;</p>
@@ -473,21 +339,6 @@ body {
 <p>&nbsp;</p>
 <pre>    Returns:
         包含各项统计的字典。</pre>
-<p>&nbsp;</p>
-<p>SELECT COUNT(*) as session_count,</p>
-<pre>                      SUM(total_tokens) as total_tokens,
-                      SUM(message_count) as total_messages
-               FROM sessions
-               WHERE user_id=? AND updated_at > datetime('now', ?)</pre>
-<p>&nbsp;</p>
-<p>SELECT tool_name, COUNT(*) as call_count,</p>
-<pre>                      AVG(elapsed_ms) as avg_latency,
-                      SUM(CASE WHEN success=0 THEN 1 ELSE 0 END) as failures
-               FROM tool_logs
-               WHERE session_id IN (
-                   SELECT id FROM sessions WHERE user_id=?
-               ) AND created_at > datetime('now', ?)
-               GROUP BY tool_name ORDER BY call_count DESC</pre>
 <p>&nbsp;</p>
 <h2>14.4 关键设计决策详解（面试重点！）</h2>
 <p>&nbsp;</p>
@@ -588,9 +439,113 @@ AgentA 写消息 + AgentB 读历史 = 同时进行 ✓</pre>
 <p>→ SQLite + WAL 模式（开发/小规模）</p>
 <p>→ 5 张核心表：users/sessions/messages/tasks/tool_logs</p>
 <p>→ tool_calls 用 JSON 字段减少 JOIN</p>
-<p>→ FTS5 做对话搜索</p>
-<p>&nbsp;</p>
-<p>演示完整的 Agent 存储工作流。</p></div><div class="code-section"><details open><summary>💻 源代码 (353 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ FTS5 做对话搜索</p></div><div class="code-section"><details open><summary>💻 源代码 (821 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+第14章：SQLite + Agent 持久化存储
+==================================
+
+📌 本章目标：
+  <span class="n">1</span>. 用 SQLite 实现 Agent 的会话持久化（对话历史不丢失）
+  <span class="n">2</span>. 实现任务状态管理（暂停/恢复/取消）
+  <span class="n">3</span>. 实现用户管理系统（配额/权限/偏好）
+  <span class="n">4</span>. 掌握 Agent 场景下的 SQL 设计模式
+  <span class="n">5</span>. 实现分析查询（Token 消耗 / 工具使用频率 / 成功率）
+  <span class="n">6</span>. 学习 WAL 模式、连接池、并发安全等生产实践
+
+📌 面试高频点：
+  - Agent 的数据库 schema 怎么设计？
+  - 对话历史存在哪里？怎么高效查询？
+  - SQLite 的 WAL 模式是什么？为什么 Agent 场景需要？
+  - 如何实现 Agent 任务的暂停和恢复？
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+本章完全独立运行（仅依赖 Python 标准库 sqlite3）
+运行：python chapter_14_sqlite/14_sqlite_agent_storage.py
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+<span class="n">14.1</span> 为什么是 SQLite？
+━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ 常见误区：「Agent 项目 = 必须用 PostgreSQL / MongoDB」
+
+✅ 真相：SQLite 是 Agent 开发中最被低估的数据库。
+
+SQLite 在 Agent 场景中的优势：
+  <span class="n">1</span>. 零配置：不需要安装数据库服务，文件即数据库
+  <span class="n">2</span>. 嵌入式：数据库和应用在同一个进程（低延迟）
+  <span class="n">3</span>. 便携性：一个 .db 文件可以备份、迁移、版本控制
+  <span class="n">4</span>. WAL 模式：支持并发读 + 单写（Agent 场景足够）
+  <span class="n">5</span>. 全文搜索(FTS5)：内置全文索引（对话搜索）
+  <span class="n">6</span>. JSON 支持：可以存储半结构化数据
+
+什么时候用 SQLite？什么时候升级到 PostgreSQL？
+
+  SQLite 适用：
+    ✓ 单机部署的 Agent 服务
+    ✓ 原型开发 / MVP 阶段
+    ✓ 个人 Agent 助手
+    ✓ 中小型团队内部工具
+    ✓ 对话历史 &lt; 10M 条
+
+  PostgreSQL 适用：
+    → 多副本高可用需求
+    → 写入 QPS &gt; <span class="n">1000</span>
+    → 需要行级权限控制
+    → 需要地理分布部署
+
+
+<span class="n">14.2</span> Agent 数据库 schema 设计
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+核心表设计（<span class="n">5</span> 张表）：
+
+  ┌────────────────────────────────────────────────────┐
+  │                    SQLite 数据库                     │
+  │                                                      │
+  │  ┌─────────────┐  ┌──────────────────┐             │
+  │  │   sessions   │  │    messages       │             │
+  │  │  ─────────  │  │   ────────────   │             │
+  │  │  id (PK)    │  │   id (PK)         │             │
+  │  │  user_id    │──│   session_id (FK) │             │
+  │  │  title      │  │   role            │             │
+  │  │  status     │  │   content         │             │
+  │  │  created_at │  │   tool_calls_json │             │
+  │  │  updated_at │  │   token_count     │             │
+  │  └─────────────┘  │   created_at      │             │
+  │                    └──────────────────┘             │
+  │                                                      │
+  │  ┌─────────────┐  ┌──────────────────┐             │
+  │  │    tasks     │  │    tool_logs      │             │
+  │  │  ─────────  │  │   ────────────   │             │
+  │  │  id (PK)    │  │   id (PK)         │             │
+  │  │  session_id │  │   session_id      │             │
+  │  │  type       │  │   tool_name       │             │
+  │  │  payload    │  │   input_json      │             │
+  │  │  status     │  │   output_json     │             │
+  │  │  result     │  │   elapsed_ms      │             │
+  │  │  created_at │  │   success         │             │
+  │  └─────────────┘  │   created_at      │             │
+  │                    └──────────────────┘             │
+  │                                                      │
+  │  ┌─────────────┐                                    │
+  │  │    users     │  ← 扩展用（配额/权限/偏好）        │
+  │  │  ─────────  │                                    │
+  │  │  id (PK)    │                                    │
+  │  │  name       │                                    │
+  │  │  quota_total│                                    │
+  │  │  quota_used │                                    │
+  │  └─────────────┘                                    │
+  └────────────────────────────────────────────────────┘
+
+设计要点（面试重点！）：
+  <span class="n">1</span>. sessions 和 messages 是 <span class="n">1</span>:N 关系
+  <span class="n">2</span>. tool_calls 存储在 messages 表的 JSON 字段中（不用单独的表）
+     → 减少 JOIN，提高读取性能
+  <span class="n">3</span>. tool_logs 是独立的审计表（记录每次工具调用的详细信息）
+  <span class="n">4</span>. tasks 表支持异步任务（暂停/恢复/取消）
+<span <span class="k">class</span>="s">""</span>"</span>
+
+<span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -605,7 +560,8 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span <span class="k">class</s
 
 <span class="d">@contextmanager</span>
 <span class="k">def</span> get_db():
-conn = sqlite3.connect(DB_PATH)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"获取数据库连接（上下文管理器，自动提交/回滚）。"</span><span <span class="k">class</span>="s">""</span></span>
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 结果以字典形式返回</span>
     conn.execute(<span <span class="k">class</span>="s">"PRAGMA journal_mode=WAL"</span>)  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 启用 WAL 模式</span>
     conn.execute(<span <span class="k">class</span>="s">"PRAGMA foreign_keys=ON"</span>)   <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 启用外键约束</span>
@@ -620,17 +576,141 @@ conn = sqlite3.connect(DB_PATH)
 
 
 <span class="k">def</span> init_database():
-<span class="k">with</span> get_db() <span class="k">as</span> conn:
-        conn.executescript(
-)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"初始化数据库 —— 创建所有表。
+
+    这是 Agent 持久化的第一步。
+    每次启动时调用，用 IF NOT EXISTS 保证幂等。
+    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="k">with</span> get_db() <span class="k">as</span> conn:
+        conn.executescript(<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+        -- ===== 用户表 =====
+        CREATE TABLE IF NOT EXISTS users (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT,
+            api_key_hash TEXT,
+            quota_total INTEGER DEFAULT <span class="n">100000</span>,
+            quota_used INTEGER DEFAULT <span class="n">0</span>,
+            preferences_json TEXT DEFAULT <span <span class="k">class</span>='s'>'{}'</span>,
+            created_at TEXT NOT NULL DEFAULT (datetime(<span <span class="k">class</span>='s'>'now'</span>)),
+            updated_at TEXT NOT NULL DEFAULT (datetime(<span <span class="k">class</span>='s'>'now'</span>))
+        );
+
+        -- ===== 会话表 =====
+        CREATE TABLE IF NOT EXISTS sessions (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            title TEXT DEFAULT <span <span class="k">class</span>='s'>'新对话'</span>,
+            status TEXT DEFAULT <span <span class="k">class</span>='s'>'active'</span>
+                CHECK(status IN (<span <span class="k">class</span>='s'>'active'</span>,<span <span class="k">class</span>='s'>'paused'</span>,<span <span class="k">class</span>='s'>'completed'</span>,<span <span class="k">class</span>='s'>'cancelled'</span>)),
+            model TEXT DEFAULT <span <span class="k">class</span>='s'>'gpt-4o-mini'</span>,
+            total_tokens INTEGER DEFAULT <span class="n">0</span>,
+            total_cost REAL DEFAULT <span class="n">0.0</span>,
+            message_count INTEGER DEFAULT <span class="n">0</span>,
+            metadata_json TEXT DEFAULT <span <span class="k">class</span>='s'>'{}'</span>,
+            created_at TEXT NOT NULL DEFAULT (datetime(<span <span class="k">class</span>='s'>'now'</span>)),
+            updated_at TEXT NOT NULL DEFAULT (datetime(<span <span class="k">class</span>='s'>'now'</span>)),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        );
+
+        -- ===== 消息表（核心！）=====
+        CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            role TEXT NOT NULL CHECK(role IN (<span <span class="k">class</span>='s'>'system'</span>,<span <span class="k">class</span>='s'>'user'</span>,<span <span class="k">class</span>='s'>'assistant'</span>,<span <span class="k">class</span>='s'>'tool'</span>)),
+            content TEXT NOT NULL DEFAULT <span <span class="k">class</span>='s'>''</span>,
+            tool_calls_json TEXT,
+            tool_call_id TEXT,
+            token_count INTEGER DEFAULT <span class="n">0</span>,
+            created_at TEXT NOT NULL DEFAULT (datetime(<span <span class="k">class</span>='s'>'now'</span>)),
+            FOREIGN KEY (session_id) REFERENCES sessions(id)
+        );
+
+        -- ===== 任务表（异步任务管理）=====
+        CREATE TABLE IF NOT EXISTS tasks (
+            id TEXT PRIMARY KEY,
+            session_id TEXT NOT NULL,
+            type TEXT NOT NULL,
+            payload_json TEXT NOT NULL DEFAULT <span <span class="k">class</span>='s'>'{}'</span>,
+            status TEXT DEFAULT <span <span class="k">class</span>='s'>'pending'</span>
+                CHECK(status IN (<span <span class="k">class</span>='s'>'pending'</span>,<span <span class="k">class</span>='s'>'running'</span>,<span <span class="k">class</span>='s'>'paused'</span>,<span <span class="k">class</span>='s'>'completed'</span>,<span <span class="k">class</span>='s'>'failed'</span>,<span <span class="k">class</span>='s'>'cancelled'</span>)),
+            result_json TEXT,
+            priority INTEGER DEFAULT <span class="n">0</span>,
+            max_retries INTEGER DEFAULT <span class="n">3</span>,
+            retry_count INTEGER DEFAULT <span class="n">0</span>,
+            created_at TEXT NOT NULL DEFAULT (datetime(<span <span class="k">class</span>='s'>'now'</span>)),
+            started_at TEXT,
+            completed_at TEXT,
+            FOREIGN KEY (session_id) REFERENCES sessions(id)
+        );
+
+        -- ===== 工具调用日志表（审计 + 分析）=====
+        CREATE TABLE IF NOT EXISTS tool_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            message_id INTEGER,
+            tool_name TEXT NOT NULL,
+            input_json TEXT NOT NULL,
+            output_json TEXT,
+            elapsed_ms REAL,
+            success INTEGER DEFAULT <span class="n">1</span>,
+            error_message TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime(<span <span class="k">class</span>='s'>'now'</span>)),
+            FOREIGN KEY (session_id) REFERENCES sessions(id),
+            FOREIGN KEY (message_id) REFERENCES messages(id)
+        );
+
+        -- ===== 索引（查询性能关键！）=====
+        CREATE INDEX IF NOT EXISTS idx_sessions_user
+            ON sessions(user_id);
+        CREATE INDEX IF NOT EXISTS idx_sessions_updated
+            ON sessions(updated_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_messages_session
+            ON messages(session_id, created_at);
+        CREATE INDEX IF NOT EXISTS idx_messages_role
+            ON messages(session_id, role);
+        CREATE INDEX IF NOT EXISTS idx_tasks_status
+            ON tasks(status, priority DESC);
+        CREATE INDEX IF NOT EXISTS idx_tool_logs_session
+            ON tool_logs(session_id, created_at);
+        CREATE INDEX IF NOT EXISTS idx_tool_logs_name
+            ON tool_logs(tool_name, created_at);
+        <span <span class="k">class</span>="s">""</span>"</span>)
     print(<span <span class="k">class</span>="s">"  ✅ 数据库已初始化（WAL模式 + 5张表 + 6个索引）"</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">14.3</span> Agent 存储层 API
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> AgentStorage:
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ==================== 用户管理 ====================</span>
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Agent 持久化存储 —— 封装所有数据库操作。
+
+    设计原则：
+      <span class="n">1</span>. 每个方法完成一个业务操作
+      <span class="n">2</span>. 内部处理事务（外部无需关心）
+      <span class="n">3</span>. 返回 Python 原生类型（dict/list）
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ==================== 用户管理 ====================</span>
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> create_user(name: str, email: str = <span <span class="k">class</span>="s">""</span>,
                     quota_total: int = <span class="n">100000</span>) -&gt; dict:
-user_id = hashlib.md5(f<span <span class="k">class</span>="s">"{name}-{time.time()}"</span>.encode()).hexdigest()[:<span class="n">16</span>]
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"创建用户。
+
+        Args:
+            name: 用户名。
+            email: 邮箱（可选）。
+            quota_total: Token 配额上限。
+
+        Returns:
+            创建的用户信息字典。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        user_id = hashlib.md5(f<span <span class="k">class</span>="s">"{name}-{time.time()}"</span>.encode()).hexdigest()[:<span class="n">16</span>]
         <span class="k">with</span> get_db() <span class="k">as</span> conn:
             conn.execute(
                 <span <span class="k">class</span>="s">"INSERT INTO users (id, name, email, quota_total) VALUES (?,?,?,?)"</span>,
@@ -640,7 +720,8 @@ user_id = hashlib.md5(f<span <span class="k">class</span>="s">"{name}-{time.time
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> get_user(user_id: str) -&gt; Optional[dict]:
-<span class="k">with</span> get_db() <span class="k">as</span> conn:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"获取用户信息。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">with</span> get_db() <span class="k">as</span> conn:
             row = conn.execute(
                 <span <span class="k">class</span>="s">"SELECT * FROM users WHERE id=?"</span>, (user_id,)
             ).fetchone()
@@ -648,7 +729,16 @@ user_id = hashlib.md5(f<span <span class="k">class</span>="s">"{name}-{time.time
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> check_quota(user_id: str, required_tokens: int = <span class="n">0</span>) -&gt; bool:
-<span class="k">with</span> get_db() <span class="k">as</span> conn:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"检查用户 Token 配额是否充足。
+
+        Args:
+            user_id: 用户 ID。
+            required_tokens: 本次需要的 Token 数。
+
+        Returns:
+            是否有足够配额。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">with</span> get_db() <span class="k">as</span> conn:
             row = conn.execute(
                 <span <span class="k">class</span>="s">"SELECT quota_total - quota_used AS remaining FROM users WHERE id=?"</span>,
                 (user_id,),
@@ -659,7 +749,8 @@ user_id = hashlib.md5(f<span <span class="k">class</span>="s">"{name}-{time.time
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> consume_quota(user_id: str, tokens: int):
-<span class="k">with</span> get_db() <span class="k">as</span> conn:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"消耗用户配额。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">with</span> get_db() <span class="k">as</span> conn:
             conn.execute(
                 <span <span class="k">class</span>="s">"UPDATE users SET quota_used=quota_used+?, updated_at=datetime(<span <span class="k">class</span>='s'>'now'</span>) WHERE id=?"</span>,
                 (tokens, user_id),
@@ -670,19 +761,31 @@ user_id = hashlib.md5(f<span <span class="k">class</span>="s">"{name}-{time.time
     <span class="d">@staticmethod</span>
     <span class="k">def</span> create_session(user_id: str, title: str = <span <span class="k">class</span>="s">"新对话"</span>,
                        model: str = <span <span class="k">class</span>="s">"gpt-4o-mini"</span>) -&gt; dict:
-session_id = hashlib.md5(
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"创建新会话。
+
+        Args:
+            user_id: 用户 ID。
+            title: 会话标题。
+            model: 使用的模型。
+
+        Returns:
+            创建的会话信息。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        session_id = hashlib.md5(
             f<span <span class="k">class</span>="s">"{user_id}-{time.time()}-{os.urandom(<span class="n">4</span>).hex()}"</span>.encode()
         ).hexdigest()[:<span class="n">16</span>]
         <span class="k">with</span> get_db() <span class="k">as</span> conn:
             conn.execute(
-,
+                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"INSERT INTO sessions (id, user_id, title, model)
+                   VALUES (?,?,?,?)<span <span class="k">class</span>="s">""</span>"</span>,
                 (session_id, user_id, title, model),
             )
         <span class="k">return</span> {<span <span class="k">class</span>="s">"id"</span>: session_id, <span <span class="k">class</span>="s">"user_id"</span>: user_id, <span <span class="k">class</span>="s">"title"</span>: title, <span <span class="k">class</span>="s">"model"</span>: model}
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> get_session(session_id: str) -&gt; Optional[dict]:
-<span class="k">with</span> get_db() <span class="k">as</span> conn:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"获取会话详情。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">with</span> get_db() <span class="k">as</span> conn:
             row = conn.execute(
                 <span <span class="k">class</span>="s">"SELECT * FROM sessions WHERE id=?"</span>, (session_id,)
             ).fetchone()
@@ -690,16 +793,29 @@ session_id = hashlib.md5(
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> list_user_sessions(user_id: str, limit: int = <span class="n">20</span>) -&gt; list[dict]:
-<span class="k">with</span> get_db() <span class="k">as</span> conn:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"列出用户的所有会话（按更新时间倒序）。
+
+        Args:
+            user_id: 用户 ID。
+            limit: 返回数量上限。
+
+        Returns:
+            会话列表。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">with</span> get_db() <span class="k">as</span> conn:
             rows = conn.execute(
-,
+                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"SELECT id, title, status, model, message_count,
+                          total_tokens, updated_at
+                   FROM sessions WHERE user_id=?
+                   ORDER BY updated_at DESC LIMIT ?<span <span class="k">class</span>="s">""</span>"</span>,
                 (user_id, limit),
             ).fetchall()
         <span class="k">return</span> [dict(r) <span class="k">for</span> r <span class="k">in</span> rows]
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> pause_session(session_id: str):
-<span class="k">with</span> get_db() <span class="k">as</span> conn:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"暂停会话（暂停 Agent 执行）。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">with</span> get_db() <span class="k">as</span> conn:
             conn.execute(
                 <span <span class="k">class</span>="s">"UPDATE sessions SET status=<span <span class="k">class</span>='s'>'paused'</span>, updated_at=datetime(<span <span class="k">class</span>='s'>'now'</span>) WHERE id=?"</span>,
                 (session_id,),
@@ -707,7 +823,8 @@ session_id = hashlib.md5(
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> resume_session(session_id: str):
-<span class="k">with</span> get_db() <span class="k">as</span> conn:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"恢复会话。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">with</span> get_db() <span class="k">as</span> conn:
             conn.execute(
                 <span <span class="k">class</span>="s">"UPDATE sessions SET status=<span <span class="k">class</span>='s'>'active'</span>, updated_at=datetime(<span <span class="k">class</span>='s'>'now'</span>) WHERE id=?"</span>,
                 (session_id,),
@@ -720,25 +837,59 @@ session_id = hashlib.md5(
                      tool_calls: Optional[list] = <span class="k">None</span>,
                      tool_call_id: Optional[str] = <span class="k">None</span>,
                      token_count: int = <span class="n">0</span>):
-tool_calls_json = json.dumps(tool_calls, ensure_ascii=<span class="k">False</span>) <span class="k">if</span> tool_calls <span class="k">else</span> <span class="k">None</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"保存一条消息到对话历史。
+
+        这是 Agent 存储的核心操作，每次 LLM 交互都需要调用。
+
+        Args:
+            session_id: 会话 ID。
+            role: 消息角色（user/assistant/system/tool）。
+            content: 消息内容。
+            tool_calls: 工具调用信息（仅 assistant 消息有）。
+            tool_call_id: 工具调用 ID（仅 tool 消息有）。
+            token_count: Token 估算值。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        tool_calls_json = json.dumps(tool_calls, ensure_ascii=<span class="k">False</span>) <span class="k">if</span> tool_calls <span class="k">else</span> <span class="k">None</span>
         <span class="k">with</span> get_db() <span class="k">as</span> conn:
             conn.execute(
-,
+                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"INSERT INTO messages (session_id, role, content,
+                   tool_calls_json, tool_call_id, token_count)
+                   VALUES (?,?,?,?,?,?)<span <span class="k">class</span>="s">""</span>"</span>,
                 (session_id, role, content, tool_calls_json,
                  tool_call_id, token_count),
             )
             <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 同步更新会话统计</span>
             conn.execute(
-,
+                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"UPDATE sessions SET
+                   message_count = message_count + <span class="n">1</span>,
+                   total_tokens = total_tokens + ?,
+                   updated_at = datetime(<span <span class="k">class</span>='s'>'now'</span>)
+                   WHERE id=?<span <span class="k">class</span>="s">""</span>"</span>,
                 (token_count, session_id),
             )
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> get_conversation_history(session_id: str,
                                   max_messages: int = <span class="n">50</span>) -&gt; list[dict]:
-<span class="k">with</span> get_db() <span class="k">as</span> conn:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"获取会话的最近 N 条消息（用于构建 LLM 上下文）。
+
+        这是 Agent 记忆系统的核心查询。
+
+        Args:
+            session_id: 会话 ID。
+            max_messages: 最大返回条数。
+
+        Returns:
+            消息列表（按时间正序）。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">with</span> get_db() <span class="k">as</span> conn:
             rows = conn.execute(
-,
+                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"SELECT * FROM (
+                       SELECT role, content, tool_calls_json, tool_call_id,
+                              token_count, created_at
+                       FROM messages WHERE session_id=?
+                       ORDER BY created_at DESC LIMIT ?
+                   ) ORDER BY created_at ASC<span <span class="k">class</span>="s">""</span>"</span>,
                 (session_id, max_messages),
             ).fetchall()
         <span class="k">return</span> [dict(r) <span class="k">for</span> r <span class="k">in</span> rows]
@@ -751,9 +902,25 @@ tool_calls_json = json.dumps(tool_calls, ensure_ascii=<span class="k">False</spa
                       elapsed_ms: float, success: bool = <span class="k">True</span>,
                       error_message: str = <span class="k">None</span>,
                       message_id: int = <span class="k">None</span>):
-<span class="k">with</span> get_db() <span class="k">as</span> conn:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"记录一次工具调用。
+
+        这是 Agent 审计和优化的基础数据。
+
+        Args:
+            session_id: 会话 ID。
+            tool_name: 工具名称。
+            input_data: 工具输入参数。
+            output_data: 工具输出结果。
+            elapsed_ms: 执行耗时（毫秒）。
+            success: 是否成功。
+            error_message: 错误信息。
+            message_id: 关联的消息 ID。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">with</span> get_db() <span class="k">as</span> conn:
             conn.execute(
-,
+                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"INSERT INTO tool_logs (session_id, message_id, tool_name,
+                   input_json, output_json, elapsed_ms, success, error_message)
+                   VALUES (?,?,?,?,?,?,?,?)<span <span class="k">class</span>="s">""</span>"</span>,
                 (session_id, message_id, tool_name,
                  json.dumps(input_data, ensure_ascii=<span class="k">False</span>),
                  json.dumps(output_data, ensure_ascii=<span class="k">False</span>),
@@ -765,12 +932,24 @@ tool_calls_json = json.dumps(tool_calls, ensure_ascii=<span class="k">False</spa
     <span class="d">@staticmethod</span>
     <span class="k">def</span> create_task(session_id: str, task_type: str,
                     payload: dict, priority: int = <span class="n">0</span>) -&gt; dict:
-task_id = hashlib.md5(
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"创建一个异步任务。
+
+        Args:
+            session_id: 关联的会话。
+            task_type: 任务类型。
+            payload: 任务参数。
+            priority: 优先级（越大越优先）。
+
+        Returns:
+            创建的任务信息。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        task_id = hashlib.md5(
             f<span <span class="k">class</span>="s">"{session_id}-{task_type}-{time.time()}"</span>.encode()
         ).hexdigest()[:<span class="n">16</span>]
         <span class="k">with</span> get_db() <span class="k">as</span> conn:
             conn.execute(
-,
+                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"INSERT INTO tasks (id, session_id, type, payload_json, priority)
+                   VALUES (?,?,?,?,?)<span <span class="k">class</span>="s">""</span>"</span>,
                 (task_id, session_id, task_type,
                  json.dumps(payload, ensure_ascii=<span class="k">False</span>), priority),
             )
@@ -779,7 +958,14 @@ task_id = hashlib.md5(
     <span class="d">@staticmethod</span>
     <span class="k">def</span> update_task_status(task_id: str, status: str,
                            result: Optional[dict] = <span class="k">None</span>):
-updates = [<span <span class="k">class</span>="s">"status=?"</span>]
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"更新任务状态。
+
+        Args:
+            task_id: 任务 ID。
+            status: 新状态。
+            result: 任务结果（完成时）。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        updates = [<span <span class="k">class</span>="s">"status=?"</span>]
         params = [status]
 
         <span class="k">if</span> status == <span <span class="k">class</span>="s">"running"</span>:
@@ -803,16 +989,36 @@ updates = [<span <span class="k">class</span>="s">"status=?"</span>]
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> get_usage_stats(user_id: str, days: int = <span class="n">7</span>) -&gt; dict:
-<span class="k">with</span> get_db() <span class="k">as</span> conn:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"获取用户的用量统计。
+
+        Args:
+            user_id: 用户 ID。
+            days: 统计天数。
+
+        Returns:
+            包含各项统计的字典。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">with</span> get_db() <span class="k">as</span> conn:
             <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 总览</span>
             total = conn.execute(
-,
+                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"SELECT COUNT(*) <span class="k">as</span> session_count,
+                          SUM(total_tokens) <span class="k">as</span> total_tokens,
+                          SUM(message_count) <span class="k">as</span> total_messages
+                   FROM sessions
+                   WHERE user_id=? AND updated_at &gt; datetime(<span <span class="k">class</span>='s'>'now'</span>, ?)<span <span class="k">class</span>="s">""</span>"</span>,
                 (user_id, f<span <span class="k">class</span>="s">"-{days} days"</span>),
             ).fetchone()
 
             <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 工具调用统计</span>
             tools = conn.execute(
-,
+                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"SELECT tool_name, COUNT(*) <span class="k">as</span> call_count,
+                          AVG(elapsed_ms) <span class="k">as</span> avg_latency,
+                          SUM(CASE WHEN success=<span class="n">0</span> THEN <span class="n">1</span> ELSE <span class="n">0</span> END) <span class="k">as</span> failures
+                   FROM tool_logs
+                   WHERE session_id IN (
+                       SELECT id FROM sessions WHERE user_id=?
+                   ) AND created_at &gt; datetime(<span <span class="k">class</span>='s'>'now'</span>, ?)
+                   GROUP BY tool_name ORDER BY call_count DESC<span <span class="k">class</span>="s">""</span>"</span>,
                 (user_id, f<span <span class="k">class</span>="s">"-{days} days"</span>),
             ).fetchall()
 
@@ -823,8 +1029,119 @@ updates = [<span <span class="k">class</span>="s">"status=?"</span>]
             <span <span class="k">class</span>="s">"total_messages"</span>: total[<span <span class="k">class</span>="s">"total_messages"</span>] <span class="k">or</span> <span class="n">0</span>,
             <span <span class="k">class</span>="s">"tool_usage"</span>: [dict(r) <span class="k">for</span> r <span class="k">in</span> tools],
         }
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">14.4</span> 关键设计决策详解（面试重点！）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+决策 <span class="n">1</span>: 为什么 tool_calls 存在 messages 表里而不单独建表？
+
+  方案 A（单独建表）:
+    messages 表 + tool_calls 表 → JOIN 查询
+
+  方案 B（JSON 字段）:
+    messages 表的 tool_calls_json 字段
+
+  选择方案 B 的理由：
+    ✓ Agent 读取对话历史时，要一次性加载所有信息（含 tool_calls）
+    ✓ 单表读取比 JOIN 快得多
+    ✓ Agent 不会按 tool_name 筛选历史消息（没有这种查询需求）
+    ✓ 但 tool_logs 表单独存在（用于审计和分析查询）
+
+决策 <span class="n">2</span>: WAL 模式为什么重要？
+
+  WAL = Write-Ahead Logging（预写式日志）
+
+  默认模式（DELETE）:
+    写入时锁定整个数据库 → 读写互斥
+    AgentA 在写入消息 → AgentB 无法读取历史
+
+  WAL 模式:
+    写入操作记录到 WAL 文件 → 不阻塞读取
+    支持无限并发读 + <span class="n">1</span> 个写
+    AgentA 写消息 + AgentB 读历史 = 同时进行 ✓
+
+  代价：
+    WAL 文件会增长，需要定期 checkpoint（SQLite 自动处理）
+
+决策 <span class="n">3</span>: 为什么用 TEXT 存时间而不是 TIMESTAMP？
+
+  SQLite 没有 DATE/TIME 类型，TEXT 的 ISO8601 格式：
+    ✓ 人类可读（便于调试）
+    ✓ 排序正确（符合 ISO8601 字典序）
+    ✓ 跨语言一致
+
+
+<span class="n">14.5</span> SQLite 在 Agent 场景中的高级用法
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span class="n">1</span>. FTS5 全文搜索 —— 搜索对话历史
+
+  CREATE VIRTUAL TABLE messages_fts USING fts5(
+      content,
+      content=<span <span class="k">class</span>='s'>'messages'</span>,        -- 外部内容表
+      content_rowid=<span <span class="k">class</span>='s'>'id'</span>          -- 外部表的行ID
+  );
+
+  -- 搜索包含 <span <span class="k">class</span>="s">"天气"</span> 的消息
+  SELECT * FROM messages_fts WHERE content MATCH <span <span class="k">class</span>='s'>'天气'</span>;
+
+<span class="n">2</span>. JSON 函数 —— 查询半结构化数据
+
+  -- 查询偏好中 theme 为 dark 的用户
+  SELECT * FROM users
+  WHERE json_extract(preferences_json, <span <span class="k">class</span>='s'>'$.theme'</span>) = <span <span class="k">class</span>='s'>'dark'</span>;
+
+  -- 查询 tool_calls 中包含 search 工具的消息
+  SELECT * FROM messages
+  WHERE tool_calls_json LIKE <span <span class="k">class</span>='s'>'%<span <span class="k">class</span>="s">"name"</span>:<span <span class="k">class</span>="s">"search"</span>%'</span>;
+
+<span class="n">3</span>. 增量备份
+
+  -- VACUUM INTO 备份到新文件
+  conn.execute(<span <span class="k">class</span>="s">"VACUUM INTO <span <span class="k">class</span>='s'>'agent_store_backup.db'</span>"</span>)
+
+
+<span class="n">14.6</span> 本章总结
+━━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. SQLite 是 Agent 开发中最实用的数据库
+   - 零配置、嵌入式、便携
+   - WAL 模式支持高并发读
+   - FTS5 + JSON 支持高级查询
+
+<span class="n">2</span>. Schema 设计核心
+   - sessions: 会话管理
+   - messages: 对话历史（含 JSON 格式的 tool_calls）
+   - tasks: 异步任务（暂停/恢复/取消）
+   - tool_logs: 工具调用审计
+
+<span class="n">3</span>. 关键决策（面试重点！）
+   - tool_calls 用 JSON 字段 vs 单独建表（选择 JSON 减少 JOIN）
+   - WAL 模式保证读写不互斥
+   - TEXT 存时间（人类可读 + 排序正确）
+
+<span class="n">4</span>. Agent 存储的核心查询
+   - get_conversation_history: 构建 LLM 上下文
+   - log_tool_call: 审计和分析
+   - get_usage_stats: 用户用量统计
+
+面试速记：
+  <span <span class="k">class</span>="s">"Agent 的数据库怎么设计？"</span>
+  → SQLite + WAL 模式（开发/小规模）
+  → <span class="n">5</span> 张核心表：users/sessions/messages/tasks/tool_logs
+  → tool_calls 用 JSON 字段减少 JOIN
+  → FTS5 做对话搜索
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">def</span> demo_full_storage_workflow():
-print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示完整的 Agent 存储工作流。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Agent 持久化存储完整演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -942,7 +1259,8 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
     print(f<span <span class="k">class</span>="s">"\n  💾 数据库文件: {DB_PATH}"</span>)
     print(f<span <span class="k">class</span>="s">"  📏 文件大小: {os.path.getsize(DB_PATH):,} bytes"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第14章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+    print(<span <span class="k">class</span>="s">"\n✅ 第14章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_13_fastapi/13_fastapi_agent_service.html" title="FastAPI 服务化 — REST·SSE·WebSocket">← 第13章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_15_a2a/15_a2a_protocol.html" title="Google A2A 协议 — AgentCard·Task·Artifact">第15章 →</a>

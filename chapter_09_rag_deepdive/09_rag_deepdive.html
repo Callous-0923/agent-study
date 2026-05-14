@@ -194,8 +194,6 @@ body {
 <pre>    Returns:
         (文本块, 相似度分数) 的列表。</pre>
 <p>&nbsp;</p>
-<p>演示 Naive RAG 的基本流程。</p>
-<p>&nbsp;</p>
 <h2>9.3 Advanced RAG —— 三板斧优化</h2>
 <p>&nbsp;</p>
 <p>Advanced RAG 在 Naive RAG 的基础上加入三大优化：</p>
@@ -240,8 +238,6 @@ body {
 <p>&nbsp;</p>
 <pre>    在真实项目中，这一步用 LLM 完成。
     比如用 prompt：「将以下查询改写为 3 个不同角度的搜索查询」</pre>
-<p>&nbsp;</p>
-<p>添加文档到混合索引。</p>
 <p>&nbsp;</p>
 <p>混合检索：融合向量搜索和关键词搜索的结果。</p>
 <p>&nbsp;</p>
@@ -322,8 +318,6 @@ body {
 <p>&nbsp;</p>
 <pre>    Returns:
         路径列表，未找到返回 None。</pre>
-<p>&nbsp;</p>
-<p>演示 GraphRAG 的多跳推理能力。</p>
 <p>&nbsp;</p>
 <h2>9.5 Agentic RAG —— 让 RAG 自己思考</h2>
 <p>&nbsp;</p>
@@ -413,12 +407,71 @@ body {
 <p>"RAG 有什么高级技术？"</p>
 <p>→ 查询重写(HyDE) → 混合检索(Hybrid) → 重排序(Reranker)</p>
 <p>→ GraphRAG(知识图谱) → Agentic RAG(Agent 循环)</p>
-<p>→ 每个技术解决一个具体痛点，不要盲目叠加</p></div><div class="code-section"><details open><summary>💻 源代码 (315 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<p>→ 每个技术解决一个具体痛点，不要盲目叠加</p></div><div class="code-section"><details open><summary>💻 源代码 (646 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+第9章：RAG 原理与实现详解 —— 从 Naive 到 Agentic RAG
+=====================================================
+
+📌 本章目标：
+  <span class="n">1</span>. 理解 RAG 的完整技术演进路线
+  <span class="n">2</span>. 掌握 Naive RAG → Advanced RAG → GraphRAG → Agentic RAG 的原理
+  <span class="n">3</span>. 实现一个可运行的 Advanced RAG 系统
+  <span class="n">4</span>. 理解 HyDE、Multi-Query、Self-RAG 等高级技术
+  <span class="n">5</span>. 了解 RAG 评估体系（RAGAS）
+
+📌 面试高频点：
+  - RAG 的核心流程和每步的作用
+  - 为什么纯向量搜索不够用？（关键词 vs 语义）
+  - GraphRAG 解决了什么问题？
+  - Agentic RAG 和传统 RAG 的本质区别
+  - 如何评估 RAG 系统的质量？
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">9.1</span> RAG 技术演进全景图
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RAG 从 <span class="n">2020</span> 年到 <span class="n">2025</span> 年经历了三个重要阶段：
+
+  ┌──────────────────────────────────────────────────────┐
+  │                                                        │
+  │  <span class="n">2020</span>-<span class="n">2022</span>: Naive RAG                                 │
+  │  「问 → 检索 → 生成」三步走                              │
+  │  代表: Facebook RAG 论文、LangChain 基础 QA Chain        │
+  │                                                        │
+  │  <span class="n">2023</span>-<span class="n">2024</span>: Advanced RAG                              │
+  │  加入查询重写、混合检索、重排序、纠错等优化                │
+  │  代表: HyDE、Multi-Query、Self-RAG、CRAG               │
+  │                                                        │
+  │  <span class="n">2024</span>-<span class="n">2025</span>: Next-Gen RAG                              │
+  │  知识图谱、Agent 协作、多模态、长文本                     │
+  │  代表: GraphRAG (微软)、Agentic RAG、Multimodal RAG     │
+  │                                                        │
+  └──────────────────────────────────────────────────────┘
+
+  Naive RAG 的问题（面试常问！）:
+    <span class="n">1</span>. 检索不准：语义相似 ≠ 问题相关
+    <span class="n">2</span>. 上下文丢失：大块文本导致 LLM 忽略关键信息
+    <span class="n">3</span>. 无法处理复杂关系：「A影响了B，B又影响了C」需要多跳推理
+    <span class="n">4</span>. 无自检能力：检索到无关内容也不知道
+
+
+<span class="n">9.2</span> Naive RAG 实现 —— 理解基础再谈优化
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span <span class="k">class</span>="s">""</span>"</span>
+
+<span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
 
 <span class="k">class</span> NaiveVectorStore:
-<span class="k">def</span> __init__(self):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"最小化的向量存储 —— 帮助理解向量检索的本质。
+
+    面试中常被问「向量检索的原理是什么」，
+    这个实现展示了答案：将查询和文档都转为向量，
+    通过余弦相似度找到最相似的 Top-K 个。
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self):
         self.documents = []         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 原始文档列表</span>
         self.embeddings = []        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 对应的向量列表</span>
         self.chunks = []            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 分块信息</span>
@@ -426,7 +479,14 @@ body {
     <span class="k">def</span> add_documents(self, docs: list[str],
                       chunk_size: int = <span class="n">200</span>,
                       chunk_overlap: int = <span class="n">50</span>):
-<span class="k">for</span> doc <span class="k">in</span> docs:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"添加文档：先分块，再「嵌入」（这里用简化模拟表示）。
+
+        Args:
+            docs: 文档列表。
+            chunk_size: 分块大小（字符数）。
+            chunk_overlap: 块间重叠大小。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">for</span> doc <span class="k">in</span> docs:
             <span class="k">for</span> i <span class="k">in</span> range(<span class="n">0</span>, len(doc), chunk_size - chunk_overlap):
                 chunk = doc[i:i + chunk_size]
                 self.chunks.append(chunk)
@@ -437,7 +497,11 @@ body {
         print(f<span <span class="k">class</span>="s">"  已添加 {len(self.chunks)} 个文本块"</span>)
 
     <span class="k">def</span> _simple_hash_embed(self, text: str, dim: int = <span class="n">64</span>) -&gt; np.ndarray:
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 基于字符哈希的简单向量表示</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"简化版的文本向量化（仅用于理解原理）。
+
+        实际项目用 sentence-transformers / OpenAI Embeddings API。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 基于字符哈希的简单向量表示</span>
         vec = np.zeros(dim)
         <span class="k">for</span> i, ch <span class="k">in</span> enumerate(text):
             vec[hash(ch) % dim] += <span class="n">1</span>
@@ -448,7 +512,16 @@ body {
         <span class="k">return</span> vec
 
     <span class="k">def</span> search(self, query: str, top_k: int = <span class="n">5</span>) -&gt; list[tuple[str, float]]:
-query_vec = self._simple_hash_embed(query)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"检索最相似的 Top-K 个文本块。
+
+        Args:
+            query: 查询文本。
+            top_k: 返回数量。
+
+        Returns:
+            (文本块, 相似度分数) 的列表。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        query_vec = self._simple_hash_embed(query)
         scores = []
         <span class="k">for</span> i, emb <span class="k">in</span> enumerate(self.embeddings):
             <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 余弦相似度 = 点积（因为已归一化）</span>
@@ -463,7 +536,8 @@ query_vec = self._simple_hash_embed(query)
 
 
 <span class="k">def</span> demo_naive_rag():
-print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Naive RAG 的基本流程。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Naive RAG 流程演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -497,14 +571,68 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
         results = store.search(q, top_k=<span class="n">2</span>)
         <span class="k">for</span> chunk, score <span class="k">in</span> results:
             print(f<span <span class="k">class</span>="s">"    [{score:.3f}] {chunk[:<span class="n">80</span>]}..."</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">9.3</span> Advanced RAG —— 三板斧优化
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Advanced RAG 在 Naive RAG 的基础上加入三大优化：
+  <span class="n">1</span>. 查询重写 (Query Rewriting)
+  <span class="n">2</span>. 混合检索 (Hybrid Search)
+  <span class="n">3</span>. 重排序 (Reranking)
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> AdvancedRAG:
-<span class="k">def</span> __init__(self, llm=<span class="k">None</span>):
-self.llm = llm
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Advanced RAG 系统 —— 包含查询重写、混合检索、重排序。
+
+    架构流程：
+      用户查询
+         │
+         ▼
+    ┌──────────────┐
+    │ 查询重写       │ ← 用 LLM 扩展/改写查询
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────┐
+    │ 混合检索       │ ← BM25 + 向量搜索
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────┐
+    │ 重排序         │ ← Cross-Encoder 精细排序
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────┐
+    │ LLM 生成       │ ← 注入检索上下文
+    └──────────────┘
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, llm=<span class="k">None</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+        Args:
+            llm: LLM 调用函数（可选）。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.llm = llm
         self.store = NaiveVectorStore()
         self.bm25_index = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 简化版 BM25 索引</span>
 
     <span class="k">def</span> query_rewrite(self, query: str) -&gt; list[str]:
-variations = [query]
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"查询重写：将一个查询扩展为多个变体。
+
+        策略：
+          <span class="n">1</span>. 原始查询
+          <span class="n">2</span>. 关键词提取版本
+          <span class="n">3</span>. 同义词扩展版本
+
+        在真实项目中，这一步用 LLM 完成。
+        比如用 prompt：「将以下查询改写为 <span class="n">3</span> 个不同角度的搜索查询」
+        <span <span class="k">class</span>="s">""</span>"</span>
+        variations = [query]
 
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 简单模拟：如果查询中有「怎么」，增加「方法」「教程」</span>
         <span class="k">if</span> <span <span class="k">class</span>="s">"怎么"</span> <span class="k">in</span> query <span class="k">or</span> <span <span class="k">class</span>="s">"如何"</span> <span class="k">in</span> query:
@@ -519,7 +647,8 @@ variations = [query]
         <span class="k">return</span> variations
 
     <span class="k">def</span> add_documents(self, docs: list[str]):
-self.store.add_documents(docs)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"添加文档到混合索引。"</span><span <span class="k">class</span>="s">""</span></span>
+        self.store.add_documents(docs)
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 构建简化的 BM25 索引</span>
         <span class="k">for</span> i, chunk <span class="k">in</span> enumerate(self.store.chunks):
             words = chunk.lower().split()
@@ -529,7 +658,16 @@ self.store.add_documents(docs)
                 self.bm25_index[word].append(i)
 
     <span class="k">def</span> hybrid_search(self, query: str, top_k: int = <span class="n">5</span>) -&gt; list[tuple[str, float]]:
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 向量搜索结果</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"混合检索：融合向量搜索和关键词搜索的结果。
+
+        Args:
+            query: 查询文本。
+            top_k: 返回数量。
+
+        Returns:
+            融合后的检索结果。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 向量搜索结果</span>
         vector_results = self.store.search(query, top_k=top_k)
         vector_scores = {chunk: score <span class="k">for</span> chunk, score <span class="k">in</span> vector_results}
 
@@ -558,7 +696,17 @@ self.store.add_documents(docs)
 
     <span class="k">def</span> rerank(self, query: str, candidates: list[tuple[str, float]],
                top_k: int = <span class="n">3</span>) -&gt; list[tuple[str, float]]:
-query_lower = query.lower()
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"重排序：对候选结果进行精细排序。
+
+        在真实项目中，这一步用 Cross-Encoder 模型（如 BGE-reranker）：
+          - 对每个 (query, chunk) 对打分
+          - 与向量搜索的「分别打分」不同，Cross-Encoder 同时看两边
+
+        这里用简化的规则模拟：
+          - 查询关键词在块中出现得越早，分数越高
+          - 块越短（越聚焦），分数越高
+        <span <span class="k">class</span>="s">""</span>"</span>
+        query_lower = query.lower()
         reranked = []
         <span class="k">for</span> chunk, orig_score <span class="k">in</span> candidates:
             chunk_lower = chunk.lower()
@@ -579,19 +727,78 @@ query_lower = query.lower()
 
         reranked.sort(key=<span class="k">lambda</span> x: x[<span class="n">1</span>], reverse=<span class="k">True</span>)
         <span class="k">return</span> reranked[:top_k]
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">9.4</span> GraphRAG —— 知识图谱 + RAG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+为什么需要 GraphRAG？
+
+  Naive RAG 的场景：「Python 是什么？」
+    → 检索到「Python是一种编程语言」的文本块
+    → 回答正确 ✓
+
+  Naive RAG 失败的场景：「Python 的设计者还参与了哪些项目？」
+    → 检索到「Python是由Guido创建的」和「Dropbox使用Python」
+    → 但这些块之间没有关联，无法回答「Guido还做过什么」
+    → 回答失败 ✗
+
+  GraphRAG 的优势：
+    → 知识图谱中存储了「Guido → 创建 → Python」
+    → 以及「Guido → 工作于 → Google → 参与 → Dropbox」
+    → 可以沿着图谱的边（关系）进行多跳推理
+    → 回答正确 ✓
+
+GraphRAG 的核心原理：
+
+  <span class="n">1</span>. 图构建 (Graph Construction)
+     从文档中抽取实体和关系，构建知识图谱
+
+  <span class="n">2</span>. 混合检索 (Hybrid Retrieval)
+     同时使用向量搜索和图遍历
+
+  <span class="n">3</span>. 多跳推理 (Multi-hop Reasoning)
+     沿着图谱的边寻找推理路径
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> SimpleKnowledgeGraph:
-<span class="k">def</span> __init__(self):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"简化的知识图谱 —— 演示 GraphRAG 的核心概念。
+
+    节点: 实体（人、组织、概念）
+    边: 关系（创建、工作于、属于）
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self):
         self.graph = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># {entity: {relation: [target_entities]}}</span>
 
     <span class="k">def</span> add_relation(self, subject: str, relation: str, obj: str):
-<span class="k">if</span> subject <span class="k">not</span> <span class="k">in</span> self.graph:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"添加三元组：主语-关系-宾语。
+
+        Args:
+            subject: 主语实体。
+            relation: 关系类型。
+            obj: 宾语实体。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">if</span> subject <span class="k">not</span> <span class="k">in</span> self.graph:
             self.graph[subject] = {}
         <span class="k">if</span> relation <span class="k">not</span> <span class="k">in</span> self.graph[subject]:
             self.graph[subject][relation] = []
         self.graph[subject][relation].append(obj)
 
     <span class="k">def</span> traverse(self, start: str, max_depth: int = <span class="n">2</span>) -&gt; list[str]:
-visited = set()
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"从起始节点出发进行图遍历。
+
+        Args:
+            start: 起始实体。
+            max_depth: 最大遍历深度。
+
+        Returns:
+            到达的所有实体列表。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        visited = set()
         to_visit = [(start, <span class="n">0</span>)]
         <span class="k">while</span> to_visit:
             node, depth = to_visit.pop(<span class="n">0</span>)
@@ -605,7 +812,17 @@ visited = set()
         <span class="k">return</span> list(visited)
 
     <span class="k">def</span> find_path(self, start: str, end: str, max_depth: int = <span class="n">3</span>) -&gt; Optional[list]:
-queue = [(start, [start])]
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"寻找两个实体之间的路径（简化版 BFS）。
+
+        Args:
+            start: 起始实体。
+            end: 目标实体。
+            max_depth: 最大搜索深度。
+
+        Returns:
+            路径列表，未找到返回 <span class="k">None</span>。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        queue = [(start, [start])]
         visited = {start}
         <span class="k">while</span> queue:
             node, path = queue.pop(<span class="n">0</span>)
@@ -623,7 +840,8 @@ queue = [(start, [start])]
 
 
 <span class="k">def</span> demo_graphrag():
-print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 GraphRAG 的多跳推理能力。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  GraphRAG 多跳推理演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -663,6 +881,113 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
             print(f<span <span class="k">class</span>="s">"    {start} → {end}: {<span <span class="k">class</span>='s'>' → '</span>.join(path)}"</span>)
         <span class="k">else</span>:
             print(f<span <span class="k">class</span>="s">"    {start} → {end}: 未找到路径"</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">9.5</span> Agentic RAG —— 让 RAG 自己思考
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+传统 RAG 是固定流水线：
+  「不管什么问题，都走 检索→生成 两步」
+
+Agentic RAG 是有判断力的系统：
+  「先想想这个问题需要什么，再决定怎么做」
+
+核心能力升级：
+
+  ┌──────────────┬──────────────────────┬──────────────────────┐
+  │     能力      │      传统 RAG         │     Agentic RAG      │
+  ├──────────────┼──────────────────────┼──────────────────────┤
+  │ 查询处理      │ 单次检索              │ 多轮自适应检索         │
+  │ 检索策略      │ 固定（总是向量搜索）   │ 动态选择（向量/图谱/API）│
+  │ 结果判断      │ 无（直接用检索结果）   │ 自检 + 补充检索         │
+  │ 工具使用      │ 只有检索              │ 检索 + 计算 + API     │
+  │ 错误处理      │ 无                    │ 多轮重试 + 纠错        │
+  └──────────────┴──────────────────────┴──────────────────────┘
+
+Agentic RAG 的工作流程:
+
+  用户: <span <span class="k">class</span>="s">"2024年OpenAI的营收比2023年增长了百分之多少？"</span>
+
+  传统 RAG:
+    → 检索「OpenAI 营收」→ 可能找到 <span class="n">2023</span> 和 <span class="n">2024</span> 的数据
+    → 但 RAG 不会算百分比，直接给了用户两段数字
+    → 用户还需要自己算
+
+  Agentic RAG:
+    → Step <span class="n">1</span>: 分析问题 → 需要「2023营收」「2024营收」「百分比计算」
+    → Step <span class="n">2</span>: 搜索「OpenAI 2023年营收」 → 得到 $<span class="n">1.</span>6B
+    → Step <span class="n">3</span>: 搜索「OpenAI 2024年营收」 → 得到 $<span class="n">3.</span>7B
+    → Step <span class="n">4</span>: 计算 (<span class="n">3.7</span>-<span class="n">1.6</span>)/<span class="n">1.6</span> = <span class="n">131.25</span>%
+    → Step <span class="n">5</span>: 回答「增长约 <span class="n">131</span>%」
+
+  Agentic RAG 包含了一个 Agent 循环：
+    思考需要什么信息 → 检索/计算 → 不满足就继续 → 满足则输出
+
+业内数据（2025年）：
+  - Agentic RAG 在复杂查询上的准确率比传统 RAG 高 <span class="n">30</span>-<span class="n">50</span>%
+  - 但 <span class="n">90</span>% 的 Agentic RAG 项目在生产中失败！
+  - 失败原因：过度设计、缺少评估、成本失控
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">9.6</span> RAG 评估体系 —— 如何衡量 RAG 质量？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RAGAS (RAG Assessment) 是最流行的 RAG 评估框架。
+
+核心指标：
+  ┌──────────────────┬────────────────────────────────────┐
+  │      指标         │              含义                   │
+  ├──────────────────┼────────────────────────────────────┤
+  │ Faithfulness     │ 回答是否完全基于检索到的上下文？       │
+  │ Answer Relevance │ 回答是否直接回应了问题？              │
+  │ Context Recall   │ 检索到的内容覆盖了回答所需的全部信息？ │
+  │ Context Precision│ 检索到的内容有多少是真正相关的？       │
+  │ Answer Correctness│ 答案的事实准确性                     │
+  └──────────────────┴────────────────────────────────────┘
+
+2025年评估趋势：
+  - LLM-<span class="k">as</span>-Judge 成为主流（用 GPT-<span class="n">4</span> 评估 RAG 输出）
+  - 人工标注仍然重要（作为 Ground Truth）
+  - 多维度评估 &gt; 单一指标
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">9.7</span> 本章总结
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. Naive RAG = 问 → 检索 → 生成
+   问题：检索不准、无自检、无法多跳推理
+
+<span class="n">2</span>. Advanced RAG = Naive + 查询重写 + 混合检索 + 重排序
+   面试重点：为什么混合检索比纯向量好？
+   → 向量擅长语义，但不懂精确关键词匹配
+   → 法律/金融/监管领域，精确匹配和语义理解同等重要
+
+<span class="n">3</span>. GraphRAG = RAG + 知识图谱
+   核心价值：多跳推理能力
+   适用场景：关系密集型问题（「A影响了B，B又影响了C」）
+
+<span class="n">4</span>. Agentic RAG = RAG + Agent 循环
+   核心价值：动态决策 → 自主判断需要什么信息
+   注意：<span class="n">90</span>% 的生产失败率 — 从简单开始，逐步迭代
+
+面试速记：
+  <span <span class="k">class</span>="s">"RAG 有什么高级技术？"</span>
+  → 查询重写(HyDE) → 混合检索(Hybrid) → 重排序(Reranker)
+  → GraphRAG(知识图谱) → Agentic RAG(Agent 循环)
+  → 每个技术解决一个具体痛点，不要盲目叠加
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第9章：RAG 原理与实现详解                             ║"</span>)
@@ -727,7 +1052,8 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
     <span class="k">for</span> name, desc <span class="k">in</span> metrics:
         print(f<span <span class="k">class</span>="s">"  {name}: {desc}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第9章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+    print(<span <span class="k">class</span>="s">"\n✅ 第9章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html" title="Claude Code 架构 — nO·h2A·压缩·SubAgent">← 第8章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html" title="MCP 协议详解 — JSON-RPC·原语·能力协商">第10章 →</a>

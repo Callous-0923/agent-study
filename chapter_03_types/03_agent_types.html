@@ -232,8 +232,6 @@ body {
 <li>代码审查流水线</li>
 <li>工作流自动化</li>
 <p>&nbsp;</p>
-<p>Plan-Execute Agent —— 先规划再逐步执行。</p>
-<p>&nbsp;</p>
 <p>调用 LLM 制定执行计划。</p>
 <p>&nbsp;</p>
 <pre>    Args:
@@ -268,8 +266,6 @@ body {
 <p>论文来源：</p>
 <p>Shinn et al., "Reflexion: Language Agents with Verbal Reinforcement Learning"</p>
 <p>(NeurIPS 2023)</p>
-<p>&nbsp;</p>
-<p>Reflexion Agent —— 执行 + 自我反思 + 迭代改进。</p>
 <p>&nbsp;</p>
 <p>Args:</p>
 <pre>        max_reflections: 最大反思迭代次数。</pre>
@@ -342,7 +338,57 @@ body {
 <p>&nbsp;</p>
 <p>面试常问：</p>
 <p>"你在项目中用的是什么 Agent 架构？为什么选择它？"</p>
-<p>→ 回答框架：场景特征 → 选型理由 → 实际效果</p></div><div class="code-section"><details open><summary>💻 源代码 (268 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ 回答框架：场景特征 → 选型理由 → 实际效果</p></div><div class="code-section"><details open><summary>💻 源代码 (529 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+第3章：Agent 类型分类与设计模式
+=================================
+
+📌 本章目标：
+  <span class="n">1</span>. 掌握 <span class="n">5</span> 种主流 Agent 类型的设计模式与适用场景
+  <span class="n">2</span>. 理解每种模式的执行流程和优劣对比
+  <span class="n">3</span>. 能根据任务特征选择合适的 Agent 类型
+  <span class="n">4</span>. 实现一个可切换模式的 Agent 实验框架
+
+📌 面试高频点：
+  - ReAct 的执行流程（面试必问！）
+  - Plan-Execute vs ReAct 的取舍
+  - Reflexion 的反思机制
+  - 什么场景用哪种 Agent 类型
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Agent 类型全景图
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌────────────────────────────────────────────────────┐
+  │                                                    │
+  │  <span class="n">1</span>. ReAct Agent        → 每步推理，最通用          │
+  │  <span class="n">2</span>. Plan-Execute Agent → 先规划再执行，结构化任务   │
+  │  <span class="n">3</span>. Reflexion Agent    → 执行+反思，自我改进       │
+  │  <span class="n">4</span>. Tool-calling Agent → 纯工具调用，不需要推理     │
+  │  <span class="n">5</span>. Multi-Agent        → 多角色协作（第5章详讲）    │
+  │                                                    │
+  └────────────────────────────────────────────────────┘
+
+各类型关键区别：
+┌──────────────┬──────────┬──────────┬──────────┬──────────┐
+│     特性      │  ReAct   │Plan-Exec │Reflexion │Tool-Call │
+├──────────────┼──────────┼──────────┼──────────┼──────────┤
+│ 规划方式      │ 动态推理  │ 前置规划  │ 动态+反思 │ 不规划   │
+│ 复杂任务      │ 中等     │ 强        │ 强        │ 弱       │
+│ 执行效率      │ 中等     │ 高        │ 低(多次)  │ 高       │
+│ 错误恢复      │ 自动     │ 需重新规划 │ 强(反思)  │ 弱       │
+│ Token 消耗    │ 中等     │ 低        │ 高        │ 低       │
+│ 典型场景      │ 通用     │ 数据分析  │ 代码审查  │ API 网关 │
+└──────────────┴──────────┴──────────┴──────────┴──────────┘
+
+面试速记：
+  <span <span class="k">class</span>="s">"请对比 ReAct 和 Plan-Execute"</span>
+  → ReAct 灵活但费 token，Plan-Execute 高效但不灵活
+  → 大型任务用 Plan-Execute 做顶层规划，ReAct 做每步执行
+  → Google 的 ReAct 论文是 Agent 领域最重要论文之一
+<span <span class="k">class</span>="s">""</span>"</span>
+
+<span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -393,15 +439,71 @@ TOOL_MAP = {
     <span <span class="k">class</span>="s">"search"</span>: <span class="k">lambda</span> query: f<span <span class="k">class</span>="s">"搜索结果(模拟): 关于<span <span class="k">class</span>='s'>'{query}'</span>的信息..."</span>,
     <span <span class="k">class</span>="s">"calculator"</span>: <span class="k">lambda</span> expression: f<span <span class="k">class</span>="s">"计算结果(模拟): {eval(expression) <span class="k">if</span> all(c <span class="k">in</span> <span <span class="k">class</span>='s'>'<span class="n">0123456789</span>+-*/().% '</span> <span class="k">for</span> c <span class="k">in</span> expression) <span class="k">else</span> <span <span class="k">class</span>='s'>'表达式错误'</span>}"</span>,
 }
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">3.1</span> ReAct Agent（面试必问！）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ReAct = Reasoning + Acting（推理 + 行动）
+
+执行流程：
+  Thought → Action → Observation → Thought → Action → ... → Final Answer
+
+每次循环：
+  <span class="n">1</span>. Thought: <span <span class="k">class</span>="s">"我需要知道 X"</span> → 推理
+  <span class="n">2</span>. Action: 调用 search(<span <span class="k">class</span>="s">"X"</span>) → 行动
+  <span class="n">3</span>. Observation: 收到搜索结果 → 观察
+  → 基于观察继续思考，直到能给出最终答案
+
+类比：
+  就像你在解决一道复杂数学题——
+  你不可能一次算出结果，而是：
+  <span <span class="k">class</span>="s">"先化简...然后代入...发现不对...换个思路..."</span>
+  每一次<span <span class="k">class</span>="s">"想 → 做 → 看结果"</span>就是一个 ReAct 循环。
+
+论文来源：
+  Yao et al., <span <span class="k">class</span>="s">"ReAct: Synergizing Reasoning <span class="k">and</span> Acting <span class="k">in</span> Language Models"</span>
+  (ICLR <span class="n">2023</span>) — Agent 领域的奠基性论文
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> ReActAgent:
-<span class="k">def</span> __init__(self, system_prompt: Optional[str] = <span class="k">None</span>):
-self.system_prompt = system_prompt <span class="k">or</span> (
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"ReAct Agent 实现 —— 最经典的 Agent 模式。
+
+    核心算法：
+      <span class="k">while</span> <span class="k">not</span> done:
+          response = llm(messages + tools)
+          <span class="k">if</span> tool_calls:
+              execute_tools(response.tool_calls)
+              append results to messages
+          <span class="k">else</span>:
+              <span class="k">return</span> response.content
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, system_prompt: Optional[str] = <span class="k">None</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"初始化 ReAct Agent。
+
+        Args:
+            system_prompt: 自定义系统提示词。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.system_prompt = system_prompt <span class="k">or</span> (
             <span <span class="k">class</span>="s">"你是一个有用的助手。面对需要实时信息或计算的问题，"</span>
             <span <span class="k">class</span>="s">"请使用提供的工具。推理过程请在思考后行动。"</span>
         )
 
     <span class="k">def</span> run(self, user_message: str, max_steps: int = <span class="n">5</span>) -&gt; str:
-messages = [
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"执行 ReAct 循环。
+
+        Args:
+            user_message: 用户消息。
+            max_steps: 最大步数限制。
+
+        Returns:
+            Agent 的最终回答。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        messages = [
             {<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"content"</span>: self.system_prompt},
             {<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"user"</span>, <span <span class="k">class</span>="s">"content"</span>: user_message},
         ]
@@ -432,13 +534,45 @@ messages = [
                 })
 
         <span class="k">return</span> <span <span class="k">class</span>="s">"达到最大步数限制，无法完成任务。"</span>
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">3.2</span> Plan-Execute Agent
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+「先规划，再执行」—— 像项目经理一样工作。
+
+执行流程：
+  <span class="n">1</span>. 分析任务 → 制定详细执行计划
+  <span class="n">2</span>. 按计划逐步执行每个子任务
+  <span class="n">3</span>. 汇总各步骤结果 → 生成最终答案
+
+适用场景：
+  - 任务步骤明确、有依赖关系
+  - 数据分析报表生成
+  - 代码审查流水线
+  - 工作流自动化
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> PlanExecuteAgent:
-<span class="k">def</span> __init__(self):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Plan-Execute Agent —— 先规划再逐步执行。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    <span class="k">def</span> __init__(self):
         self.plan = []
         self.results = {}
 
     <span class="k">def</span> _make_plan(self, task: str) -&gt; list:
-prompt = (
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"调用 LLM 制定执行计划。
+
+        Args:
+            task: 用户任务描述。
+
+        Returns:
+            计划步骤列表。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        prompt = (
             f<span <span class="k">class</span>="s">"请将以下任务分解为 <span class="n">2</span>-<span class="n">4</span> 个可执行的子步骤。"</span>
             f<span <span class="k">class</span>="s">"返回 JSON: {{\"steps\": [{{\"id\": <span class="n">1</span>, \"desc\": \"...\", "</span>
             f<span <span class="k">class</span>="s">"\"tool\": \"search|calculator|none\", "</span>
@@ -454,7 +588,15 @@ prompt = (
         <span class="k">return</span> data.get(<span <span class="k">class</span>="s">"steps"</span>, [])
 
     <span class="k">def</span> run(self, task: str) -&gt; str:
-print(<span <span class="k">class</span>="s">"\n  [Plan-Execute] 阶段 <span class="n">1</span>: 制定计划"</span>)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"执行 Plan-Execute 流程。
+
+        Args:
+            task: 用户任务描述。
+
+        Returns:
+            执行结果汇总。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        print(<span <span class="k">class</span>="s">"\n  [Plan-Execute] 阶段 <span class="n">1</span>: 制定计划"</span>)
         self.plan = self._make_plan(task)
 
         <span class="k">for</span> step <span class="k">in</span> self.plan:
@@ -485,12 +627,53 @@ print(<span <span class="k">class</span>="s">"\n  [Plan-Execute] 阶段 <span cl
             messages=[{<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"user"</span>, <span <span class="k">class</span>="s">"content"</span>: summary_prompt}],
         )
         <span class="k">return</span> response.choices[<span class="n">0</span>].message.content
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">3.3</span> Reflexion Agent
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+「做一遍 → 反思 → 改进 → 再做一遍」—— 自我迭代优化。
+
+执行流程：
+  <span class="n">1</span>. 初次执行任务
+  <span class="n">2</span>. 自我评估：打分 + 找问题
+  <span class="n">3</span>. 基于反馈重新执行
+  <span class="n">4</span>. 重复直到满意
+
+核心洞察：
+  Reflexion 不改变 Agent 的基础能力，
+  而是通过「反馈循环」让 Agent 在实践中变得更好。
+  就像学生学习：做题 → 对答案 → 发现错在哪里 → 下次改进。
+
+论文来源：
+  Shinn et al., <span <span class="k">class</span>="s">"Reflexion: Language Agents <span class="k">with</span> Verbal Reinforcement Learning"</span>
+  (NeurIPS <span class="n">2023</span>)
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> ReflexionAgent:
-<span class="k">def</span> __init__(self, max_reflections: int = <span class="n">3</span>):
-self.max_reflections = max_reflections
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Reflexion Agent —— 执行 + 自我反思 + 迭代改进。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    <span class="k">def</span> __init__(self, max_reflections: int = <span class="n">3</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+        Args:
+            max_reflections: 最大反思迭代次数。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.max_reflections = max_reflections
 
     <span class="k">def</span> _evaluate(self, answer: str, task: str) -&gt; dict:
-prompt = (
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"自我评估回答质量。
+
+        Args:
+            answer: Agent 的回答。
+            task: 原始任务。
+
+        Returns:
+            包含评分和问题的字典。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        prompt = (
             f<span <span class="k">class</span>="s">"任务: {task}\n"</span>
             f<span <span class="k">class</span>="s">"回答: {answer}\n\n"</span>
             f<span <span class="k">class</span>="s">"请从准确性、完整性、清晰度三方面评分(<span class="n">1</span>-<span class="n">10</span>)，"</span>
@@ -506,7 +689,15 @@ prompt = (
         <span class="k">return</span> json.loads(response.choices[<span class="n">0</span>].message.content)
 
     <span class="k">def</span> run(self, task: str) -&gt; str:
-print(f<span <span class="k">class</span>="s">"\n  [Reflexion] 任务: {task}"</span>)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"执行 Reflexion 流程。
+
+        Args:
+            task: 用户任务描述。
+
+        Returns:
+            经过反思迭代后的最佳回答。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        print(f<span <span class="k">class</span>="s">"\n  [Reflexion] 任务: {task}"</span>)
         feedback_history = []
 
         <span class="k">for</span> iteration <span class="k">in</span> range(self.max_reflections):
@@ -550,6 +741,28 @@ print(f<span <span class="k">class</span>="s">"\n  [Reflexion] 任务: {task}"</
                 <span class="k">return</span> answer
 
         <span class="k">return</span> answer
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">3.4</span> Agent 模式选择器
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+面试常见问题：「如何为任务选择合适的 Agent 类型？」
+
+快速判断矩阵：
+┌──────────────────────────────────┬──────────────────────┐
+│           任务特征               │     推荐 Agent 类型    │
+├──────────────────────────────────┼──────────────────────┤
+│ 需要实时搜索/计算                │ Tool-Calling          │
+│ 开放式推理 + 工具调用            │ ReAct                 │
+│ 步骤明确、可预先规划             │ Plan-Execute          │
+│ 需要高质量输出、可迭代           │ Reflexion             │
+│ 多角色协作                       │ Multi-Agent           │
+│ 简单问答、不需要工具             │ 直接 LLM 调用即可     │
+└──────────────────────────────────┴──────────────────────┘
+<span <span class="k">class</span>="s">""</span>"</span>
+
 AGENT_REGISTRY = {
     <span <span class="k">class</span>="s">"react"</span>: ReActAgent,
     <span <span class="k">class</span>="s">"plan_execute"</span>: PlanExecuteAgent,
@@ -558,7 +771,16 @@ AGENT_REGISTRY = {
 
 
 <span class="k">def</span> run_agent_by_type(agent_type: str, task: str):
-agent_class = AGENT_REGISTRY.get(agent_type)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"统一的 Agent 运行入口。
+
+    Args:
+        agent_type: Agent 类型（react / plan_execute / reflexion）。
+        task: 用户任务。
+
+    Returns:
+        Agent 的执行结果。
+    <span <span class="k">class</span>="s">""</span>"</span>
+    agent_class = AGENT_REGISTRY.get(agent_type)
     <span class="k">if</span> agent_class <span class="k">is</span> <span class="k">None</span>:
         <span class="k">return</span> f<span <span class="k">class</span>="s">"不支持的 Agent 类型: {agent_type}。支持: {list(AGENT_REGISTRY.keys())}"</span>
 
@@ -571,6 +793,41 @@ agent_class = AGENT_REGISTRY.get(agent_type)
     result = agent.run(task)
     print(f<span <span class="k">class</span>="s">"\n  ✅ 最终答案:\n{result}"</span>)
     <span class="k">return</span> result
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">3.5</span> 本章总结
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. ReAct (面试必问！)
+   - 推理 + 行动循环
+   - 最通用、最灵活
+   - 缺点：每步都调用 LLM，token 消耗大
+
+<span class="n">2</span>. Plan-Execute
+   - 先规划后执行
+   - 适合结构化任务
+   - 缺点：计划不合理时需要重来
+
+<span class="n">3</span>. Reflexion
+   - 自我反思迭代
+   - 适合质量要求高的任务
+   - 缺点：多次 LLC 调用，成本高
+
+<span class="n">4</span>. 实际项目中往往是组合使用
+   - 高层 Plan-Execute 做任务分解
+   - 每层 ReAct 做具体执行
+   - 关键步骤加 Reflexion 做质量把关
+
+面试常问：
+  <span <span class="k">class</span>="s">"你在项目中用的是什么 Agent 架构？为什么选择它？"</span>
+  → 回答框架：场景特征 → 选型理由 → 实际效果
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║       第3章：Agent 类型分类与设计模式                  ║"</span>)
@@ -609,7 +866,8 @@ agent_class = AGENT_REGISTRY.get(agent_type)
     print(<span <span class="k">class</span>="s">"│ 简单问答     │  直接 LLM 调用                        │"</span>)
     print(<span <span class="k">class</span>="s">"└─────────────┴──────────────────────────────────────┘"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第3章完成！接下来进入第4章：主流框架实战。"</span>)</pre></div></details></div><div class="nav-bar">
+    print(<span <span class="k">class</span>="s">"\n✅ 第3章完成！接下来进入第4章：主流框架实战。"</span>)
+</pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_02_components/02_agent_components.html" title="Agent 核心组件 — 规划器·记忆·工具设计">← 第2章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_04_frameworks/04_frameworks.html" title="主流框架实战 — LangChain·LangGraph">第4章 →</a>

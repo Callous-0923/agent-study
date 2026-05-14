@@ -222,59 +222,66 @@ def _make_nav(ch_num: int) -> str:
 
 
 def extract_docstring_and_code(filepath: str) -> tuple[str, str, str]:
-    """提取所有 docstring（讲义内容，含代码间穿插的）和纯代码。
-
-    章节文件结构：开头模块 docstring + 代码 + 穿插 docstring + 代码...
-    需要把所有的 docstring 拼成完整讲义，代码部分合并。
-
-    Returns:
-        (title, lecture_text, code_text)
-    """
+    # 提取讲义 docstring 和完整源代码
+    # 关键区分：
+    #   - 行首的三个引号块 -> 讲义内容（模块级 docstring）
+    #   - 缩进后的三个引号块 -> 代码的一部分（函数注释，不提取）
+    # 返回 (title, lecture_text, code_text)
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
 
     docstrings = []
-    code_parts = []
-    pos = 0
+    # 保留完整原始内容作为代码展示（供语法高亮）
+    full_code = content
 
+    pos = 0
     while True:
-        # 找下一个 """ 开头
+        # 找下一个 """ 的位置
         start = content.find('"""', pos)
         if start == -1:
-            # 剩余全是代码
-            code_parts.append(content[pos:])
             break
 
-        # start 之前的全是代码
-        code_parts.append(content[pos:start])
-
-        # 找配对的 """
-        inner_start = start + 3
-        end = content.find('"""', inner_start)
-        if end == -1:
-            code_parts.append(content[start:])
-            break
-
-        doc = content[inner_start:end].strip()
-        if doc:
-            docstrings.append(doc)
-
-        pos = end + 3
-
-    # 合并代码（去空行、去头尾空白）
-    full_code = "\n".join(
-        p.strip() for p in code_parts if p.strip()
-    )
+        # 判断是否是行首的 """（讲义）还是缩进的 """（函数注释）
+        # 检查 start 前是否全是空白字符
+        line_start = content.rfind('\n', 0, start)
+        if line_start == -1:
+            line_start = 0
+        else:
+            line_start += 1
+        prefix = content[line_start:start]
+        # 如果 """ 前面没有缩进（全是空格或空），就是行首的讲义块
+        if prefix.strip() == "":
+            inner_start = start + 3
+            end = content.find('"""', inner_start)
+            if end != -1:
+                # 再确认结束的 """ 也是行首的（防止匹配到字符串内的 """ ）
+                end_line_start = content.rfind('\n', 0, end)
+                if end_line_start == -1:
+                    end_line_start = 0
+                else:
+                    end_line_start += 1
+                end_prefix = content[end_line_start:end]
+                if end_prefix.strip() == "":
+                    doc = content[inner_start:end].strip()
+                    if doc:
+                        docstrings.append(doc)
+                    pos = end + 3
+                else:
+                    pos = end + 3
+            else:
+                pos = inner_start
+        else:
+            pos = start + 3
 
     # 合并讲义
     full_lecture = "\n\n".join(docstrings)
 
-    # 提取标题（第一个 docstring 的第一行）
+    # 提取标题
     title = "未命名章节"
     if docstrings:
         first_line = docstrings[0].split("\n")[0].strip()
         title = re.sub(r'^第\d+[章节]：?', '', first_line)
-        title = title.strip()
+        title=title.strip()
     if not title:
         title = os.path.basename(filepath).replace(".py", "")
 

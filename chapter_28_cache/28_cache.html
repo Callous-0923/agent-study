@@ -189,10 +189,6 @@ body {
 <p>&nbsp;</p>
 <pre>不要求完全相同的查询，语义相似即可命中。</pre>
 <p>&nbsp;</p>
-<p>简化的向量化（实际使用 OpenAI Embeddings API）。</p>
-<p>&nbsp;</p>
-<p>三级缓存 —— 层层降级，最大化命中率。</p>
-<p>&nbsp;</p>
 <p>三级缓存查询。</p>
 <p>&nbsp;</p>
 <pre>    Returns:
@@ -220,20 +216,10 @@ body {
 <li>请求级：每次 N tokens</li>
 <li>步骤级：每步 N tokens（防死循环）</li>
 <p>&nbsp;</p>
-<p>Token 预算管理器 —— 类比流量套餐管理。</p>
-<p>&nbsp;</p>
 <p>检查预算是否充足。</p>
 <p>&nbsp;</p>
 <pre>    Returns:
         预算状态。</pre>
-<p>&nbsp;</p>
-<p>消耗预算。</p>
-<p>&nbsp;</p>
-<p>每日预算报告。</p>
-<p>&nbsp;</p>
-<p>演示三级缓存。</p>
-<p>&nbsp;</p>
-<p>演示 Token 预算管理。</p>
 <p>&nbsp;</p>
 <h2>28.4 缓存的进阶策略</h2>
 <p>&nbsp;</p>
@@ -265,7 +251,70 @@ body {
 <p>→ 三级缓存（Exact/Semantic/LLM）命中率 40-70%</p>
 <p>→ 模型路由（简单用小模型，复杂用大模型）</p>
 <p>→ Token 预算管理（防超支）</p>
-<p>→ 三管齐下：年省 50-80%</p></div><div class="code-section"><details open><summary>💻 源代码 (246 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<p>→ 三管齐下：年省 50-80%</p></div><div class="code-section"><details open><summary>💻 源代码 (405 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+第28章：语义缓存与 Token 优化 —— 不花钱的 Agent 调用
+========================================================
+
+📌 本章目标：
+  <span class="n">1</span>. 理解语义缓存的核心原理和三级缓存架构
+  <span class="n">2</span>. 掌握 Exact Match / Embedding / LLM-<span class="k">as</span>-Cache 的实现
+  <span class="n">3</span>. 学会量化缓存收益和缓存命中率预测
+  <span class="n">4</span>. 掌握 Token 预算管理系统
+
+📌 面试高频点：
+  - 「Agent 的 Token 成本怎么优化？」
+  - 「语义缓存怎么实现？和普通缓存有什么区别？」
+  - 「缓存命中率怎么估算？实际能省多少钱？」
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+综合 CDN 缓存思想 + LLM 成本优化实践
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+<span class="n">28.1</span> 为什么 Agent 场景特别需要缓存？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Agent 的 LLM 调用特征：
+  <span class="n">1</span>. 重复率高：用户问相似的问题（客服/教育场景 <span class="n">30</span>-<span class="n">50</span>% 重复）
+  <span class="n">2</span>. 代价高：每次调用 = 金钱 + 时间
+  <span class="n">3</span>. 步骤多：一个 Agent 任务可能调 <span class="n">5</span>-<span class="n">10</span> 次 LLM
+
+缓存收益估算：
+  假设：日请求 <span class="n">10000</span> 次，<span class="n">30</span>% 可缓存，每次 $<span class="n">0.01</span>
+  日节省：<span class="n">10000</span> × <span class="n">0.3</span> × $<span class="n">0.01</span> = $<span class="n">30</span>/天
+  年节省：$<span class="n">30</span> × <span class="n">365</span> = $<span class="n">10</span>,<span class="n">950</span>/年
+
+  加上延迟改善：缓存命中 P99 &lt; 10ms vs LLM 调用 P99 &gt; 2s)
+
+
+<span class="n">28.2</span> 三级缓存架构
+━━━━━━━━━━━━━━━━
+
+  ┌─────────────────────────────────────────────────┐
+  │                 L1: Exact Match Cache              │
+  │  ─────────────────────────────────               │
+  │  查询: <span <span class="k">class</span>="s">"今天天气"</span> → 缓存中查 <span <span class="k">class</span>="s">"今天天气"</span>             │
+  │  命中条件: 完全相同的文本                           │
+  │  命中率: <span class="n">5</span>-<span class="n">10</span>%                                    │
+  │  延迟: &lt;1ms                                       │
+  ├─────────────────────────────────────────────────┤
+  │                 L2: Semantic Cache                 │
+  │  ─────────────────────────────────               │
+  │  查询: <span <span class="k">class</span>="s">"今天天气"</span> → 缓存中查相似查询 → 命中 <span <span class="k">class</span>="s">"今天天气怎么样"</span>│
+  │  命中条件: 余弦相似度 &gt; <span class="n">0.95</span>                        │
+  │  命中率: <span class="n">20</span>-<span class="n">40</span>%                                    │
+  │  延迟: ~10ms                                       │
+  ├─────────────────────────────────────────────────┤
+  │                 L3: LLM-<span class="k">as</span>-Cache                   │
+  │  ─────────────────────────────────               │
+  │  查询: 无法在前2级命中 → 调用廉价小模型               │
+  │  如果小模型回答合适 → 缓存结果                       │
+  │  命中率: <span class="n">10</span>-<span class="n">20</span>% (加上前两级：总 <span class="n">40</span>-<span class="n">70</span>%)              │
+  │  延迟: ~500ms                                      │
+  └─────────────────────────────────────────────────┘
+<span <span class="k">class</span>="s">""</span>"</span>
+
+<span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">import</span> hashlib
 <span class="k">import</span> numpy <span class="k">as</span> np
@@ -274,7 +323,12 @@ body {
 
 
 <span class="k">class</span> ExactMatchCache:
-<span class="k">def</span> __init__(self, max_size: int = <span class="n">1000</span>):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"L1 缓存 —— 精确匹配。
+
+    最简单的缓存：完全相同的输入 → 直接返回缓存结果。
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, max_size: int = <span class="n">1000</span>):
         self._store = OrderedDict()
         self.max_size = max_size
         self.hits = <span class="n">0</span>
@@ -302,7 +356,12 @@ body {
 
 
 <span class="k">class</span> SemanticCache:
-<span class="k">def</span> __init__(self, similarity_threshold: float = <span class="n">0.92</span>,
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"L2 缓存 —— 语义相似度匹配。
+
+    不要求完全相同的查询，语义相似即可命中。
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, similarity_threshold: float = <span class="n">0.92</span>,
                  max_size: int = <span class="n">2000</span>):
         self.threshold = similarity_threshold
         self.max_size = max_size
@@ -311,7 +370,8 @@ body {
         self.misses = <span class="n">0</span>
 
     <span class="k">def</span> _embed(self, text: str, dim: int = <span class="n">128</span>) -&gt; np.ndarray:
-vec = np.zeros(dim)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"简化的向量化（实际使用 OpenAI Embeddings API）。"</span><span <span class="k">class</span>="s">""</span></span>
+        vec = np.zeros(dim)
         <span class="k">for</span> i, ch <span class="k">in</span> enumerate(text):
             vec[hash(ch) % dim] += <span class="n">1</span>
         norm = np.linalg.norm(vec)
@@ -340,7 +400,9 @@ vec = np.zeros(dim)
 
 
 <span class="k">class</span> ThreeLevelCache:
-<span class="k">def</span> __init__(self):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"三级缓存 —— 层层降级，最大化命中率。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    <span class="k">def</span> __init__(self):
         self.l1 = ExactMatchCache(max_size=<span class="n">500</span>)
         self.l2 = SemanticCache(similarity_threshold=<span class="n">0.90</span>)
         self.stats = {<span <span class="k">class</span>="s">"l1_hits"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"l2_hits"</span>: <span class="n">0</span>,
@@ -350,7 +412,13 @@ vec = np.zeros(dim)
 
     <span class="k">def</span> query(self, query: str,
               llm_func: callable = <span class="k">None</span>) -&gt; tuple[str, int, bool]:
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L1: Exact Match</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"三级缓存查询。
+
+        Returns:
+            (response, cache_level, was_cached)
+            cache_level: <span class="n">1</span>=L1, <span class="n">2</span>=L2, <span class="n">3</span>=L3, <span class="n">0</span>=miss
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L1: Exact Match</span>
         result = self.l1.get(query)
         <span class="k">if</span> result:
             self.stats[<span <span class="k">class</span>="s">"l1_hits"</span>] += <span class="n">1</span>
@@ -391,8 +459,37 @@ vec = np.zeros(dim)
             <span <span class="k">class</span>="s">"l1_size"</span>: len(self.l1._store),
             <span <span class="k">class</span>="s">"l2_size"</span>: len(self.l2.queries),
         }
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">28.3</span> Token 预算管理系统
+━━━━━━━━━━━━━━━━━━━━━━━
+
+类比：手机流量套餐
+
+  每月 50GB：
+    - 日常浏览（微信/网页）→ 低消耗
+    - 看视频 → 高消耗
+    - 快超标 → 限速 → 降级策略
+
+  Agent Token 预算：
+    每月 100M tokens：
+      - 简单问答 → gpt-4o-mini (便宜)
+      - 复杂分析 → gpt-4o (贵)
+      - 快超标 → 只允许 mini + 摘要压缩
+
+Token 预算的 <span class="n">4</span> 个层级：
+  <span class="n">1</span>. 用户级：每人每月 N tokens
+  <span class="n">2</span>. 会话级：每会话 N tokens
+  <span class="n">3</span>. 请求级：每次 N tokens
+  <span class="n">4</span>. 步骤级：每步 N tokens（防死循环）
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> TokenBudget:
-<span class="k">def</span> __init__(self, daily_limit: int = 1_000_000):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Token 预算管理器 —— 类比流量套餐管理。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    <span class="k">def</span> __init__(self, daily_limit: int = 1_000_000):
         self.daily_limit = daily_limit
         self.used_today = <span class="n">0</span>
         self.warning_threshold = <span class="n">0.8</span>
@@ -401,7 +498,12 @@ vec = np.zeros(dim)
         self.history = []
 
     <span class="k">def</span> check(self, required_tokens: int) -&gt; dict:
-projected = self.used_today + required_tokens
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"检查预算是否充足。
+
+        Returns:
+            预算状态。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        projected = self.used_today + required_tokens
         pct = projected / self.daily_limit
 
         <span class="k">if</span> pct &gt;= <span class="n">1.0</span>:
@@ -419,7 +521,8 @@ projected = self.used_today + required_tokens
         <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"ok"</span>}
 
     <span class="k">def</span> consume(self, tokens: int):
-self.used_today += tokens
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"消耗预算。"</span><span <span class="k">class</span>="s">""</span></span>
+        self.used_today += tokens
         self.history.append({
             <span <span class="k">class</span>="s">"tokens"</span>: tokens,
             <span <span class="k">class</span>="s">"remaining"</span>: self.daily_limit - self.used_today,
@@ -427,7 +530,8 @@ self.used_today += tokens
         })
 
     <span class="k">def</span> daily_report(self) -&gt; dict:
-pct = self.used_today / self.daily_limit
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"每日预算报告。"</span><span <span class="k">class</span>="s">""</span></span>
+        pct = self.used_today / self.daily_limit
         cost = self.used_today / <span class="n">1000</span> * self.cost_per_1k
         <span class="k">return</span> {
             <span <span class="k">class</span>="s">"daily_limit"</span>: f<span <span class="k">class</span>="s">"{self.daily_limit:,}"</span>,
@@ -440,7 +544,8 @@ pct = self.used_today / self.daily_limit
 
 
 <span class="k">def</span> demo_cache():
-print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示三级缓存。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  三级缓存演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -469,7 +574,8 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
 
 
 <span class="k">def</span> demo_token_budget():
-print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Token 预算管理。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Token 预算管理演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -495,6 +601,45 @@ print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k"
     print(f<span <span class="k">class</span>="s">"\n  📊 日预算报告:"</span>)
     <span class="k">for</span> k, v <span class="k">in</span> report.items():
         print(f<span <span class="k">class</span>="s">"    {k}: {v}"</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">28.4</span> 缓存的进阶策略
+━━━━━━━━━━━━━━━━━━━
+
+<span class="n">1</span>. 分层 TTL
+   L1 精确缓存：永久（直到 LRU 淘汰）
+   L2 语义缓存：24小时 TTL（信息会过时）
+   L3 LLM 缓存：按查询类型设 TTL（新闻类 1h / 知识类 7天）
+
+<span class="n">2</span>. 缓存预热
+   上线前用常见问题预填充缓存
+
+<span class="n">3</span>. 缓存失效
+   知识库更新 → 相关缓存全部失效
+
+<span class="n">4</span>. 监控指标
+   命中率 / 节省成本 / 缓存大小 / L1/L2/L3 分流比例
+
+
+<span class="n">28.5</span> 本章总结
+━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. 三级缓存：Exact → Semantic → LLM
+<span class="n">2</span>. Token 预算 = 流量套餐管理
+<span class="n">3</span>. 缓存 + 路由 = 成本降低 <span class="n">50</span>-<span class="n">80</span>%
+
+面试速记：
+  「Agent 成本怎么优化？」
+  → 三级缓存（Exact/Semantic/LLM）命中率 <span class="n">40</span>-<span class="n">70</span>%
+  → 模型路由（简单用小模型，复杂用大模型）
+  → Token 预算管理（防超支）
+  → 三管齐下：年省 <span class="n">50</span>-<span class="n">80</span>%
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第28章：语义缓存与 Token 优化                          ║"</span>)
@@ -510,7 +655,8 @@ print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k"
         <span <span class="k">class</span>="s">"三者叠加 → 年省 <span class="n">50</span>-<span class="n">80</span>% LLM 成本"</span>,
     ]:
         print(f<span <span class="k">class</span>="s">"  💰 {item}"</span>)
-    print(<span <span class="k">class</span>="s">"\n✅ 第28章完成！🎓 全部课程构建完成！"</span>)</pre></div></details></div><div class="nav-bar">
+    print(<span <span class="k">class</span>="s">"\n✅ 第28章完成！🎓 全部课程构建完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_27_prompt_eng/27_prompt_engineering.html" title="Agent Prompt 工程 — System Prompt 模板·工具描述">← 第27章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <span class="nav-link nav-disabled">已是最后一章 →</span>

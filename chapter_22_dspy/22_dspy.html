@@ -183,20 +183,12 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <li>可组合：Signature 可以拼接成复杂流水线</li>
 <li>可验证：输出类型自动校验</li>
 <p>&nbsp;</p>
-<p>Signature 字段 —— 带描述的类型标注。</p>
-<p>&nbsp;</p>
-<p>标记输入字段。</p>
-<p>&nbsp;</p>
-<p>标记输出字段。</p>
-<p>&nbsp;</p>
 <p>模拟 DSPy 的 Signature 基类。</p>
 <p>&nbsp;</p>
 <pre>真实 DSPy 中：
   class QA(dspy.Signature):
       question = dspy.InputField()
       answer = dspy.OutputField()</pre>
-<p>&nbsp;</p>
-<p>生成签名描述（给 Optimizer 用）。</p>
 <p>&nbsp;</p>
 <p>将 Signature 编译为 Prompt 模板。</p>
 <p>&nbsp;</p>
@@ -233,12 +225,6 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <pre>  def forward(self, question):
       results = self.search(query=question)
       return self.answer(context=results, question=question)</pre>
-<p>&nbsp;</p>
-<p>模拟 DSPy Module —— 可组合的 AI 组件。</p>
-<p>&nbsp;</p>
-<p>执行模块（模拟 LLM 调用）。</p>
-<p>&nbsp;</p>
-<p>模拟 LLM 响应（真实实现调用 OpenAI/Claude）。</p>
 <p>&nbsp;</p>
 <h2>22.4 Optimizer (Teleprompter) —— 自动优化 Prompt</h2>
 <p>&nbsp;</p>
@@ -346,10 +332,6 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>"我不手动调 Prompt，我写评测指标，</p>
 <p>让 DSPy Optimizer 自动找出最佳 Prompt。"</p>
 <p>&nbsp;</p>
-<p>创建评分函数。</p>
-<p>&nbsp;</p>
-<p>演示 DSPy 的完整工作流。</p>
-<p>&nbsp;</p>
 <h2>22.7 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
@@ -373,7 +355,73 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>→ Programming, not Prompting</p>
 <p>→ Signature 定义输入输出 → Module 组装 → Optimizer 自动优化</p>
 <p>→ 代码不变，换模型自动适配</p>
-<p>→ 和 LangChain 互补：DSPy 管 Prompt 优化，LangChain 管流程编排</p></div><div class="code-section"><details open><summary>💻 源代码 (236 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>→ 和 LangChain 互补：DSPy 管 Prompt 优化，LangChain 管流程编排</p></div><div class="code-section"><details open><summary>💻 源代码 (514 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+第22章：DSPy —— Prompt 不是手写的，是编译出来的
+==================================================
+
+📌 本章目标：
+  <span class="n">1</span>. 理解 DSPy 的核心哲学：「Programming, <span class="k">not</span> Prompting」
+  <span class="n">2</span>. 掌握 Signature → Module → Optimizer 三层抽象
+  <span class="n">3</span>. 学会用 DSPy 的编译思想优化 Agent 的 Prompt
+  <span class="n">4</span>. 理解 DSPy 和 LangChain 的关系和互补
+
+📌 面试高频点：
+  - 「DSPy 是什么？解决了什么问题？」
+  - 「Signature 和传统 Prompt 有什么区别？」
+  - 「Optimizer 是怎么工作的？」
+  - 「DSPy 和 LangChain 怎么配合？」
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DSPy: Stanford NLP 实验室，github.com/stanfordnlp/dspy
+核心理念来自论文: <span <span class="k">class</span>="s">"DSPy: Compiling Declarative LM Calls into Self-Improving Pipelines"</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+<span class="n">22.1</span> 编程 vs 提示词 —— DSPy 的设计哲学
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+传统 Prompt 工程的问题：
+
+  你写了一个 Agent：
+    prompt = <span <span class="k">class</span>="s">"你是一个助手，请用中文回答..."</span>
+
+  换一个模型（GPT-<span class="n">4</span> → Claude）：
+    → Prompt 要重新调整
+    → 效果可能大幅下降
+    → 这就是「Prompt 脆弱性」
+
+DSPy 的解决方案：
+  把 Prompt 当作「代码的编译产物」而非手写字符串
+
+  类比：
+    传统 Prompt = 手动写汇编代码（每换一个 CPU 就要重写）
+    DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）
+
+  翻译成 DSPy 术语：
+    DSPy 程序（Python 代码）→ Optimizer（编译器）→ Prompt（机器码）
+                                           ↑
+                                    自动适配不同的 LLM
+
+
+<span class="n">22.2</span> Signature —— 把 Prompt 变成「函数签名」
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+传统 Prompt：
+  prompt = <span <span class="k">class</span>="s">"给定问题 {question}，请给出答案"</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 脆弱的字符串！</span>
+
+DSPy Signature：
+  <span class="k">class</span> QA(dspy.Signature):
+      question = dspy.InputField(desc=<span <span class="k">class</span>="s">"问题"</span>)
+      answer = dspy.OutputField(desc=<span <span class="k">class</span>="s">"答案"</span>)
+
+Signature 的优势：
+  <span class="n">1</span>. 声明式：描述「输入什么、输出什么」，不碰字符串
+  <span class="n">2</span>. 自文档化：desc 即文档，人类和 Optimizer 都能理解
+  <span class="n">3</span>. 可组合：Signature 可以拼接成复杂流水线
+  <span class="n">4</span>. 可验证：输出类型自动校验
+<span <span class="k">class</span>="s">""</span>"</span>
+
+<span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -384,21 +432,33 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 
 <span class="d">@dataclass</span>
 <span class="k">class</span> SignatureField:
-desc: str = <span <span class="k">class</span>="s">""</span>
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Signature 字段 —— 带描述的类型标注。"</span><span <span class="k">class</span>="s">""</span></span>
+    desc: str = <span <span class="k">class</span>="s">""</span>
 
 
 <span class="k">def</span> InputField(desc: str = <span <span class="k">class</span>="s">""</span>) -&gt; SignatureField:
-<span class="k">return</span> SignatureField(desc=desc)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"标记输入字段。"</span><span <span class="k">class</span>="s">""</span></span>
+    <span class="k">return</span> SignatureField(desc=desc)
 
 
 <span class="k">def</span> OutputField(desc: str = <span <span class="k">class</span>="s">""</span>) -&gt; SignatureField:
-<span class="k">return</span> SignatureField(desc=desc)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"标记输出字段。"</span><span <span class="k">class</span>="s">""</span></span>
+    <span class="k">return</span> SignatureField(desc=desc)
 
 
 <span class="k">class</span> DSPySignature:
-<span class="d">@classmethod</span>
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 DSPy 的 Signature 基类。
+
+    真实 DSPy 中：
+      <span class="k">class</span> QA(dspy.Signature):
+          question = dspy.InputField()
+          answer = dspy.OutputField()
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="d">@classmethod</span>
     <span class="k">def</span> describe(cls) -&gt; dict:
-fields = {}
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"生成签名描述（给 Optimizer 用）。"</span><span <span class="k">class</span>="s">""</span></span>
+        fields = {}
         <span class="k">for</span> name, val <span class="k">in</span> cls.__dict__.items():
             <span class="k">if</span> isinstance(val, SignatureField):
                 fields[name] = {
@@ -413,7 +473,12 @@ fields = {}
 
     <span class="d">@classmethod</span>
     <span class="k">def</span> to_prompt_template(cls) -&gt; str:
-desc = cls.describe()
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"将 Signature 编译为 Prompt 模板。
+
+        这是 DSPy Optimizer 的核心能力：
+          根据 Signature → 自动生成最优的 Prompt 结构。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        desc = cls.describe()
         inputs = [f<span <span class="k">class</span>="s">"{k}: {v[<span <span class="k">class</span>='s'>'desc'</span>]}"</span> <span class="k">for</span> k, v <span class="k">in</span> desc[<span <span class="k">class</span>="s">"fields"</span>].items()
                   <span class="k">if</span> v[<span <span class="k">class</span>="s">"role"</span>] == <span <span class="k">class</span>="s">"input"</span>]
         outputs = [f<span <span class="k">class</span>="s">"{k}: {v[<span <span class="k">class</span>='s'>'desc'</span>]}"</span> <span class="k">for</span> k, v <span class="k">in</span> desc[<span <span class="k">class</span>="s">"fields"</span>].items()
@@ -425,8 +490,47 @@ desc = cls.describe()
             f<span <span class="k">class</span>="s">"\n\n<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">### 输出\n"</span> + <span <span class="k">class</span>="s">"\n"</span>.join(f<span <span class="k">class</span>="s">"- {o}"</span> <span class="k">for</span> o <span class="k">in</span> outputs) +</span>
             f<span <span class="k">class</span>="s">"\n\n请严格按输出格式返回 JSON。"</span>
         )
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">22.3</span> Module —— 把 Agent 组件变成「函数」
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DSPy Module 是可组合的 AI 组件。
+
+内置 Module 类型：
+
+  ┌──────────────────┬──────────────────────────────────┐
+  │ Module            │        作用                       │
+  ├──────────────────┼──────────────────────────────────┤
+  │ dspy.Predict      │ 最基本的单步 LLM 调用             │
+  │ dspy.ChainOfThought│ 带推理链的 LM 调用               │
+  │ dspy.ReAct        │ ReAct Agent 循环                 │
+  │ dspy.MultiChain   │ 多链并行 + 投票                  │
+  │ dspy.ProgramOfThought│ 用代码辅助推理                │
+  └──────────────────┴──────────────────────────────────┘
+
+类比 LangChain：
+  LangChain Chain ≈ DSPy Module
+  区别：DSPy Module 的参数（prompts/weights）可由 Optimizer 自动调优
+
+Agent 开发者用 DSPy 的样子：
+
+  <span class="k">class</span> AgentQA(dspy.Module):
+      <span class="k">def</span> __init__(self):
+          self.search = dspy.ChainOfThought(<span <span class="k">class</span>="s">"query -&gt; results"</span>)
+          self.answer = dspy.ChainOfThought(<span <span class="k">class</span>="s">"context, question -&gt; answer"</span>)
+
+      <span class="k">def</span> forward(self, question):
+          results = self.search(query=question)
+          <span class="k">return</span> self.answer(context=results, question=question)
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> DSPyModule:
-<span class="k">def</span> __init__(self, name: str, signature: type):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"模拟 DSPy Module —— 可组合的 AI 组件。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    <span class="k">def</span> __init__(self, name: str, signature: type):
         self.name = name
         self.signature = signature
         self.prompt = signature.to_prompt_template()
@@ -434,7 +538,8 @@ desc = cls.describe()
         self.few_shot_examples = []  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Optimizer 会填充这个列表</span>
 
     <span class="k">def</span> __call__(self, **inputs) -&gt; dict:
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 组装最终 prompt</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"执行模块（模拟 LLM 调用）。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 组装最终 prompt</span>
         examples_text = <span <span class="k">class</span>="s">""</span>
         <span class="k">if</span> self.few_shot_examples:
             examples_text = <span <span class="k">class</span>="s">"\n\n<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">### 示例\n"</span> + <span <span class="k">class</span>="s">"\n---\n"</span>.join(</span>
@@ -448,21 +553,96 @@ desc = cls.describe()
         <span class="k">return</span> self._mock_llm(final_prompt, inputs)
 
     <span class="k">def</span> _mock_llm(self, prompt: str, inputs: dict) -&gt; dict:
-output_fields = [k <span class="k">for</span> k, v <span class="k">in</span> self.signature.describe()[<span <span class="k">class</span>="s">"fields"</span>].items()
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"模拟 LLM 响应（真实实现调用 OpenAI/Claude）。"</span><span <span class="k">class</span>="s">""</span></span>
+        output_fields = [k <span class="k">for</span> k, v <span class="k">in</span> self.signature.describe()[<span <span class="k">class</span>="s">"fields"</span>].items()
                          <span class="k">if</span> v[<span <span class="k">class</span>="s">"role"</span>] == <span <span class="k">class</span>="s">"output"</span>]
         result = {}
         <span class="k">for</span> field <span class="k">in</span> output_fields:
             result[field] = f<span <span class="k">class</span>="s">"[模拟] 基于 {len(prompt)} 字符模板生成"</span>
         <span class="k">return</span> result
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">22.4</span> Optimizer (Teleprompter) —— 自动优化 Prompt
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+这是 DSPy 最革命性的部分。
+
+传统做法（手调 Prompt）：
+  <span class="n">1</span>. 写一个 Prompt
+  <span class="n">2</span>. 在 <span class="n">5</span> 个例子上测试
+  <span class="n">3</span>. 效果不好 → 修改 Prompt → 再测试
+  <span class="n">4</span>. 换模型 → 全部重来
+
+DSPy 做法（自动优化）：
+  <span class="n">1</span>. 定义 Metric（评分函数）
+  <span class="n">2</span>. 准备训练集（<span class="n">10</span> 个标注样本就够）
+  <span class="n">3</span>. 运行 Optimizer → 自动调出最优 Prompt
+
+DSPy 的 Optimizer 类型：
+
+  ┌─────────────────────┬──────────────────────────────────┐
+  │ Optimizer            │         做什么                    │
+  ├─────────────────────┼──────────────────────────────────┤
+  │ BootstrapFewShot    │ 自动找出最佳少样本示例              │
+  │ MIPROv2             │ 自动探索最优指令 + 示例组合         │
+  │ BootstrapFinetune   │ 为每个 Module 自动微调小模型        │
+  │ BetterTogether      │ 组合多个 Optimizer 级联优化         │
+  └─────────────────────┴──────────────────────────────────┘
+
+工作流程（MIPROv2 为例）：
+
+  <span class="n">1</span>. Bootstrapping 阶段：
+     运行未优化的程序多次 → 收集成功轨迹
+     → 筛选出得分高的输入输出对 → 作为候选示例
+
+  <span class="n">2</span>. Grounded Proposal 阶段：
+     分析程序代码 + 数据 + 轨迹
+     → 生成多个候选指令（instruction variants）
+
+  <span class="n">3</span>. Discrete Search 阶段：
+     在训练集上尝试不同「指令 + 示例」的组合
+     → 用 Metric 评分 → 选出最优组合
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> DSPyOptimizer:
-<span class="k">def</span> __init__(self, metric: callable):
-self.metric = metric
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 DSPy Optimizer —— 演示自动优化的工作流。
+
+    三样东西：
+      <span class="n">1</span>. 你的 DSPy 程序（Module）
+      <span class="n">2</span>. Metric（评分函数）
+      <span class="n">3</span>. 训练输入（少量带标注的样本）
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, metric: callable):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+        Args:
+            metric: 评分函数: (predicted, expected) -&gt; score (<span class="n">0</span>-<span class="n">1</span>)
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.metric = metric
         self.candidates = []
 
     <span class="k">def</span> compile(self, module: DSPyModule,
                 trainset: list[dict],
                 max_candidates: int = <span class="n">5</span>) -&gt; DSPyModule:
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 阶段 <span class="n">1</span>：Bootstrapping（收集成功案例）</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"编译（优化）一个 Module。
+
+        流程：
+          <span class="n">1</span>. 收集轨迹（多次运行，记录输入输出）
+          <span class="n">2</span>. 筛选高分轨迹
+          <span class="n">3</span>. 生成候选 Prompt 变体
+          <span class="n">4</span>. 在训练集上评估，选最优
+
+        Args:
+            module: 要优化的 Module。
+            trainset: 训练数据（输入+期望输出）。
+            max_candidates: 生成的候选数。
+
+        Returns:
+            优化后的 Module。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 阶段 <span class="n">1</span>：Bootstrapping（收集成功案例）</span>
         trajectories = []
         <span class="k">for</span> sample <span class="k">in</span> trainset:
             inputs = sample.get(<span <span class="k">class</span>="s">"inputs"</span>, {})
@@ -498,8 +678,56 @@ self.metric = metric
 
         self.candidates = best_trajectories
         <span class="k">return</span> module
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">22.5</span> DSPy + Agent 的实战价值
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DSPy 不是 LangChain 的替代品，是补充：
+
+  DSPy 擅长：
+    ✓ 自动优化 Agent 每一步的 Prompt
+    ✓ 发现最佳的 few-shot 示例
+    ✓ 结构化输出的质量保证
+
+  LangChain 擅长：
+    ✓ Agent 编排（LangGraph 的图式工作流）
+    ✓ 工具集成（MCP、向量数据库、API）
+    ✓ 生态系统（社区、文档、第三方集成）
+
+  两者配合：
+    用 LangGraph 搭建 Agent 的执行流程
+    用 DSPy 优化每个 LLM 调用节点的 Prompt
+
+面试中这样描述会非常加分：
+  "我们用 LangGraph 做 Agent 编排（控制流），
+   DSPy 做 LLM 调用优化（Prompt 层），
+   两者解耦，各司其职。"
+
+
+<span class="n">22.6</span> DSPy 把 Agent 开发变成「数据驱动」
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+传统 Agent 开发流程：
+  Prompt 不好 → 看结果 → 凭直觉改 → 再试
+
+DSPy 的 Agent 开发流程：
+  写代码（Module）→ 准备评测集 → 运行 Optimizer → 自动优化完成
+
+类比：
+  传统方式 = 手动调参炼丹
+  DSPy = 自动超参搜索（类似 Optuna 之于深度学习）
+
+面试金句：
+  "我不手动调 Prompt，我写评测指标，
+   让 DSPy Optimizer 自动找出最佳 Prompt。"
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">def</span> make_metric(expected_key: str):
-<span class="k">def</span> metric(predicted: dict, expected: dict) -&gt; float:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"创建评分函数。"</span><span <span class="k">class</span>="s">""</span></span>
+    <span class="k">def</span> metric(predicted: dict, expected: dict) -&gt; float:
         pred_val = str(predicted.get(expected_key, <span <span class="k">class</span>="s">""</span>))
         exp_val = str(expected.get(expected_key, <span <span class="k">class</span>="s">""</span>))
         <span class="k">if</span> pred_val == exp_val:
@@ -517,7 +745,8 @@ self.metric = metric
 
 
 <span class="k">def</span> demo_dspy_workflow():
-print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 DSPy 的完整工作流。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  DSPy 工作流演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -583,6 +812,37 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
     print(f<span <span class="k">class</span>="s">"  优化前 Prompt 长度: {len(module.prompt)} 字符"</span>)
     print(f<span <span class="k">class</span>="s">"  优化后 Prompt 长度: {len(optimized.optimized_prompt)} 字符"</span>)
     print(f<span <span class="k">class</span>="s">"  Few-shot 示例: {len(module.few_shot_examples)} → {len(optimized.few_shot_examples)}"</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">22.7</span> 本章总结
+━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. DSPy = Programming, Not Prompting
+   - Prompt 是编译产物，不是手写字符串
+   - 代码不变，Optimizer 自动适配不同 LLM
+
+<span class="n">2</span>. 三层抽象
+   - Signature: 输入输出规范（替代 Prompt 字符串）
+   - Module: 可组合的 AI 组件
+   - Optimizer: 自动优化 Prompt 和 Few-Shot 示例
+
+<span class="n">3</span>. DSPy × Agent
+   - DSPy 优化每个 LLM 调用节点
+   - LangGraph 编排整体执行流程
+   - 两者解耦、各司其职
+
+面试速记：
+  <span <span class="k">class</span>="s">"DSPy 是什么？"</span>
+  → Programming, <span class="k">not</span> Prompting
+  → Signature 定义输入输出 → Module 组装 → Optimizer 自动优化
+  → 代码不变，换模型自动适配
+  → 和 LangChain 互补：DSPy 管 Prompt 优化，LangChain 管流程编排
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第22章：DSPy —— Prompt 编译式 Agent 开发              ║"</span>)
@@ -608,7 +868,8 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
     print(<span <span class="k">class</span>="s">"  LangChain: 管流程编排（Agent 执行的「控制层」）"</span>)
     print(<span <span class="k">class</span>="s">"  最佳实践: LangGraph 编排 + DSPy 优化"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第22章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+    print(<span <span class="k">class</span>="s">"\n✅ 第22章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_21_streaming/21_streaming_architecture.html" title="Streaming & 实时架构 — EventBus·动态中断·背压">← 第21章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_23_code_agents/23_code_agents.html" title="代码 Agent 架构横评 — CodeAct·ACI·SWE-bench">第23章 →</a>

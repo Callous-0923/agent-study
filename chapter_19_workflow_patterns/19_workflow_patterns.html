@@ -214,8 +214,6 @@ body {
 <pre>        quality_threshold: 质量阈值（1-10），达到即停止。
         max_rounds: 最大迭代轮数。</pre>
 <p>&nbsp;</p>
-<p>Generator：生成/修订输出（模拟）。</p>
-<p>&nbsp;</p>
 <p>Critic：以角色分离的方式审查输出。</p>
 <p>&nbsp;</p>
 <pre>    真实实现中用不同的 system prompt 或不同的模型。</pre>
@@ -243,8 +241,6 @@ body {
 <li>每个路由目标用不同模型、不同 prompt、不同工具集</li>
 <li>可以实现成本优化（简单问题用小模型，复杂问题用大模型）</li>
 <p>&nbsp;</p>
-<p>Routing 模式 —— 根据任务特征选择最合适的处理器。</p>
-<p>&nbsp;</p>
 <p>分类器：分析任务特征，决定路由目标。</p>
 <p>&nbsp;</p>
 <pre>    真实实现中用 LLM 做分类：
@@ -254,8 +250,6 @@ body {
 <p>&nbsp;</p>
 <pre>    Returns:
         包含路由决策的字典。</pre>
-<p>&nbsp;</p>
-<p>估算处理成本（模拟）。</p>
 <p>&nbsp;</p>
 <h2>19.5 Planning 模式 —— 先规划，再执行</h2>
 <p>&nbsp;</p>
@@ -269,8 +263,6 @@ body {
 <li>规划用 LLM（灵活），执行按计划（可靠）</li>
 <li>规划不是「一次性」的 —— 执行中可以根据反馈调整计划</li>
 <li>规划质量取决于分解粒度（太粗执行不了，太细浪费 token）</li>
-<p>&nbsp;</p>
-<p>Planning 模式 —— 任务分解 + 分步执行。</p>
 <p>&nbsp;</p>
 <p>任务分解：将复杂任务拆成子步骤。</p>
 <p>&nbsp;</p>
@@ -299,8 +291,6 @@ body {
 <li>Worker 之间隔离（可以并行，可以不同权限）</li>
 <li>易于水平扩展（加 Worker 即可）</li>
 <p>&nbsp;</p>
-<p>Orchestrator-Worker 模式实现。</p>
-<p>&nbsp;</p>
 <p>注册一个 Worker。</p>
 <p>&nbsp;</p>
 <pre>    Args:
@@ -311,10 +301,6 @@ body {
 <p>&nbsp;</p>
 <pre>    Returns:
         完整的执行记录。</pre>
-<p>&nbsp;</p>
-<p>Orchestrator 分解任务。</p>
-<p>&nbsp;</p>
-<p>根据子任务类型选择合适的 Worker。</p>
 <p>&nbsp;</p>
 <h2>19.7 Evaluator-Optimizer 模式</h2>
 <p>&nbsp;</p>
@@ -377,8 +363,6 @@ body {
 <p>在工单处理中用 Reflection 确保回复质量。</p>
 <p>敏感操作（退款）需要双重确认。」</p>
 <p>&nbsp;</p>
-<p>演示所有设计模式。</p>
-<p>&nbsp;</p>
 <h2>19.11 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
@@ -404,24 +388,135 @@ body {
 <p>"你用过哪些 Agent 设计模式？"</p>
 <p>→ 说出 4+ 种 + 每种的使用场景 + 对比</p>
 <p>→ 重点说 Reflection（双角色分离）和 Routing（成本优化）</p>
-<p>→ 结尾：Anthropic 原则「简单优先，够用就好」</p></div><div class="code-section"><details open><summary>💻 源代码 (320 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>→ 结尾：Anthropic 原则「简单优先，够用就好」</p></div><div class="code-section"><details open><summary>💻 源代码 (652 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+第19章：Agentic Workflow 设计模式 —— 系统设计的万能框架
+========================================================
+
+📌 本章目标：
+  <span class="n">1</span>. 掌握 <span class="n">7</span> 种核心 Agentic 设计模式及其适用场景
+  <span class="n">2</span>. 理解每种模式的执行流程、代价和权衡
+  <span class="n">3</span>. 能用 LangGraph 实现关键模式
+  <span class="n">4</span>. 建立系统设计题的模式选择框架
+  <span class="n">5</span>. 学会避免 Top <span class="n">3</span> 常见错误
+
+📌 面试高频点：
+  - 「你用过哪些 Agent 设计模式？」—— 必须能说出 <span class="n">4</span>+ 种并对比
+  - 「Reflection 模式怎么实现？和纯 LLM 有什么区别？」
+  - 「Routing 和 Orchestrator-Worker 的区别？」
+  - 「什么时候不该用 Agent？」—— Anthropic 核心理念
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+综合 Andrew Ng (4模式) + Anthropic (5模式) + 业界 (7模式) 体系
+参考: https://www.anthropic.com/engineering/building-effective-agents
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+<span class="n">19.1</span> Workflows vs Agents —— 先搞清楚概念
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Anthropic 的核心区分（面试必考！）：
+
+  Workflows（工作流）：
+    LLM 按预定义路径执行，由代码控制流程。
+    → 步骤可预测时使用
+
+  Agents（智能体）：
+    LLM 动态决定自己的流程和工具使用。
+    → 步骤不可预测时使用
+
+关键原则（面试金句）：
+  "When building applications <span class="k">with</span> LLMs, we recommend finding the
+   simplest solution possible, <span class="k">and</span> only increasing complexity when
+   needed. This might mean <span class="k">not</span> building agentic systems at all."
+
+<span class="n">19.2</span> 设计模式全景图
+━━━━━━━━━━━━━━━━━━
+
+┌──────────────────────────────────────────────────────────────┐
+│                  Agentic Design Patterns                       │
+├────────────┬─────────────────────────────────────────────────┤
+│ <span class="n">1</span>. ReAct   │ 推理-行动循环，最通用（Ch3/Ch8 已深入讲过）       │
+│ <span class="n">2</span>. Reflection│ 自我批评 → 迭代改进（本章19.<span class="n">3</span>）                │
+│ <span class="n">3</span>. Routing  │ 按任务特征路由到不同处理器（本章19.<span class="n">4</span>）           │
+│ <span class="n">4</span>. Planning │ 先制定计划再执行（本章19.<span class="n">5</span>）                    │
+│ <span class="n">5</span>. Orchestrator│ 协调者分发任务给专业 Worker（本章19.<span class="n">6</span>）       │
+│ <span class="n">6</span>. Evaluator │ 评估-优化双循环（本章19.<span class="n">7</span>）                   │
+│ <span class="n">7</span>. Human-<span class="k">in</span>- │ 关键节点人工确认（本章19.<span class="n">8</span>）                  │
+│    the-Loop │                                                 │
+└────────────┴─────────────────────────────────────────────────┘
+
+快速选择矩阵（面试时脱口而出！）：
+┌────────────────────────────┬──────────────────────────────┐
+│         任务特征             │         推荐模式              │
+├────────────────────────────┼──────────────────────────────┤
+│ 输出质量 &gt; 速度             │ Reflection                   │
+│ 多种类型但可分类的任务       │ Routing                      │
+│ 复杂的多步骤任务            │ Planning + ReAct             │
+│ 可分解为独立子任务          │ Orchestrator-Worker          │
+│ 需要通过评测指标迭代优化    │ Evaluator-Optimizer          │
+│ 涉及资金/数据安全的操作     │ Human-<span class="k">in</span>-the-Loop            │
+│ 路径不可预测的复杂推理      │ 纯 ReAct Agent               │
+│ 简单、步骤固定的任务        │ 不需要 Agent！直接用 LLM 调用  │
+└────────────────────────────┴──────────────────────────────┘
+<span <span class="k">class</span>="s">""</span>"</span>
+
+<span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">19.3</span> Reflection 模式 —— 自我批评，迭代改进
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+核心理念：
+  不满足于 LLM 的第一次输出，让 LLM 自己批评自己，然后改进。
+
+流程：
+  初版生成 → 自我审查 → 发现不足 → 修订 → 再审查 → ... → 达标输出
+
+为什么「双 Agent」比「单 Agent 自省」更好？
+  - LLM 对自己的输出有「确认偏误」
+  - 换成另一个 Agent（不同的 system prompt）来审查更客观
+  - Generator + Critic 两个角色分离
+
+类比：
+  就像作家写完初稿后，自己很难发现错字
+  需要一个编辑来审阅
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> ReflectionAgent:
-<span class="k">def</span> __init__(self, quality_threshold: int = <span class="n">8</span>, max_rounds: int = <span class="n">3</span>):
-self.threshold = quality_threshold
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Reflection 模式实现 —— Generator + Critic 双角色。
+
+    流程：
+      Generator 生成 → Critic 审查 → 如果不够好 → Generator 修订 → ...
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, quality_threshold: int = <span class="n">8</span>, max_rounds: int = <span class="n">3</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+        Args:
+            quality_threshold: 质量阈值（<span class="n">1</span>-<span class="n">10</span>），达到即停止。
+            max_rounds: 最大迭代轮数。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.threshold = quality_threshold
         self.max_rounds = max_rounds
 
     <span class="k">def</span> generate(self, task: str, previous: str = <span <span class="k">class</span>="s">""</span>,
                  feedback: str = <span <span class="k">class</span>="s">""</span>) -&gt; str:
-<span class="k">if</span> <span class="k">not</span> previous:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Generator：生成/修订输出（模拟）。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">if</span> <span class="k">not</span> previous:
             <span class="k">return</span> self._generate_initial(task)
         <span class="k">return</span> self._revise(task, previous, feedback)
 
     <span class="k">def</span> critique(self, output: str, task: str) -&gt; dict:
-issues = []
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Critic：以角色分离的方式审查输出。
+
+        真实实现中用不同的 system prompt 或不同的模型。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        issues = []
         score = <span class="n">10</span>
 
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 规则检查（模拟 LLM-<span class="k">as</span>-Critic）</span>
@@ -456,7 +551,12 @@ issues = []
         }
 
     <span class="k">def</span> run(self, task: str) -&gt; dict:
-history = []
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"执行完整的 Reflection 循环。
+
+        Returns:
+            包含最终输出和迭代记录的字典。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        history = []
         output = self.generate(task)
 
         <span class="k">for</span> round_num <span class="k">in</span> range(<span class="n">1</span>, self.max_rounds + <span class="n">1</span>):
@@ -492,8 +592,34 @@ history = []
         <span class="k">return</span> f<span <span class="k">class</span>="s">"修订版（收到反馈: {feedback}）：\n{previous}\n"</span> \
                f<span <span class="k">class</span>="s">"补充说明：AI Agent 主要由 LLM、规划器、记忆系统和"</span> \
                f<span <span class="k">class</span>="s">"工具调用四部分组成，通过 ReAct 循环协调工作。"</span>
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">19.4</span> Routing 模式 —— 分类 → 分发
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+核心理念：
+  不同的任务需要不同的处理方式，先用 LLM 分类再路由。
+
+流程：
+  用户输入 → 分类 Agent → 路由到专门的 Handler → 返回结果
+
+适用场景：
+  - 客服系统（投诉/咨询/售后 分到不同的 Agent）
+  - 代码工具（需求/调试/代码审查 分到不同的流程）
+  - 智能助手（简单问答/复杂推理/工具调用 分到不同的模式）
+
+关键决策：
+  - 路由的依据是什么？（关键词/语义/复杂度评分？）
+  - 每个路由目标用不同模型、不同 prompt、不同工具集
+  - 可以实现成本优化（简单问题用小模型，复杂问题用大模型）
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> RoutingAgent:
-ROUTE_TABLE = {
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Routing 模式 —— 根据任务特征选择最合适的处理器。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    ROUTE_TABLE = {
         <span <span class="k">class</span>="s">"简单问答"</span>: {<span <span class="k">class</span>="s">"model"</span>: <span <span class="k">class</span>="s">"小模型"</span>, <span <span class="k">class</span>="s">"max_tokens"</span>: <span class="n">256</span>},
         <span <span class="k">class</span>="s">"代码相关"</span>: {<span <span class="k">class</span>="s">"model"</span>: <span <span class="k">class</span>="s">"大模型"</span>, <span <span class="k">class</span>="s">"max_tokens"</span>: <span class="n">2048</span>, <span <span class="k">class</span>="s">"tools"</span>: [<span <span class="k">class</span>="s">"code_exec"</span>]},
         <span <span class="k">class</span>="s">"数据分析"</span>: {<span <span class="k">class</span>="s">"model"</span>: <span <span class="k">class</span>="s">"大模型"</span>, <span <span class="k">class</span>="s">"max_tokens"</span>: <span class="n">4096</span>, <span <span class="k">class</span>="s">"tools"</span>: [<span <span class="k">class</span>="s">"sql"</span>, <span <span class="k">class</span>="s">"chart"</span>]},
@@ -503,7 +629,12 @@ ROUTE_TABLE = {
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> classify(task: str) -&gt; str:
-task_lower = task.lower()
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"分类器：分析任务特征，决定路由目标。
+
+        真实实现中用 LLM 做分类：
+          prompt = f<span <span class="k">class</span>="s">"将以下任务分类为 [简单问答/代码相关/数据分析/复杂推理/安全敏感]: {task}"</span>
+        <span <span class="k">class</span>="s">""</span>"</span>
+        task_lower = task.lower()
 
         <span class="k">if</span> any(w <span class="k">in</span> task_lower <span class="k">for</span> w <span class="k">in</span> [<span <span class="k">class</span>="s">"代码"</span>, <span <span class="k">class</span>="s">"debug"</span>, <span <span class="k">class</span>="s">"写一个"</span>, <span <span class="k">class</span>="s">"实现"</span>]):
             <span class="k">return</span> <span <span class="k">class</span>="s">"代码相关"</span>
@@ -519,7 +650,12 @@ task_lower = task.lower()
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> route(task: str) -&gt; dict:
-category = RoutingAgent.classify(task)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"路由：分类 → 选择配置 → 返回处理方案。
+
+        Returns:
+            包含路由决策的字典。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        category = RoutingAgent.classify(task)
         config = RoutingAgent.ROUTE_TABLE[category].copy()
         config[<span <span class="k">class</span>="s">"category"</span>] = category
         config[<span <span class="k">class</span>="s">"task"</span>] = task
@@ -528,13 +664,40 @@ category = RoutingAgent.classify(task)
 
 
 <span class="k">def</span> _estimate_cost(config: dict) -&gt; float:
-base = {<span <span class="k">class</span>="s">"简单问答"</span>: <span class="n">0.001</span>, <span <span class="k">class</span>="s">"代码相关"</span>: <span class="n">0.01</span>,
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"估算处理成本（模拟）。"</span><span <span class="k">class</span>="s">""</span></span>
+    base = {<span <span class="k">class</span>="s">"简单问答"</span>: <span class="n">0.001</span>, <span <span class="k">class</span>="s">"代码相关"</span>: <span class="n">0.01</span>,
             <span <span class="k">class</span>="s">"数据分析"</span>: <span class="n">0.05</span>, <span <span class="k">class</span>="s">"复杂推理"</span>: <span class="n">0.10</span>, <span <span class="k">class</span>="s">"安全敏感"</span>: <span class="n">0.02</span>}
     <span class="k">return</span> base.get(config[<span <span class="k">class</span>="s">"category"</span>], <span class="n">0.01</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">19.5</span> Planning 模式 —— 先规划，再执行
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+和 Ch3 中 Plan-Execute 的关系：
+  这是更高层的抽象，规划出来的每个子步骤可以由 ReAct Agent 执行。
+
+核心理念：
+  复杂任务 → 分解为子步骤 → 每个子步骤独立执行 → 汇总结果
+
+关键洞察：
+  <span class="n">1</span>. 规划用 LLM（灵活），执行按计划（可靠）
+  <span class="n">2</span>. 规划不是「一次性」的 —— 执行中可以根据反馈调整计划
+  <span class="n">3</span>. 规划质量取决于分解粒度（太粗执行不了，太细浪费 token）
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> PlanningAgent:
-<span class="d">@staticmethod</span>
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Planning 模式 —— 任务分解 + 分步执行。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    <span class="d">@staticmethod</span>
     <span class="k">def</span> decompose(task: str) -&gt; list[dict]:
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟分解逻辑</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"任务分解：将复杂任务拆成子步骤。
+
+        真实实现用 LLM：
+          f<span <span class="k">class</span>="s">"将以下任务分解为 <span class="n">3</span>-<span class="n">6</span> 个可独立执行的子步骤: {task}"</span>
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟分解逻辑</span>
         <span class="k">if</span> <span <span class="k">class</span>="s">"分析"</span> <span class="k">in</span> task <span class="k">and</span> <span <span class="k">class</span>="s">"写"</span> <span class="k">in</span> task:
             <span class="k">return</span> [
                 {<span <span class="k">class</span>="s">"id"</span>: <span class="n">1</span>, <span <span class="k">class</span>="s">"action"</span>: <span <span class="k">class</span>="s">"research"</span>, <span <span class="k">class</span>="s">"desc"</span>: <span <span class="k">class</span>="s">"搜索相关资料"</span>},
@@ -565,7 +728,11 @@ base = {<span <span class="k">class</span>="s">"简单问答"</span>: <span clas
 
     <span class="d">@staticmethod</span>
     <span class="k">def</span> execute_plan(plan: list[dict]) -&gt; list[dict]:
-results = []
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"按计划执行（模拟）。
+
+        真实实现中每个步骤调用 ReAct Agent 或直接调 LLM。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        results = []
         <span class="k">for</span> step <span class="k">in</span> plan:
             deps = step.get(<span <span class="k">class</span>="s">"depends_on"</span>, [])
             <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 检查依赖是否完成</span>
@@ -584,20 +751,57 @@ results = []
                 <span <span class="k">class</span>="s">"output"</span>: f<span <span class="k">class</span>="s">"已完成: {step[<span <span class="k">class</span>='s'>'desc'</span>]}"</span>,
             })
         <span class="k">return</span> results
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">19.6</span> Orchestrator-Worker 模式
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+核心理念：
+  一个聪明的 Orchestrator（有状态）管理多个无状态 Worker。
+  Worker 之间不直接通信，通过 Orchestrator 协调。
+
+这是 Claude Code <span class="n">1.0</span>.<span class="n">60</span>+ SubAgent 系统的本质（参见 Ch8）。
+
+对比 Planning 模式：
+  Planning：预先分解，固定执行
+  Orchestrator-Worker：动态分配，Worker 独立运行
+
+关键特性：
+  <span class="n">1</span>. Orchestrator 有状态（记住任务上下文）
+  <span class="n">2</span>. Worker 无状态（每次只处理一个子任务）
+  <span class="n">3</span>. Worker 之间隔离（可以并行，可以不同权限）
+  <span class="n">4</span>. 易于水平扩展（加 Worker 即可）
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">class</span> OrchestratorWorker:
-<span class="k">def</span> __init__(self):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Orchestrator-Worker 模式实现。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    <span class="k">def</span> __init__(self):
         self.workers = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># {name: {permissions, handler}}</span>
         self.task_state = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 全局任务状态</span>
 
     <span class="k">def</span> register_worker(self, name: str, permissions: list[str]):
-self.workers[name] = {
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"注册一个 Worker。
+
+        Args:
+            name: Worker 名称。
+            permissions: 拥有的权限列表。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.workers[name] = {
             <span <span class="k">class</span>="s">"permissions"</span>: permissions,
             <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"idle"</span>,
             <span <span class="k">class</span>="s">"completed_tasks"</span>: <span class="n">0</span>,
         }
 
     <span class="k">def</span> orchestrate(self, task: str) -&gt; dict:
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 第1步：Orchestrator 分析任务</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Orchestrator：分析任务 → 分解 → 分配给 Worker。
+
+        Returns:
+            完整的执行记录。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 第1步：Orchestrator 分析任务</span>
         subtasks = self._decompose(task)
 
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 第2步：分配给 Worker</span>
@@ -623,7 +827,8 @@ self.workers[name] = {
         }
 
     <span class="k">def</span> _decompose(self, task: str) -&gt; list[dict]:
-<span class="k">if</span> <span <span class="k">class</span>="s">"代码"</span> <span class="k">in</span> task <span class="k">and</span> <span <span class="k">class</span>="s">"文档"</span> <span class="k">in</span> task:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Orchestrator 分解任务。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">if</span> <span <span class="k">class</span>="s">"代码"</span> <span class="k">in</span> task <span class="k">and</span> <span <span class="k">class</span>="s">"文档"</span> <span class="k">in</span> task:
             <span class="k">return</span> [
                 {<span <span class="k">class</span>="s">"id"</span>: <span class="n">1</span>, <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"code"</span>, <span <span class="k">class</span>="s">"desc"</span>: <span <span class="k">class</span>="s">"编写代码"</span>},
                 {<span <span class="k">class</span>="s">"id"</span>: <span class="n">2</span>, <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"docs"</span>, <span <span class="k">class</span>="s">"desc"</span>: <span <span class="k">class</span>="s">"编写文档"</span>},
@@ -638,7 +843,8 @@ self.workers[name] = {
         <span class="k">return</span> [{<span <span class="k">class</span>="s">"id"</span>: <span class="n">1</span>, <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"general"</span>, <span <span class="k">class</span>="s">"desc"</span>: task}]
 
     <span class="k">def</span> _select_worker(self, subtask: dict) -&gt; Optional[str]:
-type_map = {
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"根据子任务类型选择合适的 Worker。"</span><span <span class="k">class</span>="s">""</span></span>
+        type_map = {
             <span <span class="k">class</span>="s">"code"</span>: <span <span class="k">class</span>="s">"coder"</span>, <span <span class="k">class</span>="s">"docs"</span>: <span <span class="k">class</span>="s">"writer"</span>, <span <span class="k">class</span>="s">"test"</span>: <span <span class="k">class</span>="s">"tester"</span>,
             <span <span class="k">class</span>="s">"frontend"</span>: <span <span class="k">class</span>="s">"frontend_dev"</span>, <span <span class="k">class</span>="s">"backend"</span>: <span <span class="k">class</span>="s">"backend_dev"</span>,
             <span <span class="k">class</span>="s">"database"</span>: <span <span class="k">class</span>="s">"db_admin"</span>, <span <span class="k">class</span>="s">"general"</span>: <span <span class="k">class</span>="s">"general_assistant"</span>,
@@ -654,8 +860,85 @@ type_map = {
             <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"completed"</span>,
             <span <span class="k">class</span>="s">"output"</span>: f<span <span class="k">class</span>="s">"[{worker}] 已完成: {subtask[<span <span class="k">class</span>='s'>'desc'</span>]}"</span>,
         }
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">19.7</span> Evaluator-Optimizer 模式
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+核心理念：
+  和 Reflection 类似但不同：
+  - Reflection: 同一 LLM 生成 + 批评
+  - Evaluator-Optimizer: 独立评测 + 独立优化，评测标准更客观
+
+适用场景：
+  - 翻译质量优化（BLEU 评分驱动）
+  - 代码性能优化（Benchmark 评分驱动）
+  - Prompt 自动优化（准确率评分驱动）
+
+这个模式是 DSPy（Ch22 待讲）的核心思想。
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">19.8</span> Human-<span class="k">in</span>-the-Loop 模式
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+核心理念：
+  不是所有操作都应该自动执行。在关键节点引入人工确认。
+
+触发时机：
+  ✗ 资金操作（转账、下单）
+  ✗ 内容发布（发送邮件、发布文章）
+  ✗ 数据删除
+  ✗ 系统配置变更
+  ✓ 查询类操作 → 自动执行
+
+这是 Ch18 Agent 安全的分级确认机制的扩展。
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">19.9</span> Top <span class="n">3</span> 常见错误（Tina Huang + Anthropic 总结）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+错误 <span class="n">1</span>: 过度工程化 (Over-Engineering)
+  症状：用 Multi-Agent 做单步就能完成的事
+  解法：先问「这真的需要 Agent 吗？」
+
+错误 <span class="n">2</span>: 糟糕的 Prompt (Bad Prompting)
+  症状：复杂架构但 prompt 写得很随意
+  解法：先投入时间优化 prompt，再考虑架构
+
+错误 <span class="n">3</span>: 糟糕的系统设计 (Poor System Design)
+  症状：没有架构图、数据流不清晰、难以调试
+  解法：选好架构模式 → 画架构图 → 定义数据流 → 设置错误处理
+
+
+<span class="n">19.10</span> 系统设计题的答题框架
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+面试官：「设计一个智能客服系统」
+
+标准回答结构：
+  <span class="n">1</span>. 场景分析（任务特征分类）
+  <span class="n">2</span>. 模式选择（主模式 + 辅助模式）
+  <span class="n">3</span>. 架构设计（画图！）
+  <span class="n">4</span>. 关键决策说明（为什么选这个模式）
+  <span class="n">5</span>. 风险与权衡
+
+示例回答：
+  「智能客服有3类请求：FAQ（<span class="n">70</span>%）、工单操作（<span class="n">20</span>%）、投诉（<span class="n">10</span>%）。
+   用 Routing 模式分流：FAQ 走 RAG + 小模型；工单走 Tool Use；
+   投诉需要升级（Human-<span class="k">in</span>-the-Loop）。
+   在工单处理中用 Reflection 确保回复质量。
+   敏感操作（退款）需要双重确认。」
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">def</span> demo_all_patterns():
-print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示所有设计模式。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Agentic Workflow 设计模式综合演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -701,6 +984,39 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
     print(f<span <span class="k">class</span>="s">"  子任务: {result[<span <span class="k">class</span>='s'>'subtasks'</span>]} | 使用 Worker: {result[<span <span class="k">class</span>='s'>'workers_used'</span>]}"</span>)
     <span class="k">for</span> r <span class="k">in</span> result[<span <span class="k">class</span>="s">"results"</span>]:
         print(f<span <span class="k">class</span>="s">"    [{r.get(<span <span class="k">class</span>='s'>'worker'</span>, <span <span class="k">class</span>='s'>'?'</span>)}] {r[<span <span class="k">class</span>='s'>'desc'</span>]} → {r[<span <span class="k">class</span>='s'>'status'</span>]}"</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">19.11</span> 本章总结
+━━━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. Workflow ≠ Agent
+   - Workflow: 代码控制流程
+   - Agent: LLM 控制流程
+   - 能不用 Agent 就不用（Anthropic 核心原则）
+
+<span class="n">2</span>. <span class="n">7</span> 种核心模式
+   - ReAct: 最通用，默认选择
+   - Reflection: 质量优先场景
+   - Routing: 多种任务类型
+   - Planning: 复杂多步骤
+   - Orchestrator-Worker: 可并行子任务
+   - Evaluator-Optimizer: 量化优化
+   - Human-<span class="k">in</span>-the-Loop: 安全关键操作
+
+<span class="n">3</span>. 系统设计答题框架
+   场景分析 → 模式选择 → 架构设计 → 关键决策 → 风险权衡
+
+面试速记：
+  <span <span class="k">class</span>="s">"你用过哪些 Agent 设计模式？"</span>
+  → 说出 <span class="n">4</span>+ 种 + 每种的使用场景 + 对比
+  → 重点说 Reflection（双角色分离）和 Routing（成本优化）
+  → 结尾：Anthropic 原则「简单优先，够用就好」
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第19章：Agentic Workflow 设计模式                     ║"</span>)
@@ -723,7 +1039,8 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
     <span class="k">for</span> scene, pattern <span class="k">in</span> choices:
         print(f<span <span class="k">class</span>="s">"  {scene:20s} → {pattern}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第19章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+    print(<span <span class="k">class</span>="s">"\n✅ 第19章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_18_security/18_agent_security.html" title="Agent 安全与护栏 — Prompt Injection·权限分级">← 第18章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_20_context_engineering/20_context_engineering.html" title="Context Engineering — Context Rot·预算管理·XML Prompt">第20章 →</a>

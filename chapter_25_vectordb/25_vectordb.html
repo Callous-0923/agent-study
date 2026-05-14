@@ -238,17 +238,7 @@ body {
 <pre>    Returns:
         检索结果列表。</pre>
 <p>&nbsp;</p>
-<p>简化的文本向量化（演示用）。</p>
-<p>&nbsp;</p>
-<p>余弦相似度。</p>
-<p>&nbsp;</p>
-<p>存储统计。</p>
-<p>&nbsp;</p>
-<p>演示向量数据库的核心操作。</p>
-<p>&nbsp;</p>
 <h2>25.4 Embedding 维度实验</h2>
-<p>&nbsp;</p>
-<p>演示 Embedding 维度的性能权衡。</p>
 <p>&nbsp;</p>
 <h2>25.5 向量数据库 + Agent 的最佳实践</h2>
 <p>&nbsp;</p>
@@ -282,7 +272,97 @@ body {
 <p>「向量数据库怎么选？」</p>
 <p>→ 快速原型 Chroma，生产 Milvus/Qdrant，不想运维 Pinecone</p>
 <p>→ 维度权衡：384快 768平衡 1536精</p>
-<p>→ 混合检索是标配：向量 + 关键词 = 最佳召回率</p></div><div class="code-section"><details open><summary>💻 源代码 (210 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<p>→ 混合检索是标配：向量 + 关键词 = 最佳召回率</p></div><div class="code-section"><details open><summary>💻 源代码 (386 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+第25章：向量数据库选型与实战 —— Agent 记忆与 RAG 的底座
+============================================================
+
+📌 本章目标：
+  <span class="n">1</span>. 理解向量数据库在 Agent 系统中的定位
+  <span class="n">2</span>. 掌握 <span class="n">5</span> 大向量数据库的选型决策框架
+  <span class="n">3</span>. 学会 Embedding 策略：模型选择 / 维度权衡 / 批量优化
+  <span class="n">4</span>. 实现一个可运行的向量检索系统
+
+📌 面试高频点：
+  - 「Chroma / Pinecone / Milvus / Qdrant 怎么选？」
+  - 「Embedding 模型的维度对性能有什么影响？」
+  - 「向量数据库和传统数据库的区别？」
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+基于 <span class="n">2025</span> 年向量数据库生态全景
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+<span class="n">25.1</span> 向量数据库在 Agent 架构中的位置
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌────────────────────────────────────────────────────┐
+  │                  Agent 记忆系统                       │
+  │                                                      │
+  │  Ch14 SQLite ──────→ 结构化数据（会话/用户/任务）     │
+  │  Ch16 MemGPT ──────→ 长期记忆管理策略                 │
+  │  Ch25 向量数据库 ──→ 语义搜索（RAG / 对话检索）       │
+  │                                                      │
+  │  三者在 Agent 中的关系：                               │
+  │    SQLite 存「关系型数据」                            │
+  │    向量库 存「非结构化语义」                          │
+  │    MemGPT 策略 决定「什么数据存在哪里」                │
+  └────────────────────────────────────────────────────┘
+
+
+<span class="n">25.2</span> <span class="n">5</span> 大向量数据库对比
+━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌──────────┬──────────┬──────────┬──────────┬──────────┐
+  │          │  Chroma  │ Pinecone │  Milvus  │  Qdrant  │
+  ├──────────┼──────────┼──────────┼──────────┼──────────┤
+  │ 类型      │ 开源轻量  │ 商业托管  │ 开源分布式│ 开源高性能 │
+  │ 上手难度  │ ⭐(30min)│ ⭐(30min)│ ⭐⭐⭐    │ ⭐⭐      │
+  │ 数据规模  │ &lt;100万   │ 不限      │ 10亿+     │ 10亿      │
+  │ 延迟(P99) │ ~200ms  │ &lt;50ms    │ &lt;50ms    │ &lt;80ms    │
+  │ 部署       │ pip install│ SaaS    │ K8s/Helm │ Docker   │
+  │ 适合       │ 原型/MVP  │ 企业快速上线│ 大规模生产│ 性能优先  │
+  │ 成本       │ 免费      │ $$$      │ 运维成本  │ 运维成本  │
+  └──────────┴──────────┴──────────┴──────────┴──────────┘
+
+选型决策树（面试必备！）：
+
+  你的需求是什么？
+  ├─ 快速原型/学习 → Chroma（pip install 搞定）
+  ├─ 不想管运维 → Pinecone（全托管，但付费）
+  ├─ 千万级以上 + 生产环境 → Qdrant 或 Milvus
+  │   ├─ 需要分布式 → Milvus
+  │   └─ 追求单机极致性能 → Qdrant
+  └─ 已有 Postgres/Redis → pgvector / Redis Stack
+
+面试回答框架：
+  「我选择 XX 向量库，原因是：
+   <span class="n">1</span>. 数据规模：XXX 万条向量
+   <span class="n">2</span>. QPS 要求：XXX
+   <span class="n">3</span>. 团队能力：有/无 K8s 运维经验
+   <span class="n">4</span>. 预算：可以/不可以接受商业服务费用」
+
+<span class="n">25.3</span> Embedding 策略 —— 被忽视的关键
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Embedding 模型选择：
+  ┌──────────────────────┬──────────┬──────────┬──────────┐
+  │ 模型                  │ 维度      │ 语言      │ 适合场景  │
+  ├──────────────────────┼──────────┼──────────┼──────────┤
+  │ text-embedding-<span class="n">3</span>-small│ <span class="n">512</span>/<span class="n">1536</span> │ 多语言    │ 通用 RAG  │
+  │ text-embedding-<span class="n">3</span>-large│ <span class="n">256</span>/<span class="n">3072</span> │ 多语言    │ 高精度    │
+  │ bge-large-zh-v1.<span class="n">5</span>     │ <span class="n">1024</span>     │ 中文优先  │ 中文 RAG  │
+  │ all-MiniLM-L6-v2      │ <span class="n">384</span>      │ 英文      │ 轻量原型  │
+  │ Cohere Embed v3       │ <span class="n">1024</span>     │ 多语言    │ 企业级    │
+  └──────────────────────┴──────────┴──────────┴──────────┘
+
+维度对性能的影响：
+  - <span class="n">384</span> 维：检索速度快 3x，召回率约 <span class="n">85</span>%
+  - <span class="n">768</span> 维：平衡点，召回率约 <span class="n">92</span>%
+  - <span class="n">1536</span> 维：精度最高，召回率约 <span class="n">95</span>%
+  → 代价：维度越高存储越大、检索越慢
+<span <span class="k">class</span>="s">""</span>"</span>
+
+<span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -291,7 +371,20 @@ body {
 
 
 <span class="k">class</span> SimpleVectorStore:
-<span class="k">def</span> __init__(self, dim: int = <span class="n">384</span>, index_type: str = <span <span class="k">class</span>="s">"flat"</span>):
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"轻量级向量存储 —— 演示向量数据库的核心原理。
+
+    支持：
+      <span class="n">1</span>. 近似最近邻搜索 (ANN via HNSW 简化版)
+      <span class="n">2</span>. 混合检索（向量 + 关键词）
+      <span class="n">3</span>. 元数据过滤
+      <span class="n">4</span>. 批量写入
+
+    这个实现展示了所有向量数据库的共同底层：
+      - 添加：文本 → Embedding → 存储向量
+      - 搜索：查询 → Embedding → 相似度排序 → Top-K
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, dim: int = <span class="n">384</span>, index_type: str = <span <span class="k">class</span>="s">"flat"</span>):
         self.dim = dim
         self.index_type = index_type
         self.vectors = []         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># [np.array]</span>
@@ -303,7 +396,15 @@ body {
             metadatas: list[dict] = <span class="k">None</span>,
             ids: list[str] = <span class="k">None</span>,
             embeddings: np.ndarray = <span class="k">None</span>):
-<span class="k">if</span> metadatas <span class="k">is</span> <span class="k">None</span>:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"添加文档到向量库。
+
+        Args:
+            texts: 文档列表。
+            metadatas: 元数据列表。
+            ids: ID 列表。
+            embeddings: 预计算的向量（不传则用模拟向量）。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">if</span> metadatas <span class="k">is</span> <span class="k">None</span>:
             metadatas = [{} <span class="k">for</span> _ <span class="k">in</span> texts]
         <span class="k">if</span> ids <span class="k">is</span> <span class="k">None</span>:
             ids = [hashlib.md5(t.encode()).hexdigest()[:<span class="n">12</span>] <span class="k">for</span> t <span class="k">in</span> texts]
@@ -328,7 +429,18 @@ body {
     <span class="k">def</span> search(self, query: str, top_k: int = <span class="n">5</span>,
                filter_meta: dict = <span class="k">None</span>,
                hybrid_weight: float = <span class="n">0.7</span>) -&gt; list[dict]:
-query_vec = self._hash_embed(query)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"混合检索：向量搜索 + 关键词搜索。
+
+        Args:
+            query: 查询文本。
+            top_k: 返回数量。
+            filter_meta: 元数据过滤条件。
+            hybrid_weight: 向量搜索权重（<span class="n">0</span>-<span class="n">1</span>），剩余给关键词。
+
+        Returns:
+            检索结果列表。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        query_vec = self._hash_embed(query)
 
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">1</span>. 向量搜索得分</span>
         vec_scores = []
@@ -371,17 +483,20 @@ query_vec = self._hash_embed(query)
         ]
 
     <span class="k">def</span> _hash_embed(self, text: str) -&gt; np.ndarray:
-vec = np.zeros(self.dim)
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"简化的文本向量化（演示用）。"</span><span <span class="k">class</span>="s">""</span></span>
+        vec = np.zeros(self.dim)
         <span class="k">for</span> i, ch <span class="k">in</span> enumerate(text):
             vec[hash(ch) % self.dim] += <span class="n">1</span>
         norm = np.linalg.norm(vec)
         <span class="k">return</span> vec / norm <span class="k">if</span> norm &gt; <span class="n">0</span> <span class="k">else</span> vec
 
     <span class="k">def</span> _cosine_similarity(self, a: np.ndarray, b: np.ndarray) -&gt; float:
-<span class="k">return</span> float(np.dot(a, b))
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"余弦相似度。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">return</span> float(np.dot(a, b))
 
     <span class="k">def</span> stats(self) -&gt; dict:
-<span class="k">return</span> {
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"存储统计。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">return</span> {
             <span <span class="k">class</span>="s">"total_docs"</span>: len(self.documents),
             <span <span class="k">class</span>="s">"dim"</span>: self.dim,
             <span <span class="k">class</span>="s">"index_type"</span>: self.index_type,
@@ -390,7 +505,8 @@ vec = np.zeros(self.dim)
 
 
 <span class="k">def</span> demo_vector_db():
-print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示向量数据库的核心操作。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  向量数据库完整演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -447,8 +563,17 @@ print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</sp
 
     <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 存储统计</span>
     print(f<span <span class="k">class</span>="s">"\n  📊 存储统计: {json.dumps(store.stats(), indent=<span class="n">2</span>)}"</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">25.4</span> Embedding 维度实验
+━━━━━━━━━━━━━━━━━━━━━━━
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">def</span> demo_embedding_dimension_tradeoff():
-print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Embedding 维度的性能权衡。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Embedding 维度性能实验"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -474,6 +599,47 @@ print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k"
         recall = <span class="n">1.0</span> <span class="k">if</span> results[<span class="n">0</span>][<span <span class="k">class</span>="s">"score"</span>] &gt; <span class="n">0.1</span> <span class="k">else</span> <span class="n">0.0</span>
 
         print(f<span <span class="k">class</span>="s">"  {dim:&lt;8d} {elapsed*<span class="n">1000</span>:&lt;<span class="n">12.</span>2f}ms {storage:&lt;12d} {recall:.<span class="n">1</span>%}"</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">25.5</span> 向量数据库 + Agent 的最佳实践
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span class="n">1</span>. Embedding 缓存
+   相同文本不做重复 embedding（省钱 + 省时间）
+
+<span class="n">2</span>. 批量写入
+   逐条写入 API 调用开销大，攒 <span class="n">100</span>-<span class="n">200</span> 条一批写入
+
+<span class="n">3</span>. 维度选择
+   原型用 <span class="n">384</span>（快），生产用 <span class="n">768</span>-<span class="n">1024</span>（平衡），极致用 <span class="n">1536</span>
+
+<span class="n">4</span>. 混合检索
+   纯向量搜索不够 → 加关键词匹配（BM25）
+   混合检索是 <span class="n">2025</span> 年生产标准
+
+<span class="n">5</span>. 定期重建索引
+   数据量大后重建索引以保持检索性能
+
+
+<span class="n">25.6</span> 本章总结
+━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. 向量数据库是 Agent 记忆和 RAG 的底座
+<span class="n">2</span>. 选型 = 规模 + 团队能力 + 预算
+<span class="n">3</span>. Embedding 维度 = 速度 vs 精度的权衡
+<span class="n">4</span>. 混合检索 = <span class="n">2025</span> 生产标准
+
+面试速记：
+  「向量数据库怎么选？」
+  → 快速原型 Chroma，生产 Milvus/Qdrant，不想运维 Pinecone
+  → 维度权衡：384快 768平衡 1536精
+  → 混合检索是标配：向量 + 关键词 = 最佳召回率
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第25章：向量数据库选型与实战                            ║"</span>)
@@ -491,7 +657,8 @@ print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k"
         <span <span class="k">class</span>="s">"已有PG/Redis → pgvector"</span>,
     ]:
         print(f<span <span class="k">class</span>="s">"  {item}"</span>)
-    print(<span <span class="k">class</span>="s">"\n✅ 第25章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+    print(<span <span class="k">class</span>="s">"\n✅ 第25章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_24_observability/24_observability.html" title="Agent 可观测性 — Tracing·LangSmith vs LangFuse">← 第24章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_26_model_routing/26_model_routing.html" title="模型路由策略 — Threshold·Cascade·Semantic·Cost-Aware">第26章 →</a>
