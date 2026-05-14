@@ -100,11 +100,40 @@ body {
   .code-block { background: #f5f5f5; color: #222; }
 }
 
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
 </style>
 </head>
 <body>
 <div class="container">
-<div class="hero"><h1>第12章 OpenClaw / Harness 与 Agent 生产基础设施</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 深入理解 OpenClaw 的 Gateway 中心化架构</span><span class="tag tag-goal">2. 掌握 AgentSkills 和 ClawHub 的插件生态</span><span class="tag tag-goal">3. 了解 Harness (OpenHarness) 作为开源编码 Agent 的设计亮点</span><span class="tag tag-goal">4. 理解 Agent 生产基础设施的全景图（Tracing / 评测 / 安全 / 部署）</span><span class="tag tag-goal">5. 学会 Agent 评测框架 MultiAgentEval 的使用方式</span><span class="tag tag-interview">🎤 OpenClaw 和 Claude Code 的架构差异？</span><span class="tag tag-interview">🎤 什么是 Agent 的 Gateway 架构？有什么优势？</span><span class="tag tag-interview">🎤 Agent 生产化的基础设施包括哪些？</span><span class="tag tag-interview">🎤 如何搭建 Agent 的评测体系？</span></div><p>第12章：OpenClaw / Harness 与 Agent 生产基础设施</p>
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第12章 Agent 生产基础设施 — OpenClaw·Harness·Checklist</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html" title="Tool Calling 底层 — OpenAI vs Anthropic">← 第11章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_13_fastapi/13_fastapi_agent_service.html" title="FastAPI 服务化 — REST·SSE·WebSocket">第13章 →</a>
+</div><div class="hero"><h1>第12章 OpenClaw / Harness 与 Agent 生产基础设施</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 深入理解 OpenClaw 的 Gateway 中心化架构</span><span class="tag tag-goal">2. 掌握 AgentSkills 和 ClawHub 的插件生态</span><span class="tag tag-goal">3. 了解 Harness (OpenHarness) 作为开源编码 Agent 的设计亮点</span><span class="tag tag-goal">4. 理解 Agent 生产基础设施的全景图（Tracing / 评测 / 安全 / 部署）</span><span class="tag tag-goal">5. 学会 Agent 评测框架 MultiAgentEval 的使用方式</span><span class="tag tag-interview">🎤 OpenClaw 和 Claude Code 的架构差异？</span><span class="tag tag-interview">🎤 什么是 Agent 的 Gateway 架构？有什么优势？</span><span class="tag tag-interview">🎤 Agent 生产化的基础设施包括哪些？</span><span class="tag tag-interview">🎤 如何搭建 Agent 的评测体系？</span></div><p>第12章：OpenClaw / Harness 与 Agent 生产基础设施</p>
 <p>================================================</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -511,4 +540,8 @@ skill/code-review     → 代码审查</pre>
     print(<span <span class="k">class</span>="s">"  从 Agent 基础到 Claude Code 逆向分析"</span>)
     print(<span <span class="k">class</span>="s">"  从 RAG 到 MCP 到 Tool Calling 底层原理"</span>)
     print(<span <span class="k">class</span>="s">"  你现在已经具备了成为顶级 Agent 工程师的所有知识"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)</pre></div></details></div></div></body></html>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html" title="Tool Calling 底层 — OpenAI vs Anthropic">← 第11章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_13_fastapi/13_fastapi_agent_service.html" title="FastAPI 服务化 — REST·SSE·WebSocket">第13章 →</a>
+</div></div></body></html>

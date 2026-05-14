@@ -100,11 +100,40 @@ body {
   .code-block { background: #f5f5f5; color: #222; }
 }
 
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
 </style>
 </head>
 <body>
 <div class="container">
-<div class="hero"><h1>第25章 向量数据库选型与实战 —— Agent 记忆与 RAG 的底座</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解向量数据库在 Agent 系统中的定位</span><span class="tag tag-goal">2. 掌握 5 大向量数据库的选型决策框架</span><span class="tag tag-goal">3. 学会 Embedding 策略：模型选择 / 维度权衡 / 批量优化</span><span class="tag tag-goal">4. 实现一个可运行的向量检索系统</span><span class="tag tag-interview">🎤 「Chroma / Pinecone / Milvus / Qdrant 怎么选？」</span><span class="tag tag-interview">🎤 「Embedding 模型的维度对性能有什么影响？」</span><span class="tag tag-interview">🎤 「向量数据库和传统数据库的区别？」</span></div><p>第25章：向量数据库选型与实战 —— Agent 记忆与 RAG 的底座</p>
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第25章 向量数据库选型 — Chroma·Pinecone·Milvus·Qdrant</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_24_observability/24_observability.html" title="Agent 可观测性 — Tracing·LangSmith vs LangFuse">← 第24章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_26_model_routing/26_model_routing.html" title="模型路由策略 — Threshold·Cascade·Semantic·Cost-Aware">第26章 →</a>
+</div><div class="hero"><h1>第25章 向量数据库选型与实战 —— Agent 记忆与 RAG 的底座</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解向量数据库在 Agent 系统中的定位</span><span class="tag tag-goal">2. 掌握 5 大向量数据库的选型决策框架</span><span class="tag tag-goal">3. 学会 Embedding 策略：模型选择 / 维度权衡 / 批量优化</span><span class="tag tag-goal">4. 实现一个可运行的向量检索系统</span><span class="tag tag-interview">🎤 「Chroma / Pinecone / Milvus / Qdrant 怎么选？」</span><span class="tag tag-interview">🎤 「Embedding 模型的维度对性能有什么影响？」</span><span class="tag tag-interview">🎤 「向量数据库和传统数据库的区别？」</span></div><p>第25章：向量数据库选型与实战 —— Agent 记忆与 RAG 的底座</p>
 <p>============================================================</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -471,4 +500,8 @@ body {
         <span <span class="k">class</span>="s">"已有PG/Redis → pgvector"</span>,
     ]:
         print(f<span <span class="k">class</span>="s">"  {item}"</span>)
-    print(<span <span class="k">class</span>="s">"\n✅ 第25章完成！"</span>)</pre></div></details></div></div></body></html>
+    print(<span <span class="k">class</span>="s">"\n✅ 第25章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_24_observability/24_observability.html" title="Agent 可观测性 — Tracing·LangSmith vs LangFuse">← 第24章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_26_model_routing/26_model_routing.html" title="模型路由策略 — Threshold·Cascade·Semantic·Cost-Aware">第26章 →</a>
+</div></div></body></html>

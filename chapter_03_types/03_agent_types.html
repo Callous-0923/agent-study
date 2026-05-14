@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>第03章：Agent 类型分类与设计模式 — AI Agent 全栈课程</title>
+<title>第3章：Agent 类型分类与设计模式 — AI Agent 全栈课程</title>
 <style>
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -100,11 +100,40 @@ body {
   .code-block { background: #f5f5f5; color: #222; }
 }
 
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
 </style>
 </head>
 <body>
 <div class="container">
-<div class="hero"><h1>第03章 Agent 类型分类与设计模式</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 掌握 5 种主流 Agent 类型的设计模式与适用场景</span><span class="tag tag-goal">2. 理解每种模式的执行流程和优劣对比</span><span class="tag tag-goal">3. 能根据任务特征选择合适的 Agent 类型</span><span class="tag tag-goal">4. 实现一个可切换模式的 Agent 实验框架</span><span class="tag tag-interview">🎤 ReAct 的执行流程（面试必问！）</span><span class="tag tag-interview">🎤 Plan-Execute vs ReAct 的取舍</span><span class="tag tag-interview">🎤 Reflexion 的反思机制</span><span class="tag tag-interview">🎤 什么场景用哪种 Agent 类型</span></div><p>第3章：Agent 类型分类与设计模式</p>
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第3章 Agent 类型分类 — ReAct·Plan-Execute·Reflexion</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_02_components/02_agent_components.html" title="Agent 核心组件 — 规划器·记忆·工具设计">← 第2章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_04_frameworks/04_frameworks.html" title="主流框架实战 — LangChain·LangGraph">第4章 →</a>
+</div><div class="hero"><h1>第3章 Agent 类型分类与设计模式</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 掌握 5 种主流 Agent 类型的设计模式与适用场景</span><span class="tag tag-goal">2. 理解每种模式的执行流程和优劣对比</span><span class="tag tag-goal">3. 能根据任务特征选择合适的 Agent 类型</span><span class="tag tag-goal">4. 实现一个可切换模式的 Agent 实验框架</span><span class="tag tag-interview">🎤 ReAct 的执行流程（面试必问！）</span><span class="tag tag-interview">🎤 Plan-Execute vs ReAct 的取舍</span><span class="tag tag-interview">🎤 Reflexion 的反思机制</span><span class="tag tag-interview">🎤 什么场景用哪种 Agent 类型</span></div><p>第3章：Agent 类型分类与设计模式</p>
 <p>=================================</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -616,4 +645,8 @@ AGENT_REGISTRY = {
     print(<span <span class="k">class</span>="s">"│ 简单问答     │  直接 LLM 调用                        │"</span>)
     print(<span <span class="k">class</span>="s">"└─────────────┴──────────────────────────────────────┘"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第3章完成！接下来进入第4章：主流框架实战。"</span>)</pre></div></details></div></div></body></html>
+    print(<span <span class="k">class</span>="s">"\n✅ 第3章完成！接下来进入第4章：主流框架实战。"</span>)</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_02_components/02_agent_components.html" title="Agent 核心组件 — 规划器·记忆·工具设计">← 第2章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_04_frameworks/04_frameworks.html" title="主流框架实战 — LangChain·LangGraph">第4章 →</a>
+</div></div></body></html>

@@ -37,60 +37,60 @@
 
 | 章节 | 内容 | 关键技术 |
 |------|------|----------|
-| **Ch0** | 课程概览与环境搭建 | 学习路线图、依赖安装、API Key 配置 |
-| **Ch1** | 第一个 Agent | 裸写 ReAct 循环、Function Calling 原理 |
-| **Ch2** | Agent 核心组件 | 规划器、记忆系统（短期/长期/工作）、工具设计黄金法则 |
-| **Ch3** | Agent 类型分类 | ReAct / Plan-Execute / Reflexion 对比 |
+| **[Ch0](https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html)** | 课程概览与环境搭建 | 学习路线图、依赖安装、API Key 配置 |
+| **[Ch1](https://callous-0923.github.io/agent-study/chapter_01_fundamentals/01_hello_agent.html)** | 第一个 Agent | 裸写 ReAct 循环、Function Calling 原理 |
+| **[Ch2](https://callous-0923.github.io/agent-study/chapter_02_components/02_agent_components.html)** | Agent 核心组件 | 规划器、记忆系统（短期/长期/工作）、工具设计黄金法则 |
+| **[Ch3](https://callous-0923.github.io/agent-study/chapter_03_types/03_agent_types.html)** | Agent 类型分类 | ReAct / Plan-Execute / Reflexion 对比 |
 
 ### 第2层：工程实践与框架
 
 | 章节 | 内容 | 关键技术 |
 |------|------|----------|
-| **Ch4** | 主流框架实战 | LangChain Agent + LangGraph 状态机 |
-| **Ch5** | 多智能体系统 | Writer+Reviewer 协作、crewAI 风格 |
-| **Ch6** | 评估与测试 | 评测框架、LLM-as-Judge、生产 Checklist |
-| **Ch7** | 求职面试准备 | 20 道高频面试题 + 项目指南 + 面试流程 |
+| **[Ch4](https://callous-0923.github.io/agent-study/chapter_04_frameworks/04_frameworks.html)** | 主流框架实战 | LangChain Agent + LangGraph 状态机 |
+| **[Ch5](https://callous-0923.github.io/agent-study/chapter_05_multi_agent/05_multi_agent.html)** | 多智能体系统 | Writer+Reviewer 协作、crewAI 风格 |
+| **[Ch6](https://callous-0923.github.io/agent-study/chapter_06_evaluation/06_evaluation.html)** | 评估与测试 | 评测框架、LLM-as-Judge、生产 Checklist |
+| **[Ch7](https://callous-0923.github.io/agent-study/chapter_07_interview/07_interview_prep.html)** | 求职面试准备 | 20 道高频面试题 + 项目指南 + 面试流程 |
 
 ### 第3层：深度技术剖析
 
 | 章节 | 内容 | 关键技术 |
 |------|------|----------|
-| **Ch8** | Claude Code 架构 | nO 主循环、h2A Steering、上下文压缩、SubAgent |
-| **Ch9** | RAG 深度剖析 | Naive→Advanced→GraphRAG→Agentic RAG + RAGAS 评估 |
-| **Ch10** | MCP 协议详解 | JSON-RPC、原语（Tools/Resources/Prompts）、能力协商 |
-| **Ch11** | Tool Calling 底层 | OpenAI vs Anthropic、Streaming 组装、Strict 模式 |
-| **Ch12** | Agent 生产基础设施 | OpenClaw 架构、Harness、MultiAgentEval、生产化 Checklist |
+| **[Ch8](https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html)** | Claude Code 架构 | nO 主循环、h2A Steering、上下文压缩、SubAgent |
+| **[Ch9](https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html)** | RAG 深度剖析 | Naive→Advanced→GraphRAG→Agentic RAG + RAGAS 评估 |
+| **[Ch10](https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html)** | MCP 协议详解 | JSON-RPC、原语（Tools/Resources/Prompts）、能力协商 |
+| **[Ch11](https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html)** | Tool Calling 底层 | OpenAI vs Anthropic、Streaming 组装、Strict 模式 |
+| **[Ch12](https://callous-0923.github.io/agent-study/chapter_12_infrastructure/12_infrastructure.html)** | Agent 生产基础设施 | OpenClaw 架构、Harness、MultiAgentEval、生产化 Checklist |
 
 ### 第4层：工程化与前沿
 
 | 章节 | 内容 | 关键技术 |
 |------|------|----------|
-| **Ch13** | FastAPI 服务化 | REST API、SSE 流式、WebSocket、生产部署架构 |
-| **Ch14** | SQLite 持久化 | 5 表 Schema、WAL 模式、会话/任务/用户管理 |
-| **Ch15** | Google A2A 协议 | AgentCard、Task、Artifact、Multi-Agent 协作 |
-| **Ch16** | MemGPT/Letta 记忆 | Core Memory、Heartbeat、Sleep-Time、Filesystem Memory |
-| **Ch17** | Computer Use | Screenshot-Action Loop、坐标计算、安全沙箱 |
-| **Ch18** | Agent 安全与护栏 | Prompt Injection 攻防、权限分级、输入消毒、审计 |
+| **[Ch13](https://callous-0923.github.io/agent-study/chapter_13_fastapi/13_fastapi_agent_service.html)** | FastAPI 服务化 | REST API、SSE 流式、WebSocket、生产部署架构 |
+| **[Ch14](https://callous-0923.github.io/agent-study/chapter_14_sqlite/14_sqlite_agent_storage.html)** | SQLite 持久化 | 5 表 Schema、WAL 模式、会话/任务/用户管理 |
+| **[Ch15](https://callous-0923.github.io/agent-study/chapter_15_a2a/15_a2a_protocol.html)** | Google A2A 协议 | AgentCard、Task、Artifact、Multi-Agent 协作 |
+| **[Ch16](https://callous-0923.github.io/agent-study/chapter_16_memgpt/16_memgpt_letta.html)** | MemGPT/Letta 记忆 | Core Memory、Heartbeat、Sleep-Time、Filesystem Memory |
+| **[Ch17](https://callous-0923.github.io/agent-study/chapter_17_computer_use/17_computer_use.html)** | Computer Use | Screenshot-Action Loop、坐标计算、安全沙箱 |
+| **[Ch18](https://callous-0923.github.io/agent-study/chapter_18_security/18_agent_security.html)** | Agent 安全与护栏 | Prompt Injection 攻防、权限分级、输入消毒、审计 |
 
 ### 第5层：高级架构与优化
 
 | 章节 | 内容 | 关键技术 |
 |------|------|----------|
-| **Ch19** | Agentic Workflow 设计模式 | Reflection / Routing / Orchestrator-Worker / Evaluator-Optimizer 等 7 种模式 |
-| **Ch20** | Context Engineering | Context Rot 原理、预算管理、XML 结构化 Prompt、Skill.md |
-| **Ch21** | Streaming & 实时架构 | EventBus、动态中断、背压控制、StateManager Reducer |
-| **Ch22** | DSPy 自动优化 | Signature→Module→Optimizer、自动 few-shot、与 LangChain 互补 |
-| **Ch23** | 代码 Agent 架构横评 | CodeAct / ACI / Plan-Execute、SWE-bench、Agentless 发现 |
-| **Ch24** | Agent 可观测性 | Tracing Span 树、Dashboard、LangSmith vs LangFuse、告警规则 |
+| **[Ch19](https://callous-0923.github.io/agent-study/chapter_19_workflow_patterns/19_workflow_patterns.html)** | Agentic Workflow 设计模式 | Reflection / Routing / Orchestrator-Worker / Evaluator-Optimizer 等 7 种模式 |
+| **[Ch20](https://callous-0923.github.io/agent-study/chapter_20_context_engineering/20_context_engineering.html)** | Context Engineering | Context Rot 原理、预算管理、XML 结构化 Prompt、Skill.md |
+| **[Ch21](https://callous-0923.github.io/agent-study/chapter_21_streaming/21_streaming_architecture.html)** | Streaming & 实时架构 | EventBus、动态中断、背压控制、StateManager Reducer |
+| **[Ch22](https://callous-0923.github.io/agent-study/chapter_22_dspy/22_dspy.html)** | DSPy 自动优化 | Signature→Module→Optimizer、自动 few-shot、与 LangChain 互补 |
+| **[Ch23](https://callous-0923.github.io/agent-study/chapter_23_code_agents/23_code_agents.html)** | 代码 Agent 架构横评 | CodeAct / ACI / Plan-Execute、SWE-bench、Agentless 发现 |
+| **[Ch24](https://callous-0923.github.io/agent-study/chapter_24_observability/24_observability.html)** | Agent 可观测性 | Tracing Span 树、Dashboard、LangSmith vs LangFuse、告警规则 |
 
 ### 第6层：基础能力补强
 
 | 章节 | 内容 | 关键技术 |
 |------|------|----------|
-| **Ch25** | 向量数据库选型 | Chroma/Pinecone/Milvus/Qdrant 对比、Embedding 维度权衡 |
-| **Ch26** | 模型路由策略 | Threshold / Cascade / Semantic / Cost-Aware 四种路由 |
-| **Ch27** | Agent Prompt 工程 | System Prompt 6 模块模板、工具描述评分卡 |
-| **Ch28** | 语义缓存与 Token 优化 | Exact→Semantic→LLM 三级缓存、Token 预算管理 |
+| **[Ch25](https://callous-0923.github.io/agent-study/chapter_25_vectordb/25_vectordb.html)** | 向量数据库选型 | Chroma/Pinecone/Milvus/Qdrant 对比、Embedding 维度权衡 |
+| **[Ch26](https://callous-0923.github.io/agent-study/chapter_26_model_routing/26_model_routing.html)** | 模型路由策略 | Threshold / Cascade / Semantic / Cost-Aware 四种路由 |
+| **[Ch27](https://callous-0923.github.io/agent-study/chapter_27_prompt_eng/27_prompt_engineering.html)** | Agent Prompt 工程 | System Prompt 6 模块模板、工具描述评分卡 |
+| **[Ch28](https://callous-0923.github.io/agent-study/chapter_28_cache/28_cache.html)** | 语义缓存与 Token 优化 | Exact→Semantic→LLM 三级缓存、Token 预算管理 |
 
 ---
 

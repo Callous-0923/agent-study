@@ -100,11 +100,40 @@ body {
   .code-block { background: #f5f5f5; color: #222; }
 }
 
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
 </style>
 </head>
 <body>
 <div class="container">
-<div class="hero"><h1>第18章 Agent 安全与护栏（Guardrails）</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 认识 Agent 特有的安全威胁（Prompt Injection、工具滥用）</span><span class="tag tag-goal">2. 掌握 Prompt Injection 的攻防原理</span><span class="tag tag-goal">3. 学会分级权限管理（读/写/危险操作）</span><span class="tag tag-goal">4. 理解输入消毒、输出审核、审计日志</span><span class="tag tag-goal">5. 建立完整的 Agent 安全 Checklist</span><span class="tag tag-interview">🎤 Agent 有什么特有的安全风险？</span><span class="tag tag-interview">🎤 Prompt Injection 有哪几种？怎么防护？</span><span class="tag tag-interview">🎤 工具调用的权限分级怎么做？</span><span class="tag tag-interview">🎤 「人在回路」在 Agent 安全中的作用？</span></div><p>第18章：Agent 安全与护栏（Guardrails）</p>
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第18章 Agent 安全与护栏 — Prompt Injection·权限分级</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_17_computer_use/17_computer_use.html" title="Computer Use — Screenshot-Action Loop·安全沙箱">← 第17章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_19_workflow_patterns/19_workflow_patterns.html" title="Agentic Workflow 设计模式 — Reflection·Routing·Orchestrator">第19章 →</a>
+</div><div class="hero"><h1>第18章 Agent 安全与护栏（Guardrails）</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 认识 Agent 特有的安全威胁（Prompt Injection、工具滥用）</span><span class="tag tag-goal">2. 掌握 Prompt Injection 的攻防原理</span><span class="tag tag-goal">3. 学会分级权限管理（读/写/危险操作）</span><span class="tag tag-goal">4. 理解输入消毒、输出审核、审计日志</span><span class="tag tag-goal">5. 建立完整的 Agent 安全 Checklist</span><span class="tag tag-interview">🎤 Agent 有什么特有的安全风险？</span><span class="tag tag-interview">🎤 Prompt Injection 有哪几种？怎么防护？</span><span class="tag tag-interview">🎤 工具调用的权限分级怎么做？</span><span class="tag tag-interview">🎤 「人在回路」在 Agent 安全中的作用？</span></div><p>第18章：Agent 安全与护栏（Guardrails）</p>
 <p>=======================================</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -639,4 +668,8 @@ body {
         print(f<span <span class="k">class</span>="s">"  🛡️ {l}"</span>)
 
     print(<span <span class="k">class</span>="s">"\n✅ 第18章完成！"</span>)
-    print(<span <span class="k">class</span>="s">"\n🎓 全部 <span class="n">18</span> 章课程体系构建完成！"</span>)</pre></div></details></div></div></body></html>
+    print(<span <span class="k">class</span>="s">"\n🎓 全部 <span class="n">18</span> 章课程体系构建完成！"</span>)</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_17_computer_use/17_computer_use.html" title="Computer Use — Screenshot-Action Loop·安全沙箱">← 第17章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_19_workflow_patterns/19_workflow_patterns.html" title="Agentic Workflow 设计模式 — Reflection·Routing·Orchestrator">第19章 →</a>
+</div></div></body></html>

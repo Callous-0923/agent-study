@@ -100,11 +100,40 @@ body {
   .code-block { background: #f5f5f5; color: #222; }
 }
 
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
 </style>
 </head>
 <body>
 <div class="container">
-<div class="hero"><h1>第24章 Agent 可观测性 —— 生产环境的「监控仪表盘」</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 Agent 可观测性的 4 大支柱</span><span class="tag tag-goal">2. 掌握 Tracing 的核心设计模式</span><span class="tag tag-goal">3. 了解 LangSmith 和 LangFuse 的使用方式</span><span class="tag tag-goal">4. 学会构建 Agent 的监控仪表盘</span><span class="tag tag-interview">🎤 「Agent 的可观测性包含哪些维度？」</span><span class="tag tag-interview">🎤 「LangSmith 和 LangFuse 有什么区别？」</span><span class="tag tag-interview">🎤 「怎么追踪 Multi-Agent 的调用链？」</span><span class="tag tag-interview">🎤 「Level 2 Tracing 比 Level 1 多了什么？」</span></div><p>第24章：Agent 可观测性 —— 生产环境的「监控仪表盘」</p>
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第24章 Agent 可观测性 — Tracing·LangSmith vs LangFuse</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_23_code_agents/23_code_agents.html" title="代码 Agent 架构横评 — CodeAct·ACI·SWE-bench">← 第23章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_25_vectordb/25_vectordb.html" title="向量数据库选型 — Chroma·Pinecone·Milvus·Qdrant">第25章 →</a>
+</div><div class="hero"><h1>第24章 Agent 可观测性 —— 生产环境的「监控仪表盘」</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 Agent 可观测性的 4 大支柱</span><span class="tag tag-goal">2. 掌握 Tracing 的核心设计模式</span><span class="tag tag-goal">3. 了解 LangSmith 和 LangFuse 的使用方式</span><span class="tag tag-goal">4. 学会构建 Agent 的监控仪表盘</span><span class="tag tag-interview">🎤 「Agent 的可观测性包含哪些维度？」</span><span class="tag tag-interview">🎤 「LangSmith 和 LangFuse 有什么区别？」</span><span class="tag tag-interview">🎤 「怎么追踪 Multi-Agent 的调用链？」</span><span class="tag tag-interview">🎤 「Level 2 Tracing 比 Level 1 多了什么？」</span></div><p>第24章：Agent 可观测性 —— 生产环境的「监控仪表盘」</p>
 <p>=====================================================</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -595,4 +624,8 @@ Agent 告警规则（面试时脱口而出！）：
     <span class="k">for</span> a <span class="k">in</span> alerts:
         print(f<span <span class="k">class</span>="s">"   🔔 {a}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第24章完成！"</span>)</pre></div></details></div></div></body></html>
+    print(<span <span class="k">class</span>="s">"\n✅ 第24章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_23_code_agents/23_code_agents.html" title="代码 Agent 架构横评 — CodeAct·ACI·SWE-bench">← 第23章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_25_vectordb/25_vectordb.html" title="向量数据库选型 — Chroma·Pinecone·Milvus·Qdrant">第25章 →</a>
+</div></div></body></html>

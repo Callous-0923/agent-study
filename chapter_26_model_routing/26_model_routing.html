@@ -100,11 +100,40 @@ body {
   .code-block { background: #f5f5f5; color: #222; }
 }
 
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
 </style>
 </head>
 <body>
 <div class="container">
-<div class="hero"><h1>第26章 模型路由与多 LLM 策略 —— 成本砍半的秘密</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解模型路由的 4 种核心策略</span><span class="tag tag-goal">2. 掌握成本-质量-延迟三元权衡</span><span class="tag tag-goal">3. 实现 Cascade Router 和 Semantic Router</span><span class="tag tag-goal">4. 学会用降级重试降低高风险查询成本</span><span class="tag tag-interview">🎤 「怎么降低 Agent 的 LLM 成本？」</span><span class="tag tag-interview">🎤 「什么时候该用大模型，什么时候该用小模型？」</span><span class="tag tag-interview">🎤 「Cascade Routing 和 Semantic Routing 的区别？」</span></div><p>第26章：模型路由与多 LLM 策略 —— 成本砍半的秘密</p>
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第26章 模型路由策略 — Threshold·Cascade·Semantic·Cost-Aware</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_25_vectordb/25_vectordb.html" title="向量数据库选型 — Chroma·Pinecone·Milvus·Qdrant">← 第25章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_27_prompt_eng/27_prompt_engineering.html" title="Agent Prompt 工程 — System Prompt 模板·工具描述">第27章 →</a>
+</div><div class="hero"><h1>第26章 模型路由与多 LLM 策略 —— 成本砍半的秘密</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解模型路由的 4 种核心策略</span><span class="tag tag-goal">2. 掌握成本-质量-延迟三元权衡</span><span class="tag tag-goal">3. 实现 Cascade Router 和 Semantic Router</span><span class="tag tag-goal">4. 学会用降级重试降低高风险查询成本</span><span class="tag tag-interview">🎤 「怎么降低 Agent 的 LLM 成本？」</span><span class="tag tag-interview">🎤 「什么时候该用大模型，什么时候该用小模型？」</span><span class="tag tag-interview">🎤 「Cascade Routing 和 Semantic Routing 的区别？」</span></div><p>第26章：模型路由与多 LLM 策略 —— 成本砍半的秘密</p>
 <p>==================================================</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -475,4 +504,8 @@ body {
         <span <span class="k">class</span>="s">"CostAware: 预算约束下最大化能力（最可控）"</span>,
     ]:
         print(f<span <span class="k">class</span>="s">"  {item}"</span>)
-    print(<span <span class="k">class</span>="s">"\n✅ 第26章完成！"</span>)</pre></div></details></div></div></body></html>
+    print(<span <span class="k">class</span>="s">"\n✅ 第26章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_25_vectordb/25_vectordb.html" title="向量数据库选型 — Chroma·Pinecone·Milvus·Qdrant">← 第25章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_27_prompt_eng/27_prompt_engineering.html" title="Agent Prompt 工程 — System Prompt 模板·工具描述">第27章 →</a>
+</div></div></body></html>

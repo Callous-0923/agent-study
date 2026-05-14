@@ -100,11 +100,40 @@ body {
   .code-block { background: #f5f5f5; color: #222; }
 }
 
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
 </style>
 </head>
 <body>
 <div class="container">
-<div class="hero"><h1>第22章 DSPy —— Prompt 不是手写的，是编译出来的</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 DSPy 的核心哲学：「Programming, not Prompting」</span><span class="tag tag-goal">2. 掌握 Signature → Module → Optimizer 三层抽象</span><span class="tag tag-goal">3. 学会用 DSPy 的编译思想优化 Agent 的 Prompt</span><span class="tag tag-goal">4. 理解 DSPy 和 LangChain 的关系和互补</span><span class="tag tag-interview">🎤 「DSPy 是什么？解决了什么问题？」</span><span class="tag tag-interview">🎤 「Signature 和传统 Prompt 有什么区别？」</span><span class="tag tag-interview">🎤 「Optimizer 是怎么工作的？」</span><span class="tag tag-interview">🎤 「DSPy 和 LangChain 怎么配合？」</span></div><p>第22章：DSPy —— Prompt 不是手写的，是编译出来的</p>
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第22章 DSPy 自动优化 — Signature·Module·Optimizer</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_21_streaming/21_streaming_architecture.html" title="Streaming & 实时架构 — EventBus·动态中断·背压">← 第21章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_23_code_agents/23_code_agents.html" title="代码 Agent 架构横评 — CodeAct·ACI·SWE-bench">第23章 →</a>
+</div><div class="hero"><h1>第22章 DSPy —— Prompt 不是手写的，是编译出来的</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 DSPy 的核心哲学：「Programming, not Prompting」</span><span class="tag tag-goal">2. 掌握 Signature → Module → Optimizer 三层抽象</span><span class="tag tag-goal">3. 学会用 DSPy 的编译思想优化 Agent 的 Prompt</span><span class="tag tag-goal">4. 理解 DSPy 和 LangChain 的关系和互补</span><span class="tag tag-interview">🎤 「DSPy 是什么？解决了什么问题？」</span><span class="tag tag-interview">🎤 「Signature 和传统 Prompt 有什么区别？」</span><span class="tag tag-interview">🎤 「Optimizer 是怎么工作的？」</span><span class="tag tag-interview">🎤 「DSPy 和 LangChain 怎么配合？」</span></div><p>第22章：DSPy —— Prompt 不是手写的，是编译出来的</p>
 <p>==================================================</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -599,4 +628,8 @@ DSPy 的 Agent 开发流程：
     print(<span <span class="k">class</span>="s">"  LangChain: 管流程编排（Agent 执行的「控制层」）"</span>)
     print(<span <span class="k">class</span>="s">"  最佳实践: LangGraph 编排 + DSPy 优化"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第22章完成！"</span>)</pre></div></details></div></div></body></html>
+    print(<span <span class="k">class</span>="s">"\n✅ 第22章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_21_streaming/21_streaming_architecture.html" title="Streaming & 实时架构 — EventBus·动态中断·背压">← 第21章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_23_code_agents/23_code_agents.html" title="代码 Agent 架构横评 — CodeAct·ACI·SWE-bench">第23章 →</a>
+</div></div></body></html>

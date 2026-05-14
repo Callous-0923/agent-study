@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>第05章：多智能体系统（Multi-Agent System） — AI Agent 全栈课程</title>
+<title>第5章：多智能体系统（Multi-Agent System） — AI Agent 全栈课程</title>
 <style>
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -100,11 +100,40 @@ body {
   .code-block { background: #f5f5f5; color: #222; }
 }
 
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
 </style>
 </head>
 <body>
 <div class="container">
-<div class="hero"><h1>第05章 多智能体系统（Multi-Agent System）</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解多智能体系统的核心架构模式</span><span class="tag tag-goal">2. 掌握 Agent 之间的协作/通信机制</span><span class="tag tag-goal">3. 学会用 LangGraph 构建多 Agent 工作流</span><span class="tag tag-goal">4. 了解 crewAI 等框架的多 Agent 编排方式</span><span class="tag tag-interview">🎤 多 Agent 系统的架构模式（协作/分层/竞争）</span><span class="tag tag-interview">🎤 Agent 间通信协议设计</span><span class="tag tag-interview">🎤 如何处理多 Agent 的冲突和一致性问题</span><span class="tag tag-interview">🎤 Multi-Agent 和单 Agent 的取舍</span></div><p>第5章：多智能体系统（Multi-Agent System）</p>
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第5章 多智能体系统 — Multi-Agent 协作</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_04_frameworks/04_frameworks.html" title="主流框架实战 — LangChain·LangGraph">← 第4章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_06_evaluation/06_evaluation.html" title="评估与测试 — 评测框架·生产 Checklist">第6章 →</a>
+</div><div class="hero"><h1>第5章 多智能体系统（Multi-Agent System）</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解多智能体系统的核心架构模式</span><span class="tag tag-goal">2. 掌握 Agent 之间的协作/通信机制</span><span class="tag tag-goal">3. 学会用 LangGraph 构建多 Agent 工作流</span><span class="tag tag-goal">4. 了解 crewAI 等框架的多 Agent 编排方式</span><span class="tag tag-interview">🎤 多 Agent 系统的架构模式（协作/分层/竞争）</span><span class="tag tag-interview">🎤 Agent 间通信协议设计</span><span class="tag tag-interview">🎤 如何处理多 Agent 的冲突和一致性问题</span><span class="tag tag-interview">🎤 Multi-Agent 和单 Agent 的取舍</span></div><p>第5章：多智能体系统（Multi-Agent System）</p>
 <p>=========================================</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -622,4 +651,8 @@ crewAI 采用「Crew = Agents + Tasks」模型：
     print(<span <span class="k">class</span>="s">"框架: AutoGen  → 对话驱动 Multi-Agent"</span>)
     print(<span <span class="k">class</span>="s">"原则: 职责单一、通信标准、错误隔离、可观测、控成本"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第5章完成！接下来进入第6章：评估与最佳实践。"</span>)</pre></div></details></div></div></body></html>
+    print(<span <span class="k">class</span>="s">"\n✅ 第5章完成！接下来进入第6章：评估与最佳实践。"</span>)</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_04_frameworks/04_frameworks.html" title="主流框架实战 — LangChain·LangGraph">← 第4章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_06_evaluation/06_evaluation.html" title="评估与测试 — 评测框架·生产 Checklist">第6章 →</a>
+</div></div></body></html>

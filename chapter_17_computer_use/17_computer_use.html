@@ -100,11 +100,40 @@ body {
   .code-block { background: #f5f5f5; color: #222; }
 }
 
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
 </style>
 </head>
 <body>
 <div class="container">
-<div class="hero"><h1>第17章 Computer Use + GUI Agent —— AI 操控电脑</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 Computer Use / GUI Agent 的核心原理（Screenshot-Action Loop）</span><span class="tag tag-goal">2. 掌握 Anthropic Computer Use 和 OpenAI CUA 的架构差异</span><span class="tag tag-goal">3. 理解像素坐标的计算与视觉定位机制</span><span class="tag tag-goal">4. 了解 Browser Use 等开源方案</span><span class="tag tag-goal">5. 认识安全沙箱的必要性和实现方式</span><span class="tag tag-interview">🎤 Computer Use 的原理是什么？和传统 API 调用有什么区别？</span><span class="tag tag-interview">🎤 Screenshot-Action Loop 的每一步做了什么？</span><span class="tag tag-interview">🎤 OpenAI CUA 和 Anthropic Computer Use 的架构差异？</span><span class="tag tag-interview">🎤 Computer Use 的安全风险有哪些？怎么防护？</span></div><p>第17章：Computer Use + GUI Agent —— AI 操控电脑</p>
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第17章 Computer Use — Screenshot-Action Loop·安全沙箱</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_16_memgpt/16_memgpt_letta.html" title="MemGPT/Letta 记忆 — Core Memory·Heartbeat·Sleep-Time">← 第16章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_18_security/18_agent_security.html" title="Agent 安全与护栏 — Prompt Injection·权限分级">第18章 →</a>
+</div><div class="hero"><h1>第17章 Computer Use + GUI Agent —— AI 操控电脑</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 Computer Use / GUI Agent 的核心原理（Screenshot-Action Loop）</span><span class="tag tag-goal">2. 掌握 Anthropic Computer Use 和 OpenAI CUA 的架构差异</span><span class="tag tag-goal">3. 理解像素坐标的计算与视觉定位机制</span><span class="tag tag-goal">4. 了解 Browser Use 等开源方案</span><span class="tag tag-goal">5. 认识安全沙箱的必要性和实现方式</span><span class="tag tag-interview">🎤 Computer Use 的原理是什么？和传统 API 调用有什么区别？</span><span class="tag tag-interview">🎤 Screenshot-Action Loop 的每一步做了什么？</span><span class="tag tag-interview">🎤 OpenAI CUA 和 Anthropic Computer Use 的架构差异？</span><span class="tag tag-interview">🎤 Computer Use 的安全风险有哪些？怎么防护？</span></div><p>第17章：Computer Use + GUI Agent —— AI 操控电脑</p>
 <p>==================================================</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -545,4 +574,8 @@ body {
     <span class="k">for</span> dim, a, o <span class="k">in</span> comparisons:
         print(f<span <span class="k">class</span>="s">"  {dim:10s}  {a:30s}  {o}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第17章完成！"</span>)</pre></div></details></div></div></body></html>
+    print(<span <span class="k">class</span>="s">"\n✅ 第17章完成！"</span>)</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_16_memgpt/16_memgpt_letta.html" title="MemGPT/Letta 记忆 — Core Memory·Heartbeat·Sleep-Time">← 第16章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_18_security/18_agent_security.html" title="Agent 安全与护栏 — Prompt Injection·权限分级">第18章 →</a>
+</div></div></body></html>

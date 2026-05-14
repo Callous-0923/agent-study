@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>第04章：主流 Agent 框架实战 — AI Agent 全栈课程</title>
+<title>第4章：主流 Agent 框架实战 — AI Agent 全栈课程</title>
 <style>
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -100,11 +100,40 @@ body {
   .code-block { background: #f5f5f5; color: #222; }
 }
 
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
 </style>
 </head>
 <body>
 <div class="container">
-<div class="hero"><h1>第04章 主流 Agent 框架实战</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 了解当前主流 Agent 框架及其定位</span><span class="tag tag-goal">2. 掌握 LangChain Agent 的核心用法</span><span class="tag tag-goal">3. 理解 LangGraph 的状态机模型</span><span class="tag tag-goal">4. 学会根据项目需求选择合适的框架</span><span class="tag tag-interview">🎤 LangChain Agent vs 裸写的区别和优势</span><span class="tag tag-interview">🎤 LangGraph 的状态管理机制</span><span class="tag tag-interview">🎤 生产环境 Agent 选型策略</span><span class="tag tag-interview">🎤 不同框架的适用场景</span></div><p>第4章：主流 Agent 框架实战</p>
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第4章 主流框架实战 — LangChain·LangGraph</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_03_types/03_agent_types.html" title="Agent 类型分类 — ReAct·Plan-Execute·Reflexion">← 第3章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_05_multi_agent/05_multi_agent.html" title="多智能体系统 — Multi-Agent 协作">第5章 →</a>
+</div><div class="hero"><h1>第4章 主流 Agent 框架实战</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 了解当前主流 Agent 框架及其定位</span><span class="tag tag-goal">2. 掌握 LangChain Agent 的核心用法</span><span class="tag tag-goal">3. 理解 LangGraph 的状态机模型</span><span class="tag tag-goal">4. 学会根据项目需求选择合适的框架</span><span class="tag tag-interview">🎤 LangChain Agent vs 裸写的区别和优势</span><span class="tag tag-interview">🎤 LangGraph 的状态管理机制</span><span class="tag tag-interview">🎤 生产环境 Agent 选型策略</span><span class="tag tag-interview">🎤 不同框架的适用场景</span></div><p>第4章：主流 Agent 框架实战</p>
 <p>===========================</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -572,4 +601,8 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
     print(<span <span class="k">class</span>="s">"场景: 人在回路 → AutoGen"</span>)
     print(<span <span class="k">class</span>="s">"场景: 完全掌控 → 裸写（第1章方式）"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第4章完成！接下来进入第5章：多智能体系统。"</span>)</pre></div></details></div></div></body></html>
+    print(<span <span class="k">class</span>="s">"\n✅ 第4章完成！接下来进入第5章：多智能体系统。"</span>)</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_03_types/03_agent_types.html" title="Agent 类型分类 — ReAct·Plan-Execute·Reflexion">← 第3章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_05_multi_agent/05_multi_agent.html" title="多智能体系统 — Multi-Agent 协作">第5章 →</a>
+</div></div></body></html>
