@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -247,7 +264,7 @@ body {
 <p>MCP 使用 JSON-RPC 2.0 作为通信协议。</p>
 <p>这是理解 MCP 调用流程的基础。</p>
 <p>&nbsp;</p>
-<p>三种消息类型：</p></div><div class="code-section"><details open><summary>💻 代码 (39 行)</summary><div class="code-block"><pre><span class="h"># === Request（请求）===</span>
+<p>三种消息类型：</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (39 行)</summary><div class="code-badges"><span class="code-badge code-badge-const">REQUEST_EXAMPLE</span><span class="code-badge code-badge-const">RESPONSE_EXAMPLE</span><span class="code-badge code-badge-const">ERROR_RESPONSE_EXAMPLE</span><span class="code-badge code-badge-const">NOTIFICATION_EXAMPLE</span></div><div class="code-block"><pre><span class="h"># === Request（请求）===</span>
 REQUEST_EXAMPLE = {
     <span class="s">"jsonrpc"</span>: <span class="s">"2.0"</span>,
     <span class="s">"id"</span>: <span class="n">1</span>,                    <span class="h"># 请求ID，用于匹配响应</span>
@@ -393,7 +410,7 @@ NOTIFICATION_EXAMPLE = {
 <li>优点：支持远程部署、服务端推送</li>
 <li>示例：云端 API Server、第三方服务集成</li>
 <p>&nbsp;</p>
-<p>还支持 2025 年新增的 Streamable HTTP 传输方式。</p></div><div class="code-section"><details open><summary>💻 代码 (206 行)</summary><div class="code-block"><pre><span class="h"># === Request（请求）===</span>
+<p>还支持 2025 年新增的 Streamable HTTP 传输方式。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (206 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">handle_request</span><span class="code-badge code-badge-func">demo_mcp_full_flow</span><span class="code-badge code-badge-class">SimulatedMCPServer</span></div><div class="code-block"><pre><span class="h"># === Request（请求）===</span>
 
 <span class="k">class</span> <span class="f">SimulatedMCPServer</span>:
     <span class="s">"""模拟 MCP Server —— 完整演示 MCP 的核心交互流程。
@@ -661,7 +678,7 @@ NOTIFICATION_EXAMPLE = {
 <p>→ 三层架构(Host/Client/Server) + JSON-RPC 通信</p>
 <p>→ 生命周期：Initialize → Capability Negotiation →</p>
 <pre>Tools/Resources/Prompts → Teardown</pre>
-<p>→ 核心价值：标准化 LLM 与外部工具/数据的交互</p></div><div class="code-section"><details open><summary>💻 代码 (37 行)</summary><div class="code-block"><pre><span class="h"># === Request（请求）===</span>
+<p>→ 核心价值：标准化 LLM 与外部工具/数据的交互</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (37 行)</summary><div class="code-block"><pre><span class="h"># === Request（请求）===</span>
 
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
     <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)

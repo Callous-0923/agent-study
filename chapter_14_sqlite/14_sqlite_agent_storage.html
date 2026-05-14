@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -228,7 +245,7 @@ body {
 <li>tool_calls 存储在 messages 表的 JSON 字段中（不用单独的表）</li>
 <pre> → 减少 JOIN，提高读取性能</pre>
 <li>tool_logs 是独立的审计表（记录每次工具调用的详细信息）</li>
-<li>tasks 表支持异步任务（暂停/恢复/取消）</li></div><div class="code-section"><details open><summary>💻 代码 (132 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<li>tasks 表支持异步任务（暂停/恢复/取消）</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (132 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get_db</span><span class="code-badge code-badge-func">init_database</span><span class="code-badge code-badge-const">DB_PATH</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -359,7 +376,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
         CREATE INDEX IF NOT EXISTS idx_tool_logs_name
             ON tool_logs(tool_name, created_at);
         """</span>)
-    <span class="b">print</span>(<span class="s">"  ✅ 数据库已初始化（WAL模式 + 5张表 + 6个索引）"</span>)</pre></div></details></div><div class="lecture"><h2>14.3 Agent 存储层 API</h2></div><div class="code-section"><details open><summary>💻 代码 (355 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+    <span class="b">print</span>(<span class="s">"  ✅ 数据库已初始化（WAL模式 + 5张表 + 6个索引）"</span>)</pre></div></details></div><div class="lecture"><h2>14.3 Agent 存储层 API</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (355 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">create_user</span><span class="code-badge code-badge-func">get_user</span><span class="code-badge code-badge-func">check_quota</span><span class="code-badge code-badge-func">consume_quota</span><span class="code-badge code-badge-func">create_session</span><span class="code-badge code-badge-func">get_session</span><span class="code-badge code-badge-func">list_user_sessions</span><span class="code-badge code-badge-func">pause_session</span><span class="code-badge code-badge-func">resume_session</span><span class="code-badge code-badge-func">save_message</span><span class="code-badge code-badge-func">get_conversation_history</span><span class="code-badge code-badge-func">log_tool_call</span><span class="code-badge code-badge-func">create_task</span><span class="code-badge code-badge-func">update_task_status</span><span class="code-badge code-badge-func">get_usage_stats</span><span class="code-badge code-badge-class">AgentStorage</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -812,7 +829,7 @@ AgentA 写消息 + AgentB 读历史 = 同时进行 ✓</pre>
 <p>→ SQLite + WAL 模式（开发/小规模）</p>
 <p>→ 5 张核心表：users/sessions/messages/tasks/tool_logs</p>
 <p>→ tool_calls 用 JSON 字段减少 JOIN</p>
-<p>→ FTS5 做对话搜索</p></div><div class="code-section"><details open><summary>💻 代码 (133 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ FTS5 做对话搜索</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (133 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_full_storage_workflow</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib

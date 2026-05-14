@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -192,7 +209,7 @@ body {
   │ 成本节省      │ ~50%    │ ~60%     │ ~70%    │ ~80%    │
   │ 质量保证      │ 较好     │ 最好      │ 较好     │ 可配置    │
   │ 适合场景      │ 通用     │ 安全第一   │ 多领域    │ 成本敏感   │
-  └──────────────┴──────────┴──────────┴──────────┴──────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (285 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+  └──────────────┴──────────┴──────────┴──────────┴──────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (285 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">threshold_route</span><span class="code-badge code-badge-func">cascade_route</span><span class="code-badge code-badge-func">semantic_route</span><span class="code-badge code-badge-func">cost_aware_route</span><span class="code-badge code-badge-func">demo_routing</span><span class="code-badge code-badge-class">ModelRouter</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">import</span> json
 <span class="k">import</span> hashlib
@@ -489,7 +506,7 @@ body {
 <p>「怎么降低 LLM 成本？」</p>
 <p>→ 模型路由：80% 简单用 mini，20% 复杂用大模型</p>
 <p>→ 级联策略保证质量：小模型先试，不行再升级</p>
-<p>→ 结果：成本降 60%+，质量损失 < 2%</p></div><div class="code-section"><details open><summary>💻 代码 (23 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<p>→ 结果：成本降 60%+，质量损失 < 2%</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (23 行)</summary><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">import</span> json
 <span class="k">import</span> hashlib

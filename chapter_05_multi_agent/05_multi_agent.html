@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -185,7 +202,7 @@ body {
 ├──────────────┼───────────────────────────────────────┤
 │ 竞争式        │ 多个 Agent 各自生成方案，择优选用         │
 │ (Competitive)│ 典型：辩论式 Agent / Self-Play          │
-└──────────────┴───────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (15 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+└──────────────┴───────────────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (15 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -208,7 +225,7 @@ load_dotenv()
 <p>流程：</p>
 <p>输入需求 → Writer 创作 → Reviewer 审核 →</p>
 <p>如果不合格 → Writer 修改 → Reviewer 再审 →</p>
-<p>如果合格 → 输出终稿</p></div><div class="code-section"><details open><summary>💻 代码 (140 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>如果合格 → 输出终稿</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (140 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">build_content_team</span><span class="code-badge code-badge-func">writer_node</span><span class="code-badge code-badge-func">reviewer_node</span><span class="code-badge code-badge-func">should_continue</span><span class="code-badge code-badge-class">ContentTeamState</span><span class="code-badge code-badge-const">WRITER_SYSTEM_PROMPT</span><span class="code-badge code-badge-const">REVIEWER_SYSTEM_PROMPT</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -366,7 +383,7 @@ REVIEWER_SYSTEM_PROMPT = <span class="s">"""你是一位严格的内容审核编
 <p>&nbsp;</p>
 <p>这是协作式 + 分层式的混合架构：</p>
 <li>Writer 和 Reviewer 是协作关系（双方一起产出内容）</li>
-<li>Reviewer 对 Writer 有审查-修改的上下级关系</li></div><div class="code-section"><details open><summary>💻 代码 (48 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<li>Reviewer 对 Writer 有审查-修改的上下级关系</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (48 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_content_team</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -422,7 +439,7 @@ load_dotenv()
 <li>Crew 自动协调执行</li>
 <p>&nbsp;</p>
 <p>虽然我们不直接安装 crewAI（避免依赖过重），</p>
-<p>但可以用 LangChain 模拟其核心概念来理解其设计思想。</p></div><div class="code-section"><details open><summary>💻 代码 (128 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>但可以用 LangChain 模拟其核心概念来理解其设计思想。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (128 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">execute</span><span class="code-badge code-badge-func">demo_crew_style</span><span class="code-badge code-badge-class">RoleBasedAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -608,7 +625,7 @@ load_dotenv()
 <p>"你们项目用了 Multi-Agent 吗？为什么？"</p>
 <p>→ 描述场景复杂度（需要多角色协作）</p>
 <p>→ 说明架构设计（用什么模式、为什么）</p>
-<p>→ 展示效果提升（效率/质量提升多少）</p></div><div class="code-section"><details open><summary>💻 代码 (36 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ 展示效果提升（效率/质量提升多少）</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (36 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv

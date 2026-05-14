@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -194,7 +211,7 @@ body {
 <p>&nbsp;</p>
 <p>不太适合的场景：</p>
 <p>✗ 每次请求都是完全不同的上下文</p>
-<p>✗ 短对话（System Prompt < 1024 tokens）</p></div><div class="code-section"><details open><summary>💻 代码 (54 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<p>✗ 短对话（System Prompt < 1024 tokens）</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (54 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">call_llm</span><span class="code-badge code-badge-func">stats</span><span class="code-badge code-badge-class">PromptCacheSimulator</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> hashlib
 
 
@@ -285,7 +302,7 @@ body {
 <p>面试速记：</p>
 <p>「Prompt Caching 怎么工作？」</p>
 <p>→ 标记相同前缀 → Anthropic 跳过编码 → 输入 Token 费降 90%</p>
-<p>→ 最少 1024 tokens 才能缓存 → TTL 5 分钟</p></div><div class="code-section"><details open><summary>💻 代码 (44 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<p>→ 最少 1024 tokens 才能缓存 → TTL 5 分钟</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (44 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_cache_simulator</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> hashlib
 
 <span class="k">def</span> <span class="f">demo_cache_simulator</span>():

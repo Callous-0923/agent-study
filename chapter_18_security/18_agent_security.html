@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -258,7 +275,7 @@ body {
 <p>✓ 角色校验（检测角色扮演注入）</p>
 <p>✓ 指令检测（检测 ignore/forget/override 等词）</p>
 <p>✓ 特殊字符过滤（Unicode 同形异义字攻击）</p>
-<p>✓ URL/邮箱提取（检测数据外泄尝试）</p></div><div class="code-section"><details open><summary>💻 代码 (79 行)</summary><div class="code-block"><pre><span class="k">import</span> re
+<p>✓ URL/邮箱提取（检测数据外泄尝试）</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (79 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">sanitize</span><span class="code-badge code-badge-class">SanitizeResult</span><span class="code-badge code-badge-class">InputSanitizer</span></div><div class="code-block"><pre><span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
@@ -353,7 +370,7 @@ body {
 <li>性能分析（哪些工具最慢？）</li>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>18.6 完整的安全 Agent 实现</h2></div><div class="code-section"><details open><summary>💻 代码 (229 行)</summary><div class="code-block"><pre><span class="k">import</span> re
+<h2>18.6 完整的安全 Agent 实现</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (229 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check_rate_limit</span><span class="code-badge code-badge-func">process</span><span class="code-badge code-badge-func">demo_security_scenarios</span><span class="code-badge code-badge-class">SecureAgent</span></div><div class="code-block"><pre><span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
@@ -632,7 +649,7 @@ body {
 <p>"Agent 怎么做安全？"</p>
 <p>→ 分层防御：输入消毒 → 权限分级 → 执行审计 → 监控告警</p>
 <p>→ 核心原则：最小权限 + 人在回路</p>
-<p>→ Prompt Injection 是最难防的，靠多层防护降低风险</p></div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-block"><pre><span class="k">import</span> re
+<p>→ Prompt Injection 是最难防的，靠多层防护降低风险</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-block"><pre><span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 

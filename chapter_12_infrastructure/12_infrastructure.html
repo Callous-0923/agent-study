@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -362,7 +379,7 @@ skill/code-review     → 代码审查</pre>
 <pre>                        ▼
                   ┌──────────┐
                   │ 告警系统  │ ← PagerDuty / Slack
-                  └──────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (43 行)</summary><div class="code-block"><pre><span class="k">class</span> <span class="f">AgentProductionChecklist</span>:
+                  └──────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (43 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check</span><span class="code-badge code-badge-func">print_checklist</span><span class="code-badge code-badge-class">AgentProductionChecklist</span></div><div class="code-block"><pre><span class="k">class</span> <span class="f">AgentProductionChecklist</span>:
     <span class="s">"""Agent 生产化就绪度检查清单。"""</span>
 
     CHECKLIST = [
@@ -471,7 +488,7 @@ skill/code-review     → 代码审查</pre>
 <p>"Agent 怎么上生产？"</p>
 <p>→ 可观测性 + 评测体系 + 安全防护 + 成本控制 + 可靠性</p>
 <p>→ 每个环节都可以展开讲具体方案</p>
-<p>→ 关键在于「工程化思维」而非「Demo 思维」</p></div><div class="code-section"><details open><summary>💻 代码 (64 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+<p>→ 关键在于「工程化思维」而非「Demo 思维」</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (64 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
     <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
     <span class="b">print</span>(<span class="s">"║  第12章：OpenClaw / Harness 与 Agent 生产基础设施      ║"</span>)
     <span class="b">print</span>(<span class="s">"║  Gateway架构 · AgentSkills · 评测 · 生产Checklist    ║"</span>)

@@ -148,6 +148,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -291,6 +308,36 @@ def extract_sections(filepath: str) -> tuple[str, list[tuple[str, str]], str]:
     return title, sections, content
 
 
+def _extract_code_highlights(code: str) -> list[tuple[str, str]]:
+    # 从代码块中提取关键结构名（函数/类/常量），用于生成代码提纲标签
+    # 返回 [(type, name), ...]  type 为 func/class/const
+    badges = []
+    seen = set()
+
+    # def 函数名
+    for m in re.finditer(r'^\s*def\s+(\w+)', code, re.MULTILINE):
+        name = m.group(1)
+        if name not in seen and not name.startswith('_'):
+            badges.append(('func', name))
+            seen.add(name)
+
+    # class 类名
+    for m in re.finditer(r'^\s*class\s+(\w+)', code, re.MULTILINE):
+        name = m.group(1)
+        if name not in seen:
+            badges.append(('class', name))
+            seen.add(name)
+
+    # 大写常量
+    for m in re.finditer(r'^([A-Z_]{3,})\s*=', code, re.MULTILINE):
+        name = m.group(1)
+        if name not in seen:
+            badges.append(('const', name))
+            seen.add(name)
+
+    return badges
+
+
 def build_html(filepath: str, output_path: str = None):
     # 构建完整 HTML 文件（讲义+代码交替显示）
     title, sections, full_code = extract_sections(filepath)
@@ -344,15 +391,26 @@ def build_html(filepath: str, output_path: str = None):
         # 代码：第2段起自动补上 imports
         display_code = code_text
         if i > 0 and imports and code_text:
-            # 检查已含公共头部则不加
             if 'import os' not in code_text[:200] and 'import sys' not in code_text[:200]:
                 display_code = imports + code_text
 
         if display_code.strip():
             highlighted = highlight_python(display_code)
             lines = display_code.count('\n') + 1
+
+            # 提取关键结构名（函数/类/变量）生成读懂代码的提纲
+            structure_badges = _extract_code_highlights(code_text)
+            badge_html = ""
+            if structure_badges:
+                badge_html = '<div class="code-badges">'
+                for btype, name in structure_badges:
+                    badge_html += f'<span class="code-badge code-badge-{btype}">{name}</span>'
+                badge_html += '</div>'
+
+            html += '<div class="code-bridge">📝 对应的代码实现</div>'
             html += f'<div class="code-section"><details open>'
             html += f'<summary>💻 代码 ({lines} 行)</summary>'
+            html += badge_html
             html += f'<div class="code-block"><pre>{highlighted}</pre></div>'
             html += f'</details></div>'
 

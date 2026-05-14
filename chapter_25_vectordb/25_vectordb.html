@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -214,7 +231,7 @@ body {
 <li>384 维：检索速度快 3x，召回率约 85%</li>
 <li>768 维：平衡点，召回率约 92%</li>
 <li>1536 维：精度最高，召回率约 95%</li>
-<p>→ 代价：维度越高存储越大、检索越慢</p></div><div class="code-section"><details open><summary>💻 代码 (201 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<p>→ 代价：维度越高存储越大、检索越慢</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (201 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add</span><span class="code-badge code-badge-func">search</span><span class="code-badge code-badge-func">stats</span><span class="code-badge code-badge-func">demo_vector_db</span><span class="code-badge code-badge-class">SimpleVectorStore</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -414,7 +431,7 @@ body {
         <span class="b">print</span>(f<span class="s">"    [{r['score']:.3f}] {r['text']}..."</span>)
 
     <span class="h"># 存储统计</span>
-    <span class="b">print</span>(f<span class="s">"\n  📊 存储统计: {json.dumps(store.stats(), indent=2)}"</span>)</pre></div></details></div><div class="lecture"><h2>25.4 Embedding 维度实验</h2></div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+    <span class="b">print</span>(f<span class="s">"\n  📊 存储统计: {json.dumps(store.stats(), indent=2)}"</span>)</pre></div></details></div><div class="lecture"><h2>25.4 Embedding 维度实验</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_embedding_dimension_tradeoff</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -480,7 +497,7 @@ body {
 <p>「向量数据库怎么选？」</p>
 <p>→ 快速原型 Chroma，生产 Milvus/Qdrant，不想运维 Pinecone</p>
 <p>→ 维度权衡：384快 768平衡 1536精</p>
-<p>→ 混合检索是标配：向量 + 关键词 = 最佳召回率</p></div><div class="code-section"><details open><summary>💻 代码 (25 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<p>→ 混合检索是标配：向量 + 关键词 = 最佳召回率</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (25 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib

@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -242,7 +259,7 @@ body {
 <p>&nbsp;</p>
 <p>类比：</p>
 <p>就像办公室里的广播系统 ——</p>
-<p>没人需要知道「谁在听」，只需要「把消息广播出去」。</p></div><div class="code-section"><details open><summary>💻 代码 (158 行)</summary><div class="code-block"><pre><span class="k">import</span> asyncio
+<p>没人需要知道「谁在听」，只需要「把消息广播出去」。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (158 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">subscribe</span><span class="code-badge code-badge-func">publish</span><span class="code-badge code-badge-func">get_history</span><span class="code-badge code-badge-func">reduce</span><span class="code-badge code-badge-func">should_interrupt</span><span class="code-badge code-badge-func">get_status_display</span><span class="code-badge code-badge-class">AgentEvent</span><span class="code-badge code-badge-class">EventBus</span><span class="code-badge code-badge-class">AgentStateManager</span></div><div class="code-block"><pre><span class="k">import</span> asyncio
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Any, Callable, Optional
 <span class="k">from</span> collections <span class="k">import</span> defaultdict
@@ -419,7 +436,7 @@ body {
 <p>关键在于中断的「粒度」：</p>
 <li>太粗：等当前工具调完才知道 → 延迟大</li>
 <li>太细：每收到一个 token 就检查 → 开销大</li>
-<li>最优：每个 Agent 步骤结束时检查（Claude Code 的做法）</li></div><div class="code-section"><details open><summary>💻 代码 (85 行)</summary><div class="code-block"><pre><span class="k">import</span> asyncio
+<li>最优：每个 Agent 步骤结束时检查（Claude Code 的做法）</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (85 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">request_interrupt</span><span class="code-badge code-badge-func">resume</span><span class="code-badge code-badge-class">InterruptibleAgent</span></div><div class="code-block"><pre><span class="k">import</span> asyncio
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Any, Callable, Optional
 <span class="k">from</span> collections <span class="k">import</span> defaultdict
@@ -524,7 +541,7 @@ body {
  队列有容量上限，满了暂停生产者</pre>
 <p>&nbsp;</p>
 <p>这就是 Claude Code h2A 的「智能背压控制」</p>
-<p>（Ch8 提到：吞吐量 > 10,000 消息/秒 + 智能背压）。</p></div><div class="code-section"><details open><summary>💻 代码 (88 行)</summary><div class="code-block"><pre><span class="k">import</span> asyncio
+<p>（Ch8 提到：吞吐量 > 10,000 消息/秒 + 智能背压）。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (88 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">stats</span><span class="code-badge code-badge-func">demo_event_driven_agent</span><span class="code-badge code-badge-class">BackpressureController</span></div><div class="code-block"><pre><span class="k">import</span> asyncio
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Any, Callable, Optional
 <span class="k">from</span> collections <span class="k">import</span> defaultdict
@@ -640,7 +657,7 @@ body {
 <p>→ Event-Driven 架构 + EventBus</p>
 <p>→ Agent 每步检查 interrupt 信号</p>
 <p>→ h2A 双缓冲队列是 Claude Code 的具体实现</p>
-<p>→ 关键是中断粒度：每步结束时检查</p></div><div class="code-section"><details open><summary>💻 代码 (42 行)</summary><div class="code-block"><pre><span class="k">import</span> asyncio
+<p>→ 关键是中断粒度：每步结束时检查</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (42 行)</summary><div class="code-block"><pre><span class="k">import</span> asyncio
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Any, Callable, Optional
 <span class="k">from</span> collections <span class="k">import</span> defaultdict

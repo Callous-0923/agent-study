@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -176,7 +193,7 @@ body {
 <p>"请对比 ReAct 和 Plan-Execute"</p>
 <p>→ ReAct 灵活但费 token，Plan-Execute 高效但不灵活</p>
 <p>→ 大型任务用 Plan-Execute 做顶层规划，ReAct 做每步执行</p>
-<p>→ Google 的 ReAct 论文是 Agent 领域最重要论文之一</p></div><div class="code-section"><details open><summary>💻 代码 (51 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ Google 的 ReAct 论文是 Agent 领域最重要论文之一</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (51 行)</summary><div class="code-badges"><span class="code-badge code-badge-const">MODEL</span><span class="code-badge code-badge-const">TOOLS</span><span class="code-badge code-badge-const">TOOL_MAP</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -247,7 +264,7 @@ TOOL_MAP = {
 <p>&nbsp;</p>
 <p>论文来源：</p>
 <p>Yao et al., "ReAct: Synergizing Reasoning and Acting in Language Models"</p>
-<p>(ICLR 2023) — Agent 领域的奠基性论文</p></div><div class="code-section"><details open><summary>💻 代码 (75 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>(ICLR 2023) — Agent 领域的奠基性论文</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (75 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-class">ReActAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -334,7 +351,7 @@ client = OpenAI(
 <li>任务步骤明确、有依赖关系</li>
 <li>数据分析报表生成</li>
 <li>代码审查流水线</li>
-<li>工作流自动化</li></div><div class="code-section"><details open><summary>💻 代码 (81 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<li>工作流自动化</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (81 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-class">PlanExecuteAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -431,7 +448,7 @@ client = OpenAI(
 <p>&nbsp;</p>
 <p>论文来源：</p>
 <p>Shinn et al., "Reflexion: Language Agents with Verbal Reinforcement Learning"</p>
-<p>(NeurIPS 2023)</p></div><div class="code-section"><details open><summary>💻 代码 (98 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>(NeurIPS 2023)</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (98 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-class">ReflexionAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -542,7 +559,7 @@ client = OpenAI(
 │ 需要高质量输出、可迭代           │ Reflexion             │
 │ 多角色协作                       │ Multi-Agent           │
 │ 简单问答、不需要工具             │ 直接 LLM 调用即可     │
-└──────────────────────────────────┴──────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (40 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+└──────────────────────────────────┴──────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (40 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run_agent_by_type</span><span class="code-badge code-badge-const">AGENT_REGISTRY</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -607,7 +624,7 @@ AGENT_REGISTRY = {
 <p>&nbsp;</p>
 <p>面试常问：</p>
 <p>"你在项目中用的是什么 Agent 架构？为什么选择它？"</p>
-<p>→ 回答框架：场景特征 → 选型理由 → 实际效果</p></div><div class="code-section"><details open><summary>💻 代码 (49 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ 回答框架：场景特征 → 选型理由 → 实际效果</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (49 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv

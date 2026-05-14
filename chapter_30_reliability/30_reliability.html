@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -177,7 +194,7 @@ body {
 <p>&nbsp;</p>
 <p>类比：保险丝</p>
 <p>电流过大 → 熔断 → 保护电路</p>
-<p>冷却后 → 恢复</p></div><div class="code-section"><details open><summary>💻 代码 (79 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<p>冷却后 → 恢复</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (79 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">call</span><span class="code-badge code-badge-func">stats</span><span class="code-badge code-badge-class">CircuitState</span><span class="code-badge code-badge-class">CircuitBreaker</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">import</span> random
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
@@ -265,7 +282,7 @@ body {
 <p>第2次重试：等待 2 秒</p>
 <p>第3次重试：等待 4 秒</p>
 <p>...</p>
-<p>+ 随机抖动（jitter）防止多个 Agent 同步重试</p></div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<p>+ 随机抖动（jitter）防止多个 Agent 同步重试</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">retry_with_backoff</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">import</span> random
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
@@ -313,7 +330,7 @@ body {
   cache(idempotency_key, result)
   return result</pre>
 <p>&nbsp;</p>
-<p>每个工具调用携带唯一键，服务端检查去重。</p></div><div class="code-section"><details open><summary>💻 代码 (32 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<p>每个工具调用携带唯一键，服务端检查去重。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (32 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">execute</span><span class="code-badge code-badge-class">IdempotencyGuard</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">import</span> random
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
@@ -380,7 +397,7 @@ body {
 <p>&nbsp;</p>
 <p>面试速记：</p>
 <p>「Agent 怎么保证可靠性？」</p>
-<p>→ 熔断器防雪崩 + 退避重试 + 写入幂等 + 降级兜底 + 超时控制</p></div><div class="code-section"><details open><summary>💻 代码 (73 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<p>→ 熔断器防雪崩 + 退避重试 + 写入幂等 + 降级兜底 + 超时控制</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (73 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_reliability</span><span class="code-badge code-badge-func">failing_search</span><span class="code-badge code-badge-func">working_search</span><span class="code-badge code-badge-func">flaky_api</span><span class="code-badge code-badge-func">send</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">import</span> random
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field

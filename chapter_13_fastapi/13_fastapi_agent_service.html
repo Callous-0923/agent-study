@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -165,7 +182,7 @@ body {
 <li>自动生成 OpenAPI 文档（/docs）</li>
 <li>内置 SSE / WebSocket 支持</li>
 <li>类型安全（Pydantic v2）</li>
-<li>异步并发（async/await 原生支持）</li></div><div class="code-section"><details open><summary>💻 代码 (17 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<li>异步并发（async/await 原生支持）</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (17 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> sqlite3
@@ -181,7 +198,7 @@ body {
 <span class="k">from</span> fastapi.middleware.cors <span class="k">import</span> CORSMiddleware
 <span class="k">from</span> pydantic <span class="k">import</span> BaseModel, Field
 
-load_dotenv()</pre></div></details></div><div class="lecture"><h2>13.2 数据模型定义（Pydantic v2）</h2></div><div class="code-section"><details open><summary>💻 代码 (47 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+load_dotenv()</pre></div></details></div><div class="lecture"><h2>13.2 数据模型定义（Pydantic v2）</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (47 行)</summary><div class="code-badges"><span class="code-badge code-badge-class">AgentRequest</span><span class="code-badge code-badge-class">AgentResponse</span><span class="code-badge code-badge-class">SSEEvent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> sqlite3
@@ -227,7 +244,7 @@ load_dotenv()
 <span class="k">class</span> <span class="f">SSEEvent</span>(BaseModel):
     <span class="s">"""SSE 事件格式。"""</span>
     event: <span class="b">str</span>                      <span class="h"># "thinking" | "tool_call" | "tool_result" | "done" | "error"</span>
-    data: <span class="b">str</span>                       <span class="h"># JSON 字符串</span></pre></div></details></div><div class="lecture"><h2>13.3 模拟 Agent 引擎（不依赖外部 API）</h2></div><div class="code-section"><details open><summary>💻 代码 (85 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+    data: <span class="b">str</span>                       <span class="h"># JSON 字符串</span></pre></div></details></div><div class="lecture"><h2>13.3 模拟 Agent 引擎（不依赖外部 API）</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (85 行)</summary><div class="code-badges"><span class="code-badge code-badge-class">SimulatedAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> sqlite3
@@ -311,7 +328,7 @@ load_dotenv()
         <span class="k">else</span>:
             answer = f<span class="s">"您好！您的问题「{message}」已收到。这是一个模拟 Agent 回复。"</span>
 
-        <span class="k">yield</span> {<span class="s">"event"</span>: <span class="s">"done"</span>, <span class="s">"data"</span>: answer, <span class="s">"tool_calls_made"</span>: <span class="b">len</span>(steps)}</pre></div></details></div><div class="lecture"><h2>13.4 FastAPI 应用主体</h2></div><div class="code-section"><details open><summary>💻 代码 (205 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+        <span class="k">yield</span> {<span class="s">"event"</span>: <span class="s">"done"</span>, <span class="s">"data"</span>: answer, <span class="s">"tool_calls_made"</span>: <span class="b">len</span>(steps)}</pre></div></details></div><div class="lecture"><h2>13.4 FastAPI 应用主体</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (205 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> sqlite3
@@ -602,7 +619,7 @@ agent = SimulatedAgent()
 <p>"Agent 怎么做成 API 服务？"</p>
 <p>→ FastAPI + uvicorn 异步框架</p>
 <p>→ SSE 做流式推送，WebSocket 做双向通信</p>
-<p>→ Nginx 反代 + 多 Worker + 健康检查</p></div><div class="code-section"><details open><summary>💻 代码 (38 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ Nginx 反代 + 多 Worker + 健康检查</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (38 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> sqlite3

@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -142,7 +159,7 @@ body {
 <span class="nav-link nav-disabled">← 已是第一章</span>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_01_fundamentals/01_hello_agent.html" title="第一个 Agent — 裸写 ReAct 循环">第1章 →</a>
-</div><div class="hero"><h1>第0章 AI Agent 课程概览与前置知识</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解「什么是 AI Agent」- 建立直觉认知</span><span class="tag tag-goal">2. 掌握 Agent 的核心组成公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">3. 了解 Agent 开发的完整技术栈和 18 章学习路线</span><span class="tag tag-goal">4. 确认学习本课程所需的前置知识</span><span class="tag tag-goal">0.1 Agent 是什么？（5分钟理解）</span><span class="tag tag-goal">0.2 为什么 2024-2026 年是 Agent 爆发期？</span><span class="tag tag-goal">0.3 Agent 核心公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">0.4 全套学习路线图（18章四层递进）</span><span class="tag tag-goal">0.5 前置知识自查清单</span><span class="tag tag-goal">0.6 环境搭建（一键运行）</span></div><p>第0章：AI Agent 课程概览与前置知识</p>
+</div><div class="hero"><h1>第0章 AI Agent 课程概览与前置知识</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解「什么是 AI Agent」- 建立直觉认知</span><span class="tag tag-goal">2. 掌握 Agent 的核心组成公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">3. 了解 Agent 开发的完整技术栈和 36 章学习路线</span><span class="tag tag-goal">4. 确认学习本课程所需的前置知识</span><span class="tag tag-goal">0.1 Agent 是什么？（5分钟理解）</span><span class="tag tag-goal">0.2 为什么 2024-2026 年是 Agent 爆发期？</span><span class="tag tag-goal">0.3 Agent 核心公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">0.4 全套学习路线图（36章七层递进）</span><span class="tag tag-goal">0.5 前置知识自查清单</span><span class="tag tag-goal">0.6 环境搭建（一键运行）</span></div><p>第0章：AI Agent 课程概览与前置知识</p>
 <p>===================================</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -215,16 +232,16 @@ body {
 <p>Agent = LLM + 规划(Planning) + 记忆(Memory) + 工具(Tools)</p>
 <p>&nbsp;</p>
 <pre>  ┌─────────────────────────────────────────────┐
-  │                  AI Agent                    │
-  │  ┌─────────┐  ┌────────┐  ┌──────────────┐ │
-  │  │   LLM   │  │ 规划器  │  │   记忆系统    │ │
-  │  │ (大脑)  │  │Planning│  │   Memory     │ │
-  │  └────┬────┘  └───┬────┘  └──────┬───────┘ │
+  │                  AI Agent                   │
+  │  ┌─────────┐  ┌────────┐  ┌──────────────┐  │
+  │  │   LLM   │  │ 规划器  │  │   记忆系统    │  │
+  │  │ (大脑)   │  │Planning│  │   Memory     │   │ 
+  │  └────┬────┘  └───┬────┘  └──────┬───────┘  │
   │       │           │              │          │
   │       └───────────┼──────────────┘          │
   │                   │                         │
   │            ┌──────┴──────┐                  │
-  │            │   工具调用    │                  │
+  │            │   工具调用    │                 │
   │            │   Tools     │                  │
   │            │ 搜索/API/代码│                  │
   │            └─────────────┘                  │
@@ -335,7 +352,7 @@ body {
   │ Ch13 FastAPI       │ fastapi, uvicorn                  │
   │ Ch14 SQLite        │ 标准库（无需额外安装）              │
   │ Ch15-18 其他       │ 无需额外依赖                       │
-  └────────────────────┴────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (83 行)</summary><div class="code-block"><pre><span class="k">import</span> subprocess
+  └────────────────────┴────────────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (83 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check_python_version</span><span class="code-badge code-badge-func">install_dependencies</span><span class="code-badge code-badge-func">show_env_setup_guide</span></div><div class="code-block"><pre><span class="k">import</span> subprocess
 <span class="k">import</span> sys
 
 
@@ -424,14 +441,14 @@ body {
 📌 本章目标：
   1. 理解「什么是 AI Agent」- 建立直觉认知
   2. 掌握 Agent 的核心组成公式：Agent = LLM + 规划 + 记忆 + 工具
-  3. 了解 Agent 开发的完整技术栈和 18 章学习路线
+  3. 了解 Agent 开发的完整技术栈和 36 章学习路线
   4. 确认学习本课程所需的前置知识
 
 📌 本章结构：
   0.1 Agent 是什么？（5分钟理解）
   0.2 为什么 2024-2026 年是 Agent 爆发期？
   0.3 Agent 核心公式：Agent = LLM + 规划 + 记忆 + 工具
-  0.4 全套学习路线图（18章四层递进）
+  0.4 全套学习路线图（36章七层递进）
   0.5 前置知识自查清单
   0.6 环境搭建（一键运行）
 
@@ -506,16 +523,16 @@ body {
   Agent = LLM + 规划(Planning) + 记忆(Memory) + 工具(Tools)
 
   ┌─────────────────────────────────────────────┐
-  │                  AI Agent                    │
-  │  ┌─────────┐  ┌────────┐  ┌──────────────┐ │
-  │  │   LLM   │  │ 规划器  │  │   记忆系统    │ │
-  │  │ (大脑)  │  │Planning│  │   Memory     │ │
-  │  └────┬────┘  └───┬────┘  └──────┬───────┘ │
+  │                  AI Agent                   │
+  │  ┌─────────┐  ┌────────┐  ┌──────────────┐  │
+  │  │   LLM   │  │ 规划器  │  │   记忆系统    │  │
+  │  │ (大脑)   │  │Planning│  │   Memory     │   │ 
+  │  └────┬────┘  └───┬────┘  └──────┬───────┘  │
   │       │           │              │          │
   │       └───────────┼──────────────┘          │
   │                   │                         │
   │            ┌──────┴──────┐                  │
-  │            │   工具调用    │                  │
+  │            │   工具调用    │                 │
   │            │   Tools     │                  │
   │            │ 搜索/API/代码│                  │
   │            └─────────────┘                  │

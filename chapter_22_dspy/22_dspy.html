@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -190,7 +207,7 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <li>声明式：描述「输入什么、输出什么」，不碰字符串</li>
 <li>自文档化：desc 即文档，人类和 Optimizer 都能理解</li>
 <li>可组合：Signature 可以拼接成复杂流水线</li>
-<li>可验证：输出类型自动校验</li></div><div class="code-section"><details open><summary>💻 代码 (69 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<li>可验证：输出类型自动校验</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (69 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">InputField</span><span class="code-badge code-badge-func">OutputField</span><span class="code-badge code-badge-func">describe</span><span class="code-badge code-badge-func">to_prompt_template</span><span class="code-badge code-badge-class">SignatureField</span><span class="code-badge code-badge-class">DSPySignature</span><span class="code-badge code-badge-class">QA</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -287,7 +304,7 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>&nbsp;</p>
 <pre>  def forward(self, question):
       results = self.search(query=question)
-      return self.answer(context=results, question=question)</pre></div><div class="code-section"><details open><summary>💻 代码 (42 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+      return self.answer(context=results, question=question)</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (42 行)</summary><div class="code-badges"><span class="code-badge code-badge-class">DSPyModule</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -366,7 +383,7 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>&nbsp;</p>
 <li>Discrete Search 阶段：</li>
 <pre> 在训练集上尝试不同「指令 + 示例」的组合
- → 用 Metric 评分 → 选出最优组合</pre></div><div class="code-section"><details open><summary>💻 代码 (81 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+ → 用 Metric 评分 → 选出最优组合</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (81 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">compile</span><span class="code-badge code-badge-class">DSPyOptimizer</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -484,7 +501,7 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>&nbsp;</p>
 <p>面试金句：</p>
 <p>"我不手动调 Prompt，我写评测指标，</p>
-<p>让 DSPy Optimizer 自动找出最佳 Prompt。"</p></div><div class="code-section"><details open><summary>💻 代码 (96 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>让 DSPy Optimizer 自动找出最佳 Prompt。"</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (96 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">make_metric</span><span class="code-badge code-badge-func">metric</span><span class="code-badge code-badge-func">demo_dspy_workflow</span><span class="code-badge code-badge-class">SentimentSignature</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -602,7 +619,7 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>→ Programming, not Prompting</p>
 <p>→ Signature 定义输入输出 → Module 组装 → Optimizer 自动优化</p>
 <p>→ 代码不变，换模型自动适配</p>
-<p>→ 和 LangChain 互补：DSPy 管 Prompt 优化，LangChain 管流程编排</p></div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>→ 和 LangChain 互补：DSPy 管 Prompt 优化，LangChain 管流程编排</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional

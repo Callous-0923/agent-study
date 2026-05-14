@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -253,7 +270,7 @@ body {
 优点：平衡  | 缺点：实现复杂</pre>
 <p>&nbsp;</p>
 <p>策略 4: Claude Code 的 92% 触发压缩 (Ch8 讲过)</p>
-<pre>优点：自动化  | 缺点：92% 是经验值，不一定最优</pre></div><div class="code-section"><details open><summary>💻 代码 (79 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<pre>优点：自动化  | 缺点：92% 是经验值，不一定最优</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (79 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">allocate</span><span class="code-badge code-badge-func">used</span><span class="code-badge code-badge-func">available</span><span class="code-badge code-badge-func">usage_report</span><span class="code-badge code-badge-class">ContextBudget</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -360,7 +377,7 @@ body {
 <li>防御 Prompt Injection：用户内容在 <user_input> 中，</li>
 <pre> 不会混入指令区</pre>
 <li>便于动态拼接上下文：可以程序化增删 sections</li>
-<li>便于调试：按 tag 搜索对应的上下文块</li></div><div class="code-section"><details open><summary>💻 代码 (94 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<li>便于调试：按 tag 搜索对应的上下文块</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (94 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_section</span><span class="code-badge code-badge-func">build</span><span class="code-badge code-badge-func">extract_section</span><span class="code-badge code-badge-func">demo_structured_prompt</span><span class="code-badge code-badge-class">StructuredPrompt</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -520,7 +537,7 @@ body {
 <p>✅ Claude Code 经验（来自 Ch8）</p>
 <p>☐ 92% 是压缩触发阈值</p>
 <p>☐ Markdown 文件做长期记忆</p>
-<p>☐ TODO 列表管理短期任务状态</p></div><div class="code-section"><details open><summary>💻 代码 (33 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>☐ TODO 列表管理短期任务状态</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (33 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_context_budget</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -579,7 +596,7 @@ body {
 <p>→ 从写 Prompt 升级到管理所有进 LLM 的 token</p>
 <p>→ 核心挑战：Context Rot（注意力随长度衰减）</p>
 <p>→ 解决方案：预算管理 + 结构化 + 压缩策略</p>
-<p>→ Anthropic 的 XML 标签法是当前最佳实践</p></div><div class="code-section"><details open><summary>💻 代码 (36 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>→ Anthropic 的 XML 标签法是当前最佳实践</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (36 行)</summary><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional

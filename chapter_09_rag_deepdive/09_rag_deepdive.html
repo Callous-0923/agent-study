@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -175,7 +192,7 @@ body {
 4. 无自检能力：检索到无关内容也不知道</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>9.2 Naive RAG 实现 —— 理解基础再谈优化</h2></div><div class="code-section"><details open><summary>💻 代码 (112 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<h2>9.2 Naive RAG 实现 —— 理解基础再谈优化</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (112 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_documents</span><span class="code-badge code-badge-func">search</span><span class="code-badge code-badge-func">demo_naive_rag</span><span class="code-badge code-badge-class">NaiveVectorStore</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
 
@@ -291,7 +308,7 @@ body {
 <p>Advanced RAG 在 Naive RAG 的基础上加入三大优化：</p>
 <li>查询重写 (Query Rewriting)</li>
 <li>混合检索 (Hybrid Search)</li>
-<li>重排序 (Reranking)</li></div><div class="code-section"><details open><summary>💻 代码 (145 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<li>重排序 (Reranking)</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (145 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">query_rewrite</span><span class="code-badge code-badge-func">add_documents</span><span class="code-badge code-badge-func">hybrid_search</span><span class="code-badge code-badge-func">rerank</span><span class="code-badge code-badge-class">AdvancedRAG</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
 <span class="k">class</span> <span class="f">AdvancedRAG</span>:
@@ -463,7 +480,7 @@ body {
 <pre> 同时使用向量搜索和图遍历</pre>
 <p>&nbsp;</p>
 <li>多跳推理 (Multi-hop Reasoning)</li>
-<pre> 沿着图谱的边寻找推理路径</pre></div><div class="code-section"><details open><summary>💻 代码 (120 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<pre> 沿着图谱的边寻找推理路径</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (120 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_relation</span><span class="code-badge code-badge-func">traverse</span><span class="code-badge code-badge-func">find_path</span><span class="code-badge code-badge-func">demo_graphrag</span><span class="code-badge code-badge-class">SimpleKnowledgeGraph</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
 <span class="k">class</span> <span class="f">SimpleKnowledgeGraph</span>:
@@ -666,7 +683,7 @@ body {
 <p>"RAG 有什么高级技术？"</p>
 <p>→ 查询重写(HyDE) → 混合检索(Hybrid) → 重排序(Reranker)</p>
 <p>→ GraphRAG(知识图谱) → Agentic RAG(Agent 循环)</p>
-<p>→ 每个技术解决一个具体痛点，不要盲目叠加</p></div><div class="code-section"><details open><summary>💻 代码 (68 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<p>→ 每个技术解决一个具体痛点，不要盲目叠加</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (68 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:

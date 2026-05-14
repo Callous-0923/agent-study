@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -210,7 +227,7 @@ body {
   │  │       └── latency_ms: 350                 │
   │  ├── Span: Agent 步骤 2 (tool_call)           │
   │  └── Span: Agent 步骤 3 (done)                │
-  └──────────────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (298 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+  └──────────────────────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (298 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">latency_ms</span><span class="code-badge code-badge-func">start_trace</span><span class="code-badge code-badge-func">span</span><span class="code-badge code-badge-func">log_llm_call</span><span class="code-badge code-badge-func">log_tool_call</span><span class="code-badge code-badge-func">get_trace</span><span class="code-badge code-badge-func">get_metrics</span><span class="code-badge code-badge-func">print_trace_tree</span><span class="code-badge code-badge-func">print_dashboard</span><span class="code-badge code-badge-func">demo_agent_tracing</span><span class="code-badge code-badge-class">TraceSpan</span><span class="code-badge code-badge-class">AgentTracer</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -589,7 +606,7 @@ body {
 <p>→ 4 大支柱：Tracing + Metrics + Evaluation + Alerts</p>
 <p>→ Tracing：记录每个 LLM 调用 + 工具调用</p>
 <p>→ LangSmith/LangFuse 选型</p>
-<p>→ 告警：成功率 < 95% → 通知</p></div><div class="code-section"><details open><summary>💻 代码 (41 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<p>→ 告警：成功率 < 95% → 通知</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (41 行)</summary><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional

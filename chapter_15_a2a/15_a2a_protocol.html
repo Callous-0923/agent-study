@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -268,7 +285,7 @@ body {
       │←── event: task-complete ──────│</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>15.4 模拟 A2A Agent 生态系统</h2></div><div class="code-section"><details open><summary>💻 代码 (356 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<h2>15.4 模拟 A2A Agent 生态系统</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (356 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">to_dict</span><span class="code-badge code-badge-func">start</span><span class="code-badge code-badge-func">complete</span><span class="code-badge code-badge-func">fail</span><span class="code-badge code-badge-func">get_agent_card</span><span class="code-badge code-badge-func">send_task</span><span class="code-badge code-badge-func">get_task</span><span class="code-badge code-badge-func">cancel_task</span><span class="code-badge code-badge-func">discover</span><span class="code-badge code-badge-func">find_agent_for_skill</span><span class="code-badge code-badge-func">delegate_task</span><span class="code-badge code-badge-func">demo_a2a_ecosystem</span><span class="code-badge code-badge-class">TaskState</span><span class="code-badge code-badge-class">A2AAgentCard</span><span class="code-badge code-badge-class">A2ATask</span><span class="code-badge code-badge-class">SimulatedA2AServer</span><span class="code-badge code-badge-class">A2AClient</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -691,7 +708,7 @@ body {
 <p>"A2A 是怎么工作的？"</p>
 <p>→ AgentCard 声明能力 → Client 按需发现 → Task 委派</p>
 <p>→ SSE/轮询跟踪进度 → 获取 Artifact</p>
-<p>→ MCP 管工具，A2A 管 Agent 间协作</p></div><div class="code-section"><details open><summary>💻 代码 (28 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>→ MCP 管工具，A2A 管 Agent 间协作</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (28 行)</summary><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional

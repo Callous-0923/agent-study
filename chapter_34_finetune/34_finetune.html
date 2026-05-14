@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -218,7 +235,7 @@ body {
 <p>最佳实践：路由为主 + 微调为辅</p>
 <li>80-90% 查询 → 微调小模型</li>
 <li>10-20% 查询 → GPT-4o</li>
-<li>综合成本降低 85%，准确率损失 < 2%</li></div><div class="code-section"><details open><summary>💻 代码 (112 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<li>综合成本降低 85%，准确率损失 < 2%</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (112 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_sample</span><span class="code-badge code-badge-func">export_jsonl</span><span class="code-badge code-badge-func">stats</span><span class="code-badge code-badge-func">demo_finetune</span><span class="code-badge code-badge-class">FineTuneDataGenerator</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">from</span> collections <span class="k">import</span> defaultdict
 

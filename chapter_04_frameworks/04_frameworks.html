@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -174,7 +191,7 @@ body {
 └──────────────────────────────────────┴────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>下面我们重点学习 LangChain Agent 和 LangGraph。</p>
-<p>这两个是目前市场上使用最广泛的框架。</p></div><div class="code-section"><details open><summary>💻 代码 (6 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>这两个是目前市场上使用最广泛的框架。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (6 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Any
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -193,7 +210,7 @@ load_dotenv()</pre></div></details></div><div class="lecture"><h2>4.1 LangChain 
 <p>对话历史         →  MemorySaver / ChatMessageHistory</p>
 <p>&nbsp;</p>
 <p>安装依赖:</p>
-<p>pip install langchain langchain-openai langgraph</p></div><div class="code-section"><details open><summary>💻 代码 (150 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>pip install langchain langchain-openai langgraph</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (150 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get_stock_price</span><span class="code-badge code-badge-func">search_news</span><span class="code-badge code-badge-func">calculate_math</span><span class="code-badge code-badge-func">demo_langchain_agent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Any
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -359,7 +376,7 @@ load_dotenv()
 <li>多 Agent 协作场景（第5章会用到）</li>
 <p>&nbsp;</p>
 <p>安装依赖：</p>
-<p>pip install langgraph</p></div><div class="code-section"><details open><summary>💻 代码 (147 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>pip install langgraph</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (147 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_langgraph_agent</span><span class="code-badge code-badge-func">analyze_node</span><span class="code-badge code-badge-func">should_continue</span><span class="code-badge code-badge-func">elaborate_node</span><span class="code-badge code-badge-class">AgentState</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Any
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -564,7 +581,7 @@ load_dotenv()
 <p>"LangGraph 和 LangChain Agent 的区别？"</p>
 <p>→ LangChain Agent 是预定义的 ReAct 循环</p>
 <p>→ LangGraph 可以自定义任意执行图</p>
-<p>→ LangGraph 适合复杂工作流，LangChain Agent 适合简单任务</p></div><div class="code-section"><details open><summary>💻 代码 (34 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ LangGraph 适合复杂工作流，LangChain Agent 适合简单任务</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (34 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Any
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv

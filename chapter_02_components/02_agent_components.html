@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -166,7 +183,7 @@ body {
 <p>答：</p>
 <p>ReAct：每一步都重新推理，灵活但效率低。</p>
 <p>Plan-Execute：一次性规划全部步骤，按计划执行，高效但不灵活。</p>
-<p>实际项目中常结合使用：高层用 Plan-Execute，每步内用 ReAct。</p></div><div class="code-section"><details open><summary>💻 代码 (40 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>实际项目中常结合使用：高层用 Plan-Execute，每步内用 ReAct。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (40 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">call_llm_with_json</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -205,7 +222,7 @@ client = OpenAI(
         response_format={<span class="s">"type"</span>: <span class="s">"json_object"</span>},
         temperature=<span class="n">0.3</span>,
     )
-    <span class="k">return</span> json.loads(response.choices[<span class="n">0</span>].message.content)</pre></div></details></div><div class="lecture"><p>2.1.1 Plan-Execute 规划器实战</p></div><div class="code-section"><details open><summary>💻 代码 (33 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+    <span class="k">return</span> json.loads(response.choices[<span class="n">0</span>].message.content)</pre></div></details></div><div class="lecture"><p>2.1.1 Plan-Execute 规划器实战</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (33 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">plan_execute</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -237,7 +254,7 @@ client = OpenAI(
         <span class="s">'depends_on 表示该步骤依赖哪些步骤（填写步骤号）。'</span>
     )
     prompt = f<span class="s">"任务：{task}\n请制定执行计划。"</span>
-    <span class="k">return</span> call_llm_with_json(prompt, system_msg)</pre></div></details></div><div class="lecture"><p>2.1.2 Reflexion 反思器实战</p></div><div class="code-section"><details open><summary>💻 代码 (40 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+    <span class="k">return</span> call_llm_with_json(prompt, system_msg)</pre></div></details></div><div class="lecture"><p>2.1.2 Reflexion 反思器实战</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (40 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">reflexion_review</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -302,7 +319,7 @@ client = OpenAI(
 <li>摘要压缩：用 LLM 将长对话总结为摘要</li>
 <li>滑动窗口：只保留最近 N 轮对话</li>
 <li>向量检索：将历史存入向量库，按相关性检索</li>
-<li>混合策略：短期用滑动窗口，长期用向量检索 + 摘要</li></div><div class="code-section"><details open><summary>💻 代码 (98 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<li>混合策略：短期用滑动窗口，长期用向量检索 + 摘要</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (98 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_conversation</span><span class="code-badge code-badge-func">set_working</span><span class="code-badge code-badge-func">get_working</span><span class="code-badge code-badge-func">get_context_for_llm</span><span class="code-badge code-badge-class">AgentMemory</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -425,7 +442,7 @@ client = OpenAI(
 <p>答：</p>
 <li>描述 LLM 什么时候该用这个工具（不是怎么实现）</li>
 <li>说明工具不擅长什么（边界条件）</li>
-<li>举例说明典型调用场景</li></div><div class="code-section"><details open><summary>💻 代码 (66 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<li>举例说明典型调用场景</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (66 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demonstrate_tool_design</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -496,7 +513,7 @@ client = OpenAI(
 <li>规划器制定计划</li>
 <li>记忆系统记录状态</li>
 <li>执行器中调用工具</li>
-<li>反思器自我审查</li></div><div class="code-section"><details open><summary>💻 代码 (68 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<li>反思器自我审查</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (68 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run_full_demo</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -589,7 +606,7 @@ client = OpenAI(
 <p>"请描述 Agent 的核心架构"</p>
 <p>→ Agent = LLM + Planner + Memory + Tools</p>
 <p>→ 通过 ReAct 循环协调各组件工作</p>
-<p>→ 记忆系统解决上下文限制，工具系统扩展能力边界</p></div><div class="code-section"><details open><summary>💻 代码 (29 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ 记忆系统解决上下文限制，工具系统扩展能力边界</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (29 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv

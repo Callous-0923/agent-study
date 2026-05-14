@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -195,7 +212,7 @@ body {
 │ 涉及资金/数据安全的操作     │ Human-in-the-Loop            │
 │ 路径不可预测的复杂推理      │ 纯 ReAct Agent               │
 │ 简单、步骤固定的任务        │ 不需要 Agent！直接用 LLM 调用  │
-└────────────────────────────┴──────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (5 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+└────────────────────────────┴──────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (5 行)</summary><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -214,7 +231,7 @@ body {
 <p>&nbsp;</p>
 <p>类比：</p>
 <p>就像作家写完初稿后，自己很难发现错字</p>
-<p>需要一个编辑来审阅</p></div><div class="code-section"><details open><summary>💻 代码 (110 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>需要一个编辑来审阅</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (110 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">generate</span><span class="code-badge code-badge-func">critique</span><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-class">ReflectionAgent</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -339,7 +356,7 @@ body {
 <p>关键决策：</p>
 <li>路由的依据是什么？（关键词/语义/复杂度评分？）</li>
 <li>每个路由目标用不同模型、不同 prompt、不同工具集</li>
-<li>可以实现成本优化（简单问题用小模型，复杂问题用大模型）</li></div><div class="code-section"><details open><summary>💻 代码 (58 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<li>可以实现成本优化（简单问题用小模型，复杂问题用大模型）</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (58 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">classify</span><span class="code-badge code-badge-func">route</span><span class="code-badge code-badge-class">RoutingAgent</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -407,7 +424,7 @@ body {
 <p>关键洞察：</p>
 <li>规划用 LLM（灵活），执行按计划（可靠）</li>
 <li>规划不是「一次性」的 —— 执行中可以根据反馈调整计划</li>
-<li>规划质量取决于分解粒度（太粗执行不了，太细浪费 token）</li></div><div class="code-section"><details open><summary>💻 代码 (70 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<li>规划质量取决于分解粒度（太粗执行不了，太细浪费 token）</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (70 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">decompose</span><span class="code-badge code-badge-func">execute_plan</span><span class="code-badge code-badge-class">PlanningAgent</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -492,7 +509,7 @@ body {
 <li>Orchestrator 有状态（记住任务上下文）</li>
 <li>Worker 无状态（每次只处理一个子任务）</li>
 <li>Worker 之间隔离（可以并行，可以不同权限）</li>
-<li>易于水平扩展（加 Worker 即可）</li></div><div class="code-section"><details open><summary>💻 代码 (91 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<li>易于水平扩展（加 Worker 即可）</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (91 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">register_worker</span><span class="code-badge code-badge-func">orchestrate</span><span class="code-badge code-badge-class">OrchestratorWorker</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -637,7 +654,7 @@ body {
 <p>用 Routing 模式分流：FAQ 走 RAG + 小模型；工单走 Tool Use；</p>
 <p>投诉需要升级（Human-in-the-Loop）。</p>
 <p>在工单处理中用 Reflection 确保回复质量。</p>
-<p>敏感操作（退款）需要双重确认。」</p></div><div class="code-section"><details open><summary>💻 代码 (54 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>敏感操作（退款）需要双重确认。」</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (54 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_all_patterns</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -715,7 +732,7 @@ body {
 <p>"你用过哪些 Agent 设计模式？"</p>
 <p>→ 说出 4+ 种 + 每种的使用场景 + 对比</p>
 <p>→ 重点说 Reflection（双角色分离）和 Routing（成本优化）</p>
-<p>→ 结尾：Anthropic 原则「简单优先，够用就好」</p></div><div class="code-section"><details open><summary>💻 代码 (29 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>→ 结尾：Anthropic 原则「简单优先，够用就好」</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (29 行)</summary><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional

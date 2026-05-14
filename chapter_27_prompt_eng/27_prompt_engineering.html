@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -191,7 +208,7 @@ body {
 <output_format>
   输出格式要求...
 </output_format></pre>
-<p></system></p></div><div class="code-section"><details open><summary>💻 代码 (64 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p></system></p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (64 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_capabilities</span><span class="code-badge code-badge-func">add_tool_guidance</span><span class="code-badge code-badge-func">add_workflow</span><span class="code-badge code-badge-func">add_constraints</span><span class="code-badge code-badge-func">add_output_format</span><span class="code-badge code-badge-func">build</span><span class="code-badge code-badge-func">estimate_tokens</span><span class="code-badge code-badge-class">AgentPromptBuilder</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass
@@ -280,7 +297,7 @@ body {
   │ 有调用示例                │ +1       │
   │ 参数有 enum 限制          │ +2       │
   │ 参数有详细描述            │ +1       │
-  └────────────────────────┴──────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (113 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+  └────────────────────────┴──────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (113 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">score_tool_description</span><span class="code-badge code-badge-class">ToolDescriptionOptimizer</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass
@@ -421,7 +438,7 @@ body {
 <p>「Agent 的 System Prompt 怎么设计？」</p>
 <p>→ 6 模块模板：role/capabilities/tool_guidance/workflow/constraints/output</p>
 <p>→ 核心：工具描述 = Prompt 工程（告诉 LLM 何时用、何时不用）</p>
-<p>→ 用 enum 限制参数 → 减少幻觉</p></div><div class="code-section"><details open><summary>💻 代码 (75 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p>→ 用 enum 限制参数 → 减少幻觉</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (75 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_prompt_engineering</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass

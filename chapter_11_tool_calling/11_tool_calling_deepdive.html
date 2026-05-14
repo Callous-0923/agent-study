@@ -94,6 +94,23 @@ body {
 .code-block .f { color: #4ec9b0; }     /* 函数名 */
 .code-block .b { color: #569cd6; }     /* 内置函数 */
 
+/* 讲义→代码 视觉过渡 */
+.code-bridge {
+  text-align: center; color: #667eea; font-size: .9em;
+  padding: 8px 0 4px; font-weight: 500;
+}
+.code-badges {
+  padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 6px;
+  background: #2a2a3e; border-bottom: 1px solid #444;
+}
+.code-badge {
+  padding: 2px 10px; border-radius: 12px; font-size: .8em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+.code-badge-func { background: #1e3a5f; color: #4ec9b0; }
+.code-badge-class { background: #1e3a5f; color: #dcdcaa; }
+.code-badge-const { background: #1e3a5f; color: #b5cea8; }
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -274,7 +291,7 @@ body {
 <p>&nbsp;</p>
 <p>关键差异：</p>
 <li>OpenAI: arguments 是 JSON 字符串（需要 json.loads）</li>
-<li>Anthropic: input 直接是 JSON 对象</li></div><div class="code-section"><details open><summary>💻 代码 (30 行)</summary><div class="code-block"><pre><span class="h"># 两个平台的工具定义格式对比</span>
+<li>Anthropic: input 直接是 JSON 对象</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (30 行)</summary><div class="code-badges"><span class="code-badge code-badge-const">OPENAI_TOOL</span><span class="code-badge code-badge-const">ANTHROPIC_TOOL</span></div><div class="code-block"><pre><span class="h"># 两个平台的工具定义格式对比</span>
 OPENAI_TOOL = {
     <span class="s">"type"</span>: <span class="s">"function"</span>,
     <span class="s">"function"</span>: {
@@ -429,7 +446,7 @@ chunk_3: {"type": "content_block_delta", "delta": {"type": "input_json_delta", "
 <li>工具调用确认（Human-in-the-Loop）</li>
 <li>读操作：自动执行（get_weather, search）</li>
 <li>写操作：需要确认（send_email, delete_file）</li>
-<li>危险操作：需要二次确认（execute_sql, run_command）</li></div><div class="code-section"><details open><summary>💻 代码 (182 行)</summary><div class="code-block"><pre><span class="h"># 两个平台的工具定义格式对比</span>
+<li>危险操作：需要二次确认（execute_sql, run_command）</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (182 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">process_openai_style</span><span class="code-badge code-badge-func">process_anthropic_style</span><span class="code-badge code-badge-func">demo_tool_calling_flow</span><span class="code-badge code-badge-func">demo_streaming_assembly</span><span class="code-badge code-badge-class">ToolCallSimulator</span></div><div class="code-block"><pre><span class="h"># 两个平台的工具定义格式对比</span>
 
 <span class="k">class</span> <span class="f">ToolCallSimulator</span>:
     <span class="s">"""模拟两个平台的 Tool Call 处理流程。
@@ -645,7 +662,7 @@ chunk_3: {"type": "content_block_delta", "delta": {"type": "input_json_delta", "
 <p>→ LLM 根据 tools 定义判断是否需要调用工具</p>
 <p>→ 输出结构化 JSON（包含工具名和参数）</p>
 <p>→ 开发者的代码执行真正的函数</p>
-<p>→ 将执行结果返回给 LLM</p></div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-block"><pre><span class="h"># 两个平台的工具定义格式对比</span>
+<p>→ 将执行结果返回给 LLM</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-block"><pre><span class="h"># 两个平台的工具定义格式对比</span>
 
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
     <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
