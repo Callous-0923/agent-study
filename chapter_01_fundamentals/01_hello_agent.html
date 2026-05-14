@@ -85,6 +85,15 @@ body {
   line-height: 1.6; max-height: 70vh; overflow-y: auto;
 }
 
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -139,21 +148,21 @@ body {
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>1.1 从最基础的 LLM 调用开始</h2></div><div class="code-section"><details><summary>💻 代码 (32 行)</summary><div class="code-block"><pre><span class="k">import</span> os
-<span class="k">import</span> json
-<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
-<span class="k">from</span> openai <span class="k">import</span> OpenAI
+<h2>1.1 从最基础的 LLM 调用开始</h2></div><div class="code-section"><details open><summary>💻 代码 (32 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+<span class=<span class="s">"k"</span>>from</span> openai <span class=<span class="s">"k"</span>>import</span> OpenAI
 
 load_dotenv()
 
 client = OpenAI(
-    api_key=os.getenv(<span <span class="k">class</span>="s">"OPENAI_API_KEY"</span>),
-    base_url=os.getenv(<span <span class="k">class</span>="s">"OPENAI_BASE_URL"</span>),
+    api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
+    base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
 )
 
 
-<span class="k">def</span> call_llm(prompt: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"最基础的 LLM 调用 —— 发送提示词，获取回复。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>call_llm</span>(prompt: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"最基础的 LLM 调用 —— 发送提示词，获取回复。
 
     这是 Agent 的最底层操作：让 LLM「思考」。
     后续所有 Agent 逻辑都建立在这个基础之上。
@@ -163,14 +172,14 @@ client = OpenAI(
 
     Returns:
         LLM 生成的回复文本。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    model = os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>)
+    <span class="s">""</span>"</span>
+    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
     response = client.chat.completions.create(
         model=model,
-        messages=[{<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"user"</span>, <span <span class="k">class</span>="s">"content"</span>: prompt}],
-        temperature=<span class="n">0.7</span>,
+        messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
+        temperature=<span class=<span class="s">"n"</span>>0.7</span>,
     )
-    <span class="k">return</span> response.choices[<span class="n">0</span>].message.content</pre></div></details></div><div class="lecture"><h2>1.2 Function Calling —— Agent 的「手」</h2>
+    <span class=<span class="s">"k"</span>>return</span> response.choices[<span class=<span class="s">"n"</span>>0</span>].message.content</pre></div></details></div><div class="lecture"><h2>1.2 Function Calling —— Agent 的「手」</h2>
 <p>&nbsp;</p>
 <p>Function Calling 是 Agent 的核心机制。LLM 不只是生成文本，</p>
 <p>它还能「决定」调用哪个函数、传什么参数。</p>
@@ -187,130 +196,139 @@ client = OpenAI(
 <p>把结果返回给 LLM，LLM 组织成自然语言回答用户</p>
 <p>&nbsp;</p>
 <p>类比：LLM 像一位「盲人指挥家」，他能决定需要什么信息，</p>
-<p>但必须由我们（代码）去执行实际的工具调用。</p></div><div class="code-section"><details><summary>💻 代码 (125 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 定义工具列表 —— 告诉 LLM 它有哪些<span <span class="k">class</span>="s">"技能"</span>可以使用</span>
+<p>但必须由我们（代码）去执行实际的工具调用。</p></div><div class="code-section"><details open><summary>💻 代码 (134 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+<span class=<span class="s">"k"</span>>from</span> openai <span class=<span class="s">"k"</span>>import</span> OpenAI
+
+load_dotenv()
+
+client = OpenAI(
+
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 定义工具列表 —— 告诉 LLM 它有哪些<span class="s">"技能"</span>可以使用</span>
 TOOLS = [
     {
-        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"function"</span>,
-        <span <span class="k">class</span>="s">"function"</span>: {
-            <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"get_weather"</span>,
-            <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"查询指定城市的天气信息。"</span>,
-            <span <span class="k">class</span>="s">"parameters"</span>: {
-                <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"object"</span>,
-                <span <span class="k">class</span>="s">"properties"</span>: {
-                    <span <span class="k">class</span>="s">"city"</span>: {
-                        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>,
-                        <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"城市名称，如 <span <span class="k">class</span>='s'>'北京'</span>、<span <span class="k">class</span>='s'>'上海'</span>"</span>,
+        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"function"</span>,
+        <span class="s">"function"</span>: {
+            <span class="s">"name"</span>: <span class="s">"get_weather"</span>,
+            <span class="s">"description"</span>: <span class="s">"查询指定城市的天气信息。"</span>,
+            <span class="s">"parameters"</span>: {
+                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
+                <span class="s">"properties"</span>: {
+                    <span class="s">"city"</span>: {
+                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
+                        <span class="s">"description"</span>: <span class="s">"城市名称，如 <span class='s'>'北京'</span>、<span class='s'>'上海'</span>"</span>,
                     }
                 },
-                <span <span class="k">class</span>="s">"required"</span>: [<span <span class="k">class</span>="s">"city"</span>],
+                <span class="s">"required"</span>: [<span class="s">"city"</span>],
             },
         },
     },
     {
-        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"function"</span>,
-        <span <span class="k">class</span>="s">"function"</span>: {
-            <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"search_web"</span>,
-            <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"在网上搜索信息，返回搜索结果。"</span>,
-            <span <span class="k">class</span>="s">"parameters"</span>: {
-                <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"object"</span>,
-                <span <span class="k">class</span>="s">"properties"</span>: {
-                    <span <span class="k">class</span>="s">"query"</span>: {
-                        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>,
-                        <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"搜索关键词"</span>,
+        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"function"</span>,
+        <span class="s">"function"</span>: {
+            <span class="s">"name"</span>: <span class="s">"search_web"</span>,
+            <span class="s">"description"</span>: <span class="s">"在网上搜索信息，返回搜索结果。"</span>,
+            <span class="s">"parameters"</span>: {
+                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
+                <span class="s">"properties"</span>: {
+                    <span class="s">"query"</span>: {
+                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
+                        <span class="s">"description"</span>: <span class="s">"搜索关键词"</span>,
                     }
                 },
-                <span <span class="k">class</span>="s">"required"</span>: [<span <span class="k">class</span>="s">"query"</span>],
+                <span class="s">"required"</span>: [<span class="s">"query"</span>],
             },
         },
     },
     {
-        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"function"</span>,
-        <span <span class="k">class</span>="s">"function"</span>: {
-            <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"calculate"</span>,
-            <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"执行数学计算。"</span>,
-            <span <span class="k">class</span>="s">"parameters"</span>: {
-                <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"object"</span>,
-                <span <span class="k">class</span>="s">"properties"</span>: {
-                    <span <span class="k">class</span>="s">"expression"</span>: {
-                        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>,
-                        <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"数学表达式，如 <span <span class="k">class</span>='s'>'<span class="n">2</span> + <span class="n">3</span> * <span class="n">4</span>'</span>"</span>,
+        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"function"</span>,
+        <span class="s">"function"</span>: {
+            <span class="s">"name"</span>: <span class="s">"calculate"</span>,
+            <span class="s">"description"</span>: <span class="s">"执行数学计算。"</span>,
+            <span class="s">"parameters"</span>: {
+                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
+                <span class="s">"properties"</span>: {
+                    <span class="s">"expression"</span>: {
+                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
+                        <span class="s">"description"</span>: <span class="s">"数学表达式，如 <span class='s'>'<span class="</span>n<span class="s">">2</span> + <span class="</span>n<span class="s">">3</span> * <span class="</span>n<span class="s">">4</span>'</span>"</span>,
                     }
                 },
-                <span <span class="k">class</span>="s">"required"</span>: [<span <span class="k">class</span>="s">"expression"</span>],
+                <span class="s">"required"</span>: [<span class="s">"expression"</span>],
             },
         },
     },
 ]
 
 
-<span class="k">def</span> get_weather(city: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟天气查询工具。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_weather</span>(city: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟天气查询工具。
 
     Args:
         city: 城市名称。
 
     Returns:
         模拟的天气信息字符串。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
     weather_data = {
-        <span <span class="k">class</span>="s">"北京"</span>: <span <span class="k">class</span>="s">"晴天，<span class="n">25</span>°C，湿度 <span class="n">40</span>%，北风 <span class="n">3</span> 级"</span>,
-        <span <span class="k">class</span>="s">"上海"</span>: <span <span class="k">class</span>="s">"多云，<span class="n">28</span>°C，湿度 <span class="n">65</span>%，东南风 <span class="n">2</span> 级"</span>,
-        <span <span class="k">class</span>="s">"深圳"</span>: <span <span class="k">class</span>="s">"阵雨，<span class="n">30</span>°C，湿度 <span class="n">80</span>%，南风 <span class="n">4</span> 级"</span>,
-        <span <span class="k">class</span>="s">"成都"</span>: <span <span class="k">class</span>="s">"阴天，<span class="n">22</span>°C，湿度 <span class="n">55</span>%，无持续风向"</span>,
+        <span class="s">"北京"</span>: <span class="s">"晴天，<span class="</span>n<span class="s">">25</span>°C，湿度 <span class="</span>n<span class="s">">40</span>%，北风 <span class="</span>n<span class="s">">3</span> 级"</span>,
+        <span class="s">"上海"</span>: <span class="s">"多云，<span class="</span>n<span class="s">">28</span>°C，湿度 <span class="</span>n<span class="s">">65</span>%，东南风 <span class="</span>n<span class="s">">2</span> 级"</span>,
+        <span class="s">"深圳"</span>: <span class="s">"阵雨，<span class="</span>n<span class="s">">30</span>°C，湿度 <span class="</span>n<span class="s">">80</span>%，南风 <span class="</span>n<span class="s">">4</span> 级"</span>,
+        <span class="s">"成都"</span>: <span class="s">"阴天，<span class="</span>n<span class="s">">22</span>°C，湿度 <span class="</span>n<span class="s">">55</span>%，无持续风向"</span>,
     }
-    <span class="k">return</span> weather_data.get(city, f<span <span class="k">class</span>="s">"未找到 {city} 的天气数据"</span>)
+    <span class=<span class="s">"k"</span>>return</span> weather_data.get(city, f<span class="s">"未找到 {city} 的天气数据"</span>)
 
 
-<span class="k">def</span> search_web(query: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟网络搜索工具。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>search_web</span>(query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟网络搜索工具。
 
     Args:
         query: 搜索关键词。
 
     Returns:
         模拟的搜索结果。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
     mock_results = {
-        <span <span class="k">class</span>="s">"python"</span>: <span <span class="k">class</span>="s">"Python 是一种解释型、面向对象的高级编程语言。"</span>,
-        <span <span class="k">class</span>="s">"agent"</span>: (
-            <span <span class="k">class</span>="s">"AI Agent 是一种能够自主感知环境、做出决策并执行行动的"</span>
-            <span <span class="k">class</span>="s">"智能系统。它通常由 LLM、规划器、记忆系统和工具组成。"</span>
+        <span class="s">"python"</span>: <span class="s">"Python 是一种解释型、面向对象的高级编程语言。"</span>,
+        <span class="s">"agent"</span>: (
+            <span class="s">"AI Agent 是一种能够自主感知环境、做出决策并执行行动的"</span>
+            <span class="s">"智能系统。它通常由 LLM、规划器、记忆系统和工具组成。"</span>
         ),
-        <span <span class="k">class</span>="s">"langchain"</span>: (
-            <span <span class="k">class</span>="s">"LangChain 是一个用于构建 LLM 应用的开源框架，"</span>
-            <span <span class="k">class</span>="s">"提供了 Agent、Chain、Tool 等核心抽象。"</span>
+        <span class="s">"langchain"</span>: (
+            <span class="s">"LangChain 是一个用于构建 LLM 应用的开源框架，"</span>
+            <span class="s">"提供了 Agent、Chain、Tool 等核心抽象。"</span>
         ),
     }
-    <span class="k">for</span> key <span class="k">in</span> mock_results:
-        <span class="k">if</span> key <span class="k">in</span> query.lower():
-            <span class="k">return</span> mock_results[key]
-    <span class="k">return</span> f<span <span class="k">class</span>="s">"关于 <span <span class="k">class</span>='s'>'{query}'</span> 的搜索结果：这是一个模拟结果。"</span>
+    <span class=<span class="s">"k"</span>>for</span> key <span class=<span class="s">"k"</span>>in</span> mock_results:
+        <span class=<span class="s">"k"</span>>if</span> key <span class=<span class="s">"k"</span>>in</span> query.lower():
+            <span class=<span class="s">"k"</span>>return</span> mock_results[key]
+    <span class=<span class="s">"k"</span>>return</span> f<span class="s">"关于 <span class='s'>'{query}'</span> 的搜索结果：这是一个模拟结果。"</span>
 
 
-<span class="k">def</span> calculate(expression: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"安全的数学计算工具。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>calculate</span>(expression: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"安全的数学计算工具。
 
     Args:
         expression: 数学表达式字符串。
 
     Returns:
         计算结果字符串。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span class="k">try</span>:
-        allowed_chars = set(<span <span class="k">class</span>="s">"<span class="n">0123456789</span>+-*/().%^ "</span>)
-        <span class="k">if</span> <span class="k">not</span> all(c <span class="k">in</span> allowed_chars <span class="k">for</span> c <span class="k">in</span> expression):
-            <span class="k">return</span> <span <span class="k">class</span>="s">"错误：表达式包含不允许的字符"</span>
+    <span class="s">""</span>"</span>
+    <span class=<span class="s">"k"</span>>try</span>:
+        allowed_chars = <span class=<span class="s">"b"</span>>set</span>(<span class="s">"<span class="</span>n<span class="s">">0123456789</span>+-*/().%^ "</span>)
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"b"</span>>all</span>(c <span class=<span class="s">"k"</span>>in</span> allowed_chars <span class=<span class="s">"k"</span>>for</span> c <span class=<span class="s">"k"</span>>in</span> expression):
+            <span class=<span class="s">"k"</span>>return</span> <span class="s">"错误：表达式包含不允许的字符"</span>
         result = eval(expression)
-        <span class="k">return</span> f<span <span class="k">class</span>="s">"计算结果：{result}"</span>
-    <span class="k">except</span> Exception <span class="k">as</span> e:
-        <span class="k">return</span> f<span <span class="k">class</span>="s">"计算错误：{str(e)}"</span>
+        <span class=<span class="s">"k"</span>>return</span> f<span class="s">"计算结果：{result}"</span>
+    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+        <span class=<span class="s">"k"</span>>return</span> f<span class="s">"计算错误：{<span class="</span>b<span class="s">">str</span>(e)}"</span>
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 工具名称到实际函数的映射</span>
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 工具名称到实际函数的映射</span>
 TOOL_MAP = {
-    <span <span class="k">class</span>="s">"get_weather"</span>: get_weather,
-    <span <span class="k">class</span>="s">"search_web"</span>: search_web,
-    <span <span class="k">class</span>="s">"calculate"</span>: calculate,
+    <span class="s">"get_weather"</span>: get_weather,
+    <span class="s">"search_web"</span>: search_web,
+    <span class="s">"calculate"</span>: calculate,
 }</pre></div></details></div><div class="lecture"><h2>1.3 手写 Agent 循环 —— 理解底层原理</h2>
 <p>&nbsp;</p>
 <p>这是本章最核心的部分！</p>
@@ -322,8 +340,17 @@ TOOL_MAP = {
 <li>如果可以回答 → 输出答案，结束</li>
 <p>&nbsp;</p>
 <p>这个循环被称为 ReAct 循环（Reasoning + Acting），</p>
-<p>是 LangChain / AutoGPT / crewAI 等所有框架的底层逻辑。</p></div><div class="code-section"><details><summary>💻 代码 (83 行)</summary><div class="code-block"><pre><span class="k">def</span> run_agent(user_message: str, max_iterations: int = <span class="n">5</span>):
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"运行一个最简单的 ReAct Agent。
+<p>是 LangChain / AutoGPT / crewAI 等所有框架的底层逻辑。</p></div><div class="code-section"><details open><summary>💻 代码 (92 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+<span class=<span class="s">"k"</span>>from</span> openai <span class=<span class="s">"k"</span>>import</span> OpenAI
+
+load_dotenv()
+
+client = OpenAI(
+
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run_agent</span>(user_message: <span class=<span class="s">"b"</span>>str</span>, max_iterations: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>5</span>):
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"运行一个最简单的 ReAct Agent。
 
     这是不加任何框架的「裸写」Agent，帮助理解底层原理。
     任何 Agent 框架（LangChain/crewAI/AutoGen）本质上
@@ -335,76 +362,76 @@ TOOL_MAP = {
 
     Returns:
         Agent 的最终回答。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 对话历史 —— Agent 的「短期记忆」</span>
+    <span class="s">""</span>"</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 对话历史 —— Agent 的「短期记忆」</span>
     messages = [
-        {<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"content"</span>: <span <span class="k">class</span>="s">"你是一个有用的 AI 助手。当需要获取最新信息或执行计算时，请使用提供的工具。"</span>},
-        {<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"user"</span>, <span <span class="k">class</span>="s">"content"</span>: user_message},
+        {<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: <span class="s">"你是一个有用的 AI 助手。当需要获取最新信息或执行计算时，请使用提供的工具。"</span>},
+        {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_message},
     ]
 
-    print(f<span <span class="k">class</span>="s">"\n{<span <span class="k">class</span>='s'>'='</span>*<span class="n">60</span>}"</span>)
-    print(f<span <span class="k">class</span>="s">"用户: {user_message}"</span>)
-    print(f<span <span class="k">class</span>="s">"{<span <span class="k">class</span>='s'>'='</span>*<span class="n">60</span>}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"用户: {user_message}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
 
-    <span class="k">for</span> iteration <span class="k">in</span> range(max_iterations):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 第 <span class="n">1</span> 步：调用 LLM（Think 阶段）=====</span>
-        model = os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>)
+    <span class=<span class="s">"k"</span>>for</span> iteration <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(max_iterations):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ===== 第 <span class=<span class="s">"n"</span>>1</span> 步：调用 LLM（Think 阶段）=====</span>
+        model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
         response = client.chat.completions.create(
             model=model,
             messages=messages,
             tools=TOOLS,
-            tool_choice=<span <span class="k">class</span>="s">"auto"</span>,
+            tool_choice=<span class="s">"auto"</span>,
         )
 
-        assistant_message = response.choices[<span class="n">0</span>].message
+        assistant_message = response.choices[<span class=<span class="s">"n"</span>>0</span>].message
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 第 <span class="n">2</span> 步：检查 LLM 是否需要调用工具 =====</span>
-        <span class="k">if</span> assistant_message.tool_calls <span class="k">is</span> <span class="k">None</span>:
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LLM 决定直接回答（不需要工具）→ 循环结束</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ===== 第 <span class=<span class="s">"n"</span>>2</span> 步：检查 LLM 是否需要调用工具 =====</span>
+        <span class=<span class="s">"k"</span>>if</span> assistant_message.tool_calls <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># LLM 决定直接回答（不需要工具）→ 循环结束</span>
             final_answer = assistant_message.content
-            print(f<span <span class="k">class</span>="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
-            <span class="k">return</span> final_answer
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
+            <span class=<span class="s">"k"</span>>return</span> final_answer
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 第 <span class="n">3</span> 步：执行工具调用（Act 阶段）=====</span>
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 将 LLM 的回复（含 tool_calls）加入对话历史</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ===== 第 <span class=<span class="s">"n"</span>>3</span> 步：执行工具调用（Act 阶段）=====</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 将 LLM 的回复（含 tool_calls）加入对话历史</span>
         messages.append(assistant_message)
 
-        <span class="k">for</span> tool_call <span class="k">in</span> assistant_message.tool_calls:
+        <span class=<span class="s">"k"</span>>for</span> tool_call <span class=<span class="s">"k"</span>>in</span> assistant_message.tool_calls:
             func_name = tool_call.function.name
             func_args = json.loads(tool_call.function.arguments)
 
-            print(f<span <span class="k">class</span>="s">"\n🔧 第 {iteration + <span class="n">1</span>} 轮 - 调用工具: {func_name}({func_args})"</span>)
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n🔧 第 {iteration + <span class="</span>n<span class="s">">1</span>} 轮 - 调用工具: {func_name}({func_args})"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 执行实际的工具函数</span>
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 执行实际的工具函数</span>
             tool_function = TOOL_MAP.get(func_name)
-            <span class="k">if</span> tool_function <span class="k">is</span> <span class="k">None</span>:
-                result = f<span <span class="k">class</span>="s">"错误：未找到工具 {func_name}"</span>
-            <span class="k">else</span>:
+            <span class=<span class="s">"k"</span>>if</span> tool_function <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+                result = f<span class="s">"错误：未找到工具 {func_name}"</span>
+            <span class=<span class="s">"k"</span>>else</span>:
                 result = tool_function(**func_args)
 
-            print(f<span <span class="k">class</span>="s">"📊 工具返回: {result}"</span>)
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"📊 工具返回: {result}"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 将工具执行结果加入对话历史（Observe 阶段）</span>
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 将工具执行结果加入对话历史（Observe 阶段）</span>
             messages.append({
-                <span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"tool"</span>,
-                <span <span class="k">class</span>="s">"tool_call_id"</span>: tool_call.id,
-                <span <span class="k">class</span>="s">"content"</span>: result,
+                <span class="s">"role"</span>: <span class="s">"tool"</span>,
+                <span class="s">"tool_call_id"</span>: tool_call.<span class=<span class="s">"b"</span>>id</span>,
+                <span class="s">"content"</span>: result,
             })
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 达到最大迭代次数，强制 LLM 给出最终回答</span>
-    print(<span <span class="k">class</span>="s">"\n⚠️ 达到最大迭代次数，要求 LLM 给出最终回答..."</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 达到最大迭代次数，强制 LLM 给出最终回答</span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n⚠️ 达到最大迭代次数，要求 LLM 给出最终回答..."</span>)
     messages.append({
-        <span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"user"</span>,
-        <span <span class="k">class</span>="s">"content"</span>: <span <span class="k">class</span>="s">"请基于已有的工具调用结果，给出最终回答。"</span>
+        <span class="s">"role"</span>: <span class="s">"user"</span>,
+        <span class="s">"content"</span>: <span class="s">"请基于已有的工具调用结果，给出最终回答。"</span>
     })
-    model = os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>)
+    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
     final_response = client.chat.completions.create(
         model=model,
         messages=messages,
     )
-    final_answer = final_response.choices[<span class="n">0</span>].message.content
-    print(f<span <span class="k">class</span>="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
-    <span class="k">return</span> final_answer</pre></div></details></div><div class="lecture"><h2>1.4 运行测试 —— 见证你的第一个 Agent</h2>
+    final_answer = final_response.choices[<span class=<span class="s">"n"</span>>0</span>].message.content
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
+    <span class=<span class="s">"k"</span>>return</span> final_answer</pre></div></details></div><div class="lecture"><h2>1.4 运行测试 —— 见证你的第一个 Agent</h2>
 <p>&nbsp;</p>
 <p>下面准备了几组测试用例，分别测试：</p>
 <li>Test 1: 不需要工具的简单问答（LLM 直接回答）</li>
@@ -413,64 +440,73 @@ TOOL_MAP = {
 <li>Test 4: 需要多次工具调用的复杂任务</li>
 <p>&nbsp;</p>
 <p>运行命令：</p>
-<p>python chapter_01_fundamentals/01_hello_agent.py</p></div><div class="code-section"><details><summary>💻 代码 (50 行)</summary><div class="code-block"><pre>TEST_CASES = [
+<p>python chapter_01_fundamentals/01_hello_agent.py</p></div><div class="code-section"><details open><summary>💻 代码 (59 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+<span class=<span class="s">"k"</span>>from</span> openai <span class=<span class="s">"k"</span>>import</span> OpenAI
+
+load_dotenv()
+
+client = OpenAI(
+
+TEST_CASES = [
     {
-        <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"Test <span class="n">1</span> - 简单问答（无需工具）"</span>,
-        <span <span class="k">class</span>="s">"message"</span>: <span <span class="k">class</span>="s">"什么是 Python 编程语言？请用一句话回答。"</span>,
-        <span <span class="k">class</span>="s">"expected_tools"</span>: <span class="n">0</span>,
+        <span class="s">"name"</span>: <span class="s">"Test <span class="</span>n<span class="s">">1</span> - 简单问答（无需工具）"</span>,
+        <span class="s">"message"</span>: <span class="s">"什么是 Python 编程语言？请用一句话回答。"</span>,
+        <span class="s">"expected_tools"</span>: <span class=<span class="s">"n"</span>>0</span>,
     },
     {
-        <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"Test <span class="n">2</span> - 天气查询（单工具）"</span>,
-        <span <span class="k">class</span>="s">"message"</span>: <span <span class="k">class</span>="s">"上海今天天气怎么样？"</span>,
-        <span <span class="k">class</span>="s">"expected_tools"</span>: <span class="n">1</span>,
+        <span class="s">"name"</span>: <span class="s">"Test <span class="</span>n<span class="s">">2</span> - 天气查询（单工具）"</span>,
+        <span class="s">"message"</span>: <span class="s">"上海今天天气怎么样？"</span>,
+        <span class="s">"expected_tools"</span>: <span class=<span class="s">"n"</span>>1</span>,
     },
     {
-        <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"Test <span class="n">3</span> - 组合查询（搜索 + 计算）"</span>,
-        <span <span class="k">class</span>="s">"message"</span>: <span <span class="k">class</span>="s">"搜索一下什么是 LangChain，然后帮我算 <span class="n">123</span> * <span class="n">456</span> 等于多少。"</span>,
-        <span <span class="k">class</span>="s">"expected_tools"</span>: <span class="n">2</span>,
+        <span class="s">"name"</span>: <span class="s">"Test <span class="</span>n<span class="s">">3</span> - 组合查询（搜索 + 计算）"</span>,
+        <span class="s">"message"</span>: <span class="s">"搜索一下什么是 LangChain，然后帮我算 <span class="</span>n<span class="s">">123</span> * <span class="</span>n<span class="s">">456</span> 等于多少。"</span>,
+        <span class="s">"expected_tools"</span>: <span class=<span class="s">"n"</span>>2</span>,
     },
     {
-        <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"Test <span class="n">4</span> - 需要推理的复杂查询"</span>,
-        <span <span class="k">class</span>="s">"message"</span>: <span <span class="k">class</span>="s">"北京和深圳今天哪个城市更热？温度差多少？"</span>,
-        <span <span class="k">class</span>="s">"expected_tools"</span>: <span class="n">2</span>,
+        <span class="s">"name"</span>: <span class="s">"Test <span class="</span>n<span class="s">">4</span> - 需要推理的复杂查询"</span>,
+        <span class="s">"message"</span>: <span class="s">"北京和深圳今天哪个城市更热？温度差多少？"</span>,
+        <span class="s">"expected_tools"</span>: <span class=<span class="s">"n"</span>>2</span>,
     },
 ]
 
 
-<span class="k">def</span> main():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"运行所有测试用例。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║          第1章：第一个 Agent - Hello World           ║"</span>)
-    print(<span <span class="k">class</span>="s">"║          理解 Agent 循环的底层原理                    ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>main</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"运行所有测试用例。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║          第1章：第一个 Agent - Hello World           ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║          理解 Agent 循环的底层原理                    ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
-    <span class="k">for</span> i, test <span class="k">in</span> enumerate(TEST_CASES, <span class="n">1</span>):
-        print(f<span <span class="k">class</span>="s">"\n{<span <span class="k">class</span>='s'>'<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">#'</span>*<span class="n">60</span>}"</span>)</span>
-        print(f<span <span class="k">class</span>="s">"<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">"># {test[<span <span class="k">class</span>='s'>'name'</span>]}"</span>)</span>
-        print(f<span <span class="k">class</span>="s">"<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">"># 预期工具调用数: {test[<span <span class="k">class</span>='s'>'expected_tools'</span>]}"</span>)</span>
-        print(f<span <span class="k">class</span>="s">"{<span <span class="k">class</span>='s'>'<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">#'</span>*<span class="n">60</span>}"</span>)</span>
+    <span class=<span class="s">"k"</span>>for</span> i, test <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(TEST_CASES, <span class=<span class="s">"n"</span>>1</span>):
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n{<span class='s'>'<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">">#'</span>*<span class="</span>n<span class="s">">60</span>}"</span>)</span>
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">"># {test[<span class='s'>'name'</span>]}"</span>)</span>
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">"># 预期工具调用数: {test[<span class='s'>'expected_tools'</span>]}"</span>)</span>
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"{<span class='s'>'<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">">#'</span>*<span class="</span>n<span class="s">">60</span>}"</span>)</span>
 
-        <span class="k">try</span>:
-            run_agent(test[<span <span class="k">class</span>="s">"message"</span>], max_iterations=<span class="n">5</span>)
-        <span class="k">except</span> Exception <span class="k">as</span> e:
-            print(f<span <span class="k">class</span>="s">"\n❌ 运行出错: {e}"</span>)
-            print(<span <span class="k">class</span>="s">"请检查 .env 文件中的 API Key 配置是否正确。"</span>)
+        <span class=<span class="s">"k"</span>>try</span>:
+            run_agent(test[<span class="s">"message"</span>], max_iterations=<span class=<span class="s">"n"</span>>5</span>)
+        <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n❌ 运行出错: {e}"</span>)
+            <span class=<span class="s">"b"</span>>print</span>(<span class="s">"请检查 .env 文件中的 API Key 配置是否正确。"</span>)
 
-        <span class="k">if</span> i &lt; len(TEST_CASES):
-            print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"-"</span> * <span class="n">60</span>)
-            input(<span <span class="k">class</span>="s">"按 Enter 继续下一个测试..."</span>)
+        <span class=<span class="s">"k"</span>>if</span> i &lt; <span class=<span class="s">"b"</span>>len</span>(TEST_CASES):
+            <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"-"</span> * <span class=<span class="s">"n"</span>>60</span>)
+            <span class=<span class="s">"b"</span>>input</span>(<span class="s">"按 Enter 继续下一个测试..."</span>)
 
 
-<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    main()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (374 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    main()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (374 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 第1章：AI Agent 基础概念 —— 从 LLM 调用到第一个 Agent
 =====================================================
 
 📌 本章目标：
-  <span class="n">1</span>. 理解 Agent 的 <span class="n">4</span> 要素：LLM / 规划 / 记忆 / 工具
-  <span class="n">2</span>. 掌握 LLM API 调用的基本方式
-  <span class="n">3</span>. 手写一个最简 Agent（无框架，理解底层原理）
-  <span class="n">4</span>. 运行本文件，见到你的第一个 Agent 输出
+  <span class=<span class="s">"n"</span>>1</span>. 理解 Agent 的 <span class=<span class="s">"n"</span>>4</span> 要素：LLM / 规划 / 记忆 / 工具
+  <span class=<span class="s">"n"</span>>2</span>. 掌握 LLM API 调用的基本方式
+  <span class=<span class="s">"n"</span>>3</span>. 手写一个最简 Agent（无框架，理解底层原理）
+  <span class=<span class="s">"n"</span>>4</span>. 运行本文件，见到你的第一个 Agent 输出
 
 📌 面试高频点：
   - Agent 循环（Perceive → Think → Act → Observe）的执行流程
@@ -479,25 +515,25 @@ TOOL_MAP = {
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">1.1</span> 从最基础的 LLM 调用开始
+<span class=<span class="s">"n"</span>>1.1</span> 从最基础的 LLM 调用开始
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
-<span class="k">import</span> os
-<span class="k">import</span> json
-<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
-<span class="k">from</span> openai <span class="k">import</span> OpenAI
+<span class=<span class="s">"k"</span>>import</span> os
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+<span class=<span class="s">"k"</span>>from</span> openai <span class=<span class="s">"k"</span>>import</span> OpenAI
 
 load_dotenv()
 
 client = OpenAI(
-    api_key=os.getenv(<span <span class="k">class</span>="s">"OPENAI_API_KEY"</span>),
-    base_url=os.getenv(<span <span class="k">class</span>="s">"OPENAI_BASE_URL"</span>),
+    api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
+    base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
 )
 
 
-<span class="k">def</span> call_llm(prompt: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"最基础的 LLM 调用 —— 发送提示词，获取回复。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>call_llm</span>(prompt: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"最基础的 LLM 调用 —— 发送提示词，获取回复。
 
     这是 Agent 的最底层操作：让 LLM「思考」。
     后续所有 Agent 逻辑都建立在这个基础之上。
@@ -507,19 +543,19 @@ client = OpenAI(
 
     Returns:
         LLM 生成的回复文本。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    model = os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>)
+    <span class="s">""</span>"</span>
+    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
     response = client.chat.completions.create(
         model=model,
-        messages=[{<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"user"</span>, <span <span class="k">class</span>="s">"content"</span>: prompt}],
-        temperature=<span class="n">0.7</span>,
+        messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
+        temperature=<span class=<span class="s">"n"</span>>0.7</span>,
     )
-    <span class="k">return</span> response.choices[<span class="n">0</span>].message.content
+    <span class=<span class="s">"k"</span>>return</span> response.choices[<span class=<span class="s">"n"</span>>0</span>].message.content
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">1.2</span> Function Calling —— Agent 的「手」
+<span class=<span class="s">"n"</span>>1.2</span> Function Calling —— Agent 的「手」
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Function Calling 是 Agent 的核心机制。LLM 不只是生成文本，
@@ -530,7 +566,7 @@ Function Calling 是 Agent 的核心机制。LLM 不只是生成文本，
   →
   LLM 分析 → 识别需要调用 get_weather 函数
   →
-  LLM 输出: {<span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"get_weather"</span>, <span <span class="k">class</span>="s">"arguments"</span>: {<span <span class="k">class</span>="s">"city"</span>: <span <span class="k">class</span>="s">"北京"</span>}}
+  LLM 输出: {<span class="s">"name"</span>: <span class="s">"get_weather"</span>, <span class="s">"arguments"</span>: {<span class="s">"city"</span>: <span class="s">"北京"</span>}}
   →
   我们的代码执行这个函数，拿到真实数据
   →
@@ -538,155 +574,155 @@ Function Calling 是 Agent 的核心机制。LLM 不只是生成文本，
 
 类比：LLM 像一位「盲人指挥家」，他能决定需要什么信息，
 但必须由我们（代码）去执行实际的工具调用。
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 定义工具列表 —— 告诉 LLM 它有哪些<span <span class="k">class</span>="s">"技能"</span>可以使用</span>
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 定义工具列表 —— 告诉 LLM 它有哪些<span class="s">"技能"</span>可以使用</span>
 TOOLS = [
     {
-        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"function"</span>,
-        <span <span class="k">class</span>="s">"function"</span>: {
-            <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"get_weather"</span>,
-            <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"查询指定城市的天气信息。"</span>,
-            <span <span class="k">class</span>="s">"parameters"</span>: {
-                <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"object"</span>,
-                <span <span class="k">class</span>="s">"properties"</span>: {
-                    <span <span class="k">class</span>="s">"city"</span>: {
-                        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>,
-                        <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"城市名称，如 <span <span class="k">class</span>='s'>'北京'</span>、<span <span class="k">class</span>='s'>'上海'</span>"</span>,
+        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"function"</span>,
+        <span class="s">"function"</span>: {
+            <span class="s">"name"</span>: <span class="s">"get_weather"</span>,
+            <span class="s">"description"</span>: <span class="s">"查询指定城市的天气信息。"</span>,
+            <span class="s">"parameters"</span>: {
+                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
+                <span class="s">"properties"</span>: {
+                    <span class="s">"city"</span>: {
+                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
+                        <span class="s">"description"</span>: <span class="s">"城市名称，如 <span class='s'>'北京'</span>、<span class='s'>'上海'</span>"</span>,
                     }
                 },
-                <span <span class="k">class</span>="s">"required"</span>: [<span <span class="k">class</span>="s">"city"</span>],
+                <span class="s">"required"</span>: [<span class="s">"city"</span>],
             },
         },
     },
     {
-        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"function"</span>,
-        <span <span class="k">class</span>="s">"function"</span>: {
-            <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"search_web"</span>,
-            <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"在网上搜索信息，返回搜索结果。"</span>,
-            <span <span class="k">class</span>="s">"parameters"</span>: {
-                <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"object"</span>,
-                <span <span class="k">class</span>="s">"properties"</span>: {
-                    <span <span class="k">class</span>="s">"query"</span>: {
-                        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>,
-                        <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"搜索关键词"</span>,
+        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"function"</span>,
+        <span class="s">"function"</span>: {
+            <span class="s">"name"</span>: <span class="s">"search_web"</span>,
+            <span class="s">"description"</span>: <span class="s">"在网上搜索信息，返回搜索结果。"</span>,
+            <span class="s">"parameters"</span>: {
+                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
+                <span class="s">"properties"</span>: {
+                    <span class="s">"query"</span>: {
+                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
+                        <span class="s">"description"</span>: <span class="s">"搜索关键词"</span>,
                     }
                 },
-                <span <span class="k">class</span>="s">"required"</span>: [<span <span class="k">class</span>="s">"query"</span>],
+                <span class="s">"required"</span>: [<span class="s">"query"</span>],
             },
         },
     },
     {
-        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"function"</span>,
-        <span <span class="k">class</span>="s">"function"</span>: {
-            <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"calculate"</span>,
-            <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"执行数学计算。"</span>,
-            <span <span class="k">class</span>="s">"parameters"</span>: {
-                <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"object"</span>,
-                <span <span class="k">class</span>="s">"properties"</span>: {
-                    <span <span class="k">class</span>="s">"expression"</span>: {
-                        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>,
-                        <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"数学表达式，如 <span <span class="k">class</span>='s'>'<span class="n">2</span> + <span class="n">3</span> * <span class="n">4</span>'</span>"</span>,
+        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"function"</span>,
+        <span class="s">"function"</span>: {
+            <span class="s">"name"</span>: <span class="s">"calculate"</span>,
+            <span class="s">"description"</span>: <span class="s">"执行数学计算。"</span>,
+            <span class="s">"parameters"</span>: {
+                <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"object"</span>,
+                <span class="s">"properties"</span>: {
+                    <span class="s">"expression"</span>: {
+                        <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"string"</span>,
+                        <span class="s">"description"</span>: <span class="s">"数学表达式，如 <span class='s'>'<span class="</span>n<span class="s">">2</span> + <span class="</span>n<span class="s">">3</span> * <span class="</span>n<span class="s">">4</span>'</span>"</span>,
                     }
                 },
-                <span <span class="k">class</span>="s">"required"</span>: [<span <span class="k">class</span>="s">"expression"</span>],
+                <span class="s">"required"</span>: [<span class="s">"expression"</span>],
             },
         },
     },
 ]
 
 
-<span class="k">def</span> get_weather(city: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟天气查询工具。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_weather</span>(city: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟天气查询工具。
 
     Args:
         city: 城市名称。
 
     Returns:
         模拟的天气信息字符串。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
     weather_data = {
-        <span <span class="k">class</span>="s">"北京"</span>: <span <span class="k">class</span>="s">"晴天，<span class="n">25</span>°C，湿度 <span class="n">40</span>%，北风 <span class="n">3</span> 级"</span>,
-        <span <span class="k">class</span>="s">"上海"</span>: <span <span class="k">class</span>="s">"多云，<span class="n">28</span>°C，湿度 <span class="n">65</span>%，东南风 <span class="n">2</span> 级"</span>,
-        <span <span class="k">class</span>="s">"深圳"</span>: <span <span class="k">class</span>="s">"阵雨，<span class="n">30</span>°C，湿度 <span class="n">80</span>%，南风 <span class="n">4</span> 级"</span>,
-        <span <span class="k">class</span>="s">"成都"</span>: <span <span class="k">class</span>="s">"阴天，<span class="n">22</span>°C，湿度 <span class="n">55</span>%，无持续风向"</span>,
+        <span class="s">"北京"</span>: <span class="s">"晴天，<span class="</span>n<span class="s">">25</span>°C，湿度 <span class="</span>n<span class="s">">40</span>%，北风 <span class="</span>n<span class="s">">3</span> 级"</span>,
+        <span class="s">"上海"</span>: <span class="s">"多云，<span class="</span>n<span class="s">">28</span>°C，湿度 <span class="</span>n<span class="s">">65</span>%，东南风 <span class="</span>n<span class="s">">2</span> 级"</span>,
+        <span class="s">"深圳"</span>: <span class="s">"阵雨，<span class="</span>n<span class="s">">30</span>°C，湿度 <span class="</span>n<span class="s">">80</span>%，南风 <span class="</span>n<span class="s">">4</span> 级"</span>,
+        <span class="s">"成都"</span>: <span class="s">"阴天，<span class="</span>n<span class="s">">22</span>°C，湿度 <span class="</span>n<span class="s">">55</span>%，无持续风向"</span>,
     }
-    <span class="k">return</span> weather_data.get(city, f<span <span class="k">class</span>="s">"未找到 {city} 的天气数据"</span>)
+    <span class=<span class="s">"k"</span>>return</span> weather_data.get(city, f<span class="s">"未找到 {city} 的天气数据"</span>)
 
 
-<span class="k">def</span> search_web(query: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟网络搜索工具。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>search_web</span>(query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟网络搜索工具。
 
     Args:
         query: 搜索关键词。
 
     Returns:
         模拟的搜索结果。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
     mock_results = {
-        <span <span class="k">class</span>="s">"python"</span>: <span <span class="k">class</span>="s">"Python 是一种解释型、面向对象的高级编程语言。"</span>,
-        <span <span class="k">class</span>="s">"agent"</span>: (
-            <span <span class="k">class</span>="s">"AI Agent 是一种能够自主感知环境、做出决策并执行行动的"</span>
-            <span <span class="k">class</span>="s">"智能系统。它通常由 LLM、规划器、记忆系统和工具组成。"</span>
+        <span class="s">"python"</span>: <span class="s">"Python 是一种解释型、面向对象的高级编程语言。"</span>,
+        <span class="s">"agent"</span>: (
+            <span class="s">"AI Agent 是一种能够自主感知环境、做出决策并执行行动的"</span>
+            <span class="s">"智能系统。它通常由 LLM、规划器、记忆系统和工具组成。"</span>
         ),
-        <span <span class="k">class</span>="s">"langchain"</span>: (
-            <span <span class="k">class</span>="s">"LangChain 是一个用于构建 LLM 应用的开源框架，"</span>
-            <span <span class="k">class</span>="s">"提供了 Agent、Chain、Tool 等核心抽象。"</span>
+        <span class="s">"langchain"</span>: (
+            <span class="s">"LangChain 是一个用于构建 LLM 应用的开源框架，"</span>
+            <span class="s">"提供了 Agent、Chain、Tool 等核心抽象。"</span>
         ),
     }
-    <span class="k">for</span> key <span class="k">in</span> mock_results:
-        <span class="k">if</span> key <span class="k">in</span> query.lower():
-            <span class="k">return</span> mock_results[key]
-    <span class="k">return</span> f<span <span class="k">class</span>="s">"关于 <span <span class="k">class</span>='s'>'{query}'</span> 的搜索结果：这是一个模拟结果。"</span>
+    <span class=<span class="s">"k"</span>>for</span> key <span class=<span class="s">"k"</span>>in</span> mock_results:
+        <span class=<span class="s">"k"</span>>if</span> key <span class=<span class="s">"k"</span>>in</span> query.lower():
+            <span class=<span class="s">"k"</span>>return</span> mock_results[key]
+    <span class=<span class="s">"k"</span>>return</span> f<span class="s">"关于 <span class='s'>'{query}'</span> 的搜索结果：这是一个模拟结果。"</span>
 
 
-<span class="k">def</span> calculate(expression: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"安全的数学计算工具。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>calculate</span>(expression: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"安全的数学计算工具。
 
     Args:
         expression: 数学表达式字符串。
 
     Returns:
         计算结果字符串。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span class="k">try</span>:
-        allowed_chars = set(<span <span class="k">class</span>="s">"<span class="n">0123456789</span>+-*/().%^ "</span>)
-        <span class="k">if</span> <span class="k">not</span> all(c <span class="k">in</span> allowed_chars <span class="k">for</span> c <span class="k">in</span> expression):
-            <span class="k">return</span> <span <span class="k">class</span>="s">"错误：表达式包含不允许的字符"</span>
+    <span class="s">""</span>"</span>
+    <span class=<span class="s">"k"</span>>try</span>:
+        allowed_chars = <span class=<span class="s">"b"</span>>set</span>(<span class="s">"<span class="</span>n<span class="s">">0123456789</span>+-*/().%^ "</span>)
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"b"</span>>all</span>(c <span class=<span class="s">"k"</span>>in</span> allowed_chars <span class=<span class="s">"k"</span>>for</span> c <span class=<span class="s">"k"</span>>in</span> expression):
+            <span class=<span class="s">"k"</span>>return</span> <span class="s">"错误：表达式包含不允许的字符"</span>
         result = eval(expression)
-        <span class="k">return</span> f<span <span class="k">class</span>="s">"计算结果：{result}"</span>
-    <span class="k">except</span> Exception <span class="k">as</span> e:
-        <span class="k">return</span> f<span <span class="k">class</span>="s">"计算错误：{str(e)}"</span>
+        <span class=<span class="s">"k"</span>>return</span> f<span class="s">"计算结果：{result}"</span>
+    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+        <span class=<span class="s">"k"</span>>return</span> f<span class="s">"计算错误：{<span class="</span>b<span class="s">">str</span>(e)}"</span>
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 工具名称到实际函数的映射</span>
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 工具名称到实际函数的映射</span>
 TOOL_MAP = {
-    <span <span class="k">class</span>="s">"get_weather"</span>: get_weather,
-    <span <span class="k">class</span>="s">"search_web"</span>: search_web,
-    <span <span class="k">class</span>="s">"calculate"</span>: calculate,
+    <span class="s">"get_weather"</span>: get_weather,
+    <span class="s">"search_web"</span>: search_web,
+    <span class="s">"calculate"</span>: calculate,
 }
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">1.3</span> 手写 Agent 循环 —— 理解底层原理
+<span class=<span class="s">"n"</span>>1.3</span> 手写 Agent 循环 —— 理解底层原理
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 这是本章最核心的部分！
 
 每个 Agent 的运行本质上是一个循环：
-  <span class="n">1</span>. 把用户消息发给 LLM
-  <span class="n">2</span>. LLM 判断：直接回答？还是需要调用工具？
-  <span class="n">3</span>. 如果需要调用工具 → 执行工具 → 把结果发给 LLM，回到步骤 <span class="n">1</span>
-  <span class="n">4</span>. 如果可以回答 → 输出答案，结束
+  <span class=<span class="s">"n"</span>>1</span>. 把用户消息发给 LLM
+  <span class=<span class="s">"n"</span>>2</span>. LLM 判断：直接回答？还是需要调用工具？
+  <span class=<span class="s">"n"</span>>3</span>. 如果需要调用工具 → 执行工具 → 把结果发给 LLM，回到步骤 <span class=<span class="s">"n"</span>>1</span>
+  <span class=<span class="s">"n"</span>>4</span>. 如果可以回答 → 输出答案，结束
 
 这个循环被称为 ReAct 循环（Reasoning + Acting），
 是 LangChain / AutoGPT / crewAI 等所有框架的底层逻辑。
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 
-<span class="k">def</span> run_agent(user_message: str, max_iterations: int = <span class="n">5</span>):
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"运行一个最简单的 ReAct Agent。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run_agent</span>(user_message: <span class=<span class="s">"b"</span>>str</span>, max_iterations: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>5</span>):
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"运行一个最简单的 ReAct Agent。
 
     这是不加任何框架的「裸写」Agent，帮助理解底层原理。
     任何 Agent 框架（LangChain/crewAI/AutoGen）本质上
@@ -698,142 +734,142 @@ TOOL_MAP = {
 
     Returns:
         Agent 的最终回答。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 对话历史 —— Agent 的「短期记忆」</span>
+    <span class="s">""</span>"</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 对话历史 —— Agent 的「短期记忆」</span>
     messages = [
-        {<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"content"</span>: <span <span class="k">class</span>="s">"你是一个有用的 AI 助手。当需要获取最新信息或执行计算时，请使用提供的工具。"</span>},
-        {<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"user"</span>, <span <span class="k">class</span>="s">"content"</span>: user_message},
+        {<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: <span class="s">"你是一个有用的 AI 助手。当需要获取最新信息或执行计算时，请使用提供的工具。"</span>},
+        {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_message},
     ]
 
-    print(f<span <span class="k">class</span>="s">"\n{<span <span class="k">class</span>='s'>'='</span>*<span class="n">60</span>}"</span>)
-    print(f<span <span class="k">class</span>="s">"用户: {user_message}"</span>)
-    print(f<span <span class="k">class</span>="s">"{<span <span class="k">class</span>='s'>'='</span>*<span class="n">60</span>}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"用户: {user_message}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"{<span class='s'>'='</span>*<span class="</span>n<span class="s">">60</span>}"</span>)
 
-    <span class="k">for</span> iteration <span class="k">in</span> range(max_iterations):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 第 <span class="n">1</span> 步：调用 LLM（Think 阶段）=====</span>
-        model = os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>)
+    <span class=<span class="s">"k"</span>>for</span> iteration <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(max_iterations):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ===== 第 <span class=<span class="s">"n"</span>>1</span> 步：调用 LLM（Think 阶段）=====</span>
+        model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
         response = client.chat.completions.create(
             model=model,
             messages=messages,
             tools=TOOLS,
-            tool_choice=<span <span class="k">class</span>="s">"auto"</span>,
+            tool_choice=<span class="s">"auto"</span>,
         )
 
-        assistant_message = response.choices[<span class="n">0</span>].message
+        assistant_message = response.choices[<span class=<span class="s">"n"</span>>0</span>].message
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 第 <span class="n">2</span> 步：检查 LLM 是否需要调用工具 =====</span>
-        <span class="k">if</span> assistant_message.tool_calls <span class="k">is</span> <span class="k">None</span>:
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LLM 决定直接回答（不需要工具）→ 循环结束</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ===== 第 <span class=<span class="s">"n"</span>>2</span> 步：检查 LLM 是否需要调用工具 =====</span>
+        <span class=<span class="s">"k"</span>>if</span> assistant_message.tool_calls <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># LLM 决定直接回答（不需要工具）→ 循环结束</span>
             final_answer = assistant_message.content
-            print(f<span <span class="k">class</span>="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
-            <span class="k">return</span> final_answer
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
+            <span class=<span class="s">"k"</span>>return</span> final_answer
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 第 <span class="n">3</span> 步：执行工具调用（Act 阶段）=====</span>
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 将 LLM 的回复（含 tool_calls）加入对话历史</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ===== 第 <span class=<span class="s">"n"</span>>3</span> 步：执行工具调用（Act 阶段）=====</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 将 LLM 的回复（含 tool_calls）加入对话历史</span>
         messages.append(assistant_message)
 
-        <span class="k">for</span> tool_call <span class="k">in</span> assistant_message.tool_calls:
+        <span class=<span class="s">"k"</span>>for</span> tool_call <span class=<span class="s">"k"</span>>in</span> assistant_message.tool_calls:
             func_name = tool_call.function.name
             func_args = json.loads(tool_call.function.arguments)
 
-            print(f<span <span class="k">class</span>="s">"\n🔧 第 {iteration + <span class="n">1</span>} 轮 - 调用工具: {func_name}({func_args})"</span>)
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n🔧 第 {iteration + <span class="</span>n<span class="s">">1</span>} 轮 - 调用工具: {func_name}({func_args})"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 执行实际的工具函数</span>
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 执行实际的工具函数</span>
             tool_function = TOOL_MAP.get(func_name)
-            <span class="k">if</span> tool_function <span class="k">is</span> <span class="k">None</span>:
-                result = f<span <span class="k">class</span>="s">"错误：未找到工具 {func_name}"</span>
-            <span class="k">else</span>:
+            <span class=<span class="s">"k"</span>>if</span> tool_function <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+                result = f<span class="s">"错误：未找到工具 {func_name}"</span>
+            <span class=<span class="s">"k"</span>>else</span>:
                 result = tool_function(**func_args)
 
-            print(f<span <span class="k">class</span>="s">"📊 工具返回: {result}"</span>)
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"📊 工具返回: {result}"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 将工具执行结果加入对话历史（Observe 阶段）</span>
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 将工具执行结果加入对话历史（Observe 阶段）</span>
             messages.append({
-                <span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"tool"</span>,
-                <span <span class="k">class</span>="s">"tool_call_id"</span>: tool_call.id,
-                <span <span class="k">class</span>="s">"content"</span>: result,
+                <span class="s">"role"</span>: <span class="s">"tool"</span>,
+                <span class="s">"tool_call_id"</span>: tool_call.<span class=<span class="s">"b"</span>>id</span>,
+                <span class="s">"content"</span>: result,
             })
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 达到最大迭代次数，强制 LLM 给出最终回答</span>
-    print(<span <span class="k">class</span>="s">"\n⚠️ 达到最大迭代次数，要求 LLM 给出最终回答..."</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 达到最大迭代次数，强制 LLM 给出最终回答</span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n⚠️ 达到最大迭代次数，要求 LLM 给出最终回答..."</span>)
     messages.append({
-        <span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"user"</span>,
-        <span <span class="k">class</span>="s">"content"</span>: <span <span class="k">class</span>="s">"请基于已有的工具调用结果，给出最终回答。"</span>
+        <span class="s">"role"</span>: <span class="s">"user"</span>,
+        <span class="s">"content"</span>: <span class="s">"请基于已有的工具调用结果，给出最终回答。"</span>
     })
-    model = os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>)
+    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
     final_response = client.chat.completions.create(
         model=model,
         messages=messages,
     )
-    final_answer = final_response.choices[<span class="n">0</span>].message.content
-    print(f<span <span class="k">class</span>="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
-    <span class="k">return</span> final_answer
+    final_answer = final_response.choices[<span class=<span class="s">"n"</span>>0</span>].message.content
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
+    <span class=<span class="s">"k"</span>>return</span> final_answer
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">1.4</span> 运行测试 —— 见证你的第一个 Agent
+<span class=<span class="s">"n"</span>>1.4</span> 运行测试 —— 见证你的第一个 Agent
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 下面准备了几组测试用例，分别测试：
-  - Test <span class="n">1</span>: 不需要工具的简单问答（LLM 直接回答）
-  - Test <span class="n">2</span>: 单工具调用（天气查询）
-  - Test <span class="n">3</span>: 多工具调用（搜索 + 计算）
-  - Test <span class="n">4</span>: 需要多次工具调用的复杂任务
+  - Test <span class=<span class="s">"n"</span>>1</span>: 不需要工具的简单问答（LLM 直接回答）
+  - Test <span class=<span class="s">"n"</span>>2</span>: 单工具调用（天气查询）
+  - Test <span class=<span class="s">"n"</span>>3</span>: 多工具调用（搜索 + 计算）
+  - Test <span class=<span class="s">"n"</span>>4</span>: 需要多次工具调用的复杂任务
 
 运行命令：
   python chapter_01_fundamentals/01_hello_agent.py
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 TEST_CASES = [
     {
-        <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"Test <span class="n">1</span> - 简单问答（无需工具）"</span>,
-        <span <span class="k">class</span>="s">"message"</span>: <span <span class="k">class</span>="s">"什么是 Python 编程语言？请用一句话回答。"</span>,
-        <span <span class="k">class</span>="s">"expected_tools"</span>: <span class="n">0</span>,
+        <span class="s">"name"</span>: <span class="s">"Test <span class="</span>n<span class="s">">1</span> - 简单问答（无需工具）"</span>,
+        <span class="s">"message"</span>: <span class="s">"什么是 Python 编程语言？请用一句话回答。"</span>,
+        <span class="s">"expected_tools"</span>: <span class=<span class="s">"n"</span>>0</span>,
     },
     {
-        <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"Test <span class="n">2</span> - 天气查询（单工具）"</span>,
-        <span <span class="k">class</span>="s">"message"</span>: <span <span class="k">class</span>="s">"上海今天天气怎么样？"</span>,
-        <span <span class="k">class</span>="s">"expected_tools"</span>: <span class="n">1</span>,
+        <span class="s">"name"</span>: <span class="s">"Test <span class="</span>n<span class="s">">2</span> - 天气查询（单工具）"</span>,
+        <span class="s">"message"</span>: <span class="s">"上海今天天气怎么样？"</span>,
+        <span class="s">"expected_tools"</span>: <span class=<span class="s">"n"</span>>1</span>,
     },
     {
-        <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"Test <span class="n">3</span> - 组合查询（搜索 + 计算）"</span>,
-        <span <span class="k">class</span>="s">"message"</span>: <span <span class="k">class</span>="s">"搜索一下什么是 LangChain，然后帮我算 <span class="n">123</span> * <span class="n">456</span> 等于多少。"</span>,
-        <span <span class="k">class</span>="s">"expected_tools"</span>: <span class="n">2</span>,
+        <span class="s">"name"</span>: <span class="s">"Test <span class="</span>n<span class="s">">3</span> - 组合查询（搜索 + 计算）"</span>,
+        <span class="s">"message"</span>: <span class="s">"搜索一下什么是 LangChain，然后帮我算 <span class="</span>n<span class="s">">123</span> * <span class="</span>n<span class="s">">456</span> 等于多少。"</span>,
+        <span class="s">"expected_tools"</span>: <span class=<span class="s">"n"</span>>2</span>,
     },
     {
-        <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"Test <span class="n">4</span> - 需要推理的复杂查询"</span>,
-        <span <span class="k">class</span>="s">"message"</span>: <span <span class="k">class</span>="s">"北京和深圳今天哪个城市更热？温度差多少？"</span>,
-        <span <span class="k">class</span>="s">"expected_tools"</span>: <span class="n">2</span>,
+        <span class="s">"name"</span>: <span class="s">"Test <span class="</span>n<span class="s">">4</span> - 需要推理的复杂查询"</span>,
+        <span class="s">"message"</span>: <span class="s">"北京和深圳今天哪个城市更热？温度差多少？"</span>,
+        <span class="s">"expected_tools"</span>: <span class=<span class="s">"n"</span>>2</span>,
     },
 ]
 
 
-<span class="k">def</span> main():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"运行所有测试用例。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║          第1章：第一个 Agent - Hello World           ║"</span>)
-    print(<span <span class="k">class</span>="s">"║          理解 Agent 循环的底层原理                    ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>main</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"运行所有测试用例。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║          第1章：第一个 Agent - Hello World           ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║          理解 Agent 循环的底层原理                    ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
-    <span class="k">for</span> i, test <span class="k">in</span> enumerate(TEST_CASES, <span class="n">1</span>):
-        print(f<span <span class="k">class</span>="s">"\n{<span <span class="k">class</span>='s'>'<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">#'</span>*<span class="n">60</span>}"</span>)</span>
-        print(f<span <span class="k">class</span>="s">"<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">"># {test[<span <span class="k">class</span>='s'>'name'</span>]}"</span>)</span>
-        print(f<span <span class="k">class</span>="s">"<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">"># 预期工具调用数: {test[<span <span class="k">class</span>='s'>'expected_tools'</span>]}"</span>)</span>
-        print(f<span <span class="k">class</span>="s">"{<span <span class="k">class</span>='s'>'<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">#'</span>*<span class="n">60</span>}"</span>)</span>
+    <span class=<span class="s">"k"</span>>for</span> i, test <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(TEST_CASES, <span class=<span class="s">"n"</span>>1</span>):
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n{<span class='s'>'<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">">#'</span>*<span class="</span>n<span class="s">">60</span>}"</span>)</span>
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">"># {test[<span class='s'>'name'</span>]}"</span>)</span>
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">"># 预期工具调用数: {test[<span class='s'>'expected_tools'</span>]}"</span>)</span>
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"{<span class='s'>'<span <span class="</span>k<span class="s">">class</span>="</span>h<span class="s">">#'</span>*<span class="</span>n<span class="s">">60</span>}"</span>)</span>
 
-        <span class="k">try</span>:
-            run_agent(test[<span <span class="k">class</span>="s">"message"</span>], max_iterations=<span class="n">5</span>)
-        <span class="k">except</span> Exception <span class="k">as</span> e:
-            print(f<span <span class="k">class</span>="s">"\n❌ 运行出错: {e}"</span>)
-            print(<span <span class="k">class</span>="s">"请检查 .env 文件中的 API Key 配置是否正确。"</span>)
+        <span class=<span class="s">"k"</span>>try</span>:
+            run_agent(test[<span class="s">"message"</span>], max_iterations=<span class=<span class="s">"n"</span>>5</span>)
+        <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n❌ 运行出错: {e}"</span>)
+            <span class=<span class="s">"b"</span>>print</span>(<span class="s">"请检查 .env 文件中的 API Key 配置是否正确。"</span>)
 
-        <span class="k">if</span> i &lt; len(TEST_CASES):
-            print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"-"</span> * <span class="n">60</span>)
-            input(<span <span class="k">class</span>="s">"按 Enter 继续下一个测试..."</span>)
+        <span class=<span class="s">"k"</span>>if</span> i &lt; <span class=<span class="s">"b"</span>>len</span>(TEST_CASES):
+            <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"-"</span> * <span class=<span class="s">"n"</span>>60</span>)
+            <span class=<span class="s">"b"</span>>input</span>(<span class="s">"按 Enter 继续下一个测试..."</span>)
 
 
-<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
     main()
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html" title="课程概览与环境搭建">← 第0章</a>

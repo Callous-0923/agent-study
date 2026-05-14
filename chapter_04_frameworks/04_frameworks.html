@@ -85,6 +85,15 @@ body {
   line-height: 1.6; max-height: 70vh; overflow-y: auto;
 }
 
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -165,10 +174,10 @@ body {
 └──────────────────────────────────────┴────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>下面我们重点学习 LangChain Agent 和 LangGraph。</p>
-<p>这两个是目前市场上使用最广泛的框架。</p></div><div class="code-section"><details><summary>💻 代码 (6 行)</summary><div class="code-block"><pre><span class="k">import</span> os
-<span class="k">import</span> json
-<span class="k">from</span> typing <span class="k">import</span> Any
-<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+<p>这两个是目前市场上使用最广泛的框架。</p></div><div class="code-section"><details open><summary>💻 代码 (6 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Any
+<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
 
 load_dotenv()</pre></div></details></div><div class="lecture"><h2>4.1 LangChain Agent</h2>
 <p>&nbsp;</p>
@@ -184,149 +193,156 @@ load_dotenv()</pre></div></details></div><div class="lecture"><h2>4.1 LangChain 
 <p>对话历史         →  MemorySaver / ChatMessageHistory</p>
 <p>&nbsp;</p>
 <p>安装依赖:</p>
-<p>pip install langchain langchain-openai langgraph</p></div><div class="code-section"><details><summary>💻 代码 (143 行)</summary><div class="code-block"><pre><span class="k">try</span>:
-    <span class="k">from</span> langchain_openai <span class="k">import</span> ChatOpenAI
-    <span class="k">from</span> langchain_core.tools <span class="k">import</span> tool
-    <span class="k">from</span> langgraph.prebuilt <span class="k">import</span> create_react_agent
-    <span class="k">from</span> langgraph.checkpoint.memory <span class="k">import</span> MemorySaver
-    LANGCHAIN_AVAILABLE = <span class="k">True</span>
-<span class="k">except</span> ImportError:
-    LANGCHAIN_AVAILABLE = <span class="k">False</span>
-    print(<span <span class="k">class</span>="s">"⚠️ LangChain 未安装。请运行: pip install langchain langchain-openai langgraph"</span>)
+<p>pip install langchain langchain-openai langgraph</p></div><div class="code-section"><details open><summary>💻 代码 (150 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Any
+<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+
+load_dotenv()
+
+<span class=<span class="s">"k"</span>>try</span>:
+    <span class=<span class="s">"k"</span>>from</span> langchain_openai <span class=<span class="s">"k"</span>>import</span> ChatOpenAI
+    <span class=<span class="s">"k"</span>>from</span> langchain_core.tools <span class=<span class="s">"k"</span>>import</span> tool
+    <span class=<span class="s">"k"</span>>from</span> langgraph.prebuilt <span class=<span class="s">"k"</span>>import</span> create_react_agent
+    <span class=<span class="s">"k"</span>>from</span> langgraph.checkpoint.memory <span class=<span class="s">"k"</span>>import</span> MemorySaver
+    LANGCHAIN_AVAILABLE = <span class=<span class="s">"k"</span>>True</span>
+<span class=<span class="s">"k"</span>>except</span> ImportError:
+    LANGCHAIN_AVAILABLE = <span class=<span class="s">"k"</span>>False</span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"⚠️ LangChain 未安装。请运行: pip install langchain langchain-openai langgraph"</span>)
 
 
-<span class="d">@tool</span>
-<span class="k">def</span> get_stock_price(symbol: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"查询股票实时价格。
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span>
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_stock_price</span>(symbol: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"查询股票实时价格。
 
     Args:
         symbol: 股票代码，如 AAPL（苹果）、TSLA（特斯拉）、BABA（阿里巴巴）。
 
     Returns:
         该股票的最新价格信息。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
     mock_prices = {
-        <span <span class="k">class</span>="s">"AAPL"</span>: <span <span class="k">class</span>="s">"<span class="n">185.50</span> USD"</span>,
-        <span <span class="k">class</span>="s">"TSLA"</span>: <span <span class="k">class</span>="s">"<span class="n">245.30</span> USD"</span>,
-        <span <span class="k">class</span>="s">"GOOGL"</span>: <span <span class="k">class</span>="s">"<span class="n">175.20</span> USD"</span>,
-        <span <span class="k">class</span>="s">"MSFT"</span>: <span <span class="k">class</span>="s">"<span class="n">420.10</span> USD"</span>,
-        <span <span class="k">class</span>="s">"BABA"</span>: <span <span class="k">class</span>="s">"<span class="n">85.50</span> USD"</span>,
+        <span class="s">"AAPL"</span>: <span class="s">"<span class="</span>n<span class="s">">185.50</span> USD"</span>,
+        <span class="s">"TSLA"</span>: <span class="s">"<span class="</span>n<span class="s">">245.30</span> USD"</span>,
+        <span class="s">"GOOGL"</span>: <span class="s">"<span class="</span>n<span class="s">">175.20</span> USD"</span>,
+        <span class="s">"MSFT"</span>: <span class="s">"<span class="</span>n<span class="s">">420.10</span> USD"</span>,
+        <span class="s">"BABA"</span>: <span class="s">"<span class="</span>n<span class="s">">85.50</span> USD"</span>,
     }
-    price = mock_prices.get(symbol.upper(), f<span <span class="k">class</span>="s">"未找到股票 {symbol} 的数据"</span>)
-    <span class="k">return</span> f<span <span class="k">class</span>="s">"{symbol.upper()}: {price} (模拟数据)"</span>
+    price = mock_prices.get(symbol.upper(), f<span class="s">"未找到股票 {symbol} 的数据"</span>)
+    <span class=<span class="s">"k"</span>>return</span> f<span class="s">"{symbol.upper()}: {price} (模拟数据)"</span>
 
 
-<span class="d">@tool</span>
-<span class="k">def</span> search_news(query: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"搜索最新的新闻资讯。
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span>
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>search_news</span>(query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"搜索最新的新闻资讯。
 
     适用于获取实时新闻、事件报道、行业动态等。
 
     Args:
-        query: 搜索关键词，如 <span <span class="k">class</span>="s">"AI 行业动态"</span>。
+        query: 搜索关键词，如 <span class="s">"AI 行业动态"</span>。
 
     Returns:
         相关新闻摘要。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
     mock_news = {
-        <span <span class="k">class</span>="s">"AI"</span>: <span <span class="k">class</span>="s">"2025年 AI Agent 成为业界焦点，各大科技公司纷纷布局 Agent 技术。"</span>,
-        <span <span class="k">class</span>="s">"股票"</span>: <span <span class="k">class</span>="s">"今日股市震荡，科技板块表现强劲。"</span>,
-        <span <span class="k">class</span>="s">"特斯拉"</span>: <span <span class="k">class</span>="s">"特斯拉发布新一代自动驾驶技术，股价上涨 <span class="n">3</span>%。"</span>,
+        <span class="s">"AI"</span>: <span class="s">"2025年 AI Agent 成为业界焦点，各大科技公司纷纷布局 Agent 技术。"</span>,
+        <span class="s">"股票"</span>: <span class="s">"今日股市震荡，科技板块表现强劲。"</span>,
+        <span class="s">"特斯拉"</span>: <span class="s">"特斯拉发布新一代自动驾驶技术，股价上涨 <span class="</span>n<span class="s">">3</span>%。"</span>,
     }
-    <span class="k">for</span> key <span class="k">in</span> mock_news:
-        <span class="k">if</span> key <span class="k">in</span> query:
-            <span class="k">return</span> mock_news[key]
-    <span class="k">return</span> f<span <span class="k">class</span>="s">"关于 <span <span class="k">class</span>='s'>'{query}'</span> 的新闻：行业持续发展，暂无重大事件。(模拟数据)"</span>
+    <span class=<span class="s">"k"</span>>for</span> key <span class=<span class="s">"k"</span>>in</span> mock_news:
+        <span class=<span class="s">"k"</span>>if</span> key <span class=<span class="s">"k"</span>>in</span> query:
+            <span class=<span class="s">"k"</span>>return</span> mock_news[key]
+    <span class=<span class="s">"k"</span>>return</span> f<span class="s">"关于 <span class='s'>'{query}'</span> 的新闻：行业持续发展，暂无重大事件。(模拟数据)"</span>
 
 
-<span class="d">@tool</span>
-<span class="k">def</span> calculate_math(expression: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"执行数学计算。
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span>
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>calculate_math</span>(expression: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"执行数学计算。
 
     Args:
-        expression: 数学表达式，如 <span <span class="k">class</span>='s'>'<span class="n">100</span> * <span class="n">1.15</span>'</span> 或 <span <span class="k">class</span>='s'>'sqrt(<span class="n">144</span>)'</span>。
+        expression: 数学表达式，如 <span class='s'>'<span class=<span class="s">"n"</span>>100</span> * <span class=<span class="s">"n"</span>>1.15</span>'</span> 或 <span class='s'>'sqrt(<span class=<span class="s">"n"</span>>144</span>)'</span>。
 
     Returns:
         计算结果。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span class="k">try</span>:
-        allowed = set(<span <span class="k">class</span>="s">"<span class="n">0123456789</span>+-*/().%^ "</span>)
-        <span class="k">if</span> <span class="k">not</span> all(c <span class="k">in</span> allowed <span class="k">for</span> c <span class="k">in</span> expression):
-            <span class="k">return</span> <span <span class="k">class</span>="s">"错误：表达式包含不允许的字符"</span>
-        <span class="k">return</span> str(eval(expression))
-    <span class="k">except</span> Exception <span class="k">as</span> e:
-        <span class="k">return</span> f<span <span class="k">class</span>="s">"计算错误: {e}"</span>
+    <span class="s">""</span>"</span>
+    <span class=<span class="s">"k"</span>>try</span>:
+        allowed = <span class=<span class="s">"b"</span>>set</span>(<span class="s">"<span class="</span>n<span class="s">">0123456789</span>+-*/().%^ "</span>)
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"b"</span>>all</span>(c <span class=<span class="s">"k"</span>>in</span> allowed <span class=<span class="s">"k"</span>>for</span> c <span class=<span class="s">"k"</span>>in</span> expression):
+            <span class=<span class="s">"k"</span>>return</span> <span class="s">"错误：表达式包含不允许的字符"</span>
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>str</span>(eval(expression))
+    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+        <span class=<span class="s">"k"</span>>return</span> f<span class="s">"计算错误: {e}"</span>
 
 
-<span class="k">def</span> demo_langchain_agent():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"演示 LangChain Agent 的基本用法。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_langchain_agent</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"演示 LangChain Agent 的基本用法。
 
     对比第1章的裸写 Agent，可以看到：
-      <span class="n">1</span>. 工具定义用 <span class="d">@tool</span> 装饰器，更简洁
-      <span class="n">2</span>. Agent 执行器一行代码创建
-      <span class="n">3</span>. 对话历史自动管理（MemorySaver）
-      <span class="n">4</span>. 线程级别的对话隔离
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span class="k">if</span> <span class="k">not</span> LANGCHAIN_AVAILABLE:
-        print(<span <span class="k">class</span>="s">"需要安装 LangChain 才能运行此演示。"</span>)
-        <span class="k">return</span>
+      <span class=<span class="s">"n"</span>>1</span>. 工具定义用 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span> 装饰器，更简洁
+      <span class=<span class="s">"n"</span>>2</span>. Agent 执行器一行代码创建
+      <span class=<span class="s">"n"</span>>3</span>. 对话历史自动管理（MemorySaver）
+      <span class=<span class="s">"n"</span>>4</span>. 线程级别的对话隔离
+    <span class="s">""</span>"</span>
+    <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> LANGCHAIN_AVAILABLE:
+        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"需要安装 LangChain 才能运行此演示。"</span>)
+        <span class=<span class="s">"k"</span>>return</span>
 
-    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  LangChain Agent 演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  LangChain Agent 演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 步骤 <span class="n">1</span>：初始化 LLM</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 步骤 <span class=<span class="s">"n"</span>>1</span>：初始化 LLM</span>
     llm = ChatOpenAI(
-        model=os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>),
-        api_key=os.getenv(<span <span class="k">class</span>="s">"OPENAI_API_KEY"</span>),
-        base_url=os.getenv(<span <span class="k">class</span>="s">"OPENAI_BASE_URL"</span>),
-        temperature=<span class="n">0.7</span>,
+        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+        api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
+        base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
+        temperature=<span class=<span class="s">"n"</span>>0.7</span>,
     )
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 步骤 <span class="n">2</span>：准备工具列表</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 步骤 <span class=<span class="s">"n"</span>>2</span>：准备工具列表</span>
     tools = [get_stock_price, search_news, calculate_math]
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 步骤 <span class="n">3</span>：创建 Agent（内置 ReAct 循环！）</span>
-    memory = MemorySaver()  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 对话记忆管理器</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 步骤 <span class=<span class="s">"n"</span>>3</span>：创建 Agent（内置 ReAct 循环！）</span>
+    memory = MemorySaver()  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 对话记忆管理器</span>
     agent = create_react_agent(
         model=llm,
         tools=tools,
         checkpointer=memory,
     )
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
     LangChain Agent 的核心抽象：
       - LLM: ChatOpenAI —— 大脑
-      - Tools: <span class="d">@tool</span> 列表 —— 技能
+      - Tools: <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span> 列表 —— 技能
       - Agent: create_react_agent —— 执行器
       - Checkpointer: MemorySaver —— 记忆
 
     对比第1章裸写的优势：
-      <span class="n">1</span>. 不需要手动管理 messages 列表
-      <span class="n">2</span>. 不需要手动处理 tool_calls 循环
-      <span class="n">3</span>. 对话历史自动持久化
-      <span class="n">4</span>. 支持多线程（通过 thread_id 隔离对话）
-    <span <span class="k">class</span>="s">""</span>"</span>
+      <span class=<span class="s">"n"</span>>1</span>. 不需要手动管理 messages 列表
+      <span class=<span class="s">"n"</span>>2</span>. 不需要手动处理 tool_calls 循环
+      <span class=<span class="s">"n"</span>>3</span>. 对话历史自动持久化
+      <span class=<span class="s">"n"</span>>4</span>. 支持多线程（通过 thread_id 隔离对话）
+    <span class="s">""</span>"</span>
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 步骤 <span class="n">4</span>：运行对话</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 步骤 <span class=<span class="s">"n"</span>>4</span>：运行对话</span>
     test_queries = [
-        <span <span class="k">class</span>="s">"帮我查一下苹果(AAPL)和特斯拉(TSLA)的股价"</span>,
-        <span <span class="k">class</span>="s">"特斯拉最近有什么新闻吗？"</span>,
+        <span class="s">"帮我查一下苹果(AAPL)和特斯拉(TSLA)的股价"</span>,
+        <span class="s">"特斯拉最近有什么新闻吗？"</span>,
     ]
 
-    config = {<span <span class="k">class</span>="s">"configurable"</span>: {<span <span class="k">class</span>="s">"thread_id"</span>: <span <span class="k">class</span>="s">"demo-session-<span class="n">1</span>"</span>}}
+    config = {<span class="s">"configurable"</span>: {<span class="s">"thread_id"</span>: <span class="s">"demo-session-<span class="</span>n<span class="s">">1</span>"</span>}}
 
-    <span class="k">for</span> query <span class="k">in</span> test_queries:
-        print(f<span <span class="k">class</span>="s">"\n👤 用户: {query}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> query <span class=<span class="s">"k"</span>>in</span> test_queries:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n👤 用户: {query}"</span>)
 
         result = agent.invoke(
-            {<span <span class="k">class</span>="s">"messages"</span>: [(<span <span class="k">class</span>="s">"user"</span>, query)]},
+            {<span class="s">"messages"</span>: [(<span class="s">"user"</span>, query)]},
             config=config,
         )
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 最后一条消息是 Agent 的回复</span>
-        final_msg = result[<span <span class="k">class</span>="s">"messages"</span>][-<span class="n">1</span>]
-        print(f<span <span class="k">class</span>="s">"🤖 Agent: {final_msg.content}"</span>)</pre></div></details></div><div class="lecture"><h2>4.2 LangGraph —— 状态机 Agent</h2>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 最后一条消息是 Agent 的回复</span>
+        final_msg = result[<span class="s">"messages"</span>][-<span class=<span class="s">"n"</span>>1</span>]
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"🤖 Agent: {final_msg.content}"</span>)</pre></div></details></div><div class="lecture"><h2>4.2 LangGraph —— 状态机 Agent</h2>
 <p>&nbsp;</p>
 <p>LangGraph 是 LangChain 生态中的 Agent 编排框架。</p>
 <p>它的核心思想是用「有向图」来定义 Agent 的执行流程。</p>
@@ -343,117 +359,124 @@ load_dotenv()</pre></div></details></div><div class="lecture"><h2>4.1 LangChain 
 <li>多 Agent 协作场景（第5章会用到）</li>
 <p>&nbsp;</p>
 <p>安装依赖：</p>
-<p>pip install langgraph</p></div><div class="code-section"><details><summary>💻 代码 (140 行)</summary><div class="code-block"><pre><span class="k">try</span>:
-    <span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict
-    <span class="k">from</span> langgraph.graph <span class="k">import</span> StateGraph, END
-    <span class="k">from</span> langgraph.graph.message <span class="k">import</span> add_messages
-    <span class="k">from</span> langchain_core.messages <span class="k">import</span> BaseMessage, HumanMessage, AIMessage
-    LANGGRAPH_AVAILABLE = <span class="k">True</span>
-<span class="k">except</span> ImportError:
-    LANGGRAPH_AVAILABLE = <span class="k">False</span>
-    print(<span <span class="k">class</span>="s">"⚠️ LangGraph 未安装。"</span>)
+<p>pip install langgraph</p></div><div class="code-section"><details open><summary>💻 代码 (147 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Any
+<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
+
+load_dotenv()
+
+<span class=<span class="s">"k"</span>>try</span>:
+    <span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Annotated, TypedDict
+    <span class=<span class="s">"k"</span>>from</span> langgraph.graph <span class=<span class="s">"k"</span>>import</span> StateGraph, END
+    <span class=<span class="s">"k"</span>>from</span> langgraph.graph.message <span class=<span class="s">"k"</span>>import</span> add_messages
+    <span class=<span class="s">"k"</span>>from</span> langchain_core.messages <span class=<span class="s">"k"</span>>import</span> BaseMessage, HumanMessage, AIMessage
+    LANGGRAPH_AVAILABLE = <span class=<span class="s">"k"</span>>True</span>
+<span class=<span class="s">"k"</span>>except</span> ImportError:
+    LANGGRAPH_AVAILABLE = <span class=<span class="s">"k"</span>>False</span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"⚠️ LangGraph 未安装。"</span>)
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 定义状态类型</span>
-<span class="k">class</span> AgentState(TypedDict):
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"LangGraph Agent 的状态定义。
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 定义状态类型</span>
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentState</span>(TypedDict):
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"LangGraph Agent 的状态定义。
 
     这是 LangGraph 最核心的概念。所有节点共享这个状态，
     节点通过读取/修改状态来协作完成任务。
 
-    Annotated[list, add_messages] 表示消息列表使用
+    Annotated[<span class=<span class="s">"b"</span>>list</span>, add_messages] 表示消息列表使用
     追加模式（新消息添加到末尾，不会覆盖）。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    messages: Annotated[list, add_messages]
-    task_result: str
-    step_count: int
+    <span class="s">""</span>"</span>
+    messages: Annotated[<span class=<span class="s">"b"</span>>list</span>, add_messages]
+    task_result: <span class=<span class="s">"b"</span>>str</span>
+    step_count: <span class=<span class="s">"b"</span>>int</span>
 
 
-<span class="k">def</span> demo_langgraph_agent():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"演示 LangGraph 状态机 Agent。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_langgraph_agent</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"演示 LangGraph 状态机 Agent。
 
     实现一个简单的分析流程：
       输入问题 → LLM 分析 → 判断是否需要工具 → 输出结论
 
     LangGraph 让我们可以自定义 Agent 的执行图结构，
     而不是拘泥于固定的 ReAct 循环。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span class="k">if</span> <span class="k">not</span> LANGGRAPH_AVAILABLE <span class="k">or</span> <span class="k">not</span> LANGCHAIN_AVAILABLE:
-        print(<span <span class="k">class</span>="s">"需要安装 langgraph 和 langchain 才能运行此演示。"</span>)
-        <span class="k">return</span>
+    <span class="s">""</span>"</span>
+    <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> LANGGRAPH_AVAILABLE <span class=<span class="s">"k"</span>>or</span> <span class=<span class="s">"k"</span>>not</span> LANGCHAIN_AVAILABLE:
+        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"需要安装 langgraph 和 langchain 才能运行此演示。"</span>)
+        <span class=<span class="s">"k"</span>>return</span>
 
-    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  LangGraph 状态机 Agent 演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  LangGraph 状态机 Agent 演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
     llm = ChatOpenAI(
-        model=os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>),
-        api_key=os.getenv(<span <span class="k">class</span>="s">"OPENAI_API_KEY"</span>),
-        base_url=os.getenv(<span <span class="k">class</span>="s">"OPENAI_BASE_URL"</span>),
-        temperature=<span class="n">0.5</span>,
+        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+        api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
+        base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
+        temperature=<span class=<span class="s">"n"</span>>0.5</span>,
     )
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 定义节点函数 =====</span>
-    <span class="k">def</span> analyze_node(state: AgentState) -&gt; AgentState:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"分析节点：让 LLM 理解用户输入。"</span><span <span class="k">class</span>="s">""</span></span>
-        print(<span <span class="k">class</span>="s">"  [Node: analyze] 正在分析用户输入..."</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ===== 定义节点函数 =====</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>analyze_node</span>(state: AgentState) -&gt; AgentState:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"分析节点：让 LLM 理解用户输入。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  [Node: analyze] 正在分析用户输入..."</span>)
         response = llm.invoke([
-            (<span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"分析用户问题，提取关键信息。简洁回答。"</span>),
-            (<span <span class="k">class</span>="s">"user"</span>, state[<span <span class="k">class</span>="s">"messages"</span>][-<span class="n">1</span>].content),
+            (<span class="s">"system"</span>, <span class="s">"分析用户问题，提取关键信息。简洁回答。"</span>),
+            (<span class="s">"user"</span>, state[<span class="s">"messages"</span>][-<span class=<span class="s">"n"</span>>1</span>].content),
         ])
-        state[<span <span class="k">class</span>="s">"messages"</span>].append(response)
-        state[<span <span class="k">class</span>="s">"task_result"</span>] = response.content
-        state[<span <span class="k">class</span>="s">"step_count"</span>] = state.get(<span <span class="k">class</span>="s">"step_count"</span>, <span class="n">0</span>) + <span class="n">1</span>
-        <span class="k">return</span> state
+        state[<span class="s">"messages"</span>].append(response)
+        state[<span class="s">"task_result"</span>] = response.content
+        state[<span class="s">"step_count"</span>] = state.get(<span class="s">"step_count"</span>, <span class=<span class="s">"n"</span>>0</span>) + <span class=<span class="s">"n"</span>>1</span>
+        <span class=<span class="s">"k"</span>>return</span> state
 
-    <span class="k">def</span> should_continue(state: AgentState) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"条件判断：是否需要进一步处理？"</span><span <span class="k">class</span>="s">""</span></span>
-        result = state[<span <span class="k">class</span>="s">"task_result"</span>]
-        <span class="k">if</span> len(result) &lt; <span class="n">50</span>:
-            print(<span <span class="k">class</span>="s">"  [Edge] 回答太短，需要补充详细分析"</span>)
-            <span class="k">return</span> <span <span class="k">class</span>="s">"elaborate"</span>
-        print(<span <span class="k">class</span>="s">"  [Edge] 回答充分，结束流程"</span>)
-        <span class="k">return</span> <span <span class="k">class</span>="s">"end"</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>should_continue</span>(state: AgentState) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"条件判断：是否需要进一步处理？"</span><span class="s">""</span></span>
+        result = state[<span class="s">"task_result"</span>]
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(result) &lt; <span class=<span class="s">"n"</span>>50</span>:
+            <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  [Edge] 回答太短，需要补充详细分析"</span>)
+            <span class=<span class="s">"k"</span>>return</span> <span class="s">"elaborate"</span>
+        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  [Edge] 回答充分，结束流程"</span>)
+        <span class=<span class="s">"k"</span>>return</span> <span class="s">"end"</span>
 
-    <span class="k">def</span> elaborate_node(state: AgentState) -&gt; AgentState:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"扩展节点：补充详细分析。"</span><span <span class="k">class</span>="s">""</span></span>
-        print(<span <span class="k">class</span>="s">"  [Node: elaborate] 正在补充详细分析..."</span>)
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>elaborate_node</span>(state: AgentState) -&gt; AgentState:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"扩展节点：补充详细分析。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  [Node: elaborate] 正在补充详细分析..."</span>)
         response = llm.invoke([
-            (<span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"请更详细地展开分析，提供更多上下文和细节。"</span>),
-            (<span <span class="k">class</span>="s">"user"</span>, state[<span <span class="k">class</span>="s">"task_result"</span>]),
+            (<span class="s">"system"</span>, <span class="s">"请更详细地展开分析，提供更多上下文和细节。"</span>),
+            (<span class="s">"user"</span>, state[<span class="s">"task_result"</span>]),
         ])
-        state[<span <span class="k">class</span>="s">"messages"</span>].append(response)
-        state[<span <span class="k">class</span>="s">"task_result"</span>] = response.content
-        state[<span <span class="k">class</span>="s">"step_count"</span>] = state.get(<span <span class="k">class</span>="s">"step_count"</span>, <span class="n">0</span>) + <span class="n">1</span>
-        <span class="k">return</span> state
+        state[<span class="s">"messages"</span>].append(response)
+        state[<span class="s">"task_result"</span>] = response.content
+        state[<span class="s">"step_count"</span>] = state.get(<span class="s">"step_count"</span>, <span class=<span class="s">"n"</span>>0</span>) + <span class=<span class="s">"n"</span>>1</span>
+        <span class=<span class="s">"k"</span>>return</span> state
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 构建图 =====</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ===== 构建图 =====</span>
     workflow = StateGraph(AgentState)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 添加节点</span>
-    workflow.add_node(<span <span class="k">class</span>="s">"analyze"</span>, analyze_node)
-    workflow.add_node(<span <span class="k">class</span>="s">"elaborate"</span>, elaborate_node)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 添加节点</span>
+    workflow.add_node(<span class="s">"analyze"</span>, analyze_node)
+    workflow.add_node(<span class="s">"elaborate"</span>, elaborate_node)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 设置入口点</span>
-    workflow.set_entry_point(<span <span class="k">class</span>="s">"analyze"</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 设置入口点</span>
+    workflow.set_entry_point(<span class="s">"analyze"</span>)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 添加条件边：从 analyze 根据条件走向不同分支</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 添加条件边：从 analyze 根据条件走向不同分支</span>
     workflow.add_conditional_edges(
-        <span <span class="k">class</span>="s">"analyze"</span>,
+        <span class="s">"analyze"</span>,
         should_continue,
         {
-            <span <span class="k">class</span>="s">"elaborate"</span>: <span <span class="k">class</span>="s">"elaborate"</span>,
-            <span <span class="k">class</span>="s">"end"</span>: END,
+            <span class="s">"elaborate"</span>: <span class="s">"elaborate"</span>,
+            <span class="s">"end"</span>: END,
         },
     )
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># elaborate 完成后结束</span>
-    workflow.add_edge(<span <span class="k">class</span>="s">"elaborate"</span>, END)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># elaborate 完成后结束</span>
+    workflow.add_edge(<span class="s">"elaborate"</span>, END)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 编译图</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 编译图</span>
     app = workflow.compile()
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
     图结构示意：
 
       [START]
@@ -468,21 +491,21 @@ load_dotenv()</pre></div></details></div><div class="lecture"><h2>4.1 LangChain 
 
     这就是 LangGraph 的核心优势：
     用代码定义复杂的执行流程，而非硬编码在循环中。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 运行</span>
-    test_input = <span <span class="k">class</span>="s">"LangGraph 是什么？请简短说明。"</span>
-    print(f<span <span class="k">class</span>="s">"\n👤 用户: {test_input}"</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 运行</span>
+    test_input = <span class="s">"LangGraph 是什么？请简短说明。"</span>
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n👤 用户: {test_input}"</span>)
 
     initial_state = {
-        <span <span class="k">class</span>="s">"messages"</span>: [HumanMessage(content=test_input)],
-        <span <span class="k">class</span>="s">"task_result"</span>: <span <span class="k">class</span>="s">""</span>,
-        <span <span class="k">class</span>="s">"step_count"</span>: <span class="n">0</span>,
+        <span class="s">"messages"</span>: [HumanMessage(content=test_input)],
+        <span class="s">"task_result"</span>: <span class="s">""</span>,
+        <span class="s">"step_count"</span>: <span class=<span class="s">"n"</span>>0</span>,
     }
 
     final_state = app.invoke(initial_state)
-    print(f<span <span class="k">class</span>="s">"\n🤖 Agent: {final_state[<span <span class="k">class</span>='s'>'task_result'</span>]}"</span>)
-    print(f<span <span class="k">class</span>="s">"   总步骤数: {final_state[<span <span class="k">class</span>='s'>'step_count'</span>]}"</span>)</pre></div></details></div><div class="lecture"><h2>4.3 框架选择策略（面试高频！）</h2>
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n🤖 Agent: {final_state[<span class='s'>'task_result'</span>]}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"   总步骤数: {final_state[<span class='s'>'step_count'</span>]}"</span>)</pre></div></details></div><div class="lecture"><h2>4.3 框架选择策略（面试高频！）</h2>
 <p>&nbsp;</p>
 <p>面试官：「你用过哪些 Agent 框架？怎么选型？」</p>
 <p>&nbsp;</p>
@@ -541,41 +564,48 @@ load_dotenv()</pre></div></details></div><div class="lecture"><h2>4.1 LangChain 
 <p>"LangGraph 和 LangChain Agent 的区别？"</p>
 <p>→ LangChain Agent 是预定义的 ReAct 循环</p>
 <p>→ LangGraph 可以自定义任意执行图</p>
-<p>→ LangGraph 适合复杂工作流，LangChain Agent 适合简单任务</p></div><div class="code-section"><details><summary>💻 代码 (27 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║       第4章：主流 Agent 框架实战                       ║"</span>)
-    print(<span <span class="k">class</span>="s">"║       LangChain · LangGraph · 选型策略               ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<p>→ LangGraph 适合复杂工作流，LangChain Agent 适合简单任务</p></div><div class="code-section"><details open><summary>💻 代码 (34 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> os
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Any
+<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">4.1</span> LangChain Agent 演示"</span>)
-    <span class="k">try</span>:
+load_dotenv()
+
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       第4章：主流 Agent 框架实战                       ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       LangChain · LangGraph · 选型策略               ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">4.1</span> LangChain Agent 演示"</span>)
+    <span class=<span class="s">"k"</span>>try</span>:
         demo_langchain_agent()
-    <span class="k">except</span> Exception <span class="k">as</span> e:
-        print(f<span <span class="k">class</span>="s">"  ⚠️ 运行出错（请检查依赖和 API Key）: {e}"</span>)
+    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 运行出错（请检查依赖和 API Key）: {e}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">4.2</span> LangGraph 状态机演示"</span>)
-    <span class="k">try</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">4.2</span> LangGraph 状态机演示"</span>)
+    <span class=<span class="s">"k"</span>>try</span>:
         demo_langgraph_agent()
-    <span class="k">except</span> Exception <span class="k">as</span> e:
-        print(f<span <span class="k">class</span>="s">"  ⚠️ 运行出错（请检查依赖和 API Key）: {e}"</span>)
+    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 运行出错（请检查依赖和 API Key）: {e}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">4.3</span> 框架选型速查"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
-    print(<span <span class="k">class</span>="s">"场景: 快速原型 → LangChain Agent"</span>)
-    print(<span <span class="k">class</span>="s">"场景: 复杂工作流 → LangGraph"</span>)
-    print(<span <span class="k">class</span>="s">"场景: 多Agent协作 → crewAI / 自建 LangGraph 图"</span>)
-    print(<span <span class="k">class</span>="s">"场景: 人在回路 → AutoGen"</span>)
-    print(<span <span class="k">class</span>="s">"场景: 完全掌控 → 裸写（第1章方式）"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">4.3</span> 框架选型速查"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"场景: 快速原型 → LangChain Agent"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"场景: 复杂工作流 → LangGraph"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"场景: 多Agent协作 → crewAI / 自建 LangGraph 图"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"场景: 人在回路 → AutoGen"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"场景: 完全掌控 → 裸写（第1章方式）"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第4章完成！接下来进入第5章：多智能体系统。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (486 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第4章完成！接下来进入第5章：多智能体系统。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (486 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 第4章：主流 Agent 框架实战
 ===========================
 
 📌 本章目标：
-  <span class="n">1</span>. 了解当前主流 Agent 框架及其定位
-  <span class="n">2</span>. 掌握 LangChain Agent 的核心用法
-  <span class="n">3</span>. 理解 LangGraph 的状态机模型
-  <span class="n">4</span>. 学会根据项目需求选择合适的框架
+  <span class=<span class="s">"n"</span>>1</span>. 了解当前主流 Agent 框架及其定位
+  <span class=<span class="s">"n"</span>>2</span>. 掌握 LangChain Agent 的核心用法
+  <span class=<span class="s">"n"</span>>3</span>. 理解 LangGraph 的状态机模型
+  <span class=<span class="s">"n"</span>>4</span>. 学会根据项目需求选择合适的框架
 
 📌 面试高频点：
   - LangChain Agent vs 裸写的区别和优势
@@ -585,7 +615,7 @@ load_dotenv()</pre></div></details></div><div class="lecture"><h2>4.1 LangChain 
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">4.0</span> 主流框架全景图
+<span class=<span class="s">"n"</span>>4.0</span> 主流框架全景图
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ┌────────────────────┬──────────────┬────────────────────────────┐
@@ -613,18 +643,18 @@ load_dotenv()</pre></div></details></div><div class="lecture"><h2>4.1 LangChain 
 
 下面我们重点学习 LangChain Agent 和 LangGraph。
 这两个是目前市场上使用最广泛的框架。
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
-<span class="k">import</span> os
-<span class="k">import</span> json
-<span class="k">from</span> typing <span class="k">import</span> Any
-<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+<span class=<span class="s">"k"</span>>import</span> os
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Any
+<span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv
 
 load_dotenv()
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">4.1</span> LangChain Agent
+<span class=<span class="s">"n"</span>>4.1</span> LangChain Agent
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
@@ -633,163 +663,163 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
 核心组件映射：
   手写版          →  LangChain 版
   ─────────────    ─────────────────
-  TOOLS 列表       →  <span class="d">@tool</span> 装饰器
+  TOOLS 列表       →  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span> 装饰器
   TOOL_MAP 字典    →  Tool 对象
   Agent 循环       →  create_react_agent()
   对话历史         →  MemorySaver / ChatMessageHistory
 
 安装依赖:
   pip install langchain langchain-openai langgraph
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
-<span class="k">try</span>:
-    <span class="k">from</span> langchain_openai <span class="k">import</span> ChatOpenAI
-    <span class="k">from</span> langchain_core.tools <span class="k">import</span> tool
-    <span class="k">from</span> langgraph.prebuilt <span class="k">import</span> create_react_agent
-    <span class="k">from</span> langgraph.checkpoint.memory <span class="k">import</span> MemorySaver
-    LANGCHAIN_AVAILABLE = <span class="k">True</span>
-<span class="k">except</span> ImportError:
-    LANGCHAIN_AVAILABLE = <span class="k">False</span>
-    print(<span <span class="k">class</span>="s">"⚠️ LangChain 未安装。请运行: pip install langchain langchain-openai langgraph"</span>)
+<span class=<span class="s">"k"</span>>try</span>:
+    <span class=<span class="s">"k"</span>>from</span> langchain_openai <span class=<span class="s">"k"</span>>import</span> ChatOpenAI
+    <span class=<span class="s">"k"</span>>from</span> langchain_core.tools <span class=<span class="s">"k"</span>>import</span> tool
+    <span class=<span class="s">"k"</span>>from</span> langgraph.prebuilt <span class=<span class="s">"k"</span>>import</span> create_react_agent
+    <span class=<span class="s">"k"</span>>from</span> langgraph.checkpoint.memory <span class=<span class="s">"k"</span>>import</span> MemorySaver
+    LANGCHAIN_AVAILABLE = <span class=<span class="s">"k"</span>>True</span>
+<span class=<span class="s">"k"</span>>except</span> ImportError:
+    LANGCHAIN_AVAILABLE = <span class=<span class="s">"k"</span>>False</span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"⚠️ LangChain 未安装。请运行: pip install langchain langchain-openai langgraph"</span>)
 
 
-<span class="d">@tool</span>
-<span class="k">def</span> get_stock_price(symbol: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"查询股票实时价格。
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span>
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get_stock_price</span>(symbol: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"查询股票实时价格。
 
     Args:
         symbol: 股票代码，如 AAPL（苹果）、TSLA（特斯拉）、BABA（阿里巴巴）。
 
     Returns:
         该股票的最新价格信息。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
     mock_prices = {
-        <span <span class="k">class</span>="s">"AAPL"</span>: <span <span class="k">class</span>="s">"<span class="n">185.50</span> USD"</span>,
-        <span <span class="k">class</span>="s">"TSLA"</span>: <span <span class="k">class</span>="s">"<span class="n">245.30</span> USD"</span>,
-        <span <span class="k">class</span>="s">"GOOGL"</span>: <span <span class="k">class</span>="s">"<span class="n">175.20</span> USD"</span>,
-        <span <span class="k">class</span>="s">"MSFT"</span>: <span <span class="k">class</span>="s">"<span class="n">420.10</span> USD"</span>,
-        <span <span class="k">class</span>="s">"BABA"</span>: <span <span class="k">class</span>="s">"<span class="n">85.50</span> USD"</span>,
+        <span class="s">"AAPL"</span>: <span class="s">"<span class="</span>n<span class="s">">185.50</span> USD"</span>,
+        <span class="s">"TSLA"</span>: <span class="s">"<span class="</span>n<span class="s">">245.30</span> USD"</span>,
+        <span class="s">"GOOGL"</span>: <span class="s">"<span class="</span>n<span class="s">">175.20</span> USD"</span>,
+        <span class="s">"MSFT"</span>: <span class="s">"<span class="</span>n<span class="s">">420.10</span> USD"</span>,
+        <span class="s">"BABA"</span>: <span class="s">"<span class="</span>n<span class="s">">85.50</span> USD"</span>,
     }
-    price = mock_prices.get(symbol.upper(), f<span <span class="k">class</span>="s">"未找到股票 {symbol} 的数据"</span>)
-    <span class="k">return</span> f<span <span class="k">class</span>="s">"{symbol.upper()}: {price} (模拟数据)"</span>
+    price = mock_prices.get(symbol.upper(), f<span class="s">"未找到股票 {symbol} 的数据"</span>)
+    <span class=<span class="s">"k"</span>>return</span> f<span class="s">"{symbol.upper()}: {price} (模拟数据)"</span>
 
 
-<span class="d">@tool</span>
-<span class="k">def</span> search_news(query: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"搜索最新的新闻资讯。
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span>
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>search_news</span>(query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"搜索最新的新闻资讯。
 
     适用于获取实时新闻、事件报道、行业动态等。
 
     Args:
-        query: 搜索关键词，如 <span <span class="k">class</span>="s">"AI 行业动态"</span>。
+        query: 搜索关键词，如 <span class="s">"AI 行业动态"</span>。
 
     Returns:
         相关新闻摘要。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
     mock_news = {
-        <span <span class="k">class</span>="s">"AI"</span>: <span <span class="k">class</span>="s">"2025年 AI Agent 成为业界焦点，各大科技公司纷纷布局 Agent 技术。"</span>,
-        <span <span class="k">class</span>="s">"股票"</span>: <span <span class="k">class</span>="s">"今日股市震荡，科技板块表现强劲。"</span>,
-        <span <span class="k">class</span>="s">"特斯拉"</span>: <span <span class="k">class</span>="s">"特斯拉发布新一代自动驾驶技术，股价上涨 <span class="n">3</span>%。"</span>,
+        <span class="s">"AI"</span>: <span class="s">"2025年 AI Agent 成为业界焦点，各大科技公司纷纷布局 Agent 技术。"</span>,
+        <span class="s">"股票"</span>: <span class="s">"今日股市震荡，科技板块表现强劲。"</span>,
+        <span class="s">"特斯拉"</span>: <span class="s">"特斯拉发布新一代自动驾驶技术，股价上涨 <span class="</span>n<span class="s">">3</span>%。"</span>,
     }
-    <span class="k">for</span> key <span class="k">in</span> mock_news:
-        <span class="k">if</span> key <span class="k">in</span> query:
-            <span class="k">return</span> mock_news[key]
-    <span class="k">return</span> f<span <span class="k">class</span>="s">"关于 <span <span class="k">class</span>='s'>'{query}'</span> 的新闻：行业持续发展，暂无重大事件。(模拟数据)"</span>
+    <span class=<span class="s">"k"</span>>for</span> key <span class=<span class="s">"k"</span>>in</span> mock_news:
+        <span class=<span class="s">"k"</span>>if</span> key <span class=<span class="s">"k"</span>>in</span> query:
+            <span class=<span class="s">"k"</span>>return</span> mock_news[key]
+    <span class=<span class="s">"k"</span>>return</span> f<span class="s">"关于 <span class='s'>'{query}'</span> 的新闻：行业持续发展，暂无重大事件。(模拟数据)"</span>
 
 
-<span class="d">@tool</span>
-<span class="k">def</span> calculate_math(expression: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"执行数学计算。
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span>
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>calculate_math</span>(expression: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"执行数学计算。
 
     Args:
-        expression: 数学表达式，如 <span <span class="k">class</span>='s'>'<span class="n">100</span> * <span class="n">1.15</span>'</span> 或 <span <span class="k">class</span>='s'>'sqrt(<span class="n">144</span>)'</span>。
+        expression: 数学表达式，如 <span class='s'>'<span class=<span class="s">"n"</span>>100</span> * <span class=<span class="s">"n"</span>>1.15</span>'</span> 或 <span class='s'>'sqrt(<span class=<span class="s">"n"</span>>144</span>)'</span>。
 
     Returns:
         计算结果。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span class="k">try</span>:
-        allowed = set(<span <span class="k">class</span>="s">"<span class="n">0123456789</span>+-*/().%^ "</span>)
-        <span class="k">if</span> <span class="k">not</span> all(c <span class="k">in</span> allowed <span class="k">for</span> c <span class="k">in</span> expression):
-            <span class="k">return</span> <span <span class="k">class</span>="s">"错误：表达式包含不允许的字符"</span>
-        <span class="k">return</span> str(eval(expression))
-    <span class="k">except</span> Exception <span class="k">as</span> e:
-        <span class="k">return</span> f<span <span class="k">class</span>="s">"计算错误: {e}"</span>
+    <span class="s">""</span>"</span>
+    <span class=<span class="s">"k"</span>>try</span>:
+        allowed = <span class=<span class="s">"b"</span>>set</span>(<span class="s">"<span class="</span>n<span class="s">">0123456789</span>+-*/().%^ "</span>)
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"b"</span>>all</span>(c <span class=<span class="s">"k"</span>>in</span> allowed <span class=<span class="s">"k"</span>>for</span> c <span class=<span class="s">"k"</span>>in</span> expression):
+            <span class=<span class="s">"k"</span>>return</span> <span class="s">"错误：表达式包含不允许的字符"</span>
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>str</span>(eval(expression))
+    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+        <span class=<span class="s">"k"</span>>return</span> f<span class="s">"计算错误: {e}"</span>
 
 
-<span class="k">def</span> demo_langchain_agent():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"演示 LangChain Agent 的基本用法。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_langchain_agent</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"演示 LangChain Agent 的基本用法。
 
     对比第1章的裸写 Agent，可以看到：
-      <span class="n">1</span>. 工具定义用 <span class="d">@tool</span> 装饰器，更简洁
-      <span class="n">2</span>. Agent 执行器一行代码创建
-      <span class="n">3</span>. 对话历史自动管理（MemorySaver）
-      <span class="n">4</span>. 线程级别的对话隔离
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span class="k">if</span> <span class="k">not</span> LANGCHAIN_AVAILABLE:
-        print(<span <span class="k">class</span>="s">"需要安装 LangChain 才能运行此演示。"</span>)
-        <span class="k">return</span>
+      <span class=<span class="s">"n"</span>>1</span>. 工具定义用 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span> 装饰器，更简洁
+      <span class=<span class="s">"n"</span>>2</span>. Agent 执行器一行代码创建
+      <span class=<span class="s">"n"</span>>3</span>. 对话历史自动管理（MemorySaver）
+      <span class=<span class="s">"n"</span>>4</span>. 线程级别的对话隔离
+    <span class="s">""</span>"</span>
+    <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> LANGCHAIN_AVAILABLE:
+        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"需要安装 LangChain 才能运行此演示。"</span>)
+        <span class=<span class="s">"k"</span>>return</span>
 
-    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  LangChain Agent 演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  LangChain Agent 演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 步骤 <span class="n">1</span>：初始化 LLM</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 步骤 <span class=<span class="s">"n"</span>>1</span>：初始化 LLM</span>
     llm = ChatOpenAI(
-        model=os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>),
-        api_key=os.getenv(<span <span class="k">class</span>="s">"OPENAI_API_KEY"</span>),
-        base_url=os.getenv(<span <span class="k">class</span>="s">"OPENAI_BASE_URL"</span>),
-        temperature=<span class="n">0.7</span>,
+        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+        api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
+        base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
+        temperature=<span class=<span class="s">"n"</span>>0.7</span>,
     )
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 步骤 <span class="n">2</span>：准备工具列表</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 步骤 <span class=<span class="s">"n"</span>>2</span>：准备工具列表</span>
     tools = [get_stock_price, search_news, calculate_math]
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 步骤 <span class="n">3</span>：创建 Agent（内置 ReAct 循环！）</span>
-    memory = MemorySaver()  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 对话记忆管理器</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 步骤 <span class=<span class="s">"n"</span>>3</span>：创建 Agent（内置 ReAct 循环！）</span>
+    memory = MemorySaver()  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 对话记忆管理器</span>
     agent = create_react_agent(
         model=llm,
         tools=tools,
         checkpointer=memory,
     )
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
     LangChain Agent 的核心抽象：
       - LLM: ChatOpenAI —— 大脑
-      - Tools: <span class="d">@tool</span> 列表 —— 技能
+      - Tools: <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span> 列表 —— 技能
       - Agent: create_react_agent —— 执行器
       - Checkpointer: MemorySaver —— 记忆
 
     对比第1章裸写的优势：
-      <span class="n">1</span>. 不需要手动管理 messages 列表
-      <span class="n">2</span>. 不需要手动处理 tool_calls 循环
-      <span class="n">3</span>. 对话历史自动持久化
-      <span class="n">4</span>. 支持多线程（通过 thread_id 隔离对话）
-    <span <span class="k">class</span>="s">""</span>"</span>
+      <span class=<span class="s">"n"</span>>1</span>. 不需要手动管理 messages 列表
+      <span class=<span class="s">"n"</span>>2</span>. 不需要手动处理 tool_calls 循环
+      <span class=<span class="s">"n"</span>>3</span>. 对话历史自动持久化
+      <span class=<span class="s">"n"</span>>4</span>. 支持多线程（通过 thread_id 隔离对话）
+    <span class="s">""</span>"</span>
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 步骤 <span class="n">4</span>：运行对话</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 步骤 <span class=<span class="s">"n"</span>>4</span>：运行对话</span>
     test_queries = [
-        <span <span class="k">class</span>="s">"帮我查一下苹果(AAPL)和特斯拉(TSLA)的股价"</span>,
-        <span <span class="k">class</span>="s">"特斯拉最近有什么新闻吗？"</span>,
+        <span class="s">"帮我查一下苹果(AAPL)和特斯拉(TSLA)的股价"</span>,
+        <span class="s">"特斯拉最近有什么新闻吗？"</span>,
     ]
 
-    config = {<span <span class="k">class</span>="s">"configurable"</span>: {<span <span class="k">class</span>="s">"thread_id"</span>: <span <span class="k">class</span>="s">"demo-session-<span class="n">1</span>"</span>}}
+    config = {<span class="s">"configurable"</span>: {<span class="s">"thread_id"</span>: <span class="s">"demo-session-<span class="</span>n<span class="s">">1</span>"</span>}}
 
-    <span class="k">for</span> query <span class="k">in</span> test_queries:
-        print(f<span <span class="k">class</span>="s">"\n👤 用户: {query}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> query <span class=<span class="s">"k"</span>>in</span> test_queries:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n👤 用户: {query}"</span>)
 
         result = agent.invoke(
-            {<span <span class="k">class</span>="s">"messages"</span>: [(<span <span class="k">class</span>="s">"user"</span>, query)]},
+            {<span class="s">"messages"</span>: [(<span class="s">"user"</span>, query)]},
             config=config,
         )
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 最后一条消息是 Agent 的回复</span>
-        final_msg = result[<span <span class="k">class</span>="s">"messages"</span>][-<span class="n">1</span>]
-        print(f<span <span class="k">class</span>="s">"🤖 Agent: {final_msg.content}"</span>)
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 最后一条消息是 Agent 的回复</span>
+        final_msg = result[<span class="s">"messages"</span>][-<span class=<span class="s">"n"</span>>1</span>]
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"🤖 Agent: {final_msg.content}"</span>)
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">4.2</span> LangGraph —— 状态机 Agent
+<span class=<span class="s">"n"</span>>4.2</span> LangGraph —— 状态机 Agent
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 LangGraph 是 LangChain 生态中的 Agent 编排框架。
@@ -808,119 +838,119 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
 
 安装依赖：
   pip install langgraph
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
-<span class="k">try</span>:
-    <span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict
-    <span class="k">from</span> langgraph.graph <span class="k">import</span> StateGraph, END
-    <span class="k">from</span> langgraph.graph.message <span class="k">import</span> add_messages
-    <span class="k">from</span> langchain_core.messages <span class="k">import</span> BaseMessage, HumanMessage, AIMessage
-    LANGGRAPH_AVAILABLE = <span class="k">True</span>
-<span class="k">except</span> ImportError:
-    LANGGRAPH_AVAILABLE = <span class="k">False</span>
-    print(<span <span class="k">class</span>="s">"⚠️ LangGraph 未安装。"</span>)
+<span class=<span class="s">"k"</span>>try</span>:
+    <span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Annotated, TypedDict
+    <span class=<span class="s">"k"</span>>from</span> langgraph.graph <span class=<span class="s">"k"</span>>import</span> StateGraph, END
+    <span class=<span class="s">"k"</span>>from</span> langgraph.graph.message <span class=<span class="s">"k"</span>>import</span> add_messages
+    <span class=<span class="s">"k"</span>>from</span> langchain_core.messages <span class=<span class="s">"k"</span>>import</span> BaseMessage, HumanMessage, AIMessage
+    LANGGRAPH_AVAILABLE = <span class=<span class="s">"k"</span>>True</span>
+<span class=<span class="s">"k"</span>>except</span> ImportError:
+    LANGGRAPH_AVAILABLE = <span class=<span class="s">"k"</span>>False</span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"⚠️ LangGraph 未安装。"</span>)
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 定义状态类型</span>
-<span class="k">class</span> AgentState(TypedDict):
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"LangGraph Agent 的状态定义。
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 定义状态类型</span>
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentState</span>(TypedDict):
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"LangGraph Agent 的状态定义。
 
     这是 LangGraph 最核心的概念。所有节点共享这个状态，
     节点通过读取/修改状态来协作完成任务。
 
-    Annotated[list, add_messages] 表示消息列表使用
+    Annotated[<span class=<span class="s">"b"</span>>list</span>, add_messages] 表示消息列表使用
     追加模式（新消息添加到末尾，不会覆盖）。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    messages: Annotated[list, add_messages]
-    task_result: str
-    step_count: int
+    <span class="s">""</span>"</span>
+    messages: Annotated[<span class=<span class="s">"b"</span>>list</span>, add_messages]
+    task_result: <span class=<span class="s">"b"</span>>str</span>
+    step_count: <span class=<span class="s">"b"</span>>int</span>
 
 
-<span class="k">def</span> demo_langgraph_agent():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"演示 LangGraph 状态机 Agent。
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_langgraph_agent</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"演示 LangGraph 状态机 Agent。
 
     实现一个简单的分析流程：
       输入问题 → LLM 分析 → 判断是否需要工具 → 输出结论
 
     LangGraph 让我们可以自定义 Agent 的执行图结构，
     而不是拘泥于固定的 ReAct 循环。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span class="k">if</span> <span class="k">not</span> LANGGRAPH_AVAILABLE <span class="k">or</span> <span class="k">not</span> LANGCHAIN_AVAILABLE:
-        print(<span <span class="k">class</span>="s">"需要安装 langgraph 和 langchain 才能运行此演示。"</span>)
-        <span class="k">return</span>
+    <span class="s">""</span>"</span>
+    <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> LANGGRAPH_AVAILABLE <span class=<span class="s">"k"</span>>or</span> <span class=<span class="s">"k"</span>>not</span> LANGCHAIN_AVAILABLE:
+        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"需要安装 langgraph 和 langchain 才能运行此演示。"</span>)
+        <span class=<span class="s">"k"</span>>return</span>
 
-    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  LangGraph 状态机 Agent 演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  LangGraph 状态机 Agent 演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
     llm = ChatOpenAI(
-        model=os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>),
-        api_key=os.getenv(<span <span class="k">class</span>="s">"OPENAI_API_KEY"</span>),
-        base_url=os.getenv(<span <span class="k">class</span>="s">"OPENAI_BASE_URL"</span>),
-        temperature=<span class="n">0.5</span>,
+        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+        api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
+        base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
+        temperature=<span class=<span class="s">"n"</span>>0.5</span>,
     )
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 定义节点函数 =====</span>
-    <span class="k">def</span> analyze_node(state: AgentState) -&gt; AgentState:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"分析节点：让 LLM 理解用户输入。"</span><span <span class="k">class</span>="s">""</span></span>
-        print(<span <span class="k">class</span>="s">"  [Node: analyze] 正在分析用户输入..."</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ===== 定义节点函数 =====</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>analyze_node</span>(state: AgentState) -&gt; AgentState:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"分析节点：让 LLM 理解用户输入。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  [Node: analyze] 正在分析用户输入..."</span>)
         response = llm.invoke([
-            (<span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"分析用户问题，提取关键信息。简洁回答。"</span>),
-            (<span <span class="k">class</span>="s">"user"</span>, state[<span <span class="k">class</span>="s">"messages"</span>][-<span class="n">1</span>].content),
+            (<span class="s">"system"</span>, <span class="s">"分析用户问题，提取关键信息。简洁回答。"</span>),
+            (<span class="s">"user"</span>, state[<span class="s">"messages"</span>][-<span class=<span class="s">"n"</span>>1</span>].content),
         ])
-        state[<span <span class="k">class</span>="s">"messages"</span>].append(response)
-        state[<span <span class="k">class</span>="s">"task_result"</span>] = response.content
-        state[<span <span class="k">class</span>="s">"step_count"</span>] = state.get(<span <span class="k">class</span>="s">"step_count"</span>, <span class="n">0</span>) + <span class="n">1</span>
-        <span class="k">return</span> state
+        state[<span class="s">"messages"</span>].append(response)
+        state[<span class="s">"task_result"</span>] = response.content
+        state[<span class="s">"step_count"</span>] = state.get(<span class="s">"step_count"</span>, <span class=<span class="s">"n"</span>>0</span>) + <span class=<span class="s">"n"</span>>1</span>
+        <span class=<span class="s">"k"</span>>return</span> state
 
-    <span class="k">def</span> should_continue(state: AgentState) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"条件判断：是否需要进一步处理？"</span><span <span class="k">class</span>="s">""</span></span>
-        result = state[<span <span class="k">class</span>="s">"task_result"</span>]
-        <span class="k">if</span> len(result) &lt; <span class="n">50</span>:
-            print(<span <span class="k">class</span>="s">"  [Edge] 回答太短，需要补充详细分析"</span>)
-            <span class="k">return</span> <span <span class="k">class</span>="s">"elaborate"</span>
-        print(<span <span class="k">class</span>="s">"  [Edge] 回答充分，结束流程"</span>)
-        <span class="k">return</span> <span <span class="k">class</span>="s">"end"</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>should_continue</span>(state: AgentState) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"条件判断：是否需要进一步处理？"</span><span class="s">""</span></span>
+        result = state[<span class="s">"task_result"</span>]
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(result) &lt; <span class=<span class="s">"n"</span>>50</span>:
+            <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  [Edge] 回答太短，需要补充详细分析"</span>)
+            <span class=<span class="s">"k"</span>>return</span> <span class="s">"elaborate"</span>
+        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  [Edge] 回答充分，结束流程"</span>)
+        <span class=<span class="s">"k"</span>>return</span> <span class="s">"end"</span>
 
-    <span class="k">def</span> elaborate_node(state: AgentState) -&gt; AgentState:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"扩展节点：补充详细分析。"</span><span <span class="k">class</span>="s">""</span></span>
-        print(<span <span class="k">class</span>="s">"  [Node: elaborate] 正在补充详细分析..."</span>)
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>elaborate_node</span>(state: AgentState) -&gt; AgentState:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"扩展节点：补充详细分析。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  [Node: elaborate] 正在补充详细分析..."</span>)
         response = llm.invoke([
-            (<span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"请更详细地展开分析，提供更多上下文和细节。"</span>),
-            (<span <span class="k">class</span>="s">"user"</span>, state[<span <span class="k">class</span>="s">"task_result"</span>]),
+            (<span class="s">"system"</span>, <span class="s">"请更详细地展开分析，提供更多上下文和细节。"</span>),
+            (<span class="s">"user"</span>, state[<span class="s">"task_result"</span>]),
         ])
-        state[<span <span class="k">class</span>="s">"messages"</span>].append(response)
-        state[<span <span class="k">class</span>="s">"task_result"</span>] = response.content
-        state[<span <span class="k">class</span>="s">"step_count"</span>] = state.get(<span <span class="k">class</span>="s">"step_count"</span>, <span class="n">0</span>) + <span class="n">1</span>
-        <span class="k">return</span> state
+        state[<span class="s">"messages"</span>].append(response)
+        state[<span class="s">"task_result"</span>] = response.content
+        state[<span class="s">"step_count"</span>] = state.get(<span class="s">"step_count"</span>, <span class=<span class="s">"n"</span>>0</span>) + <span class=<span class="s">"n"</span>>1</span>
+        <span class=<span class="s">"k"</span>>return</span> state
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 构建图 =====</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ===== 构建图 =====</span>
     workflow = StateGraph(AgentState)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 添加节点</span>
-    workflow.add_node(<span <span class="k">class</span>="s">"analyze"</span>, analyze_node)
-    workflow.add_node(<span <span class="k">class</span>="s">"elaborate"</span>, elaborate_node)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 添加节点</span>
+    workflow.add_node(<span class="s">"analyze"</span>, analyze_node)
+    workflow.add_node(<span class="s">"elaborate"</span>, elaborate_node)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 设置入口点</span>
-    workflow.set_entry_point(<span <span class="k">class</span>="s">"analyze"</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 设置入口点</span>
+    workflow.set_entry_point(<span class="s">"analyze"</span>)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 添加条件边：从 analyze 根据条件走向不同分支</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 添加条件边：从 analyze 根据条件走向不同分支</span>
     workflow.add_conditional_edges(
-        <span <span class="k">class</span>="s">"analyze"</span>,
+        <span class="s">"analyze"</span>,
         should_continue,
         {
-            <span <span class="k">class</span>="s">"elaborate"</span>: <span <span class="k">class</span>="s">"elaborate"</span>,
-            <span <span class="k">class</span>="s">"end"</span>: END,
+            <span class="s">"elaborate"</span>: <span class="s">"elaborate"</span>,
+            <span class="s">"end"</span>: END,
         },
     )
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># elaborate 完成后结束</span>
-    workflow.add_edge(<span <span class="k">class</span>="s">"elaborate"</span>, END)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># elaborate 完成后结束</span>
+    workflow.add_edge(<span class="s">"elaborate"</span>, END)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 编译图</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 编译图</span>
     app = workflow.compile()
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
     图结构示意：
 
       [START]
@@ -935,46 +965,46 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
 
     这就是 LangGraph 的核心优势：
     用代码定义复杂的执行流程，而非硬编码在循环中。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 运行</span>
-    test_input = <span <span class="k">class</span>="s">"LangGraph 是什么？请简短说明。"</span>
-    print(f<span <span class="k">class</span>="s">"\n👤 用户: {test_input}"</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 运行</span>
+    test_input = <span class="s">"LangGraph 是什么？请简短说明。"</span>
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n👤 用户: {test_input}"</span>)
 
     initial_state = {
-        <span <span class="k">class</span>="s">"messages"</span>: [HumanMessage(content=test_input)],
-        <span <span class="k">class</span>="s">"task_result"</span>: <span <span class="k">class</span>="s">""</span>,
-        <span <span class="k">class</span>="s">"step_count"</span>: <span class="n">0</span>,
+        <span class="s">"messages"</span>: [HumanMessage(content=test_input)],
+        <span class="s">"task_result"</span>: <span class="s">""</span>,
+        <span class="s">"step_count"</span>: <span class=<span class="s">"n"</span>>0</span>,
     }
 
     final_state = app.invoke(initial_state)
-    print(f<span <span class="k">class</span>="s">"\n🤖 Agent: {final_state[<span <span class="k">class</span>='s'>'task_result'</span>]}"</span>)
-    print(f<span <span class="k">class</span>="s">"   总步骤数: {final_state[<span <span class="k">class</span>='s'>'step_count'</span>]}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n🤖 Agent: {final_state[<span class='s'>'task_result'</span>]}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"   总步骤数: {final_state[<span class='s'>'step_count'</span>]}"</span>)
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">4.3</span> 框架选择策略（面试高频！）
+<span class=<span class="s">"n"</span>>4.3</span> 框架选择策略（面试高频！）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 面试官：「你用过哪些 Agent 框架？怎么选型？」
 
 回答框架：
 
-<span class="n">1</span>. 学习阶段：从裸写开始（第1章）
+<span class=<span class="s">"n"</span>>1</span>. 学习阶段：从裸写开始（第1章）
    - 理解底层原理
    - 不被框架黑盒限制
 
-<span class="n">2</span>. 原型验证：用 LangChain Agent
+<span class=<span class="s">"n"</span>>2</span>. 原型验证：用 LangChain Agent
    - 快速搭建、生态丰富
    - 适合 MVP 和 demo
 
-<span class="n">3</span>. 生产环境：用 LangGraph
+<span class=<span class="s">"n"</span>>3</span>. 生产环境：用 LangGraph
    - 状态管理可控
    - 支持复杂工作流
    - 可观测性好（便于调试和监控）
 
-<span class="n">4</span>. 多 Agent 场景：
+<span class=<span class="s">"n"</span>>4</span>. 多 Agent 场景：
    - crewAI（简单协作）
    - AutoGen（需要人在回路）
    - 自建 LangGraph 图（完全定制）
@@ -989,69 +1019,69 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
   │ 成本          │ 裸写 &lt; LangChain &lt; LangGraph       │
   │ 生态          │ LangChain 生态最丰富                │
   └──────────────┴────────────────────────────────────┘
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">4.4</span> 本章总结
+<span class=<span class="s">"n"</span>>4.4</span> 本章总结
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class="n">1</span>. LangChain Agent
+<span class=<span class="s">"n"</span>>1</span>. LangChain Agent
    - create_react_agent() 一行创建 Agent
-   - <span class="d">@tool</span> 装饰器定义工具
+   - <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@tool</span> 装饰器定义工具
    - MemorySaver 自动管理对话历史
    - 适合快速原型和中等复杂度场景
 
-<span class="n">2</span>. LangGraph
+<span class=<span class="s">"n"</span>>2</span>. LangGraph
    - 状态机模型：State + Node + Edge
    - 完全自定义执行流程
    - 支持条件分支、循环、并行
    - 生产环境首选
 
-<span class="n">3</span>. 选型策略
+<span class=<span class="s">"n"</span>>3</span>. 选型策略
    - 学习原理 → 裸写
    - 快速验证 → LangChain
    - 生产落地 → LangGraph
    - 多Agent → crewAI / AutoGen / 自建
 
 面试速记：
-  <span <span class="k">class</span>="s">"LangGraph 和 LangChain Agent 的区别？"</span>
+  <span class="s">"LangGraph 和 LangChain Agent 的区别？"</span>
   → LangChain Agent 是预定义的 ReAct 循环
   → LangGraph 可以自定义任意执行图
   → LangGraph 适合复杂工作流，LangChain Agent 适合简单任务
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 
-<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║       第4章：主流 Agent 框架实战                       ║"</span>)
-    print(<span <span class="k">class</span>="s">"║       LangChain · LangGraph · 选型策略               ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       第4章：主流 Agent 框架实战                       ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║       LangChain · LangGraph · 选型策略               ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">4.1</span> LangChain Agent 演示"</span>)
-    <span class="k">try</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">4.1</span> LangChain Agent 演示"</span>)
+    <span class=<span class="s">"k"</span>>try</span>:
         demo_langchain_agent()
-    <span class="k">except</span> Exception <span class="k">as</span> e:
-        print(f<span <span class="k">class</span>="s">"  ⚠️ 运行出错（请检查依赖和 API Key）: {e}"</span>)
+    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 运行出错（请检查依赖和 API Key）: {e}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">4.2</span> LangGraph 状态机演示"</span>)
-    <span class="k">try</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">4.2</span> LangGraph 状态机演示"</span>)
+    <span class=<span class="s">"k"</span>>try</span>:
         demo_langgraph_agent()
-    <span class="k">except</span> Exception <span class="k">as</span> e:
-        print(f<span <span class="k">class</span>="s">"  ⚠️ 运行出错（请检查依赖和 API Key）: {e}"</span>)
+    <span class=<span class="s">"k"</span>>except</span> Exception <span class=<span class="s">"k"</span>>as</span> e:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ⚠️ 运行出错（请检查依赖和 API Key）: {e}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">4.3</span> 框架选型速查"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
-    print(<span <span class="k">class</span>="s">"场景: 快速原型 → LangChain Agent"</span>)
-    print(<span <span class="k">class</span>="s">"场景: 复杂工作流 → LangGraph"</span>)
-    print(<span <span class="k">class</span>="s">"场景: 多Agent协作 → crewAI / 自建 LangGraph 图"</span>)
-    print(<span <span class="k">class</span>="s">"场景: 人在回路 → AutoGen"</span>)
-    print(<span <span class="k">class</span>="s">"场景: 完全掌控 → 裸写（第1章方式）"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">4.3</span> 框架选型速查"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"场景: 快速原型 → LangChain Agent"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"场景: 复杂工作流 → LangGraph"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"场景: 多Agent协作 → crewAI / 自建 LangGraph 图"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"场景: 人在回路 → AutoGen"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"场景: 完全掌控 → 裸写（第1章方式）"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第4章完成！接下来进入第5章：多智能体系统。"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第4章完成！接下来进入第5章：多智能体系统。"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_03_types/03_agent_types.html" title="Agent 类型分类 — ReAct·Plan-Execute·Reflexion">← 第3章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

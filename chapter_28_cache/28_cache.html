@@ -85,6 +85,15 @@ body {
   line-height: 1.6; max-height: 70vh; overflow-y: auto;
 }
 
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -179,150 +188,150 @@ body {
   │  如果小模型回答合适 → 缓存结果                       │
   │  命中率: 10-20% (加上前两级：总 40-70%)              │
   │  延迟: ~500ms                                      │
-  └─────────────────────────────────────────────────┘</pre></div><div class="code-section"><details><summary>💻 代码 (145 行)</summary><div class="code-block"><pre><span class="k">import</span> time
-<span class="k">import</span> json
-<span class="k">import</span> hashlib
-<span class="k">import</span> numpy <span class="k">as</span> np
-<span class="k">from</span> typing <span class="k">import</span> Optional
-<span class="k">from</span> collections <span class="k">import</span> OrderedDict
+  └─────────────────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (145 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> time
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>import</span> hashlib
+<span class=<span class="s">"k"</span>>import</span> numpy <span class=<span class="s">"k"</span>>as</span> np
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
+<span class=<span class="s">"k"</span>>from</span> collections <span class=<span class="s">"k"</span>>import</span> OrderedDict
 
 
-<span class="k">class</span> ExactMatchCache:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"L1 缓存 —— 精确匹配。
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ExactMatchCache</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"L1 缓存 —— 精确匹配。
 
     最简单的缓存：完全相同的输入 → 直接返回缓存结果。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self, max_size: int = <span class="n">1000</span>):
-        self._store = OrderedDict()
-        self.max_size = max_size
-        self.hits = <span class="n">0</span>
-        self.misses = <span class="n">0</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, max_size: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>1000</span>):
+        <span class=<span class="s">"k"</span>>self</span>._store = OrderedDict()
+        <span class=<span class="s">"k"</span>>self</span>.max_size = max_size
+        <span class=<span class="s">"k"</span>>self</span>.hits = <span class=<span class="s">"n"</span>>0</span>
+        <span class=<span class="s">"k"</span>>self</span>.misses = <span class=<span class="s">"n"</span>>0</span>
 
-    <span class="k">def</span> get(self, query: str) -&gt; Optional[str]:
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>str</span>]:
         key = hashlib.md5(query.encode()).hexdigest()
-        <span class="k">if</span> key <span class="k">in</span> self._store:
-            self._store.move_to_end(key)  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LRU 更新</span>
-            self.hits += <span class="n">1</span>
-            <span class="k">return</span> self._store[key]
-        self.misses += <span class="n">1</span>
-        <span class="k">return</span> <span class="k">None</span>
+        <span class=<span class="s">"k"</span>>if</span> key <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._store:
+            <span class=<span class="s">"k"</span>>self</span>._store.move_to_end(key)  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># LRU 更新</span>
+            <span class=<span class="s">"k"</span>>self</span>.hits += <span class=<span class="s">"n"</span>>1</span>
+            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>._store[key]
+        <span class=<span class="s">"k"</span>>self</span>.misses += <span class=<span class="s">"n"</span>>1</span>
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>None</span>
 
-    <span class="k">def</span> set(self, query: str, response: str):
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>><span class=<span class="s">"b"</span>>set</span></span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>, response: <span class=<span class="s">"b"</span>>str</span>):
         key = hashlib.md5(query.encode()).hexdigest()
-        <span class="k">if</span> len(self._store) &gt;= self.max_size:
-            self._store.popitem(last=<span class="k">False</span>)  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 淘汰最久未用</span>
-        self._store[key] = response
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>._store) &gt;= <span class=<span class="s">"k"</span>>self</span>.max_size:
+            <span class=<span class="s">"k"</span>>self</span>._store.popitem(last=<span class=<span class="s">"k"</span>>False</span>)  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 淘汰最久未用</span>
+        <span class=<span class="s">"k"</span>>self</span>._store[key] = response
 
-    <span class="d">@property</span>
-    <span class="k">def</span> hit_rate(self) -&gt; float:
-        total = self.hits + self.misses
-        <span class="k">return</span> self.hits / total <span class="k">if</span> total &gt; <span class="n">0</span> <span class="k">else</span> <span class="n">0</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@property</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>hit_rate</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
+        total = <span class=<span class="s">"k"</span>>self</span>.hits + <span class=<span class="s">"k"</span>>self</span>.misses
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.hits / total <span class=<span class="s">"k"</span>>if</span> total &gt; <span class=<span class="s">"n"</span>>0</span> <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"n"</span>>0</span>
 
 
-<span class="k">class</span> SemanticCache:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"L2 缓存 —— 语义相似度匹配。
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>SemanticCache</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"L2 缓存 —— 语义相似度匹配。
 
     不要求完全相同的查询，语义相似即可命中。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self, similarity_threshold: float = <span class="n">0.92</span>,
-                 max_size: int = <span class="n">2000</span>):
-        self.threshold = similarity_threshold
-        self.max_size = max_size
-        self.queries = []      <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># [(embedding, query, response)]</span>
-        self.hits = <span class="n">0</span>
-        self.misses = <span class="n">0</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, similarity_threshold: <span class=<span class="s">"b"</span>>float</span> = <span class=<span class="s">"n"</span>>0.92</span>,
+                 max_size: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>2000</span>):
+        <span class=<span class="s">"k"</span>>self</span>.threshold = similarity_threshold
+        <span class=<span class="s">"k"</span>>self</span>.max_size = max_size
+        <span class=<span class="s">"k"</span>>self</span>.queries = []      <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># [(embedding, query, response)]</span>
+        <span class=<span class="s">"k"</span>>self</span>.hits = <span class=<span class="s">"n"</span>>0</span>
+        <span class=<span class="s">"k"</span>>self</span>.misses = <span class=<span class="s">"n"</span>>0</span>
 
-    <span class="k">def</span> _embed(self, text: str, dim: int = <span class="n">128</span>) -&gt; np.ndarray:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"简化的向量化（实际使用 OpenAI Embeddings API）。"</span><span <span class="k">class</span>="s">""</span></span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_embed</span>(<span class=<span class="s">"k"</span>>self</span>, text: <span class=<span class="s">"b"</span>>str</span>, dim: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>128</span>) -&gt; np.ndarray:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"简化的向量化（实际使用 OpenAI Embeddings API）。"</span><span class="s">""</span></span>
         vec = np.zeros(dim)
-        <span class="k">for</span> i, ch <span class="k">in</span> enumerate(text):
-            vec[hash(ch) % dim] += <span class="n">1</span>
+        <span class=<span class="s">"k"</span>>for</span> i, ch <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(text):
+            vec[<span class=<span class="s">"b"</span>>hash</span>(ch) % dim] += <span class=<span class="s">"n"</span>>1</span>
         norm = np.linalg.norm(vec)
-        <span class="k">return</span> vec / norm <span class="k">if</span> norm &gt; <span class="n">0</span> <span class="k">else</span> vec
+        <span class=<span class="s">"k"</span>>return</span> vec / norm <span class=<span class="s">"k"</span>>if</span> norm &gt; <span class=<span class="s">"n"</span>>0</span> <span class=<span class="s">"k"</span>>else</span> vec
 
-    <span class="k">def</span> get(self, query: str) -&gt; Optional[str]:
-        q_vec = self._embed(query)
-        <span class="k">for</span> emb, cached_query, response <span class="k">in</span> self.queries:
-            sim = float(np.dot(q_vec, emb))
-            <span class="k">if</span> sim &gt;= self.threshold:
-                self.hits += <span class="n">1</span>
-                <span class="k">return</span> response
-        self.misses += <span class="n">1</span>
-        <span class="k">return</span> <span class="k">None</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>str</span>]:
+        q_vec = <span class=<span class="s">"k"</span>>self</span>._embed(query)
+        <span class=<span class="s">"k"</span>>for</span> emb, cached_query, response <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.queries:
+            sim = <span class=<span class="s">"b"</span>>float</span>(np.dot(q_vec, emb))
+            <span class=<span class="s">"k"</span>>if</span> sim &gt;= <span class=<span class="s">"k"</span>>self</span>.threshold:
+                <span class=<span class="s">"k"</span>>self</span>.hits += <span class=<span class="s">"n"</span>>1</span>
+                <span class=<span class="s">"k"</span>>return</span> response
+        <span class=<span class="s">"k"</span>>self</span>.misses += <span class=<span class="s">"n"</span>>1</span>
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>None</span>
 
-    <span class="k">def</span> set(self, query: str, response: str):
-        emb = self._embed(query)
-        self.queries.append((emb, query, response))
-        <span class="k">if</span> len(self.queries) &gt; self.max_size:
-            self.queries = self.queries[-self.max_size:]
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>><span class=<span class="s">"b"</span>>set</span></span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>, response: <span class=<span class="s">"b"</span>>str</span>):
+        emb = <span class=<span class="s">"k"</span>>self</span>._embed(query)
+        <span class=<span class="s">"k"</span>>self</span>.queries.append((emb, query, response))
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.queries) &gt; <span class=<span class="s">"k"</span>>self</span>.max_size:
+            <span class=<span class="s">"k"</span>>self</span>.queries = <span class=<span class="s">"k"</span>>self</span>.queries[-<span class=<span class="s">"k"</span>>self</span>.max_size:]
 
-    <span class="d">@property</span>
-    <span class="k">def</span> hit_rate(self) -&gt; float:
-        total = self.hits + self.misses
-        <span class="k">return</span> self.hits / total <span class="k">if</span> total &gt; <span class="n">0</span> <span class="k">else</span> <span class="n">0</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@property</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>hit_rate</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
+        total = <span class=<span class="s">"k"</span>>self</span>.hits + <span class=<span class="s">"k"</span>>self</span>.misses
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.hits / total <span class=<span class="s">"k"</span>>if</span> total &gt; <span class=<span class="s">"n"</span>>0</span> <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"n"</span>>0</span>
 
 
-<span class="k">class</span> ThreeLevelCache:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"三级缓存 —— 层层降级，最大化命中率。"</span><span <span class="k">class</span>="s">""</span></span>
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ThreeLevelCache</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"三级缓存 —— 层层降级，最大化命中率。"</span><span class="s">""</span></span>
 
-    <span class="k">def</span> __init__(self):
-        self.l1 = ExactMatchCache(max_size=<span class="n">500</span>)
-        self.l2 = SemanticCache(similarity_threshold=<span class="n">0.90</span>)
-        self.stats = {<span <span class="k">class</span>="s">"l1_hits"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"l2_hits"</span>: <span class="n">0</span>,
-                      <span <span class="k">class</span>="s">"l3_hits"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"misses"</span>: <span class="n">0</span>,
-                      <span <span class="k">class</span>="s">"cost_saved"</span>: <span class="n">0.0</span>}
-        self.COST_PER_LLM_CALL = <span class="n">0.01</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 每次 LLM 调用成本</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
+        <span class=<span class="s">"k"</span>>self</span>.l1 = ExactMatchCache(max_size=<span class=<span class="s">"n"</span>>500</span>)
+        <span class=<span class="s">"k"</span>>self</span>.l2 = SemanticCache(similarity_threshold=<span class=<span class="s">"n"</span>>0.90</span>)
+        <span class=<span class="s">"k"</span>>self</span>.stats = {<span class="s">"l1_hits"</span>: <span class=<span class="s">"n"</span>>0</span>, <span class="s">"l2_hits"</span>: <span class=<span class="s">"n"</span>>0</span>,
+                      <span class="s">"l3_hits"</span>: <span class=<span class="s">"n"</span>>0</span>, <span class="s">"misses"</span>: <span class=<span class="s">"n"</span>>0</span>,
+                      <span class="s">"cost_saved"</span>: <span class=<span class="s">"n"</span>>0.0</span>}
+        <span class=<span class="s">"k"</span>>self</span>.COST_PER_LLM_CALL = <span class=<span class="s">"n"</span>>0.01</span>  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 每次 LLM 调用成本</span>
 
-    <span class="k">def</span> query(self, query: str,
-              llm_func: callable = <span class="k">None</span>) -&gt; tuple[str, int, bool]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"三级缓存查询。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>query</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>,
+              llm_func: <span class=<span class="s">"b"</span>>callable</span> = <span class=<span class="s">"k"</span>>None</span>) -&gt; <span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>int</span>, bool]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"三级缓存查询。
 
         Returns:
             (response, cache_level, was_cached)
-            cache_level: <span class="n">1</span>=L1, <span class="n">2</span>=L2, <span class="n">3</span>=L3, <span class="n">0</span>=miss
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L1: Exact Match</span>
-        result = self.l1.get(query)
-        <span class="k">if</span> result:
-            self.stats[<span <span class="k">class</span>="s">"l1_hits"</span>] += <span class="n">1</span>
-            self.stats[<span <span class="k">class</span>="s">"cost_saved"</span>] += self.COST_PER_LLM_CALL
-            <span class="k">return</span> result, <span class="n">1</span>, <span class="k">True</span>
+            cache_level: <span class=<span class="s">"n"</span>>1</span>=L1, <span class=<span class="s">"n"</span>>2</span>=L2, <span class=<span class="s">"n"</span>>3</span>=L3, <span class=<span class="s">"n"</span>>0</span>=miss
+        <span class="s">""</span>"</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># L1: Exact Match</span>
+        result = <span class=<span class="s">"k"</span>>self</span>.l1.get(query)
+        <span class=<span class="s">"k"</span>>if</span> result:
+            <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l1_hits"</span>] += <span class=<span class="s">"n"</span>>1</span>
+            <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"cost_saved"</span>] += <span class=<span class="s">"k"</span>>self</span>.COST_PER_LLM_CALL
+            <span class=<span class="s">"k"</span>>return</span> result, <span class=<span class="s">"n"</span>>1</span>, <span class=<span class="s">"k"</span>>True</span>
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L2: Semantic</span>
-        result = self.l2.get(query)
-        <span class="k">if</span> result:
-            self.stats[<span <span class="k">class</span>="s">"l2_hits"</span>] += <span class="n">1</span>
-            self.stats[<span <span class="k">class</span>="s">"cost_saved"</span>] += self.COST_PER_LLM_CALL
-            <span class="k">return</span> result, <span class="n">2</span>, <span class="k">True</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># L2: Semantic</span>
+        result = <span class=<span class="s">"k"</span>>self</span>.l2.get(query)
+        <span class=<span class="s">"k"</span>>if</span> result:
+            <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l2_hits"</span>] += <span class=<span class="s">"n"</span>>1</span>
+            <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"cost_saved"</span>] += <span class=<span class="s">"k"</span>>self</span>.COST_PER_LLM_CALL
+            <span class=<span class="s">"k"</span>>return</span> result, <span class=<span class="s">"n"</span>>2</span>, <span class=<span class="s">"k"</span>>True</span>
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L3: LLM</span>
-        <span class="k">if</span> llm_func:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># L3: LLM</span>
+        <span class=<span class="s">"k"</span>>if</span> llm_func:
             response = llm_func(query)
-        <span class="k">else</span>:
-            response = f<span <span class="k">class</span>="s">"[LLM 响应] 关于「{query[:<span class="n">30</span>]}...」的回答"</span>
-        self.stats[<span <span class="k">class</span>="s">"l3_hits"</span>] += <span class="n">1</span>
+        <span class=<span class="s">"k"</span>>else</span>:
+            response = f<span class="s">"[LLM 响应] 关于「{query[:<span class="</span>n<span class="s">">30</span>]}...」的回答"</span>
+        <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l3_hits"</span>] += <span class=<span class="s">"n"</span>>1</span>
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 写入缓存</span>
-        self.l1.set(query, response)
-        self.l2.set(query, response)
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 写入缓存</span>
+        <span class=<span class="s">"k"</span>>self</span>.l1.<span class=<span class="s">"b"</span>>set</span>(query, response)
+        <span class=<span class="s">"k"</span>>self</span>.l2.<span class=<span class="s">"b"</span>>set</span>(query, response)
 
-        <span class="k">return</span> response, <span class="n">3</span>, <span class="k">False</span>
+        <span class=<span class="s">"k"</span>>return</span> response, <span class=<span class="s">"n"</span>>3</span>, <span class=<span class="s">"k"</span>>False</span>
 
-    <span class="k">def</span> report(self) -&gt; dict:
-        total = sum([self.stats[<span <span class="k">class</span>="s">"l1_hits"</span>], self.stats[<span <span class="k">class</span>="s">"l2_hits"</span>],
-                     self.stats[<span <span class="k">class</span>="s">"l3_hits"</span>], self.stats[<span <span class="k">class</span>="s">"misses"</span>]])
-        total = max(total, <span class="n">1</span>)
-        <span class="k">return</span> {
-            <span <span class="k">class</span>="s">"total_queries"</span>: total,
-            <span <span class="k">class</span>="s">"l1_hit_rate"</span>: f<span <span class="k">class</span>="s">"{self.stats[<span <span class="k">class</span>='s'>'l1_hits'</span>] / total:.<span class="n">1</span>%}"</span>,
-            <span <span class="k">class</span>="s">"l2_hit_rate"</span>: f<span <span class="k">class</span>="s">"{self.stats[<span <span class="k">class</span>='s'>'l2_hits'</span>] / total:.<span class="n">1</span>%}"</span>,
-            <span <span class="k">class</span>="s">"l3_rate"</span>: f<span <span class="k">class</span>="s">"{self.stats[<span <span class="k">class</span>='s'>'l3_hits'</span>] / total:.<span class="n">1</span>%}"</span>,
-            <span <span class="k">class</span>="s">"total_cache_hit"</span>: (f<span <span class="k">class</span>="s">"{(self.stats[<span <span class="k">class</span>='s'>'l1_hits'</span>] + self.stats[<span <span class="k">class</span>='s'>'l2_hits'</span>]) / total:.<span class="n">1</span>%}"</span>),
-            <span <span class="k">class</span>="s">"cost_saved"</span>: f<span <span class="k">class</span>="s">"${self.stats[<span <span class="k">class</span>='s'>'cost_saved'</span>]:.3f}"</span>,
-            <span <span class="k">class</span>="s">"l1_size"</span>: len(self.l1._store),
-            <span <span class="k">class</span>="s">"l2_size"</span>: len(self.l2.queries),
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>report</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        total = <span class=<span class="s">"b"</span>>sum</span>([<span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l1_hits"</span>], <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l2_hits"</span>],
+                     <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l3_hits"</span>], <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"misses"</span>]])
+        total = <span class=<span class="s">"b"</span>>max</span>(total, <span class=<span class="s">"n"</span>>1</span>)
+        <span class=<span class="s">"k"</span>>return</span> {
+            <span class="s">"total_queries"</span>: total,
+            <span class="s">"l1_hit_rate"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'l1_hits'</span>] / total:.<span class="</span>n<span class="s">">1</span>%}"</span>,
+            <span class="s">"l2_hit_rate"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'l2_hits'</span>] / total:.<span class="</span>n<span class="s">">1</span>%}"</span>,
+            <span class="s">"l3_rate"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'l3_hits'</span>] / total:.<span class="</span>n<span class="s">">1</span>%}"</span>,
+            <span class="s">"total_cache_hit"</span>: (f<span class="s">"{(<span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'l1_hits'</span>] + <span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'l2_hits'</span>]) / total:.<span class="</span>n<span class="s">">1</span>%}"</span>),
+            <span class="s">"cost_saved"</span>: f<span class="s">"${<span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'cost_saved'</span>]:.3f}"</span>,
+            <span class="s">"l1_size"</span>: <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.l1._store),
+            <span class="s">"l2_size"</span>: <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.l2.queries),
         }</pre></div></details></div><div class="lecture"><h2>28.3 Token 预算管理系统</h2>
 <p>&nbsp;</p>
 <p>类比：手机流量套餐</p>
@@ -342,121 +351,128 @@ body {
 <li>用户级：每人每月 N tokens</li>
 <li>会话级：每会话 N tokens</li>
 <li>请求级：每次 N tokens</li>
-<li>步骤级：每步 N tokens（防死循环）</li></div><div class="code-section"><details><summary>💻 代码 (115 行)</summary><div class="code-block"><pre><span class="k">class</span> TokenBudget:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Token 预算管理器 —— 类比流量套餐管理。"</span><span <span class="k">class</span>="s">""</span></span>
+<li>步骤级：每步 N tokens（防死循环）</li></div><div class="code-section"><details open><summary>💻 代码 (122 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> time
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>import</span> hashlib
+<span class=<span class="s">"k"</span>>import</span> numpy <span class=<span class="s">"k"</span>>as</span> np
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
+<span class=<span class="s">"k"</span>>from</span> collections <span class=<span class="s">"k"</span>>import</span> OrderedDict
 
-    <span class="k">def</span> __init__(self, daily_limit: int = 1_000_000):
-        self.daily_limit = daily_limit
-        self.used_today = <span class="n">0</span>
-        self.warning_threshold = <span class="n">0.8</span>
-        self.critical_threshold = <span class="n">0.95</span>
-        self.cost_per_1k = <span class="n">0.002</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># $/1K tokens</span>
-        self.history = []
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>TokenBudget</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Token 预算管理器 —— 类比流量套餐管理。"</span><span class="s">""</span></span>
 
-    <span class="k">def</span> check(self, required_tokens: int) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"检查预算是否充足。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, daily_limit: <span class=<span class="s">"b"</span>>int</span> = 1_000_000):
+        <span class=<span class="s">"k"</span>>self</span>.daily_limit = daily_limit
+        <span class=<span class="s">"k"</span>>self</span>.used_today = <span class=<span class="s">"n"</span>>0</span>
+        <span class=<span class="s">"k"</span>>self</span>.warning_threshold = <span class=<span class="s">"n"</span>>0.8</span>
+        <span class=<span class="s">"k"</span>>self</span>.critical_threshold = <span class=<span class="s">"n"</span>>0.95</span>
+        <span class=<span class="s">"k"</span>>self</span>.cost_per_1k = <span class=<span class="s">"n"</span>>0.002</span>  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># $/1K tokens</span>
+        <span class=<span class="s">"k"</span>>self</span>.history = []
+
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>check</span>(<span class=<span class="s">"k"</span>>self</span>, required_tokens: <span class=<span class="s">"b"</span>>int</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"检查预算是否充足。
 
         Returns:
             预算状态。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        projected = self.used_today + required_tokens
-        pct = projected / self.daily_limit
+        <span class="s">""</span>"</span>
+        projected = <span class=<span class="s">"k"</span>>self</span>.used_today + required_tokens
+        pct = projected / <span class=<span class="s">"k"</span>>self</span>.daily_limit
 
-        <span class="k">if</span> pct &gt;= <span class="n">1.0</span>:
-            <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">False</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"exceeded"</span>,
-                    <span <span class="k">class</span>="s">"message"</span>: f<span <span class="k">class</span>="s">"今日预算已用完 ({self.daily_limit:,} tokens)"</span>}
+        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"n"</span>>1.0</span>:
+            <span class=<span class="s">"k"</span>>return</span> {<span class="s">"allowed"</span>: <span class=<span class="s">"k"</span>>False</span>, <span class="s">"status"</span>: <span class="s">"exceeded"</span>,
+                    <span class="s">"message"</span>: f<span class="s">"今日预算已用完 ({<span class="</span>k<span class="s">">self</span>.daily_limit:,} tokens)"</span>}
 
-        <span class="k">if</span> pct &gt;= self.critical_threshold:
-            <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"critical"</span>,
-                    <span <span class="k">class</span>="s">"message"</span>: f<span <span class="k">class</span>="s">"接近预算上限 ({pct:.<span class="n">0</span>%})，建议用小模型"</span>}
+        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"k"</span>>self</span>.critical_threshold:
+            <span class=<span class="s">"k"</span>>return</span> {<span class="s">"allowed"</span>: <span class=<span class="s">"k"</span>>True</span>, <span class="s">"status"</span>: <span class="s">"critical"</span>,
+                    <span class="s">"message"</span>: f<span class="s">"接近预算上限 ({pct:.<span class="</span>n<span class="s">">0</span>%})，建议用小模型"</span>}
 
-        <span class="k">if</span> pct &gt;= self.warning_threshold:
-            <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"warning"</span>,
-                    <span <span class="k">class</span>="s">"message"</span>: f<span <span class="k">class</span>="s">"预算已达 {pct:.<span class="n">0</span>%}"</span>}
+        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"k"</span>>self</span>.warning_threshold:
+            <span class=<span class="s">"k"</span>>return</span> {<span class="s">"allowed"</span>: <span class=<span class="s">"k"</span>>True</span>, <span class="s">"status"</span>: <span class="s">"warning"</span>,
+                    <span class="s">"message"</span>: f<span class="s">"预算已达 {pct:.<span class="</span>n<span class="s">">0</span>%}"</span>}
 
-        <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"ok"</span>}
+        <span class=<span class="s">"k"</span>>return</span> {<span class="s">"allowed"</span>: <span class=<span class="s">"k"</span>>True</span>, <span class="s">"status"</span>: <span class="s">"ok"</span>}
 
-    <span class="k">def</span> consume(self, tokens: int):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"消耗预算。"</span><span <span class="k">class</span>="s">""</span></span>
-        self.used_today += tokens
-        self.history.append({
-            <span <span class="k">class</span>="s">"tokens"</span>: tokens,
-            <span <span class="k">class</span>="s">"remaining"</span>: self.daily_limit - self.used_today,
-            <span <span class="k">class</span>="s">"pct"</span>: self.used_today / self.daily_limit,
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>consume</span>(<span class=<span class="s">"k"</span>>self</span>, tokens: <span class=<span class="s">"b"</span>>int</span>):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"消耗预算。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"k"</span>>self</span>.used_today += tokens
+        <span class=<span class="s">"k"</span>>self</span>.history.append({
+            <span class="s">"tokens"</span>: tokens,
+            <span class="s">"remaining"</span>: <span class=<span class="s">"k"</span>>self</span>.daily_limit - <span class=<span class="s">"k"</span>>self</span>.used_today,
+            <span class="s">"pct"</span>: <span class=<span class="s">"k"</span>>self</span>.used_today / <span class=<span class="s">"k"</span>>self</span>.daily_limit,
         })
 
-    <span class="k">def</span> daily_report(self) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"每日预算报告。"</span><span <span class="k">class</span>="s">""</span></span>
-        pct = self.used_today / self.daily_limit
-        cost = self.used_today / <span class="n">1000</span> * self.cost_per_1k
-        <span class="k">return</span> {
-            <span <span class="k">class</span>="s">"daily_limit"</span>: f<span <span class="k">class</span>="s">"{self.daily_limit:,}"</span>,
-            <span <span class="k">class</span>="s">"used"</span>: f<span <span class="k">class</span>="s">"{self.used_today:,}"</span>,
-            <span <span class="k">class</span>="s">"remaining"</span>: f<span <span class="k">class</span>="s">"{self.daily_limit - self.used_today:,}"</span>,
-            <span <span class="k">class</span>="s">"usage_pct"</span>: f<span <span class="k">class</span>="s">"{pct:.<span class="n">1</span>%}"</span>,
-            <span <span class="k">class</span>="s">"est_cost"</span>: f<span <span class="k">class</span>="s">"${cost:.2f}"</span>,
-            <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"🟢"</span> <span class="k">if</span> pct &lt; <span class="n">0.8</span> <span class="k">else</span> (<span <span class="k">class</span>="s">"🟡"</span> <span class="k">if</span> pct &lt; <span class="n">0.95</span> <span class="k">else</span> <span <span class="k">class</span>="s">"🔴"</span>),
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>daily_report</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"每日预算报告。"</span><span class="s">""</span></span>
+        pct = <span class=<span class="s">"k"</span>>self</span>.used_today / <span class=<span class="s">"k"</span>>self</span>.daily_limit
+        cost = <span class=<span class="s">"k"</span>>self</span>.used_today / <span class=<span class="s">"n"</span>>1000</span> * <span class=<span class="s">"k"</span>>self</span>.cost_per_1k
+        <span class=<span class="s">"k"</span>>return</span> {
+            <span class="s">"daily_limit"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.daily_limit:,}"</span>,
+            <span class="s">"used"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.used_today:,}"</span>,
+            <span class="s">"remaining"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.daily_limit - <span class="</span>k<span class="s">">self</span>.used_today:,}"</span>,
+            <span class="s">"usage_pct"</span>: f<span class="s">"{pct:.<span class="</span>n<span class="s">">1</span>%}"</span>,
+            <span class="s">"est_cost"</span>: f<span class="s">"${cost:.2f}"</span>,
+            <span class="s">"status"</span>: <span class="s">"🟢"</span> <span class=<span class="s">"k"</span>>if</span> pct &lt; <span class=<span class="s">"n"</span>>0.8</span> <span class=<span class="s">"k"</span>>else</span> (<span class="s">"🟡"</span> <span class=<span class="s">"k"</span>>if</span> pct &lt; <span class=<span class="s">"n"</span>>0.95</span> <span class=<span class="s">"k"</span>>else</span> <span class="s">"🔴"</span>),
         }
 
 
-<span class="k">def</span> demo_cache():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示三级缓存。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  三级缓存演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_cache</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示三级缓存。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  三级缓存演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
     cache = ThreeLevelCache()
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟 FAQ 场景（高重复率）</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟 FAQ 场景（高重复率）</span>
     queries = [
-        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,
-        <span <span class="k">class</span>="s">"如何修改密码？"</span>,
-        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
-        <span <span class="k">class</span>="s">"退货的步骤是啥？"</span>,         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 语义相似（L2命中）</span>
-        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
-        <span <span class="k">class</span>="s">"怎么联系客服？"</span>,          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 新查询</span>
-        <span <span class="k">class</span>="s">"如何修改密码？"</span>,          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
-        <span <span class="k">class</span>="s">"怎么退换货物？"</span>,          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 语义相似（L2命中）</span>
-        <span <span class="k">class</span>="s">"订单在哪里查询？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 新查询</span>
-        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
+        <span class="s">"退货流程是什么？"</span>,
+        <span class="s">"如何修改密码？"</span>,
+        <span class="s">"退货流程是什么？"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 重复（L1命中）</span>
+        <span class="s">"退货的步骤是啥？"</span>,         <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 语义相似（L2命中）</span>
+        <span class="s">"退货流程是什么？"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 重复（L1命中）</span>
+        <span class="s">"怎么联系客服？"</span>,          <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 新查询</span>
+        <span class="s">"如何修改密码？"</span>,          <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 重复（L1命中）</span>
+        <span class="s">"怎么退换货物？"</span>,          <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 语义相似（L2命中）</span>
+        <span class="s">"订单在哪里查询？"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 新查询</span>
+        <span class="s">"退货流程是什么？"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 重复（L1命中）</span>
     ]
 
-    <span class="k">for</span> q <span class="k">in</span> queries:
+    <span class=<span class="s">"k"</span>>for</span> q <span class=<span class="s">"k"</span>>in</span> queries:
         response, level, cached = cache.query(q)
-        icon = <span <span class="k">class</span>="s">"🎯"</span> <span class="k">if</span> cached <span class="k">else</span> <span <span class="k">class</span>="s">"🆕"</span>
-        print(f<span <span class="k">class</span>="s">"  {icon} L{level} 「{q[:<span class="n">15</span>]}...」→ {response[:<span class="n">40</span>]}..."</span>)
+        icon = <span class="s">"🎯"</span> <span class=<span class="s">"k"</span>>if</span> cached <span class=<span class="s">"k"</span>>else</span> <span class="s">"🆕"</span>
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {icon} L{level} 「{q[:<span class="</span>n<span class="s">">15</span>]}...」→ {response[:<span class="</span>n<span class="s">">40</span>]}..."</span>)
 
-    print(f<span <span class="k">class</span>="s">"\n  📊 缓存报告: {json.dumps(cache.report(), indent=<span class="n">2</span>)}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  📊 缓存报告: {json.dumps(cache.report(), indent=<span class="</span>n<span class="s">">2</span>)}"</span>)
 
 
-<span class="k">def</span> demo_token_budget():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Token 预算管理。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  Token 预算管理演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_token_budget</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 Token 预算管理。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Token 预算管理演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
-    budget = TokenBudget(daily_limit=<span class="n">10000</span>)
+    budget = TokenBudget(daily_limit=<span class=<span class="s">"n"</span>>10000</span>)
 
-    requests = [<span class="n">500</span>, <span class="n">2000</span>, <span class="n">4000</span>, <span class="n">3000</span>, <span class="n">1000</span>]
-    <span class="k">for</span> i, tokens <span class="k">in</span> enumerate(requests):
+    requests = [<span class=<span class="s">"n"</span>>500</span>, <span class=<span class="s">"n"</span>>2000</span>, <span class=<span class="s">"n"</span>>4000</span>, <span class=<span class="s">"n"</span>>3000</span>, <span class=<span class="s">"n"</span>>1000</span>]
+    <span class=<span class="s">"k"</span>>for</span> i, tokens <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(requests):
         check = budget.check(tokens)
-        status = check[<span <span class="k">class</span>="s">"status"</span>]
-        icon = <span <span class="k">class</span>="s">"✅"</span> <span class="k">if</span> check[<span <span class="k">class</span>="s">"allowed"</span>] <span class="k">else</span> <span <span class="k">class</span>="s">"❌"</span>
+        status = check[<span class="s">"status"</span>]
+        icon = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> check[<span class="s">"allowed"</span>] <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌"</span>
         status_msgs = {
-            <span <span class="k">class</span>="s">"ok"</span>: <span <span class="k">class</span>="s">"预算正常"</span>,
-            <span <span class="k">class</span>="s">"warning"</span>: f<span <span class="k">class</span>='s'>'预算已达 {(budget.used_today + tokens) / budget.daily_limit:.<span class="n">0</span>%}'</span>,
-            <span <span class="k">class</span>="s">"critical"</span>: f<span <span class="k">class</span>='s'>'接近预算上限 ({(budget.used_today + tokens) / budget.daily_limit:.<span class="n">0</span>%})'</span>,
-            <span <span class="k">class</span>="s">"exceeded"</span>: f<span <span class="k">class</span>='s'>'今日预算已用完 ({budget.daily_limit:,} tokens)'</span>,
+            <span class="s">"ok"</span>: <span class="s">"预算正常"</span>,
+            <span class="s">"warning"</span>: f<span class='s'>'预算已达 {(budget.used_today + tokens) / budget.daily_limit:.<span class=<span class="s">"n"</span>>0</span>%}'</span>,
+            <span class="s">"critical"</span>: f<span class='s'>'接近预算上限 ({(budget.used_today + tokens) / budget.daily_limit:.<span class=<span class="s">"n"</span>>0</span>%})'</span>,
+            <span class="s">"exceeded"</span>: f<span class='s'>'今日预算已用完 ({budget.daily_limit:,} tokens)'</span>,
         }
-        msg = status_msgs.get(status, <span <span class="k">class</span>="s">"未知状态"</span>)
-        print(f<span <span class="k">class</span>="s">"  请求{i+<span class="n">1</span>} {icon} {tokens:,}tokens → {status}: {msg}"</span>)
-        <span class="k">if</span> check[<span <span class="k">class</span>="s">"allowed"</span>]:
+        msg = status_msgs.get(status, <span class="s">"未知状态"</span>)
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  请求{i+<span class="</span>n<span class="s">">1</span>} {icon} {tokens:,}tokens → {status}: {msg}"</span>)
+        <span class=<span class="s">"k"</span>>if</span> check[<span class="s">"allowed"</span>]:
             budget.consume(tokens)
 
     report = budget.daily_report()
-    print(f<span <span class="k">class</span>="s">"\n  📊 日预算报告:"</span>)
-    <span class="k">for</span> k, v <span class="k">in</span> report.items():
-        print(f<span <span class="k">class</span>="s">"    {k}: {v}"</span>)</pre></div></details></div><div class="lecture"><h2>28.4 缓存的进阶策略</h2>
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  📊 日预算报告:"</span>)
+    <span class=<span class="s">"k"</span>>for</span> k, v <span class=<span class="s">"k"</span>>in</span> report.items():
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {k}: {v}"</span>)</pre></div></details></div><div class="lecture"><h2>28.4 缓存的进阶策略</h2>
 <p>&nbsp;</p>
 <li>分层 TTL</li>
 <p>L1 精确缓存：永久（直到 LRU 淘汰）</p>
@@ -486,30 +502,37 @@ body {
 <p>→ 三级缓存（Exact/Semantic/LLM）命中率 40-70%</p>
 <p>→ 模型路由（简单用小模型，复杂用大模型）</p>
 <p>→ Token 预算管理（防超支）</p>
-<p>→ 三管齐下：年省 50-80%</p></div><div class="code-section"><details><summary>💻 代码 (16 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║  第28章：语义缓存与 Token 优化                          ║"</span>)
-    print(<span <span class="k">class</span>="s">"║  Exact Match · Semantic Cache · Token Budget        ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<p>→ 三管齐下：年省 50-80%</p></div><div class="code-section"><details open><summary>💻 代码 (23 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> time
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>import</span> hashlib
+<span class=<span class="s">"k"</span>>import</span> numpy <span class=<span class="s">"k"</span>>as</span> np
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
+<span class=<span class="s">"k"</span>>from</span> collections <span class=<span class="s">"k"</span>>import</span> OrderedDict
+
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第28章：语义缓存与 Token 优化                          ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Exact Match · Semantic Cache · Token Budget        ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
     demo_cache()
     demo_token_budget()
-    print(<span <span class="k">class</span>="s">"\n▶ 成本优化组合拳"</span>)
-    <span class="k">for</span> item <span class="k">in</span> [
-        <span <span class="k">class</span>="s">"三级缓存 → <span class="n">30</span>-<span class="n">50</span>% 请求免调 LLM"</span>,
-        <span <span class="k">class</span>="s">"模型路由 → <span class="n">80</span>% 简单请求用小模型"</span>,
-        <span <span class="k">class</span>="s">"Token 预算 → 防止单用户消耗超标"</span>,
-        <span <span class="k">class</span>="s">"三者叠加 → 年省 <span class="n">50</span>-<span class="n">80</span>% LLM 成本"</span>,
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ 成本优化组合拳"</span>)
+    <span class=<span class="s">"k"</span>>for</span> item <span class=<span class="s">"k"</span>>in</span> [
+        <span class="s">"三级缓存 → <span class="</span>n<span class="s">">30</span>-<span class="</span>n<span class="s">">50</span>% 请求免调 LLM"</span>,
+        <span class="s">"模型路由 → <span class="</span>n<span class="s">">80</span>% 简单请求用小模型"</span>,
+        <span class="s">"Token 预算 → 防止单用户消耗超标"</span>,
+        <span class="s">"三者叠加 → 年省 <span class="</span>n<span class="s">">50</span>-<span class="</span>n<span class="s">">80</span>% LLM 成本"</span>,
     ]:
-        print(f<span <span class="k">class</span>="s">"  💰 {item}"</span>)
-    print(<span <span class="k">class</span>="s">"\n✅ 第28章完成！🎓 全部课程构建完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (406 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  💰 {item}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第28章完成！🎓 全部课程构建完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (406 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 第28章：语义缓存与 Token 优化 —— 不花钱的 Agent 调用
 ========================================================
 
 📌 本章目标：
-  <span class="n">1</span>. 理解语义缓存的核心原理和三级缓存架构
-  <span class="n">2</span>. 掌握 Exact Match / Embedding / LLM-<span class="k">as</span>-Cache 的实现
-  <span class="n">3</span>. 学会量化缓存收益和缓存命中率预测
-  <span class="n">4</span>. 掌握 Token 预算管理系统
+  <span class=<span class="s">"n"</span>>1</span>. 理解语义缓存的核心原理和三级缓存架构
+  <span class=<span class="s">"n"</span>>2</span>. 掌握 Exact Match / Embedding / LLM-<span class=<span class="s">"k"</span>>as</span>-Cache 的实现
+  <span class=<span class="s">"n"</span>>3</span>. 学会量化缓存收益和缓存命中率预测
+  <span class=<span class="s">"n"</span>>4</span>. 掌握 Token 预算管理系统
 
 📌 面试高频点：
   - 「Agent 的 Token 成本怎么优化？」
@@ -521,198 +544,198 @@ body {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-<span class="n">28.1</span> 为什么 Agent 场景特别需要缓存？
+<span class=<span class="s">"n"</span>>28.1</span> 为什么 Agent 场景特别需要缓存？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Agent 的 LLM 调用特征：
-  <span class="n">1</span>. 重复率高：用户问相似的问题（客服/教育场景 <span class="n">30</span>-<span class="n">50</span>% 重复）
-  <span class="n">2</span>. 代价高：每次调用 = 金钱 + 时间
-  <span class="n">3</span>. 步骤多：一个 Agent 任务可能调 <span class="n">5</span>-<span class="n">10</span> 次 LLM
+  <span class=<span class="s">"n"</span>>1</span>. 重复率高：用户问相似的问题（客服/教育场景 <span class=<span class="s">"n"</span>>30</span>-<span class=<span class="s">"n"</span>>50</span>% 重复）
+  <span class=<span class="s">"n"</span>>2</span>. 代价高：每次调用 = 金钱 + 时间
+  <span class=<span class="s">"n"</span>>3</span>. 步骤多：一个 Agent 任务可能调 <span class=<span class="s">"n"</span>>5</span>-<span class=<span class="s">"n"</span>>10</span> 次 LLM
 
 缓存收益估算：
-  假设：日请求 <span class="n">10000</span> 次，<span class="n">30</span>% 可缓存，每次 $<span class="n">0.01</span>
-  日节省：<span class="n">10000</span> × <span class="n">0.3</span> × $<span class="n">0.01</span> = $<span class="n">30</span>/天
-  年节省：$<span class="n">30</span> × <span class="n">365</span> = $<span class="n">10</span>,<span class="n">950</span>/年
+  假设：日请求 <span class=<span class="s">"n"</span>>10000</span> 次，<span class=<span class="s">"n"</span>>30</span>% 可缓存，每次 $<span class=<span class="s">"n"</span>>0.01</span>
+  日节省：<span class=<span class="s">"n"</span>>10000</span> × <span class=<span class="s">"n"</span>>0.3</span> × $<span class=<span class="s">"n"</span>>0.01</span> = $<span class=<span class="s">"n"</span>>30</span>/天
+  年节省：$<span class=<span class="s">"n"</span>>30</span> × <span class=<span class="s">"n"</span>>365</span> = $<span class=<span class="s">"n"</span>>10</span>,<span class=<span class="s">"n"</span>>950</span>/年
 
   加上延迟改善：缓存命中 P99 &lt; 10ms vs LLM 调用 P99 &gt; 2s)
 
 
-<span class="n">28.2</span> 三级缓存架构
+<span class=<span class="s">"n"</span>>28.2</span> 三级缓存架构
 ━━━━━━━━━━━━━━━━
 
   ┌─────────────────────────────────────────────────┐
   │                 L1: Exact Match Cache              │
   │  ─────────────────────────────────               │
-  │  查询: <span <span class="k">class</span>="s">"今天天气"</span> → 缓存中查 <span <span class="k">class</span>="s">"今天天气"</span>             │
+  │  查询: <span class="s">"今天天气"</span> → 缓存中查 <span class="s">"今天天气"</span>             │
   │  命中条件: 完全相同的文本                           │
-  │  命中率: <span class="n">5</span>-<span class="n">10</span>%                                    │
+  │  命中率: <span class=<span class="s">"n"</span>>5</span>-<span class=<span class="s">"n"</span>>10</span>%                                    │
   │  延迟: &lt;1ms                                       │
   ├─────────────────────────────────────────────────┤
   │                 L2: Semantic Cache                 │
   │  ─────────────────────────────────               │
-  │  查询: <span <span class="k">class</span>="s">"今天天气"</span> → 缓存中查相似查询 → 命中 <span <span class="k">class</span>="s">"今天天气怎么样"</span>│
-  │  命中条件: 余弦相似度 &gt; <span class="n">0.95</span>                        │
-  │  命中率: <span class="n">20</span>-<span class="n">40</span>%                                    │
+  │  查询: <span class="s">"今天天气"</span> → 缓存中查相似查询 → 命中 <span class="s">"今天天气怎么样"</span>│
+  │  命中条件: 余弦相似度 &gt; <span class=<span class="s">"n"</span>>0.95</span>                        │
+  │  命中率: <span class=<span class="s">"n"</span>>20</span>-<span class=<span class="s">"n"</span>>40</span>%                                    │
   │  延迟: ~10ms                                       │
   ├─────────────────────────────────────────────────┤
-  │                 L3: LLM-<span class="k">as</span>-Cache                   │
+  │                 L3: LLM-<span class=<span class="s">"k"</span>>as</span>-Cache                   │
   │  ─────────────────────────────────               │
   │  查询: 无法在前2级命中 → 调用廉价小模型               │
   │  如果小模型回答合适 → 缓存结果                       │
-  │  命中率: <span class="n">10</span>-<span class="n">20</span>% (加上前两级：总 <span class="n">40</span>-<span class="n">70</span>%)              │
+  │  命中率: <span class=<span class="s">"n"</span>>10</span>-<span class=<span class="s">"n"</span>>20</span>% (加上前两级：总 <span class=<span class="s">"n"</span>>40</span>-<span class=<span class="s">"n"</span>>70</span>%)              │
   │  延迟: ~500ms                                      │
   └─────────────────────────────────────────────────┘
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
-<span class="k">import</span> time
-<span class="k">import</span> json
-<span class="k">import</span> hashlib
-<span class="k">import</span> numpy <span class="k">as</span> np
-<span class="k">from</span> typing <span class="k">import</span> Optional
-<span class="k">from</span> collections <span class="k">import</span> OrderedDict
+<span class=<span class="s">"k"</span>>import</span> time
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>import</span> hashlib
+<span class=<span class="s">"k"</span>>import</span> numpy <span class=<span class="s">"k"</span>>as</span> np
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
+<span class=<span class="s">"k"</span>>from</span> collections <span class=<span class="s">"k"</span>>import</span> OrderedDict
 
 
-<span class="k">class</span> ExactMatchCache:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"L1 缓存 —— 精确匹配。
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ExactMatchCache</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"L1 缓存 —— 精确匹配。
 
     最简单的缓存：完全相同的输入 → 直接返回缓存结果。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self, max_size: int = <span class="n">1000</span>):
-        self._store = OrderedDict()
-        self.max_size = max_size
-        self.hits = <span class="n">0</span>
-        self.misses = <span class="n">0</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, max_size: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>1000</span>):
+        <span class=<span class="s">"k"</span>>self</span>._store = OrderedDict()
+        <span class=<span class="s">"k"</span>>self</span>.max_size = max_size
+        <span class=<span class="s">"k"</span>>self</span>.hits = <span class=<span class="s">"n"</span>>0</span>
+        <span class=<span class="s">"k"</span>>self</span>.misses = <span class=<span class="s">"n"</span>>0</span>
 
-    <span class="k">def</span> get(self, query: str) -&gt; Optional[str]:
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>str</span>]:
         key = hashlib.md5(query.encode()).hexdigest()
-        <span class="k">if</span> key <span class="k">in</span> self._store:
-            self._store.move_to_end(key)  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LRU 更新</span>
-            self.hits += <span class="n">1</span>
-            <span class="k">return</span> self._store[key]
-        self.misses += <span class="n">1</span>
-        <span class="k">return</span> <span class="k">None</span>
+        <span class=<span class="s">"k"</span>>if</span> key <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>._store:
+            <span class=<span class="s">"k"</span>>self</span>._store.move_to_end(key)  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># LRU 更新</span>
+            <span class=<span class="s">"k"</span>>self</span>.hits += <span class=<span class="s">"n"</span>>1</span>
+            <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>._store[key]
+        <span class=<span class="s">"k"</span>>self</span>.misses += <span class=<span class="s">"n"</span>>1</span>
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>None</span>
 
-    <span class="k">def</span> set(self, query: str, response: str):
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>><span class=<span class="s">"b"</span>>set</span></span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>, response: <span class=<span class="s">"b"</span>>str</span>):
         key = hashlib.md5(query.encode()).hexdigest()
-        <span class="k">if</span> len(self._store) &gt;= self.max_size:
-            self._store.popitem(last=<span class="k">False</span>)  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 淘汰最久未用</span>
-        self._store[key] = response
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>._store) &gt;= <span class=<span class="s">"k"</span>>self</span>.max_size:
+            <span class=<span class="s">"k"</span>>self</span>._store.popitem(last=<span class=<span class="s">"k"</span>>False</span>)  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 淘汰最久未用</span>
+        <span class=<span class="s">"k"</span>>self</span>._store[key] = response
 
-    <span class="d">@property</span>
-    <span class="k">def</span> hit_rate(self) -&gt; float:
-        total = self.hits + self.misses
-        <span class="k">return</span> self.hits / total <span class="k">if</span> total &gt; <span class="n">0</span> <span class="k">else</span> <span class="n">0</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@property</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>hit_rate</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
+        total = <span class=<span class="s">"k"</span>>self</span>.hits + <span class=<span class="s">"k"</span>>self</span>.misses
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.hits / total <span class=<span class="s">"k"</span>>if</span> total &gt; <span class=<span class="s">"n"</span>>0</span> <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"n"</span>>0</span>
 
 
-<span class="k">class</span> SemanticCache:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"L2 缓存 —— 语义相似度匹配。
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>SemanticCache</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"L2 缓存 —— 语义相似度匹配。
 
     不要求完全相同的查询，语义相似即可命中。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self, similarity_threshold: float = <span class="n">0.92</span>,
-                 max_size: int = <span class="n">2000</span>):
-        self.threshold = similarity_threshold
-        self.max_size = max_size
-        self.queries = []      <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># [(embedding, query, response)]</span>
-        self.hits = <span class="n">0</span>
-        self.misses = <span class="n">0</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, similarity_threshold: <span class=<span class="s">"b"</span>>float</span> = <span class=<span class="s">"n"</span>>0.92</span>,
+                 max_size: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>2000</span>):
+        <span class=<span class="s">"k"</span>>self</span>.threshold = similarity_threshold
+        <span class=<span class="s">"k"</span>>self</span>.max_size = max_size
+        <span class=<span class="s">"k"</span>>self</span>.queries = []      <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># [(embedding, query, response)]</span>
+        <span class=<span class="s">"k"</span>>self</span>.hits = <span class=<span class="s">"n"</span>>0</span>
+        <span class=<span class="s">"k"</span>>self</span>.misses = <span class=<span class="s">"n"</span>>0</span>
 
-    <span class="k">def</span> _embed(self, text: str, dim: int = <span class="n">128</span>) -&gt; np.ndarray:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"简化的向量化（实际使用 OpenAI Embeddings API）。"</span><span <span class="k">class</span>="s">""</span></span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_embed</span>(<span class=<span class="s">"k"</span>>self</span>, text: <span class=<span class="s">"b"</span>>str</span>, dim: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>128</span>) -&gt; np.ndarray:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"简化的向量化（实际使用 OpenAI Embeddings API）。"</span><span class="s">""</span></span>
         vec = np.zeros(dim)
-        <span class="k">for</span> i, ch <span class="k">in</span> enumerate(text):
-            vec[hash(ch) % dim] += <span class="n">1</span>
+        <span class=<span class="s">"k"</span>>for</span> i, ch <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(text):
+            vec[<span class=<span class="s">"b"</span>>hash</span>(ch) % dim] += <span class=<span class="s">"n"</span>>1</span>
         norm = np.linalg.norm(vec)
-        <span class="k">return</span> vec / norm <span class="k">if</span> norm &gt; <span class="n">0</span> <span class="k">else</span> vec
+        <span class=<span class="s">"k"</span>>return</span> vec / norm <span class=<span class="s">"k"</span>>if</span> norm &gt; <span class=<span class="s">"n"</span>>0</span> <span class=<span class="s">"k"</span>>else</span> vec
 
-    <span class="k">def</span> get(self, query: str) -&gt; Optional[str]:
-        q_vec = self._embed(query)
-        <span class="k">for</span> emb, cached_query, response <span class="k">in</span> self.queries:
-            sim = float(np.dot(q_vec, emb))
-            <span class="k">if</span> sim &gt;= self.threshold:
-                self.hits += <span class="n">1</span>
-                <span class="k">return</span> response
-        self.misses += <span class="n">1</span>
-        <span class="k">return</span> <span class="k">None</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>get</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>str</span>]:
+        q_vec = <span class=<span class="s">"k"</span>>self</span>._embed(query)
+        <span class=<span class="s">"k"</span>>for</span> emb, cached_query, response <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.queries:
+            sim = <span class=<span class="s">"b"</span>>float</span>(np.dot(q_vec, emb))
+            <span class=<span class="s">"k"</span>>if</span> sim &gt;= <span class=<span class="s">"k"</span>>self</span>.threshold:
+                <span class=<span class="s">"k"</span>>self</span>.hits += <span class=<span class="s">"n"</span>>1</span>
+                <span class=<span class="s">"k"</span>>return</span> response
+        <span class=<span class="s">"k"</span>>self</span>.misses += <span class=<span class="s">"n"</span>>1</span>
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>None</span>
 
-    <span class="k">def</span> set(self, query: str, response: str):
-        emb = self._embed(query)
-        self.queries.append((emb, query, response))
-        <span class="k">if</span> len(self.queries) &gt; self.max_size:
-            self.queries = self.queries[-self.max_size:]
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>><span class=<span class="s">"b"</span>>set</span></span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>, response: <span class=<span class="s">"b"</span>>str</span>):
+        emb = <span class=<span class="s">"k"</span>>self</span>._embed(query)
+        <span class=<span class="s">"k"</span>>self</span>.queries.append((emb, query, response))
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.queries) &gt; <span class=<span class="s">"k"</span>>self</span>.max_size:
+            <span class=<span class="s">"k"</span>>self</span>.queries = <span class=<span class="s">"k"</span>>self</span>.queries[-<span class=<span class="s">"k"</span>>self</span>.max_size:]
 
-    <span class="d">@property</span>
-    <span class="k">def</span> hit_rate(self) -&gt; float:
-        total = self.hits + self.misses
-        <span class="k">return</span> self.hits / total <span class="k">if</span> total &gt; <span class="n">0</span> <span class="k">else</span> <span class="n">0</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@property</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>hit_rate</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>float</span>:
+        total = <span class=<span class="s">"k"</span>>self</span>.hits + <span class=<span class="s">"k"</span>>self</span>.misses
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>self</span>.hits / total <span class=<span class="s">"k"</span>>if</span> total &gt; <span class=<span class="s">"n"</span>>0</span> <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"n"</span>>0</span>
 
 
-<span class="k">class</span> ThreeLevelCache:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"三级缓存 —— 层层降级，最大化命中率。"</span><span <span class="k">class</span>="s">""</span></span>
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ThreeLevelCache</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"三级缓存 —— 层层降级，最大化命中率。"</span><span class="s">""</span></span>
 
-    <span class="k">def</span> __init__(self):
-        self.l1 = ExactMatchCache(max_size=<span class="n">500</span>)
-        self.l2 = SemanticCache(similarity_threshold=<span class="n">0.90</span>)
-        self.stats = {<span <span class="k">class</span>="s">"l1_hits"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"l2_hits"</span>: <span class="n">0</span>,
-                      <span <span class="k">class</span>="s">"l3_hits"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"misses"</span>: <span class="n">0</span>,
-                      <span <span class="k">class</span>="s">"cost_saved"</span>: <span class="n">0.0</span>}
-        self.COST_PER_LLM_CALL = <span class="n">0.01</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 每次 LLM 调用成本</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
+        <span class=<span class="s">"k"</span>>self</span>.l1 = ExactMatchCache(max_size=<span class=<span class="s">"n"</span>>500</span>)
+        <span class=<span class="s">"k"</span>>self</span>.l2 = SemanticCache(similarity_threshold=<span class=<span class="s">"n"</span>>0.90</span>)
+        <span class=<span class="s">"k"</span>>self</span>.stats = {<span class="s">"l1_hits"</span>: <span class=<span class="s">"n"</span>>0</span>, <span class="s">"l2_hits"</span>: <span class=<span class="s">"n"</span>>0</span>,
+                      <span class="s">"l3_hits"</span>: <span class=<span class="s">"n"</span>>0</span>, <span class="s">"misses"</span>: <span class=<span class="s">"n"</span>>0</span>,
+                      <span class="s">"cost_saved"</span>: <span class=<span class="s">"n"</span>>0.0</span>}
+        <span class=<span class="s">"k"</span>>self</span>.COST_PER_LLM_CALL = <span class=<span class="s">"n"</span>>0.01</span>  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 每次 LLM 调用成本</span>
 
-    <span class="k">def</span> query(self, query: str,
-              llm_func: callable = <span class="k">None</span>) -&gt; tuple[str, int, bool]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"三级缓存查询。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>query</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>,
+              llm_func: <span class=<span class="s">"b"</span>>callable</span> = <span class=<span class="s">"k"</span>>None</span>) -&gt; <span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>int</span>, bool]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"三级缓存查询。
 
         Returns:
             (response, cache_level, was_cached)
-            cache_level: <span class="n">1</span>=L1, <span class="n">2</span>=L2, <span class="n">3</span>=L3, <span class="n">0</span>=miss
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L1: Exact Match</span>
-        result = self.l1.get(query)
-        <span class="k">if</span> result:
-            self.stats[<span <span class="k">class</span>="s">"l1_hits"</span>] += <span class="n">1</span>
-            self.stats[<span <span class="k">class</span>="s">"cost_saved"</span>] += self.COST_PER_LLM_CALL
-            <span class="k">return</span> result, <span class="n">1</span>, <span class="k">True</span>
+            cache_level: <span class=<span class="s">"n"</span>>1</span>=L1, <span class=<span class="s">"n"</span>>2</span>=L2, <span class=<span class="s">"n"</span>>3</span>=L3, <span class=<span class="s">"n"</span>>0</span>=miss
+        <span class="s">""</span>"</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># L1: Exact Match</span>
+        result = <span class=<span class="s">"k"</span>>self</span>.l1.get(query)
+        <span class=<span class="s">"k"</span>>if</span> result:
+            <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l1_hits"</span>] += <span class=<span class="s">"n"</span>>1</span>
+            <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"cost_saved"</span>] += <span class=<span class="s">"k"</span>>self</span>.COST_PER_LLM_CALL
+            <span class=<span class="s">"k"</span>>return</span> result, <span class=<span class="s">"n"</span>>1</span>, <span class=<span class="s">"k"</span>>True</span>
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L2: Semantic</span>
-        result = self.l2.get(query)
-        <span class="k">if</span> result:
-            self.stats[<span <span class="k">class</span>="s">"l2_hits"</span>] += <span class="n">1</span>
-            self.stats[<span <span class="k">class</span>="s">"cost_saved"</span>] += self.COST_PER_LLM_CALL
-            <span class="k">return</span> result, <span class="n">2</span>, <span class="k">True</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># L2: Semantic</span>
+        result = <span class=<span class="s">"k"</span>>self</span>.l2.get(query)
+        <span class=<span class="s">"k"</span>>if</span> result:
+            <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l2_hits"</span>] += <span class=<span class="s">"n"</span>>1</span>
+            <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"cost_saved"</span>] += <span class=<span class="s">"k"</span>>self</span>.COST_PER_LLM_CALL
+            <span class=<span class="s">"k"</span>>return</span> result, <span class=<span class="s">"n"</span>>2</span>, <span class=<span class="s">"k"</span>>True</span>
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L3: LLM</span>
-        <span class="k">if</span> llm_func:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># L3: LLM</span>
+        <span class=<span class="s">"k"</span>>if</span> llm_func:
             response = llm_func(query)
-        <span class="k">else</span>:
-            response = f<span <span class="k">class</span>="s">"[LLM 响应] 关于「{query[:<span class="n">30</span>]}...」的回答"</span>
-        self.stats[<span <span class="k">class</span>="s">"l3_hits"</span>] += <span class="n">1</span>
+        <span class=<span class="s">"k"</span>>else</span>:
+            response = f<span class="s">"[LLM 响应] 关于「{query[:<span class="</span>n<span class="s">">30</span>]}...」的回答"</span>
+        <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l3_hits"</span>] += <span class=<span class="s">"n"</span>>1</span>
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 写入缓存</span>
-        self.l1.set(query, response)
-        self.l2.set(query, response)
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 写入缓存</span>
+        <span class=<span class="s">"k"</span>>self</span>.l1.<span class=<span class="s">"b"</span>>set</span>(query, response)
+        <span class=<span class="s">"k"</span>>self</span>.l2.<span class=<span class="s">"b"</span>>set</span>(query, response)
 
-        <span class="k">return</span> response, <span class="n">3</span>, <span class="k">False</span>
+        <span class=<span class="s">"k"</span>>return</span> response, <span class=<span class="s">"n"</span>>3</span>, <span class=<span class="s">"k"</span>>False</span>
 
-    <span class="k">def</span> report(self) -&gt; dict:
-        total = sum([self.stats[<span <span class="k">class</span>="s">"l1_hits"</span>], self.stats[<span <span class="k">class</span>="s">"l2_hits"</span>],
-                     self.stats[<span <span class="k">class</span>="s">"l3_hits"</span>], self.stats[<span <span class="k">class</span>="s">"misses"</span>]])
-        total = max(total, <span class="n">1</span>)
-        <span class="k">return</span> {
-            <span <span class="k">class</span>="s">"total_queries"</span>: total,
-            <span <span class="k">class</span>="s">"l1_hit_rate"</span>: f<span <span class="k">class</span>="s">"{self.stats[<span <span class="k">class</span>='s'>'l1_hits'</span>] / total:.<span class="n">1</span>%}"</span>,
-            <span <span class="k">class</span>="s">"l2_hit_rate"</span>: f<span <span class="k">class</span>="s">"{self.stats[<span <span class="k">class</span>='s'>'l2_hits'</span>] / total:.<span class="n">1</span>%}"</span>,
-            <span <span class="k">class</span>="s">"l3_rate"</span>: f<span <span class="k">class</span>="s">"{self.stats[<span <span class="k">class</span>='s'>'l3_hits'</span>] / total:.<span class="n">1</span>%}"</span>,
-            <span <span class="k">class</span>="s">"total_cache_hit"</span>: (f<span <span class="k">class</span>="s">"{(self.stats[<span <span class="k">class</span>='s'>'l1_hits'</span>] + self.stats[<span <span class="k">class</span>='s'>'l2_hits'</span>]) / total:.<span class="n">1</span>%}"</span>),
-            <span <span class="k">class</span>="s">"cost_saved"</span>: f<span <span class="k">class</span>="s">"${self.stats[<span <span class="k">class</span>='s'>'cost_saved'</span>]:.3f}"</span>,
-            <span <span class="k">class</span>="s">"l1_size"</span>: len(self.l1._store),
-            <span <span class="k">class</span>="s">"l2_size"</span>: len(self.l2.queries),
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>report</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        total = <span class=<span class="s">"b"</span>>sum</span>([<span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l1_hits"</span>], <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l2_hits"</span>],
+                     <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"l3_hits"</span>], <span class=<span class="s">"k"</span>>self</span>.stats[<span class="s">"misses"</span>]])
+        total = <span class=<span class="s">"b"</span>>max</span>(total, <span class=<span class="s">"n"</span>>1</span>)
+        <span class=<span class="s">"k"</span>>return</span> {
+            <span class="s">"total_queries"</span>: total,
+            <span class="s">"l1_hit_rate"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'l1_hits'</span>] / total:.<span class="</span>n<span class="s">">1</span>%}"</span>,
+            <span class="s">"l2_hit_rate"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'l2_hits'</span>] / total:.<span class="</span>n<span class="s">">1</span>%}"</span>,
+            <span class="s">"l3_rate"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'l3_hits'</span>] / total:.<span class="</span>n<span class="s">">1</span>%}"</span>,
+            <span class="s">"total_cache_hit"</span>: (f<span class="s">"{(<span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'l1_hits'</span>] + <span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'l2_hits'</span>]) / total:.<span class="</span>n<span class="s">">1</span>%}"</span>),
+            <span class="s">"cost_saved"</span>: f<span class="s">"${<span class="</span>k<span class="s">">self</span>.stats[<span class='s'>'cost_saved'</span>]:.3f}"</span>,
+            <span class="s">"l1_size"</span>: <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.l1._store),
+            <span class="s">"l2_size"</span>: <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.l2.queries),
         }
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">28.3</span> Token 预算管理系统
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class=<span class="s">"n"</span>>28.3</span> Token 预算管理系统
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 类比：手机流量套餐
@@ -728,184 +751,184 @@ Agent 的 LLM 调用特征：
       - 复杂分析 → gpt-4o (贵)
       - 快超标 → 只允许 mini + 摘要压缩
 
-Token 预算的 <span class="n">4</span> 个层级：
-  <span class="n">1</span>. 用户级：每人每月 N tokens
-  <span class="n">2</span>. 会话级：每会话 N tokens
-  <span class="n">3</span>. 请求级：每次 N tokens
-  <span class="n">4</span>. 步骤级：每步 N tokens（防死循环）
-<span <span class="k">class</span>="s">""</span>"</span>
+Token 预算的 <span class=<span class="s">"n"</span>>4</span> 个层级：
+  <span class=<span class="s">"n"</span>>1</span>. 用户级：每人每月 N tokens
+  <span class=<span class="s">"n"</span>>2</span>. 会话级：每会话 N tokens
+  <span class=<span class="s">"n"</span>>3</span>. 请求级：每次 N tokens
+  <span class=<span class="s">"n"</span>>4</span>. 步骤级：每步 N tokens（防死循环）
+<span class="s">""</span>"</span>
 
 
-<span class="k">class</span> TokenBudget:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Token 预算管理器 —— 类比流量套餐管理。"</span><span <span class="k">class</span>="s">""</span></span>
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>TokenBudget</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Token 预算管理器 —— 类比流量套餐管理。"</span><span class="s">""</span></span>
 
-    <span class="k">def</span> __init__(self, daily_limit: int = 1_000_000):
-        self.daily_limit = daily_limit
-        self.used_today = <span class="n">0</span>
-        self.warning_threshold = <span class="n">0.8</span>
-        self.critical_threshold = <span class="n">0.95</span>
-        self.cost_per_1k = <span class="n">0.002</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># $/1K tokens</span>
-        self.history = []
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, daily_limit: <span class=<span class="s">"b"</span>>int</span> = 1_000_000):
+        <span class=<span class="s">"k"</span>>self</span>.daily_limit = daily_limit
+        <span class=<span class="s">"k"</span>>self</span>.used_today = <span class=<span class="s">"n"</span>>0</span>
+        <span class=<span class="s">"k"</span>>self</span>.warning_threshold = <span class=<span class="s">"n"</span>>0.8</span>
+        <span class=<span class="s">"k"</span>>self</span>.critical_threshold = <span class=<span class="s">"n"</span>>0.95</span>
+        <span class=<span class="s">"k"</span>>self</span>.cost_per_1k = <span class=<span class="s">"n"</span>>0.002</span>  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># $/1K tokens</span>
+        <span class=<span class="s">"k"</span>>self</span>.history = []
 
-    <span class="k">def</span> check(self, required_tokens: int) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"检查预算是否充足。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>check</span>(<span class=<span class="s">"k"</span>>self</span>, required_tokens: <span class=<span class="s">"b"</span>>int</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"检查预算是否充足。
 
         Returns:
             预算状态。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        projected = self.used_today + required_tokens
-        pct = projected / self.daily_limit
+        <span class="s">""</span>"</span>
+        projected = <span class=<span class="s">"k"</span>>self</span>.used_today + required_tokens
+        pct = projected / <span class=<span class="s">"k"</span>>self</span>.daily_limit
 
-        <span class="k">if</span> pct &gt;= <span class="n">1.0</span>:
-            <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">False</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"exceeded"</span>,
-                    <span <span class="k">class</span>="s">"message"</span>: f<span <span class="k">class</span>="s">"今日预算已用完 ({self.daily_limit:,} tokens)"</span>}
+        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"n"</span>>1.0</span>:
+            <span class=<span class="s">"k"</span>>return</span> {<span class="s">"allowed"</span>: <span class=<span class="s">"k"</span>>False</span>, <span class="s">"status"</span>: <span class="s">"exceeded"</span>,
+                    <span class="s">"message"</span>: f<span class="s">"今日预算已用完 ({<span class="</span>k<span class="s">">self</span>.daily_limit:,} tokens)"</span>}
 
-        <span class="k">if</span> pct &gt;= self.critical_threshold:
-            <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"critical"</span>,
-                    <span <span class="k">class</span>="s">"message"</span>: f<span <span class="k">class</span>="s">"接近预算上限 ({pct:.<span class="n">0</span>%})，建议用小模型"</span>}
+        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"k"</span>>self</span>.critical_threshold:
+            <span class=<span class="s">"k"</span>>return</span> {<span class="s">"allowed"</span>: <span class=<span class="s">"k"</span>>True</span>, <span class="s">"status"</span>: <span class="s">"critical"</span>,
+                    <span class="s">"message"</span>: f<span class="s">"接近预算上限 ({pct:.<span class="</span>n<span class="s">">0</span>%})，建议用小模型"</span>}
 
-        <span class="k">if</span> pct &gt;= self.warning_threshold:
-            <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"warning"</span>,
-                    <span <span class="k">class</span>="s">"message"</span>: f<span <span class="k">class</span>="s">"预算已达 {pct:.<span class="n">0</span>%}"</span>}
+        <span class=<span class="s">"k"</span>>if</span> pct &gt;= <span class=<span class="s">"k"</span>>self</span>.warning_threshold:
+            <span class=<span class="s">"k"</span>>return</span> {<span class="s">"allowed"</span>: <span class=<span class="s">"k"</span>>True</span>, <span class="s">"status"</span>: <span class="s">"warning"</span>,
+                    <span class="s">"message"</span>: f<span class="s">"预算已达 {pct:.<span class="</span>n<span class="s">">0</span>%}"</span>}
 
-        <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"ok"</span>}
+        <span class=<span class="s">"k"</span>>return</span> {<span class="s">"allowed"</span>: <span class=<span class="s">"k"</span>>True</span>, <span class="s">"status"</span>: <span class="s">"ok"</span>}
 
-    <span class="k">def</span> consume(self, tokens: int):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"消耗预算。"</span><span <span class="k">class</span>="s">""</span></span>
-        self.used_today += tokens
-        self.history.append({
-            <span <span class="k">class</span>="s">"tokens"</span>: tokens,
-            <span <span class="k">class</span>="s">"remaining"</span>: self.daily_limit - self.used_today,
-            <span <span class="k">class</span>="s">"pct"</span>: self.used_today / self.daily_limit,
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>consume</span>(<span class=<span class="s">"k"</span>>self</span>, tokens: <span class=<span class="s">"b"</span>>int</span>):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"消耗预算。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"k"</span>>self</span>.used_today += tokens
+        <span class=<span class="s">"k"</span>>self</span>.history.append({
+            <span class="s">"tokens"</span>: tokens,
+            <span class="s">"remaining"</span>: <span class=<span class="s">"k"</span>>self</span>.daily_limit - <span class=<span class="s">"k"</span>>self</span>.used_today,
+            <span class="s">"pct"</span>: <span class=<span class="s">"k"</span>>self</span>.used_today / <span class=<span class="s">"k"</span>>self</span>.daily_limit,
         })
 
-    <span class="k">def</span> daily_report(self) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"每日预算报告。"</span><span <span class="k">class</span>="s">""</span></span>
-        pct = self.used_today / self.daily_limit
-        cost = self.used_today / <span class="n">1000</span> * self.cost_per_1k
-        <span class="k">return</span> {
-            <span <span class="k">class</span>="s">"daily_limit"</span>: f<span <span class="k">class</span>="s">"{self.daily_limit:,}"</span>,
-            <span <span class="k">class</span>="s">"used"</span>: f<span <span class="k">class</span>="s">"{self.used_today:,}"</span>,
-            <span <span class="k">class</span>="s">"remaining"</span>: f<span <span class="k">class</span>="s">"{self.daily_limit - self.used_today:,}"</span>,
-            <span <span class="k">class</span>="s">"usage_pct"</span>: f<span <span class="k">class</span>="s">"{pct:.<span class="n">1</span>%}"</span>,
-            <span <span class="k">class</span>="s">"est_cost"</span>: f<span <span class="k">class</span>="s">"${cost:.2f}"</span>,
-            <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"🟢"</span> <span class="k">if</span> pct &lt; <span class="n">0.8</span> <span class="k">else</span> (<span <span class="k">class</span>="s">"🟡"</span> <span class="k">if</span> pct &lt; <span class="n">0.95</span> <span class="k">else</span> <span <span class="k">class</span>="s">"🔴"</span>),
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>daily_report</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"每日预算报告。"</span><span class="s">""</span></span>
+        pct = <span class=<span class="s">"k"</span>>self</span>.used_today / <span class=<span class="s">"k"</span>>self</span>.daily_limit
+        cost = <span class=<span class="s">"k"</span>>self</span>.used_today / <span class=<span class="s">"n"</span>>1000</span> * <span class=<span class="s">"k"</span>>self</span>.cost_per_1k
+        <span class=<span class="s">"k"</span>>return</span> {
+            <span class="s">"daily_limit"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.daily_limit:,}"</span>,
+            <span class="s">"used"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.used_today:,}"</span>,
+            <span class="s">"remaining"</span>: f<span class="s">"{<span class="</span>k<span class="s">">self</span>.daily_limit - <span class="</span>k<span class="s">">self</span>.used_today:,}"</span>,
+            <span class="s">"usage_pct"</span>: f<span class="s">"{pct:.<span class="</span>n<span class="s">">1</span>%}"</span>,
+            <span class="s">"est_cost"</span>: f<span class="s">"${cost:.2f}"</span>,
+            <span class="s">"status"</span>: <span class="s">"🟢"</span> <span class=<span class="s">"k"</span>>if</span> pct &lt; <span class=<span class="s">"n"</span>>0.8</span> <span class=<span class="s">"k"</span>>else</span> (<span class="s">"🟡"</span> <span class=<span class="s">"k"</span>>if</span> pct &lt; <span class=<span class="s">"n"</span>>0.95</span> <span class=<span class="s">"k"</span>>else</span> <span class="s">"🔴"</span>),
         }
 
 
-<span class="k">def</span> demo_cache():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示三级缓存。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  三级缓存演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_cache</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示三级缓存。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  三级缓存演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
     cache = ThreeLevelCache()
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟 FAQ 场景（高重复率）</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟 FAQ 场景（高重复率）</span>
     queries = [
-        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,
-        <span <span class="k">class</span>="s">"如何修改密码？"</span>,
-        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
-        <span <span class="k">class</span>="s">"退货的步骤是啥？"</span>,         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 语义相似（L2命中）</span>
-        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
-        <span <span class="k">class</span>="s">"怎么联系客服？"</span>,          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 新查询</span>
-        <span <span class="k">class</span>="s">"如何修改密码？"</span>,          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
-        <span <span class="k">class</span>="s">"怎么退换货物？"</span>,          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 语义相似（L2命中）</span>
-        <span <span class="k">class</span>="s">"订单在哪里查询？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 新查询</span>
-        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
+        <span class="s">"退货流程是什么？"</span>,
+        <span class="s">"如何修改密码？"</span>,
+        <span class="s">"退货流程是什么？"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 重复（L1命中）</span>
+        <span class="s">"退货的步骤是啥？"</span>,         <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 语义相似（L2命中）</span>
+        <span class="s">"退货流程是什么？"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 重复（L1命中）</span>
+        <span class="s">"怎么联系客服？"</span>,          <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 新查询</span>
+        <span class="s">"如何修改密码？"</span>,          <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 重复（L1命中）</span>
+        <span class="s">"怎么退换货物？"</span>,          <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 语义相似（L2命中）</span>
+        <span class="s">"订单在哪里查询？"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 新查询</span>
+        <span class="s">"退货流程是什么？"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ← 重复（L1命中）</span>
     ]
 
-    <span class="k">for</span> q <span class="k">in</span> queries:
+    <span class=<span class="s">"k"</span>>for</span> q <span class=<span class="s">"k"</span>>in</span> queries:
         response, level, cached = cache.query(q)
-        icon = <span <span class="k">class</span>="s">"🎯"</span> <span class="k">if</span> cached <span class="k">else</span> <span <span class="k">class</span>="s">"🆕"</span>
-        print(f<span <span class="k">class</span>="s">"  {icon} L{level} 「{q[:<span class="n">15</span>]}...」→ {response[:<span class="n">40</span>]}..."</span>)
+        icon = <span class="s">"🎯"</span> <span class=<span class="s">"k"</span>>if</span> cached <span class=<span class="s">"k"</span>>else</span> <span class="s">"🆕"</span>
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {icon} L{level} 「{q[:<span class="</span>n<span class="s">">15</span>]}...」→ {response[:<span class="</span>n<span class="s">">40</span>]}..."</span>)
 
-    print(f<span <span class="k">class</span>="s">"\n  📊 缓存报告: {json.dumps(cache.report(), indent=<span class="n">2</span>)}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  📊 缓存报告: {json.dumps(cache.report(), indent=<span class="</span>n<span class="s">">2</span>)}"</span>)
 
 
-<span class="k">def</span> demo_token_budget():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Token 预算管理。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  Token 预算管理演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_token_budget</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 Token 预算管理。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Token 预算管理演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
-    budget = TokenBudget(daily_limit=<span class="n">10000</span>)
+    budget = TokenBudget(daily_limit=<span class=<span class="s">"n"</span>>10000</span>)
 
-    requests = [<span class="n">500</span>, <span class="n">2000</span>, <span class="n">4000</span>, <span class="n">3000</span>, <span class="n">1000</span>]
-    <span class="k">for</span> i, tokens <span class="k">in</span> enumerate(requests):
+    requests = [<span class=<span class="s">"n"</span>>500</span>, <span class=<span class="s">"n"</span>>2000</span>, <span class=<span class="s">"n"</span>>4000</span>, <span class=<span class="s">"n"</span>>3000</span>, <span class=<span class="s">"n"</span>>1000</span>]
+    <span class=<span class="s">"k"</span>>for</span> i, tokens <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(requests):
         check = budget.check(tokens)
-        status = check[<span <span class="k">class</span>="s">"status"</span>]
-        icon = <span <span class="k">class</span>="s">"✅"</span> <span class="k">if</span> check[<span <span class="k">class</span>="s">"allowed"</span>] <span class="k">else</span> <span <span class="k">class</span>="s">"❌"</span>
+        status = check[<span class="s">"status"</span>]
+        icon = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> check[<span class="s">"allowed"</span>] <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌"</span>
         status_msgs = {
-            <span <span class="k">class</span>="s">"ok"</span>: <span <span class="k">class</span>="s">"预算正常"</span>,
-            <span <span class="k">class</span>="s">"warning"</span>: f<span <span class="k">class</span>='s'>'预算已达 {(budget.used_today + tokens) / budget.daily_limit:.<span class="n">0</span>%}'</span>,
-            <span <span class="k">class</span>="s">"critical"</span>: f<span <span class="k">class</span>='s'>'接近预算上限 ({(budget.used_today + tokens) / budget.daily_limit:.<span class="n">0</span>%})'</span>,
-            <span <span class="k">class</span>="s">"exceeded"</span>: f<span <span class="k">class</span>='s'>'今日预算已用完 ({budget.daily_limit:,} tokens)'</span>,
+            <span class="s">"ok"</span>: <span class="s">"预算正常"</span>,
+            <span class="s">"warning"</span>: f<span class='s'>'预算已达 {(budget.used_today + tokens) / budget.daily_limit:.<span class=<span class="s">"n"</span>>0</span>%}'</span>,
+            <span class="s">"critical"</span>: f<span class='s'>'接近预算上限 ({(budget.used_today + tokens) / budget.daily_limit:.<span class=<span class="s">"n"</span>>0</span>%})'</span>,
+            <span class="s">"exceeded"</span>: f<span class='s'>'今日预算已用完 ({budget.daily_limit:,} tokens)'</span>,
         }
-        msg = status_msgs.get(status, <span <span class="k">class</span>="s">"未知状态"</span>)
-        print(f<span <span class="k">class</span>="s">"  请求{i+<span class="n">1</span>} {icon} {tokens:,}tokens → {status}: {msg}"</span>)
-        <span class="k">if</span> check[<span <span class="k">class</span>="s">"allowed"</span>]:
+        msg = status_msgs.get(status, <span class="s">"未知状态"</span>)
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  请求{i+<span class="</span>n<span class="s">">1</span>} {icon} {tokens:,}tokens → {status}: {msg}"</span>)
+        <span class=<span class="s">"k"</span>>if</span> check[<span class="s">"allowed"</span>]:
             budget.consume(tokens)
 
     report = budget.daily_report()
-    print(f<span <span class="k">class</span>="s">"\n  📊 日预算报告:"</span>)
-    <span class="k">for</span> k, v <span class="k">in</span> report.items():
-        print(f<span <span class="k">class</span>="s">"    {k}: {v}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  📊 日预算报告:"</span>)
+    <span class=<span class="s">"k"</span>>for</span> k, v <span class=<span class="s">"k"</span>>in</span> report.items():
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {k}: {v}"</span>)
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">28.4</span> 缓存的进阶策略
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class=<span class="s">"n"</span>>28.4</span> 缓存的进阶策略
 ━━━━━━━━━━━━━━━━━━━
 
-<span class="n">1</span>. 分层 TTL
+<span class=<span class="s">"n"</span>>1</span>. 分层 TTL
    L1 精确缓存：永久（直到 LRU 淘汰）
    L2 语义缓存：24小时 TTL（信息会过时）
    L3 LLM 缓存：按查询类型设 TTL（新闻类 1h / 知识类 7天）
 
-<span class="n">2</span>. 缓存预热
+<span class=<span class="s">"n"</span>>2</span>. 缓存预热
    上线前用常见问题预填充缓存
 
-<span class="n">3</span>. 缓存失效
+<span class=<span class="s">"n"</span>>3</span>. 缓存失效
    知识库更新 → 相关缓存全部失效
 
-<span class="n">4</span>. 监控指标
+<span class=<span class="s">"n"</span>>4</span>. 监控指标
    命中率 / 节省成本 / 缓存大小 / L1/L2/L3 分流比例
 
 
-<span class="n">28.5</span> 本章总结
+<span class=<span class="s">"n"</span>>28.5</span> 本章总结
 ━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class="n">1</span>. 三级缓存：Exact → Semantic → LLM
-<span class="n">2</span>. Token 预算 = 流量套餐管理
-<span class="n">3</span>. 缓存 + 路由 = 成本降低 <span class="n">50</span>-<span class="n">80</span>%
+<span class=<span class="s">"n"</span>>1</span>. 三级缓存：Exact → Semantic → LLM
+<span class=<span class="s">"n"</span>>2</span>. Token 预算 = 流量套餐管理
+<span class=<span class="s">"n"</span>>3</span>. 缓存 + 路由 = 成本降低 <span class=<span class="s">"n"</span>>50</span>-<span class=<span class="s">"n"</span>>80</span>%
 
 面试速记：
   「Agent 成本怎么优化？」
-  → 三级缓存（Exact/Semantic/LLM）命中率 <span class="n">40</span>-<span class="n">70</span>%
+  → 三级缓存（Exact/Semantic/LLM）命中率 <span class=<span class="s">"n"</span>>40</span>-<span class=<span class="s">"n"</span>>70</span>%
   → 模型路由（简单用小模型，复杂用大模型）
   → Token 预算管理（防超支）
-  → 三管齐下：年省 <span class="n">50</span>-<span class="n">80</span>%
-<span <span class="k">class</span>="s">""</span>"</span>
+  → 三管齐下：年省 <span class=<span class="s">"n"</span>>50</span>-<span class=<span class="s">"n"</span>>80</span>%
+<span class="s">""</span>"</span>
 
 
-<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║  第28章：语义缓存与 Token 优化                          ║"</span>)
-    print(<span <span class="k">class</span>="s">"║  Exact Match · Semantic Cache · Token Budget        ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第28章：语义缓存与 Token 优化                          ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Exact Match · Semantic Cache · Token Budget        ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
     demo_cache()
     demo_token_budget()
-    print(<span <span class="k">class</span>="s">"\n▶ 成本优化组合拳"</span>)
-    <span class="k">for</span> item <span class="k">in</span> [
-        <span <span class="k">class</span>="s">"三级缓存 → <span class="n">30</span>-<span class="n">50</span>% 请求免调 LLM"</span>,
-        <span <span class="k">class</span>="s">"模型路由 → <span class="n">80</span>% 简单请求用小模型"</span>,
-        <span <span class="k">class</span>="s">"Token 预算 → 防止单用户消耗超标"</span>,
-        <span <span class="k">class</span>="s">"三者叠加 → 年省 <span class="n">50</span>-<span class="n">80</span>% LLM 成本"</span>,
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ 成本优化组合拳"</span>)
+    <span class=<span class="s">"k"</span>>for</span> item <span class=<span class="s">"k"</span>>in</span> [
+        <span class="s">"三级缓存 → <span class="</span>n<span class="s">">30</span>-<span class="</span>n<span class="s">">50</span>% 请求免调 LLM"</span>,
+        <span class="s">"模型路由 → <span class="</span>n<span class="s">">80</span>% 简单请求用小模型"</span>,
+        <span class="s">"Token 预算 → 防止单用户消耗超标"</span>,
+        <span class="s">"三者叠加 → 年省 <span class="</span>n<span class="s">">50</span>-<span class="</span>n<span class="s">">80</span>% LLM 成本"</span>,
     ]:
-        print(f<span <span class="k">class</span>="s">"  💰 {item}"</span>)
-    print(<span <span class="k">class</span>="s">"\n✅ 第28章完成！🎓 全部课程构建完成！"</span>)
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  💰 {item}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第28章完成！🎓 全部课程构建完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_27_prompt_eng/27_prompt_engineering.html" title="Agent Prompt 工程 — System Prompt 模板·工具描述">← 第27章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

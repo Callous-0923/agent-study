@@ -85,6 +85,15 @@ body {
   line-height: 1.6; max-height: 70vh; overflow-y: auto;
 }
 
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -166,60 +175,60 @@ body {
 4. 无自检能力：检索到无关内容也不知道</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>9.2 Naive RAG 实现 —— 理解基础再谈优化</h2></div><div class="code-section"><details><summary>💻 代码 (112 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
-<span class="k">from</span> typing <span class="k">import</span> Optional
+<h2>9.2 Naive RAG 实现 —— 理解基础再谈优化</h2></div><div class="code-section"><details open><summary>💻 代码 (112 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> numpy <span class=<span class="s">"k"</span>>as</span> np
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
 
 
-<span class="k">class</span> NaiveVectorStore:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"最小化的向量存储 —— 帮助理解向量检索的本质。
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>NaiveVectorStore</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"最小化的向量存储 —— 帮助理解向量检索的本质。
 
     面试中常被问「向量检索的原理是什么」，
     这个实现展示了答案：将查询和文档都转为向量，
     通过余弦相似度找到最相似的 Top-K 个。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self):
-        self.documents = []         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 原始文档列表</span>
-        self.embeddings = []        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 对应的向量列表</span>
-        self.chunks = []            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 分块信息</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
+        <span class=<span class="s">"k"</span>>self</span>.documents = []         <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 原始文档列表</span>
+        <span class=<span class="s">"k"</span>>self</span>.embeddings = []        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 对应的向量列表</span>
+        <span class=<span class="s">"k"</span>>self</span>.chunks = []            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 分块信息</span>
 
-    <span class="k">def</span> add_documents(self, docs: list[str],
-                      chunk_size: int = <span class="n">200</span>,
-                      chunk_overlap: int = <span class="n">50</span>):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"添加文档：先分块，再「嵌入」（这里用简化模拟表示）。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_documents</span>(<span class=<span class="s">"k"</span>>self</span>, docs: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>],
+                      chunk_size: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>200</span>,
+                      chunk_overlap: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>50</span>):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"添加文档：先分块，再「嵌入」（这里用简化模拟表示）。
 
         Args:
             docs: 文档列表。
             chunk_size: 分块大小（字符数）。
             chunk_overlap: 块间重叠大小。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">for</span> doc <span class="k">in</span> docs:
-            <span class="k">for</span> i <span class="k">in</span> range(<span class="n">0</span>, len(doc), chunk_size - chunk_overlap):
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"k"</span>>for</span> doc <span class=<span class="s">"k"</span>>in</span> docs:
+            <span class=<span class="s">"k"</span>>for</span> i <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>0</span>, <span class=<span class="s">"b"</span>>len</span>(doc), chunk_size - chunk_overlap):
                 chunk = doc[i:i + chunk_size]
-                self.chunks.append(chunk)
-                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 用 TF-IDF 启发式模拟向量（实际用 embedding 模型）</span>
-                embedding = self._simple_hash_embed(chunk)
-                self.embeddings.append(embedding)
+                <span class=<span class="s">"k"</span>>self</span>.chunks.append(chunk)
+                <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 用 TF-IDF 启发式模拟向量（实际用 embedding 模型）</span>
+                embedding = <span class=<span class="s">"k"</span>>self</span>._simple_hash_embed(chunk)
+                <span class=<span class="s">"k"</span>>self</span>.embeddings.append(embedding)
 
-        print(f<span <span class="k">class</span>="s">"  已添加 {len(self.chunks)} 个文本块"</span>)
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  已添加 {<span class="</span>b<span class="s">">len</span>(<span class="</span>k<span class="s">">self</span>.chunks)} 个文本块"</span>)
 
-    <span class="k">def</span> _simple_hash_embed(self, text: str, dim: int = <span class="n">64</span>) -&gt; np.ndarray:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"简化版的文本向量化（仅用于理解原理）。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_simple_hash_embed</span>(<span class=<span class="s">"k"</span>>self</span>, text: <span class=<span class="s">"b"</span>>str</span>, dim: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>64</span>) -&gt; np.ndarray:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"简化版的文本向量化（仅用于理解原理）。
 
         实际项目用 sentence-transformers / OpenAI Embeddings API。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 基于字符哈希的简单向量表示</span>
+        <span class="s">""</span>"</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 基于字符哈希的简单向量表示</span>
         vec = np.zeros(dim)
-        <span class="k">for</span> i, ch <span class="k">in</span> enumerate(text):
-            vec[hash(ch) % dim] += <span class="n">1</span>
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L2 归一化</span>
+        <span class=<span class="s">"k"</span>>for</span> i, ch <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(text):
+            vec[<span class=<span class="s">"b"</span>>hash</span>(ch) % dim] += <span class=<span class="s">"n"</span>>1</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># L2 归一化</span>
         norm = np.linalg.norm(vec)
-        <span class="k">if</span> norm &gt; <span class="n">0</span>:
+        <span class=<span class="s">"k"</span>>if</span> norm &gt; <span class=<span class="s">"n"</span>>0</span>:
             vec = vec / norm
-        <span class="k">return</span> vec
+        <span class=<span class="s">"k"</span>>return</span> vec
 
-    <span class="k">def</span> search(self, query: str, top_k: int = <span class="n">5</span>) -&gt; list[tuple[str, float]]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"检索最相似的 Top-K 个文本块。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>search</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>, top_k: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>5</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>float</span>]]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"检索最相似的 Top-K 个文本块。
 
         Args:
             query: 查询文本。
@@ -227,63 +236,66 @@ body {
 
         Returns:
             (文本块, 相似度分数) 的列表。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        query_vec = self._simple_hash_embed(query)
+        <span class="s">""</span>"</span>
+        query_vec = <span class=<span class="s">"k"</span>>self</span>._simple_hash_embed(query)
         scores = []
-        <span class="k">for</span> i, emb <span class="k">in</span> enumerate(self.embeddings):
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 余弦相似度 = 点积（因为已归一化）</span>
-            score = float(np.dot(query_vec, emb))
+        <span class=<span class="s">"k"</span>>for</span> i, emb <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(<span class=<span class="s">"k"</span>>self</span>.embeddings):
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 余弦相似度 = 点积（因为已归一化）</span>
+            score = <span class=<span class="s">"b"</span>>float</span>(np.dot(query_vec, emb))
             scores.append((i, score))
 
-        scores.sort(key=<span class="k">lambda</span> x: x[<span class="n">1</span>], reverse=<span class="k">True</span>)
+        scores.sort(key=<span class=<span class="s">"k"</span>>lambda</span> x: x[<span class=<span class="s">"n"</span>>1</span>], reverse=<span class=<span class="s">"k"</span>>True</span>)
         results = []
-        <span class="k">for</span> idx, score <span class="k">in</span> scores[:top_k]:
-            results.append((self.chunks[idx], score))
-        <span class="k">return</span> results
+        <span class=<span class="s">"k"</span>>for</span> idx, score <span class=<span class="s">"k"</span>>in</span> scores[:top_k]:
+            results.append((<span class=<span class="s">"k"</span>>self</span>.chunks[idx], score))
+        <span class=<span class="s">"k"</span>>return</span> results
 
 
-<span class="k">def</span> demo_naive_rag():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Naive RAG 的基本流程。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  Naive RAG 流程演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_naive_rag</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 Naive RAG 的基本流程。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Naive RAG 流程演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
     store = NaiveVectorStore()
     docs = [
-        <span <span class="k">class</span>="s">"Python是一种解释型、面向对象的高级编程语言。"</span>
-        <span <span class="k">class</span>="s">"它由 Guido van Rossum 于 <span class="n">1991</span> 年首次发布。"</span>
-        <span <span class="k">class</span>="s">"Python 以简洁的语法和强大的标准库而闻名。"</span>,
+        <span class="s">"Python是一种解释型、面向对象的高级编程语言。"</span>
+        <span class="s">"它由 Guido van Rossum 于 <span class="</span>n<span class="s">">1991</span> 年首次发布。"</span>
+        <span class="s">"Python 以简洁的语法和强大的标准库而闻名。"</span>,
 
-        <span <span class="k">class</span>="s">"AI Agent 是一种能够自主感知环境、做出决策并执行行动的智能系统。"</span>
-        <span <span class="k">class</span>="s">"它由 LLM、规划器、记忆系统和工具组成。"</span>
-        <span <span class="k">class</span>="s">"LangChain 是构建 Agent 的最流行框架之一。"</span>,
+        <span class="s">"AI Agent 是一种能够自主感知环境、做出决策并执行行动的智能系统。"</span>
+        <span class="s">"它由 LLM、规划器、记忆系统和工具组成。"</span>
+        <span class="s">"LangChain 是构建 Agent 的最流行框架之一。"</span>,
 
-        <span <span class="k">class</span>="s">"RAG（检索增强生成）是一种将外部知识检索与 LLM 生成结合的技术。"</span>
-        <span <span class="k">class</span>="s">"它通过从知识库中检索相关信息来减少大模型的幻觉问题。"</span>
-        <span <span class="k">class</span>="s">"GraphRAG 是 RAG 的最新演进，加入了知识图谱。"</span>,
+        <span class="s">"RAG（检索增强生成）是一种将外部知识检索与 LLM 生成结合的技术。"</span>
+        <span class="s">"它通过从知识库中检索相关信息来减少大模型的幻觉问题。"</span>
+        <span class="s">"GraphRAG 是 RAG 的最新演进，加入了知识图谱。"</span>,
 
-        <span <span class="k">class</span>="s">"PyTorch 是 Facebook 开发的开源深度学习框架。"</span>
-        <span <span class="k">class</span>="s">"TensorFlow 是 Google 开发的机器学习平台。"</span>
-        <span <span class="k">class</span>="s">"两者都是业界最广泛使用的深度学习工具。"</span>,
+        <span class="s">"PyTorch 是 Facebook 开发的开源深度学习框架。"</span>
+        <span class="s">"TensorFlow 是 Google 开发的机器学习平台。"</span>
+        <span class="s">"两者都是业界最广泛使用的深度学习工具。"</span>,
     ]
     store.add_documents(docs)
 
     queries = [
-        <span <span class="k">class</span>="s">"Python 是谁创建的？"</span>,
-        <span <span class="k">class</span>="s">"什么是 AI Agent？"</span>,
-        <span <span class="k">class</span>="s">"RAG 如何减少幻觉？"</span>,
+        <span class="s">"Python 是谁创建的？"</span>,
+        <span class="s">"什么是 AI Agent？"</span>,
+        <span class="s">"RAG 如何减少幻觉？"</span>,
     ]
-    <span class="k">for</span> q <span class="k">in</span> queries:
-        print(f<span <span class="k">class</span>="s">"\n  🔍 查询: {q}"</span>)
-        results = store.search(q, top_k=<span class="n">2</span>)
-        <span class="k">for</span> chunk, score <span class="k">in</span> results:
-            print(f<span <span class="k">class</span>="s">"    [{score:.3f}] {chunk[:<span class="n">80</span>]}..."</span>)</pre></div></details></div><div class="lecture"><h2>9.3 Advanced RAG —— 三板斧优化</h2>
+    <span class=<span class="s">"k"</span>>for</span> q <span class=<span class="s">"k"</span>>in</span> queries:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  🔍 查询: {q}"</span>)
+        results = store.search(q, top_k=<span class=<span class="s">"n"</span>>2</span>)
+        <span class=<span class="s">"k"</span>>for</span> chunk, score <span class=<span class="s">"k"</span>>in</span> results:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{score:.3f}] {chunk[:<span class="</span>n<span class="s">">80</span>]}..."</span>)</pre></div></details></div><div class="lecture"><h2>9.3 Advanced RAG —— 三板斧优化</h2>
 <p>&nbsp;</p>
 <p>Advanced RAG 在 Naive RAG 的基础上加入三大优化：</p>
 <li>查询重写 (Query Rewriting)</li>
 <li>混合检索 (Hybrid Search)</li>
-<li>重排序 (Reranking)</li></div><div class="code-section"><details><summary>💻 代码 (142 行)</summary><div class="code-block"><pre><span class="k">class</span> AdvancedRAG:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Advanced RAG 系统 —— 包含查询重写、混合检索、重排序。
+<li>重排序 (Reranking)</li></div><div class="code-section"><details open><summary>💻 代码 (145 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> numpy <span class=<span class="s">"k"</span>>as</span> np
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
+
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AdvancedRAG</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Advanced RAG 系统 —— 包含查询重写、混合检索、重排序。
 
     架构流程：
       用户查询
@@ -307,55 +319,55 @@ body {
     ┌──────────────┐
     │ LLM 生成       │ ← 注入检索上下文
     └──────────────┘
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self, llm=<span class="k">None</span>):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, llm=<span class=<span class="s">"k"</span>>None</span>):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
         Args:
             llm: LLM 调用函数（可选）。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        self.llm = llm
-        self.store = NaiveVectorStore()
-        self.bm25_index = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 简化版 BM25 索引</span>
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"k"</span>>self</span>.llm = llm
+        <span class=<span class="s">"k"</span>>self</span>.store = NaiveVectorStore()
+        <span class=<span class="s">"k"</span>>self</span>.bm25_index = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 简化版 BM25 索引</span>
 
-    <span class="k">def</span> query_rewrite(self, query: str) -&gt; list[str]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"查询重写：将一个查询扩展为多个变体。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>query_rewrite</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"查询重写：将一个查询扩展为多个变体。
 
         策略：
-          <span class="n">1</span>. 原始查询
-          <span class="n">2</span>. 关键词提取版本
-          <span class="n">3</span>. 同义词扩展版本
+          <span class=<span class="s">"n"</span>>1</span>. 原始查询
+          <span class=<span class="s">"n"</span>>2</span>. 关键词提取版本
+          <span class=<span class="s">"n"</span>>3</span>. 同义词扩展版本
 
         在真实项目中，这一步用 LLM 完成。
-        比如用 prompt：「将以下查询改写为 <span class="n">3</span> 个不同角度的搜索查询」
-        <span <span class="k">class</span>="s">""</span>"</span>
+        比如用 prompt：「将以下查询改写为 <span class=<span class="s">"n"</span>>3</span> 个不同角度的搜索查询」
+        <span class="s">""</span>"</span>
         variations = [query]
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 简单模拟：如果查询中有「怎么」，增加「方法」「教程」</span>
-        <span class="k">if</span> <span <span class="k">class</span>="s">"怎么"</span> <span class="k">in</span> query <span class="k">or</span> <span <span class="k">class</span>="s">"如何"</span> <span class="k">in</span> query:
-            variations.append(query.replace(<span <span class="k">class</span>="s">"怎么"</span>, <span <span class="k">class</span>="s">"的方法"</span>).replace(<span <span class="k">class</span>="s">"如何"</span>, <span <span class="k">class</span>="s">"的方法"</span>))
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 简单模拟：如果查询中有「怎么」，增加「方法」「教程」</span>
+        <span class=<span class="s">"k"</span>>if</span> <span class="s">"怎么"</span> <span class=<span class="s">"k"</span>>in</span> query <span class=<span class="s">"k"</span>>or</span> <span class="s">"如何"</span> <span class=<span class="s">"k"</span>>in</span> query:
+            variations.append(query.replace(<span class="s">"怎么"</span>, <span class="s">"的方法"</span>).replace(<span class="s">"如何"</span>, <span class="s">"的方法"</span>))
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 简单模拟：拆分长查询为多个关键词查询</span>
-        keywords = [w <span class="k">for</span> w <span class="k">in</span> query.replace(<span <span class="k">class</span>="s">"？"</span>, <span <span class="k">class</span>="s">""</span>).replace(<span <span class="k">class</span>="s">"?"</span>, <span <span class="k">class</span>="s">""</span>).split()
-                     <span class="k">if</span> len(w) &gt; <span class="n">1</span>]
-        <span class="k">if</span> len(keywords) &gt; <span class="n">2</span>:
-            variations.append(<span <span class="k">class</span>="s">" "</span>.join(keywords[:<span class="n">3</span>]))
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 简单模拟：拆分长查询为多个关键词查询</span>
+        keywords = [w <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> query.replace(<span class="s">"？"</span>, <span class="s">""</span>).replace(<span class="s">"?"</span>, <span class="s">""</span>).split()
+                     <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(w) &gt; <span class=<span class="s">"n"</span>>1</span>]
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(keywords) &gt; <span class=<span class="s">"n"</span>>2</span>:
+            variations.append(<span class="s">" "</span>.join(keywords[:<span class=<span class="s">"n"</span>>3</span>]))
 
-        <span class="k">return</span> variations
+        <span class=<span class="s">"k"</span>>return</span> variations
 
-    <span class="k">def</span> add_documents(self, docs: list[str]):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"添加文档到混合索引。"</span><span <span class="k">class</span>="s">""</span></span>
-        self.store.add_documents(docs)
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 构建简化的 BM25 索引</span>
-        <span class="k">for</span> i, chunk <span class="k">in</span> enumerate(self.store.chunks):
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_documents</span>(<span class=<span class="s">"k"</span>>self</span>, docs: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加文档到混合索引。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"k"</span>>self</span>.store.add_documents(docs)
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 构建简化的 BM25 索引</span>
+        <span class=<span class="s">"k"</span>>for</span> i, chunk <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(<span class=<span class="s">"k"</span>>self</span>.store.chunks):
             words = chunk.lower().split()
-            <span class="k">for</span> word <span class="k">in</span> set(words):
-                <span class="k">if</span> word <span class="k">not</span> <span class="k">in</span> self.bm25_index:
-                    self.bm25_index[word] = []
-                self.bm25_index[word].append(i)
+            <span class=<span class="s">"k"</span>>for</span> word <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>set</span>(words):
+                <span class=<span class="s">"k"</span>>if</span> word <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.bm25_index:
+                    <span class=<span class="s">"k"</span>>self</span>.bm25_index[word] = []
+                <span class=<span class="s">"k"</span>>self</span>.bm25_index[word].append(i)
 
-    <span class="k">def</span> hybrid_search(self, query: str, top_k: int = <span class="n">5</span>) -&gt; list[tuple[str, float]]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"混合检索：融合向量搜索和关键词搜索的结果。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>hybrid_search</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>, top_k: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>5</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>float</span>]]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"混合检索：融合向量搜索和关键词搜索的结果。
 
         Args:
             query: 查询文本。
@@ -363,37 +375,37 @@ body {
 
         Returns:
             融合后的检索结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 向量搜索结果</span>
-        vector_results = self.store.search(query, top_k=top_k)
-        vector_scores = {chunk: score <span class="k">for</span> chunk, score <span class="k">in</span> vector_results}
+        <span class="s">""</span>"</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 向量搜索结果</span>
+        vector_results = <span class=<span class="s">"k"</span>>self</span>.store.search(query, top_k=top_k)
+        vector_scores = {chunk: score <span class=<span class="s">"k"</span>>for</span> chunk, score <span class=<span class="s">"k"</span>>in</span> vector_results}
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 关键词搜索结果（简化版 BM25）</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 关键词搜索结果（简化版 BM25）</span>
         kw_scores = {}
-        <span class="k">for</span> word <span class="k">in</span> query.lower().split():
-            <span class="k">if</span> word <span class="k">in</span> self.bm25_index:
-                <span class="k">for</span> doc_id <span class="k">in</span> self.bm25_index[word]:
-                    chunk = self.store.chunks[doc_id]
-                    kw_scores[chunk] = kw_scores.get(chunk, <span class="n">0</span>) + <span class="n">1</span>
+        <span class=<span class="s">"k"</span>>for</span> word <span class=<span class="s">"k"</span>>in</span> query.lower().split():
+            <span class=<span class="s">"k"</span>>if</span> word <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.bm25_index:
+                <span class=<span class="s">"k"</span>>for</span> doc_id <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.bm25_index[word]:
+                    chunk = <span class=<span class="s">"k"</span>>self</span>.store.chunks[doc_id]
+                    kw_scores[chunk] = kw_scores.get(chunk, <span class=<span class="s">"n"</span>>0</span>) + <span class=<span class="s">"n"</span>>1</span>
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 混合打分：向量分数 * <span class="n">0.6</span> + 关键词分数 * <span class="n">0.4</span></span>
-        all_chunks = set(vector_scores.keys()) | set(kw_scores.keys())
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 混合打分：向量分数 * <span class=<span class="s">"n"</span>>0.6</span> + 关键词分数 * <span class=<span class="s">"n"</span>>0.4</span></span>
+        all_chunks = <span class=<span class="s">"b"</span>>set</span>(vector_scores.keys()) | <span class=<span class="s">"b"</span>>set</span>(kw_scores.keys())
         fused = []
-        <span class="k">for</span> chunk <span class="k">in</span> all_chunks:
-            v_score = vector_scores.get(chunk, <span class="n">0</span>)
-            k_score = kw_scores.get(chunk, <span class="n">0</span>)
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 归一化关键词分数</span>
-            max_k = max(kw_scores.values()) <span class="k">if</span> kw_scores <span class="k">else</span> <span class="n">1</span>
+        <span class=<span class="s">"k"</span>>for</span> chunk <span class=<span class="s">"k"</span>>in</span> all_chunks:
+            v_score = vector_scores.get(chunk, <span class=<span class="s">"n"</span>>0</span>)
+            k_score = kw_scores.get(chunk, <span class=<span class="s">"n"</span>>0</span>)
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 归一化关键词分数</span>
+            max_k = <span class=<span class="s">"b"</span>>max</span>(kw_scores.values()) <span class=<span class="s">"k"</span>>if</span> kw_scores <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"n"</span>>1</span>
             k_score_norm = k_score / max_k
-            final_score = v_score * <span class="n">0.6</span> + k_score_norm * <span class="n">0.4</span>
+            final_score = v_score * <span class=<span class="s">"n"</span>>0.6</span> + k_score_norm * <span class=<span class="s">"n"</span>>0.4</span>
             fused.append((chunk, final_score))
 
-        fused.sort(key=<span class="k">lambda</span> x: x[<span class="n">1</span>], reverse=<span class="k">True</span>)
-        <span class="k">return</span> fused[:top_k]
+        fused.sort(key=<span class=<span class="s">"k"</span>>lambda</span> x: x[<span class=<span class="s">"n"</span>>1</span>], reverse=<span class=<span class="s">"k"</span>>True</span>)
+        <span class=<span class="s">"k"</span>>return</span> fused[:top_k]
 
-    <span class="k">def</span> rerank(self, query: str, candidates: list[tuple[str, float]],
-               top_k: int = <span class="n">3</span>) -&gt; list[tuple[str, float]]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"重排序：对候选结果进行精细排序。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>rerank</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>, candidates: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>float</span>]],
+               top_k: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>3</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>float</span>]]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"重排序：对候选结果进行精细排序。
 
         在真实项目中，这一步用 Cross-Encoder 模型（如 BGE-reranker）：
           - 对每个 (query, chunk) 对打分
@@ -402,28 +414,28 @@ body {
         这里用简化的规则模拟：
           - 查询关键词在块中出现得越早，分数越高
           - 块越短（越聚焦），分数越高
-        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="s">""</span>"</span>
         query_lower = query.lower()
         reranked = []
-        <span class="k">for</span> chunk, orig_score <span class="k">in</span> candidates:
+        <span class=<span class="s">"k"</span>>for</span> chunk, orig_score <span class=<span class="s">"k"</span>>in</span> candidates:
             chunk_lower = chunk.lower()
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 规则1: 关键词位置分（越靠前越好）</span>
-            position_score = <span class="n">0.0</span>
-            <span class="k">for</span> word <span class="k">in</span> query_lower.split():
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 规则1: 关键词位置分（越靠前越好）</span>
+            position_score = <span class=<span class="s">"n"</span>>0.0</span>
+            <span class=<span class="s">"k"</span>>for</span> word <span class=<span class="s">"k"</span>>in</span> query_lower.split():
                 pos = chunk_lower.find(word)
-                <span class="k">if</span> pos &gt;= <span class="n">0</span>:
-                    position_score += max(<span class="n">0</span>, <span class="n">1.0</span> - pos / len(chunk_lower))
+                <span class=<span class="s">"k"</span>>if</span> pos &gt;= <span class=<span class="s">"n"</span>>0</span>:
+                    position_score += <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"n"</span>>0</span>, <span class=<span class="s">"n"</span>>1.0</span> - pos / <span class=<span class="s">"b"</span>>len</span>(chunk_lower))
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 规则2: 长度分（越短越聚焦）</span>
-            length_score = max(<span class="n">0</span>, <span class="n">1.0</span> - len(chunk) / <span class="n">1000</span>)
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 规则2: 长度分（越短越聚焦）</span>
+            length_score = <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"n"</span>>0</span>, <span class=<span class="s">"n"</span>>1.0</span> - <span class=<span class="s">"b"</span>>len</span>(chunk) / <span class=<span class="s">"n"</span>>1000</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 综合分（在真实项目中由 Cross-Encoder 输出）</span>
-            final = orig_score * <span class="n">0.5</span> + position_score * <span class="n">0.3</span> + length_score * <span class="n">0.2</span>
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 综合分（在真实项目中由 Cross-Encoder 输出）</span>
+            final = orig_score * <span class=<span class="s">"n"</span>>0.5</span> + position_score * <span class=<span class="s">"n"</span>>0.3</span> + length_score * <span class=<span class="s">"n"</span>>0.2</span>
             reranked.append((chunk, final))
 
-        reranked.sort(key=<span class="k">lambda</span> x: x[<span class="n">1</span>], reverse=<span class="k">True</span>)
-        <span class="k">return</span> reranked[:top_k]</pre></div></details></div><div class="lecture"><h2>9.4 GraphRAG —— 知识图谱 + RAG</h2>
+        reranked.sort(key=<span class=<span class="s">"k"</span>>lambda</span> x: x[<span class=<span class="s">"n"</span>>1</span>], reverse=<span class=<span class="s">"k"</span>>True</span>)
+        <span class=<span class="s">"k"</span>>return</span> reranked[:top_k]</pre></div></details></div><div class="lecture"><h2>9.4 GraphRAG —— 知识图谱 + RAG</h2>
 <p>&nbsp;</p>
 <p>为什么需要 GraphRAG？</p>
 <p>&nbsp;</p>
@@ -451,32 +463,35 @@ body {
 <pre> 同时使用向量搜索和图遍历</pre>
 <p>&nbsp;</p>
 <li>多跳推理 (Multi-hop Reasoning)</li>
-<pre> 沿着图谱的边寻找推理路径</pre></div><div class="code-section"><details><summary>💻 代码 (117 行)</summary><div class="code-block"><pre><span class="k">class</span> SimpleKnowledgeGraph:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"简化的知识图谱 —— 演示 GraphRAG 的核心概念。
+<pre> 沿着图谱的边寻找推理路径</pre></div><div class="code-section"><details open><summary>💻 代码 (120 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> numpy <span class=<span class="s">"k"</span>>as</span> np
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
+
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>SimpleKnowledgeGraph</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"简化的知识图谱 —— 演示 GraphRAG 的核心概念。
 
     节点: 实体（人、组织、概念）
     边: 关系（创建、工作于、属于）
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self):
-        self.graph = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># {entity: {relation: [target_entities]}}</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
+        <span class=<span class="s">"k"</span>>self</span>.graph = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># {entity: {relation: [target_entities]}}</span>
 
-    <span class="k">def</span> add_relation(self, subject: str, relation: str, obj: str):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"添加三元组：主语-关系-宾语。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_relation</span>(<span class=<span class="s">"k"</span>>self</span>, subject: <span class=<span class="s">"b"</span>>str</span>, relation: <span class=<span class="s">"b"</span>>str</span>, obj: <span class=<span class="s">"b"</span>>str</span>):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"添加三元组：主语-关系-宾语。
 
         Args:
             subject: 主语实体。
             relation: 关系类型。
             obj: 宾语实体。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">if</span> subject <span class="k">not</span> <span class="k">in</span> self.graph:
-            self.graph[subject] = {}
-        <span class="k">if</span> relation <span class="k">not</span> <span class="k">in</span> self.graph[subject]:
-            self.graph[subject][relation] = []
-        self.graph[subject][relation].append(obj)
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"k"</span>>if</span> subject <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph:
+            <span class=<span class="s">"k"</span>>self</span>.graph[subject] = {}
+        <span class=<span class="s">"k"</span>>if</span> relation <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph[subject]:
+            <span class=<span class="s">"k"</span>>self</span>.graph[subject][relation] = []
+        <span class=<span class="s">"k"</span>>self</span>.graph[subject][relation].append(obj)
 
-    <span class="k">def</span> traverse(self, start: str, max_depth: int = <span class="n">2</span>) -&gt; list[str]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"从起始节点出发进行图遍历。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>traverse</span>(<span class=<span class="s">"k"</span>>self</span>, start: <span class=<span class="s">"b"</span>>str</span>, max_depth: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>2</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"从起始节点出发进行图遍历。
 
         Args:
             start: 起始实体。
@@ -484,22 +499,22 @@ body {
 
         Returns:
             到达的所有实体列表。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        visited = set()
-        to_visit = [(start, <span class="n">0</span>)]
-        <span class="k">while</span> to_visit:
-            node, depth = to_visit.pop(<span class="n">0</span>)
-            <span class="k">if</span> node <span class="k">in</span> visited <span class="k">or</span> depth &gt; max_depth:
-                <span class="k">continue</span>
+        <span class="s">""</span>"</span>
+        visited = <span class=<span class="s">"b"</span>>set</span>()
+        to_visit = [(start, <span class=<span class="s">"n"</span>>0</span>)]
+        <span class=<span class="s">"k"</span>>while</span> to_visit:
+            node, depth = to_visit.pop(<span class=<span class="s">"n"</span>>0</span>)
+            <span class=<span class="s">"k"</span>>if</span> node <span class=<span class="s">"k"</span>>in</span> visited <span class=<span class="s">"k"</span>>or</span> depth &gt; max_depth:
+                <span class=<span class="s">"k"</span>>continue</span>
             visited.add(node)
-            <span class="k">if</span> node <span class="k">in</span> self.graph:
-                <span class="k">for</span> relation, targets <span class="k">in</span> self.graph[node].items():
-                    <span class="k">for</span> target <span class="k">in</span> targets:
-                        to_visit.append((target, depth + <span class="n">1</span>))
-        <span class="k">return</span> list(visited)
+            <span class=<span class="s">"k"</span>>if</span> node <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph:
+                <span class=<span class="s">"k"</span>>for</span> relation, targets <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph[node].items():
+                    <span class=<span class="s">"k"</span>>for</span> target <span class=<span class="s">"k"</span>>in</span> targets:
+                        to_visit.append((target, depth + <span class=<span class="s">"n"</span>>1</span>))
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>list</span>(visited)
 
-    <span class="k">def</span> find_path(self, start: str, end: str, max_depth: int = <span class="n">3</span>) -&gt; Optional[list]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"寻找两个实体之间的路径（简化版 BFS）。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>find_path</span>(<span class=<span class="s">"k"</span>>self</span>, start: <span class=<span class="s">"b"</span>>str</span>, end: <span class=<span class="s">"b"</span>>str</span>, max_depth: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>3</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>list</span>]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"寻找两个实体之间的路径（简化版 BFS）。
 
         Args:
             start: 起始实体。
@@ -507,67 +522,67 @@ body {
             max_depth: 最大搜索深度。
 
         Returns:
-            路径列表，未找到返回 <span class="k">None</span>。
-        <span <span class="k">class</span>="s">""</span>"</span>
+            路径列表，未找到返回 <span class=<span class="s">"k"</span>>None</span>。
+        <span class="s">""</span>"</span>
         queue = [(start, [start])]
         visited = {start}
-        <span class="k">while</span> queue:
-            node, path = queue.pop(<span class="n">0</span>)
-            <span class="k">if</span> len(path) &gt; max_depth + <span class="n">1</span>:
-                <span class="k">continue</span>
-            <span class="k">if</span> node == end <span class="k">and</span> len(path) &gt; <span class="n">1</span>:
-                <span class="k">return</span> path
-            <span class="k">if</span> node <span class="k">in</span> self.graph:
-                <span class="k">for</span> relation, targets <span class="k">in</span> self.graph[node].items():
-                    <span class="k">for</span> target <span class="k">in</span> targets:
-                        <span class="k">if</span> target <span class="k">not</span> <span class="k">in</span> visited:
+        <span class=<span class="s">"k"</span>>while</span> queue:
+            node, path = queue.pop(<span class=<span class="s">"n"</span>>0</span>)
+            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(path) &gt; max_depth + <span class=<span class="s">"n"</span>>1</span>:
+                <span class=<span class="s">"k"</span>>continue</span>
+            <span class=<span class="s">"k"</span>>if</span> node == end <span class=<span class="s">"k"</span>>and</span> <span class=<span class="s">"b"</span>>len</span>(path) &gt; <span class=<span class="s">"n"</span>>1</span>:
+                <span class=<span class="s">"k"</span>>return</span> path
+            <span class=<span class="s">"k"</span>>if</span> node <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph:
+                <span class=<span class="s">"k"</span>>for</span> relation, targets <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph[node].items():
+                    <span class=<span class="s">"k"</span>>for</span> target <span class=<span class="s">"k"</span>>in</span> targets:
+                        <span class=<span class="s">"k"</span>>if</span> target <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>in</span> visited:
                             visited.add(target)
                             queue.append((target, path + [target]))
-        <span class="k">return</span> <span class="k">None</span>
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>None</span>
 
 
-<span class="k">def</span> demo_graphrag():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 GraphRAG 的多跳推理能力。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  GraphRAG 多跳推理演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_graphrag</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 GraphRAG 的多跳推理能力。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  GraphRAG 多跳推理演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
     kg = SimpleKnowledgeGraph()
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 构建知识图谱</span>
-    kg.add_relation(<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"创建"</span>, <span <span class="k">class</span>="s">"Python"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"工作于"</span>, <span <span class="k">class</span>="s">"Google"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"工作于"</span>, <span <span class="k">class</span>="s">"Dropbox"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"工作于"</span>, <span <span class="k">class</span>="s">"Microsoft"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Python"</span>, <span <span class="k">class</span>="s">"用于"</span>, <span <span class="k">class</span>="s">"AI Agent"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Python"</span>, <span <span class="k">class</span>="s">"用于"</span>, <span <span class="k">class</span>="s">"数据分析"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"AI Agent"</span>, <span <span class="k">class</span>="s">"依赖"</span>, <span <span class="k">class</span>="s">"LLM"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"LLM"</span>, <span <span class="k">class</span>="s">"包括"</span>, <span <span class="k">class</span>="s">"GPT-<span class="n">4</span>"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"LLM"</span>, <span <span class="k">class</span>="s">"包括"</span>, <span <span class="k">class</span>="s">"Claude"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Google"</span>, <span <span class="k">class</span>="s">"开发"</span>, <span <span class="k">class</span>="s">"TensorFlow"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Microsoft"</span>, <span <span class="k">class</span>="s">"投资"</span>, <span <span class="k">class</span>="s">"OpenAI"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"OpenAI"</span>, <span <span class="k">class</span>="s">"开发"</span>, <span <span class="k">class</span>="s">"GPT-<span class="n">4</span>"</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 构建知识图谱</span>
+    kg.add_relation(<span class="s">"Guido van Rossum"</span>, <span class="s">"创建"</span>, <span class="s">"Python"</span>)
+    kg.add_relation(<span class="s">"Guido van Rossum"</span>, <span class="s">"工作于"</span>, <span class="s">"Google"</span>)
+    kg.add_relation(<span class="s">"Guido van Rossum"</span>, <span class="s">"工作于"</span>, <span class="s">"Dropbox"</span>)
+    kg.add_relation(<span class="s">"Guido van Rossum"</span>, <span class="s">"工作于"</span>, <span class="s">"Microsoft"</span>)
+    kg.add_relation(<span class="s">"Python"</span>, <span class="s">"用于"</span>, <span class="s">"AI Agent"</span>)
+    kg.add_relation(<span class="s">"Python"</span>, <span class="s">"用于"</span>, <span class="s">"数据分析"</span>)
+    kg.add_relation(<span class="s">"AI Agent"</span>, <span class="s">"依赖"</span>, <span class="s">"LLM"</span>)
+    kg.add_relation(<span class="s">"LLM"</span>, <span class="s">"包括"</span>, <span class="s">"GPT-<span class="</span>n<span class="s">">4</span>"</span>)
+    kg.add_relation(<span class="s">"LLM"</span>, <span class="s">"包括"</span>, <span class="s">"Claude"</span>)
+    kg.add_relation(<span class="s">"Google"</span>, <span class="s">"开发"</span>, <span class="s">"TensorFlow"</span>)
+    kg.add_relation(<span class="s">"Microsoft"</span>, <span class="s">"投资"</span>, <span class="s">"OpenAI"</span>)
+    kg.add_relation(<span class="s">"OpenAI"</span>, <span class="s">"开发"</span>, <span class="s">"GPT-<span class="</span>n<span class="s">">4</span>"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n  知识图谱已构建:"</span>)
-    <span class="k">for</span> subj, relations <span class="k">in</span> kg.graph.items():
-        <span class="k">for</span> rel, objs <span class="k">in</span> relations.items():
-            <span class="k">for</span> obj <span class="k">in</span> objs:
-                print(f<span <span class="k">class</span>="s">"    {subj} --[{rel}]--&gt; {obj}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  知识图谱已构建:"</span>)
+    <span class=<span class="s">"k"</span>>for</span> subj, relations <span class=<span class="s">"k"</span>>in</span> kg.graph.items():
+        <span class=<span class="s">"k"</span>>for</span> rel, objs <span class=<span class="s">"k"</span>>in</span> relations.items():
+            <span class=<span class="s">"k"</span>>for</span> obj <span class=<span class="s">"k"</span>>in</span> objs:
+                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {subj} --[{rel}]--&gt; {obj}"</span>)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 多跳推理示例</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 多跳推理示例</span>
     queries = [
-        (<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"TensorFlow"</span>),  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Guido → Google → TensorFlow</span>
-        (<span <span class="k">class</span>="s">"Python"</span>, <span <span class="k">class</span>="s">"GPT-<span class="n">4</span>"</span>),                 <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Python → AI Agent → LLM → GPT-<span class="n">4</span></span>
-        (<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"OpenAI"</span>),      <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Guido → Microsoft → OpenAI</span>
+        (<span class="s">"Guido van Rossum"</span>, <span class="s">"TensorFlow"</span>),  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Guido → Google → TensorFlow</span>
+        (<span class="s">"Python"</span>, <span class="s">"GPT-<span class="</span>n<span class="s">">4</span>"</span>),                 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Python → AI Agent → LLM → GPT-<span class=<span class="s">"n"</span>>4</span></span>
+        (<span class="s">"Guido van Rossum"</span>, <span class="s">"OpenAI"</span>),      <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Guido → Microsoft → OpenAI</span>
     ]
 
-    print(<span <span class="k">class</span>="s">"\n  多跳推理测试:"</span>)
-    <span class="k">for</span> start, end <span class="k">in</span> queries:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  多跳推理测试:"</span>)
+    <span class=<span class="s">"k"</span>>for</span> start, end <span class=<span class="s">"k"</span>>in</span> queries:
         path = kg.find_path(start, end)
-        <span class="k">if</span> path:
-            print(f<span <span class="k">class</span>="s">"    {start} → {end}: {<span <span class="k">class</span>='s'>' → '</span>.join(path)}"</span>)
-        <span class="k">else</span>:
-            print(f<span <span class="k">class</span>="s">"    {start} → {end}: 未找到路径"</span>)</pre></div></details></div><div class="lecture"><h2>9.5 Agentic RAG —— 让 RAG 自己思考</h2>
+        <span class=<span class="s">"k"</span>>if</span> path:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {start} → {end}: {<span class='s'>' → '</span>.join(path)}"</span>)
+        <span class=<span class="s">"k"</span>>else</span>:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {start} → {end}: 未找到路径"</span>)</pre></div></details></div><div class="lecture"><h2>9.5 Agentic RAG —— 让 RAG 自己思考</h2>
 <p>&nbsp;</p>
 <p>传统 RAG 是固定流水线：</p>
 <p>「不管什么问题，都走 检索→生成 两步」</p>
@@ -651,80 +666,83 @@ body {
 <p>"RAG 有什么高级技术？"</p>
 <p>→ 查询重写(HyDE) → 混合检索(Hybrid) → 重排序(Reranker)</p>
 <p>→ GraphRAG(知识图谱) → Agentic RAG(Agent 循环)</p>
-<p>→ 每个技术解决一个具体痛点，不要盲目叠加</p></div><div class="code-section"><details><summary>💻 代码 (65 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║  第9章：RAG 原理与实现详解                             ║"</span>)
-    print(<span <span class="k">class</span>="s">"║  Naive RAG → Advanced → GraphRAG → Agentic RAG      ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<p>→ 每个技术解决一个具体痛点，不要盲目叠加</p></div><div class="code-section"><details open><summary>💻 代码 (68 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> numpy <span class=<span class="s">"k"</span>>as</span> np
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">9.2</span> Naive RAG 演示"</span>)
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第9章：RAG 原理与实现详解                             ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Naive RAG → Advanced → GraphRAG → Agentic RAG      ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">9.2</span> Naive RAG 演示"</span>)
     demo_naive_rag()
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">9.3</span> Advanced RAG 演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">9.3</span> Advanced RAG 演示"</span>)
     rag = AdvancedRAG()
     docs = [
-        <span <span class="k">class</span>="s">"Python是一种由Guido van Rossum创建的编程语言，"</span>
-        <span <span class="k">class</span>="s">"首次发布于1991年。它以简洁的语法风格著称。"</span>,
+        <span class="s">"Python是一种由Guido van Rossum创建的编程语言，"</span>
+        <span class="s">"首次发布于1991年。它以简洁的语法风格著称。"</span>,
 
-        <span <span class="k">class</span>="s">"AI Agent能自主感知环境、做出决策并执行行动。"</span>
-        <span <span class="k">class</span>="s">"它集成了LLM、规划器、记忆系统和工具调用。"</span>,
+        <span class="s">"AI Agent能自主感知环境、做出决策并执行行动。"</span>
+        <span class="s">"它集成了LLM、规划器、记忆系统和工具调用。"</span>,
 
-        <span <span class="k">class</span>="s">"RAG通过从知识库检索相关信息来增强LLM的生成能力，"</span>
-        <span <span class="k">class</span>="s">"有效减少模型的幻觉问题。GraphRAG加入了知识图谱。"</span>,
+        <span class="s">"RAG通过从知识库检索相关信息来增强LLM的生成能力，"</span>
+        <span class="s">"有效减少模型的幻觉问题。GraphRAG加入了知识图谱。"</span>,
     ]
     rag.add_documents(docs)
 
-    query = <span <span class="k">class</span>="s">"如何用Python构建AI Agent？"</span>
-    print(f<span <span class="k">class</span>="s">"\n  🔍 原始查询: {query}"</span>)
+    query = <span class="s">"如何用Python构建AI Agent？"</span>
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  🔍 原始查询: {query}"</span>)
 
     variations = rag.query_rewrite(query)
-    print(f<span <span class="k">class</span>="s">"  ✏️ 查询变体: {variations}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✏️ 查询变体: {variations}"</span>)
 
-    <span class="k">for</span> v <span class="k">in</span> variations:
-        results = rag.hybrid_search(v, top_k=<span class="n">2</span>)
-        print(f<span <span class="k">class</span>="s">"\n  查询变体「{v}」的混合检索结果:"</span>)
-        <span class="k">for</span> chunk, score <span class="k">in</span> results:
-            print(f<span <span class="k">class</span>="s">"    [{score:.3f}] {chunk[:<span class="n">100</span>]}..."</span>)
+    <span class=<span class="s">"k"</span>>for</span> v <span class=<span class="s">"k"</span>>in</span> variations:
+        results = rag.hybrid_search(v, top_k=<span class=<span class="s">"n"</span>>2</span>)
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  查询变体「{v}」的混合检索结果:"</span>)
+        <span class=<span class="s">"k"</span>>for</span> chunk, score <span class=<span class="s">"k"</span>>in</span> results:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{score:.3f}] {chunk[:<span class="</span>n<span class="s">">100</span>]}..."</span>)
 
-        reranked = rag.rerank(v, results, top_k=<span class="n">2</span>)
-        print(f<span <span class="k">class</span>="s">"  重排序后:"</span>)
-        <span class="k">for</span> chunk, score <span class="k">in</span> reranked:
-            print(f<span <span class="k">class</span>="s">"    [{score:.3f}] {chunk[:<span class="n">100</span>]}..."</span>)
+        reranked = rag.rerank(v, results, top_k=<span class=<span class="s">"n"</span>>2</span>)
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  重排序后:"</span>)
+        <span class=<span class="s">"k"</span>>for</span> chunk, score <span class=<span class="s">"k"</span>>in</span> reranked:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{score:.3f}] {chunk[:<span class="</span>n<span class="s">">100</span>]}..."</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">9.4</span> GraphRAG 演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">9.4</span> GraphRAG 演示"</span>)
     demo_graphrag()
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">9.5</span> Agentic RAG 概念"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
-    print(<span <span class="k">class</span>="s">"核心区别："</span>)
-    print(<span <span class="k">class</span>="s">"  传统RAG: 固定流水线「检索→生成」"</span>)
-    print(<span <span class="k">class</span>="s">"  Agentic RAG: 动态决策 「思考→检索→判断→再检索→...」"</span>)
-    print(<span <span class="k">class</span>="s">""</span>)
-    print(<span <span class="k">class</span>="s">"2025年行业数据："</span>)
-    print(<span <span class="k">class</span>="s">"  准确率提升 <span class="n">30</span>-<span class="n">50</span>%，但 <span class="n">90</span>% 生产失败率"</span>)
-    print(<span <span class="k">class</span>="s">"  建议：从简单开始，逐步迭代，持续评估"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">9.5</span> Agentic RAG 概念"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"核心区别："</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  传统RAG: 固定流水线「检索→生成」"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Agentic RAG: 动态决策 「思考→检索→判断→再检索→...」"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">""</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"2025年行业数据："</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  准确率提升 <span class="</span>n<span class="s">">30</span>-<span class="</span>n<span class="s">">50</span>%，但 <span class="</span>n<span class="s">">90</span>% 生产失败率"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  建议：从简单开始，逐步迭代，持续评估"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">9.6</span> RAGAS 评估体系"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">9.6</span> RAGAS 评估体系"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     metrics = [
-        (<span <span class="k">class</span>="s">"Faithfulness"</span>, <span <span class="k">class</span>="s">"回答是否基于检索到的内容？"</span>),
-        (<span <span class="k">class</span>="s">"Answer Relevance"</span>, <span <span class="k">class</span>="s">"回答是否直接回应了问题？"</span>),
-        (<span <span class="k">class</span>="s">"Context Recall"</span>, <span <span class="k">class</span>="s">"检索是否覆盖了所有必要信息？"</span>),
-        (<span <span class="k">class</span>="s">"Context Precision"</span>, <span <span class="k">class</span>="s">"检索到的内容有多少是相关的？"</span>),
+        (<span class="s">"Faithfulness"</span>, <span class="s">"回答是否基于检索到的内容？"</span>),
+        (<span class="s">"Answer Relevance"</span>, <span class="s">"回答是否直接回应了问题？"</span>),
+        (<span class="s">"Context Recall"</span>, <span class="s">"检索是否覆盖了所有必要信息？"</span>),
+        (<span class="s">"Context Precision"</span>, <span class="s">"检索到的内容有多少是相关的？"</span>),
     ]
-    <span class="k">for</span> name, desc <span class="k">in</span> metrics:
-        print(f<span <span class="k">class</span>="s">"  {name}: {desc}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> name, desc <span class=<span class="s">"k"</span>>in</span> metrics:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {name}: {desc}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第9章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (647 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第9章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (647 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 第9章：RAG 原理与实现详解 —— 从 Naive 到 Agentic RAG
 =====================================================
 
 📌 本章目标：
-  <span class="n">1</span>. 理解 RAG 的完整技术演进路线
-  <span class="n">2</span>. 掌握 Naive RAG → Advanced RAG → GraphRAG → Agentic RAG 的原理
-  <span class="n">3</span>. 实现一个可运行的 Advanced RAG 系统
-  <span class="n">4</span>. 理解 HyDE、Multi-Query、Self-RAG 等高级技术
-  <span class="n">5</span>. 了解 RAG 评估体系（RAGAS）
+  <span class=<span class="s">"n"</span>>1</span>. 理解 RAG 的完整技术演进路线
+  <span class=<span class="s">"n"</span>>2</span>. 掌握 Naive RAG → Advanced RAG → GraphRAG → Agentic RAG 的原理
+  <span class=<span class="s">"n"</span>>3</span>. 实现一个可运行的 Advanced RAG 系统
+  <span class=<span class="s">"n"</span>>4</span>. 理解 HyDE、Multi-Query、Self-RAG 等高级技术
+  <span class=<span class="s">"n"</span>>5</span>. 了解 RAG 评估体系（RAGAS）
 
 📌 面试高频点：
   - RAG 的核心流程和每步的作用
@@ -735,92 +753,92 @@ body {
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">9.1</span> RAG 技术演进全景图
+<span class=<span class="s">"n"</span>>9.1</span> RAG 技术演进全景图
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-RAG 从 <span class="n">2020</span> 年到 <span class="n">2025</span> 年经历了三个重要阶段：
+RAG 从 <span class=<span class="s">"n"</span>>2020</span> 年到 <span class=<span class="s">"n"</span>>2025</span> 年经历了三个重要阶段：
 
   ┌──────────────────────────────────────────────────────┐
   │                                                        │
-  │  <span class="n">2020</span>-<span class="n">2022</span>: Naive RAG                                 │
+  │  <span class=<span class="s">"n"</span>>2020</span>-<span class=<span class="s">"n"</span>>2022</span>: Naive RAG                                 │
   │  「问 → 检索 → 生成」三步走                              │
   │  代表: Facebook RAG 论文、LangChain 基础 QA Chain        │
   │                                                        │
-  │  <span class="n">2023</span>-<span class="n">2024</span>: Advanced RAG                              │
+  │  <span class=<span class="s">"n"</span>>2023</span>-<span class=<span class="s">"n"</span>>2024</span>: Advanced RAG                              │
   │  加入查询重写、混合检索、重排序、纠错等优化                │
   │  代表: HyDE、Multi-Query、Self-RAG、CRAG               │
   │                                                        │
-  │  <span class="n">2024</span>-<span class="n">2025</span>: Next-Gen RAG                              │
+  │  <span class=<span class="s">"n"</span>>2024</span>-<span class=<span class="s">"n"</span>>2025</span>: Next-Gen RAG                              │
   │  知识图谱、Agent 协作、多模态、长文本                     │
   │  代表: GraphRAG (微软)、Agentic RAG、Multimodal RAG     │
   │                                                        │
   └──────────────────────────────────────────────────────┘
 
   Naive RAG 的问题（面试常问！）:
-    <span class="n">1</span>. 检索不准：语义相似 ≠ 问题相关
-    <span class="n">2</span>. 上下文丢失：大块文本导致 LLM 忽略关键信息
-    <span class="n">3</span>. 无法处理复杂关系：「A影响了B，B又影响了C」需要多跳推理
-    <span class="n">4</span>. 无自检能力：检索到无关内容也不知道
+    <span class=<span class="s">"n"</span>>1</span>. 检索不准：语义相似 ≠ 问题相关
+    <span class=<span class="s">"n"</span>>2</span>. 上下文丢失：大块文本导致 LLM 忽略关键信息
+    <span class=<span class="s">"n"</span>>3</span>. 无法处理复杂关系：「A影响了B，B又影响了C」需要多跳推理
+    <span class=<span class="s">"n"</span>>4</span>. 无自检能力：检索到无关内容也不知道
 
 
-<span class="n">9.2</span> Naive RAG 实现 —— 理解基础再谈优化
+<span class=<span class="s">"n"</span>>9.2</span> Naive RAG 实现 —— 理解基础再谈优化
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
-<span class="k">import</span> numpy <span class="k">as</span> np
-<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class=<span class="s">"k"</span>>import</span> numpy <span class=<span class="s">"k"</span>>as</span> np
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
 
 
-<span class="k">class</span> NaiveVectorStore:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"最小化的向量存储 —— 帮助理解向量检索的本质。
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>NaiveVectorStore</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"最小化的向量存储 —— 帮助理解向量检索的本质。
 
     面试中常被问「向量检索的原理是什么」，
     这个实现展示了答案：将查询和文档都转为向量，
     通过余弦相似度找到最相似的 Top-K 个。
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self):
-        self.documents = []         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 原始文档列表</span>
-        self.embeddings = []        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 对应的向量列表</span>
-        self.chunks = []            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 分块信息</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
+        <span class=<span class="s">"k"</span>>self</span>.documents = []         <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 原始文档列表</span>
+        <span class=<span class="s">"k"</span>>self</span>.embeddings = []        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 对应的向量列表</span>
+        <span class=<span class="s">"k"</span>>self</span>.chunks = []            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 分块信息</span>
 
-    <span class="k">def</span> add_documents(self, docs: list[str],
-                      chunk_size: int = <span class="n">200</span>,
-                      chunk_overlap: int = <span class="n">50</span>):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"添加文档：先分块，再「嵌入」（这里用简化模拟表示）。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_documents</span>(<span class=<span class="s">"k"</span>>self</span>, docs: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>],
+                      chunk_size: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>200</span>,
+                      chunk_overlap: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>50</span>):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"添加文档：先分块，再「嵌入」（这里用简化模拟表示）。
 
         Args:
             docs: 文档列表。
             chunk_size: 分块大小（字符数）。
             chunk_overlap: 块间重叠大小。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">for</span> doc <span class="k">in</span> docs:
-            <span class="k">for</span> i <span class="k">in</span> range(<span class="n">0</span>, len(doc), chunk_size - chunk_overlap):
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"k"</span>>for</span> doc <span class=<span class="s">"k"</span>>in</span> docs:
+            <span class=<span class="s">"k"</span>>for</span> i <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>0</span>, <span class=<span class="s">"b"</span>>len</span>(doc), chunk_size - chunk_overlap):
                 chunk = doc[i:i + chunk_size]
-                self.chunks.append(chunk)
-                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 用 TF-IDF 启发式模拟向量（实际用 embedding 模型）</span>
-                embedding = self._simple_hash_embed(chunk)
-                self.embeddings.append(embedding)
+                <span class=<span class="s">"k"</span>>self</span>.chunks.append(chunk)
+                <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 用 TF-IDF 启发式模拟向量（实际用 embedding 模型）</span>
+                embedding = <span class=<span class="s">"k"</span>>self</span>._simple_hash_embed(chunk)
+                <span class=<span class="s">"k"</span>>self</span>.embeddings.append(embedding)
 
-        print(f<span <span class="k">class</span>="s">"  已添加 {len(self.chunks)} 个文本块"</span>)
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  已添加 {<span class="</span>b<span class="s">">len</span>(<span class="</span>k<span class="s">">self</span>.chunks)} 个文本块"</span>)
 
-    <span class="k">def</span> _simple_hash_embed(self, text: str, dim: int = <span class="n">64</span>) -&gt; np.ndarray:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"简化版的文本向量化（仅用于理解原理）。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>_simple_hash_embed</span>(<span class=<span class="s">"k"</span>>self</span>, text: <span class=<span class="s">"b"</span>>str</span>, dim: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>64</span>) -&gt; np.ndarray:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"简化版的文本向量化（仅用于理解原理）。
 
         实际项目用 sentence-transformers / OpenAI Embeddings API。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 基于字符哈希的简单向量表示</span>
+        <span class="s">""</span>"</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 基于字符哈希的简单向量表示</span>
         vec = np.zeros(dim)
-        <span class="k">for</span> i, ch <span class="k">in</span> enumerate(text):
-            vec[hash(ch) % dim] += <span class="n">1</span>
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L2 归一化</span>
+        <span class=<span class="s">"k"</span>>for</span> i, ch <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(text):
+            vec[<span class=<span class="s">"b"</span>>hash</span>(ch) % dim] += <span class=<span class="s">"n"</span>>1</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># L2 归一化</span>
         norm = np.linalg.norm(vec)
-        <span class="k">if</span> norm &gt; <span class="n">0</span>:
+        <span class=<span class="s">"k"</span>>if</span> norm &gt; <span class=<span class="s">"n"</span>>0</span>:
             vec = vec / norm
-        <span class="k">return</span> vec
+        <span class=<span class="s">"k"</span>>return</span> vec
 
-    <span class="k">def</span> search(self, query: str, top_k: int = <span class="n">5</span>) -&gt; list[tuple[str, float]]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"检索最相似的 Top-K 个文本块。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>search</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>, top_k: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>5</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>float</span>]]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"检索最相似的 Top-K 个文本块。
 
         Args:
             query: 查询文本。
@@ -828,73 +846,73 @@ RAG 从 <span class="n">2020</span> 年到 <span class="n">2025</span> 年经历
 
         Returns:
             (文本块, 相似度分数) 的列表。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        query_vec = self._simple_hash_embed(query)
+        <span class="s">""</span>"</span>
+        query_vec = <span class=<span class="s">"k"</span>>self</span>._simple_hash_embed(query)
         scores = []
-        <span class="k">for</span> i, emb <span class="k">in</span> enumerate(self.embeddings):
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 余弦相似度 = 点积（因为已归一化）</span>
-            score = float(np.dot(query_vec, emb))
+        <span class=<span class="s">"k"</span>>for</span> i, emb <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(<span class=<span class="s">"k"</span>>self</span>.embeddings):
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 余弦相似度 = 点积（因为已归一化）</span>
+            score = <span class=<span class="s">"b"</span>>float</span>(np.dot(query_vec, emb))
             scores.append((i, score))
 
-        scores.sort(key=<span class="k">lambda</span> x: x[<span class="n">1</span>], reverse=<span class="k">True</span>)
+        scores.sort(key=<span class=<span class="s">"k"</span>>lambda</span> x: x[<span class=<span class="s">"n"</span>>1</span>], reverse=<span class=<span class="s">"k"</span>>True</span>)
         results = []
-        <span class="k">for</span> idx, score <span class="k">in</span> scores[:top_k]:
-            results.append((self.chunks[idx], score))
-        <span class="k">return</span> results
+        <span class=<span class="s">"k"</span>>for</span> idx, score <span class=<span class="s">"k"</span>>in</span> scores[:top_k]:
+            results.append((<span class=<span class="s">"k"</span>>self</span>.chunks[idx], score))
+        <span class=<span class="s">"k"</span>>return</span> results
 
 
-<span class="k">def</span> demo_naive_rag():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Naive RAG 的基本流程。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  Naive RAG 流程演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_naive_rag</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 Naive RAG 的基本流程。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Naive RAG 流程演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
     store = NaiveVectorStore()
     docs = [
-        <span <span class="k">class</span>="s">"Python是一种解释型、面向对象的高级编程语言。"</span>
-        <span <span class="k">class</span>="s">"它由 Guido van Rossum 于 <span class="n">1991</span> 年首次发布。"</span>
-        <span <span class="k">class</span>="s">"Python 以简洁的语法和强大的标准库而闻名。"</span>,
+        <span class="s">"Python是一种解释型、面向对象的高级编程语言。"</span>
+        <span class="s">"它由 Guido van Rossum 于 <span class="</span>n<span class="s">">1991</span> 年首次发布。"</span>
+        <span class="s">"Python 以简洁的语法和强大的标准库而闻名。"</span>,
 
-        <span <span class="k">class</span>="s">"AI Agent 是一种能够自主感知环境、做出决策并执行行动的智能系统。"</span>
-        <span <span class="k">class</span>="s">"它由 LLM、规划器、记忆系统和工具组成。"</span>
-        <span <span class="k">class</span>="s">"LangChain 是构建 Agent 的最流行框架之一。"</span>,
+        <span class="s">"AI Agent 是一种能够自主感知环境、做出决策并执行行动的智能系统。"</span>
+        <span class="s">"它由 LLM、规划器、记忆系统和工具组成。"</span>
+        <span class="s">"LangChain 是构建 Agent 的最流行框架之一。"</span>,
 
-        <span <span class="k">class</span>="s">"RAG（检索增强生成）是一种将外部知识检索与 LLM 生成结合的技术。"</span>
-        <span <span class="k">class</span>="s">"它通过从知识库中检索相关信息来减少大模型的幻觉问题。"</span>
-        <span <span class="k">class</span>="s">"GraphRAG 是 RAG 的最新演进，加入了知识图谱。"</span>,
+        <span class="s">"RAG（检索增强生成）是一种将外部知识检索与 LLM 生成结合的技术。"</span>
+        <span class="s">"它通过从知识库中检索相关信息来减少大模型的幻觉问题。"</span>
+        <span class="s">"GraphRAG 是 RAG 的最新演进，加入了知识图谱。"</span>,
 
-        <span <span class="k">class</span>="s">"PyTorch 是 Facebook 开发的开源深度学习框架。"</span>
-        <span <span class="k">class</span>="s">"TensorFlow 是 Google 开发的机器学习平台。"</span>
-        <span <span class="k">class</span>="s">"两者都是业界最广泛使用的深度学习工具。"</span>,
+        <span class="s">"PyTorch 是 Facebook 开发的开源深度学习框架。"</span>
+        <span class="s">"TensorFlow 是 Google 开发的机器学习平台。"</span>
+        <span class="s">"两者都是业界最广泛使用的深度学习工具。"</span>,
     ]
     store.add_documents(docs)
 
     queries = [
-        <span <span class="k">class</span>="s">"Python 是谁创建的？"</span>,
-        <span <span class="k">class</span>="s">"什么是 AI Agent？"</span>,
-        <span <span class="k">class</span>="s">"RAG 如何减少幻觉？"</span>,
+        <span class="s">"Python 是谁创建的？"</span>,
+        <span class="s">"什么是 AI Agent？"</span>,
+        <span class="s">"RAG 如何减少幻觉？"</span>,
     ]
-    <span class="k">for</span> q <span class="k">in</span> queries:
-        print(f<span <span class="k">class</span>="s">"\n  🔍 查询: {q}"</span>)
-        results = store.search(q, top_k=<span class="n">2</span>)
-        <span class="k">for</span> chunk, score <span class="k">in</span> results:
-            print(f<span <span class="k">class</span>="s">"    [{score:.3f}] {chunk[:<span class="n">80</span>]}..."</span>)
+    <span class=<span class="s">"k"</span>>for</span> q <span class=<span class="s">"k"</span>>in</span> queries:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  🔍 查询: {q}"</span>)
+        results = store.search(q, top_k=<span class=<span class="s">"n"</span>>2</span>)
+        <span class=<span class="s">"k"</span>>for</span> chunk, score <span class=<span class="s">"k"</span>>in</span> results:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{score:.3f}] {chunk[:<span class="</span>n<span class="s">">80</span>]}..."</span>)
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">9.3</span> Advanced RAG —— 三板斧优化
+<span class=<span class="s">"n"</span>>9.3</span> Advanced RAG —— 三板斧优化
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Advanced RAG 在 Naive RAG 的基础上加入三大优化：
-  <span class="n">1</span>. 查询重写 (Query Rewriting)
-  <span class="n">2</span>. 混合检索 (Hybrid Search)
-  <span class="n">3</span>. 重排序 (Reranking)
-<span <span class="k">class</span>="s">""</span>"</span>
+  <span class=<span class="s">"n"</span>>1</span>. 查询重写 (Query Rewriting)
+  <span class=<span class="s">"n"</span>>2</span>. 混合检索 (Hybrid Search)
+  <span class=<span class="s">"n"</span>>3</span>. 重排序 (Reranking)
+<span class="s">""</span>"</span>
 
 
-<span class="k">class</span> AdvancedRAG:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Advanced RAG 系统 —— 包含查询重写、混合检索、重排序。
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AdvancedRAG</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Advanced RAG 系统 —— 包含查询重写、混合检索、重排序。
 
     架构流程：
       用户查询
@@ -918,55 +936,55 @@ Advanced RAG 在 Naive RAG 的基础上加入三大优化：
     ┌──────────────┐
     │ LLM 生成       │ ← 注入检索上下文
     └──────────────┘
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self, llm=<span class="k">None</span>):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, llm=<span class=<span class="s">"k"</span>>None</span>):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
         Args:
             llm: LLM 调用函数（可选）。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        self.llm = llm
-        self.store = NaiveVectorStore()
-        self.bm25_index = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 简化版 BM25 索引</span>
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"k"</span>>self</span>.llm = llm
+        <span class=<span class="s">"k"</span>>self</span>.store = NaiveVectorStore()
+        <span class=<span class="s">"k"</span>>self</span>.bm25_index = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 简化版 BM25 索引</span>
 
-    <span class="k">def</span> query_rewrite(self, query: str) -&gt; list[str]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"查询重写：将一个查询扩展为多个变体。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>query_rewrite</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"查询重写：将一个查询扩展为多个变体。
 
         策略：
-          <span class="n">1</span>. 原始查询
-          <span class="n">2</span>. 关键词提取版本
-          <span class="n">3</span>. 同义词扩展版本
+          <span class=<span class="s">"n"</span>>1</span>. 原始查询
+          <span class=<span class="s">"n"</span>>2</span>. 关键词提取版本
+          <span class=<span class="s">"n"</span>>3</span>. 同义词扩展版本
 
         在真实项目中，这一步用 LLM 完成。
-        比如用 prompt：「将以下查询改写为 <span class="n">3</span> 个不同角度的搜索查询」
-        <span <span class="k">class</span>="s">""</span>"</span>
+        比如用 prompt：「将以下查询改写为 <span class=<span class="s">"n"</span>>3</span> 个不同角度的搜索查询」
+        <span class="s">""</span>"</span>
         variations = [query]
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 简单模拟：如果查询中有「怎么」，增加「方法」「教程」</span>
-        <span class="k">if</span> <span <span class="k">class</span>="s">"怎么"</span> <span class="k">in</span> query <span class="k">or</span> <span <span class="k">class</span>="s">"如何"</span> <span class="k">in</span> query:
-            variations.append(query.replace(<span <span class="k">class</span>="s">"怎么"</span>, <span <span class="k">class</span>="s">"的方法"</span>).replace(<span <span class="k">class</span>="s">"如何"</span>, <span <span class="k">class</span>="s">"的方法"</span>))
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 简单模拟：如果查询中有「怎么」，增加「方法」「教程」</span>
+        <span class=<span class="s">"k"</span>>if</span> <span class="s">"怎么"</span> <span class=<span class="s">"k"</span>>in</span> query <span class=<span class="s">"k"</span>>or</span> <span class="s">"如何"</span> <span class=<span class="s">"k"</span>>in</span> query:
+            variations.append(query.replace(<span class="s">"怎么"</span>, <span class="s">"的方法"</span>).replace(<span class="s">"如何"</span>, <span class="s">"的方法"</span>))
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 简单模拟：拆分长查询为多个关键词查询</span>
-        keywords = [w <span class="k">for</span> w <span class="k">in</span> query.replace(<span <span class="k">class</span>="s">"？"</span>, <span <span class="k">class</span>="s">""</span>).replace(<span <span class="k">class</span>="s">"?"</span>, <span <span class="k">class</span>="s">""</span>).split()
-                     <span class="k">if</span> len(w) &gt; <span class="n">1</span>]
-        <span class="k">if</span> len(keywords) &gt; <span class="n">2</span>:
-            variations.append(<span <span class="k">class</span>="s">" "</span>.join(keywords[:<span class="n">3</span>]))
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 简单模拟：拆分长查询为多个关键词查询</span>
+        keywords = [w <span class=<span class="s">"k"</span>>for</span> w <span class=<span class="s">"k"</span>>in</span> query.replace(<span class="s">"？"</span>, <span class="s">""</span>).replace(<span class="s">"?"</span>, <span class="s">""</span>).split()
+                     <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(w) &gt; <span class=<span class="s">"n"</span>>1</span>]
+        <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(keywords) &gt; <span class=<span class="s">"n"</span>>2</span>:
+            variations.append(<span class="s">" "</span>.join(keywords[:<span class=<span class="s">"n"</span>>3</span>]))
 
-        <span class="k">return</span> variations
+        <span class=<span class="s">"k"</span>>return</span> variations
 
-    <span class="k">def</span> add_documents(self, docs: list[str]):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"添加文档到混合索引。"</span><span <span class="k">class</span>="s">""</span></span>
-        self.store.add_documents(docs)
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 构建简化的 BM25 索引</span>
-        <span class="k">for</span> i, chunk <span class="k">in</span> enumerate(self.store.chunks):
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_documents</span>(<span class=<span class="s">"k"</span>>self</span>, docs: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加文档到混合索引。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"k"</span>>self</span>.store.add_documents(docs)
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 构建简化的 BM25 索引</span>
+        <span class=<span class="s">"k"</span>>for</span> i, chunk <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>enumerate</span>(<span class=<span class="s">"k"</span>>self</span>.store.chunks):
             words = chunk.lower().split()
-            <span class="k">for</span> word <span class="k">in</span> set(words):
-                <span class="k">if</span> word <span class="k">not</span> <span class="k">in</span> self.bm25_index:
-                    self.bm25_index[word] = []
-                self.bm25_index[word].append(i)
+            <span class=<span class="s">"k"</span>>for</span> word <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>set</span>(words):
+                <span class=<span class="s">"k"</span>>if</span> word <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.bm25_index:
+                    <span class=<span class="s">"k"</span>>self</span>.bm25_index[word] = []
+                <span class=<span class="s">"k"</span>>self</span>.bm25_index[word].append(i)
 
-    <span class="k">def</span> hybrid_search(self, query: str, top_k: int = <span class="n">5</span>) -&gt; list[tuple[str, float]]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"混合检索：融合向量搜索和关键词搜索的结果。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>hybrid_search</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>, top_k: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>5</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>float</span>]]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"混合检索：融合向量搜索和关键词搜索的结果。
 
         Args:
             query: 查询文本。
@@ -974,37 +992,37 @@ Advanced RAG 在 Naive RAG 的基础上加入三大优化：
 
         Returns:
             融合后的检索结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 向量搜索结果</span>
-        vector_results = self.store.search(query, top_k=top_k)
-        vector_scores = {chunk: score <span class="k">for</span> chunk, score <span class="k">in</span> vector_results}
+        <span class="s">""</span>"</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 向量搜索结果</span>
+        vector_results = <span class=<span class="s">"k"</span>>self</span>.store.search(query, top_k=top_k)
+        vector_scores = {chunk: score <span class=<span class="s">"k"</span>>for</span> chunk, score <span class=<span class="s">"k"</span>>in</span> vector_results}
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 关键词搜索结果（简化版 BM25）</span>
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 关键词搜索结果（简化版 BM25）</span>
         kw_scores = {}
-        <span class="k">for</span> word <span class="k">in</span> query.lower().split():
-            <span class="k">if</span> word <span class="k">in</span> self.bm25_index:
-                <span class="k">for</span> doc_id <span class="k">in</span> self.bm25_index[word]:
-                    chunk = self.store.chunks[doc_id]
-                    kw_scores[chunk] = kw_scores.get(chunk, <span class="n">0</span>) + <span class="n">1</span>
+        <span class=<span class="s">"k"</span>>for</span> word <span class=<span class="s">"k"</span>>in</span> query.lower().split():
+            <span class=<span class="s">"k"</span>>if</span> word <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.bm25_index:
+                <span class=<span class="s">"k"</span>>for</span> doc_id <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.bm25_index[word]:
+                    chunk = <span class=<span class="s">"k"</span>>self</span>.store.chunks[doc_id]
+                    kw_scores[chunk] = kw_scores.get(chunk, <span class=<span class="s">"n"</span>>0</span>) + <span class=<span class="s">"n"</span>>1</span>
 
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 混合打分：向量分数 * <span class="n">0.6</span> + 关键词分数 * <span class="n">0.4</span></span>
-        all_chunks = set(vector_scores.keys()) | set(kw_scores.keys())
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 混合打分：向量分数 * <span class=<span class="s">"n"</span>>0.6</span> + 关键词分数 * <span class=<span class="s">"n"</span>>0.4</span></span>
+        all_chunks = <span class=<span class="s">"b"</span>>set</span>(vector_scores.keys()) | <span class=<span class="s">"b"</span>>set</span>(kw_scores.keys())
         fused = []
-        <span class="k">for</span> chunk <span class="k">in</span> all_chunks:
-            v_score = vector_scores.get(chunk, <span class="n">0</span>)
-            k_score = kw_scores.get(chunk, <span class="n">0</span>)
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 归一化关键词分数</span>
-            max_k = max(kw_scores.values()) <span class="k">if</span> kw_scores <span class="k">else</span> <span class="n">1</span>
+        <span class=<span class="s">"k"</span>>for</span> chunk <span class=<span class="s">"k"</span>>in</span> all_chunks:
+            v_score = vector_scores.get(chunk, <span class=<span class="s">"n"</span>>0</span>)
+            k_score = kw_scores.get(chunk, <span class=<span class="s">"n"</span>>0</span>)
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 归一化关键词分数</span>
+            max_k = <span class=<span class="s">"b"</span>>max</span>(kw_scores.values()) <span class=<span class="s">"k"</span>>if</span> kw_scores <span class=<span class="s">"k"</span>>else</span> <span class=<span class="s">"n"</span>>1</span>
             k_score_norm = k_score / max_k
-            final_score = v_score * <span class="n">0.6</span> + k_score_norm * <span class="n">0.4</span>
+            final_score = v_score * <span class=<span class="s">"n"</span>>0.6</span> + k_score_norm * <span class=<span class="s">"n"</span>>0.4</span>
             fused.append((chunk, final_score))
 
-        fused.sort(key=<span class="k">lambda</span> x: x[<span class="n">1</span>], reverse=<span class="k">True</span>)
-        <span class="k">return</span> fused[:top_k]
+        fused.sort(key=<span class=<span class="s">"k"</span>>lambda</span> x: x[<span class=<span class="s">"n"</span>>1</span>], reverse=<span class=<span class="s">"k"</span>>True</span>)
+        <span class=<span class="s">"k"</span>>return</span> fused[:top_k]
 
-    <span class="k">def</span> rerank(self, query: str, candidates: list[tuple[str, float]],
-               top_k: int = <span class="n">3</span>) -&gt; list[tuple[str, float]]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"重排序：对候选结果进行精细排序。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>rerank</span>(<span class=<span class="s">"k"</span>>self</span>, query: <span class=<span class="s">"b"</span>>str</span>, candidates: <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>float</span>]],
+               top_k: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>3</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>float</span>]]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"重排序：对候选结果进行精细排序。
 
         在真实项目中，这一步用 Cross-Encoder 模型（如 BGE-reranker）：
           - 对每个 (query, chunk) 对打分
@@ -1013,33 +1031,33 @@ Advanced RAG 在 Naive RAG 的基础上加入三大优化：
         这里用简化的规则模拟：
           - 查询关键词在块中出现得越早，分数越高
           - 块越短（越聚焦），分数越高
-        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="s">""</span>"</span>
         query_lower = query.lower()
         reranked = []
-        <span class="k">for</span> chunk, orig_score <span class="k">in</span> candidates:
+        <span class=<span class="s">"k"</span>>for</span> chunk, orig_score <span class=<span class="s">"k"</span>>in</span> candidates:
             chunk_lower = chunk.lower()
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 规则1: 关键词位置分（越靠前越好）</span>
-            position_score = <span class="n">0.0</span>
-            <span class="k">for</span> word <span class="k">in</span> query_lower.split():
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 规则1: 关键词位置分（越靠前越好）</span>
+            position_score = <span class=<span class="s">"n"</span>>0.0</span>
+            <span class=<span class="s">"k"</span>>for</span> word <span class=<span class="s">"k"</span>>in</span> query_lower.split():
                 pos = chunk_lower.find(word)
-                <span class="k">if</span> pos &gt;= <span class="n">0</span>:
-                    position_score += max(<span class="n">0</span>, <span class="n">1.0</span> - pos / len(chunk_lower))
+                <span class=<span class="s">"k"</span>>if</span> pos &gt;= <span class=<span class="s">"n"</span>>0</span>:
+                    position_score += <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"n"</span>>0</span>, <span class=<span class="s">"n"</span>>1.0</span> - pos / <span class=<span class="s">"b"</span>>len</span>(chunk_lower))
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 规则2: 长度分（越短越聚焦）</span>
-            length_score = max(<span class="n">0</span>, <span class="n">1.0</span> - len(chunk) / <span class="n">1000</span>)
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 规则2: 长度分（越短越聚焦）</span>
+            length_score = <span class=<span class="s">"b"</span>>max</span>(<span class=<span class="s">"n"</span>>0</span>, <span class=<span class="s">"n"</span>>1.0</span> - <span class=<span class="s">"b"</span>>len</span>(chunk) / <span class=<span class="s">"n"</span>>1000</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 综合分（在真实项目中由 Cross-Encoder 输出）</span>
-            final = orig_score * <span class="n">0.5</span> + position_score * <span class="n">0.3</span> + length_score * <span class="n">0.2</span>
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 综合分（在真实项目中由 Cross-Encoder 输出）</span>
+            final = orig_score * <span class=<span class="s">"n"</span>>0.5</span> + position_score * <span class=<span class="s">"n"</span>>0.3</span> + length_score * <span class=<span class="s">"n"</span>>0.2</span>
             reranked.append((chunk, final))
 
-        reranked.sort(key=<span class="k">lambda</span> x: x[<span class="n">1</span>], reverse=<span class="k">True</span>)
-        <span class="k">return</span> reranked[:top_k]
+        reranked.sort(key=<span class=<span class="s">"k"</span>>lambda</span> x: x[<span class=<span class="s">"n"</span>>1</span>], reverse=<span class=<span class="s">"k"</span>>True</span>)
+        <span class=<span class="s">"k"</span>>return</span> reranked[:top_k]
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">9.4</span> GraphRAG —— 知识图谱 + RAG
+<span class=<span class="s">"n"</span>>9.4</span> GraphRAG —— 知识图谱 + RAG
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 为什么需要 GraphRAG？
@@ -1061,43 +1079,43 @@ Advanced RAG 在 Naive RAG 的基础上加入三大优化：
 
 GraphRAG 的核心原理：
 
-  <span class="n">1</span>. 图构建 (Graph Construction)
+  <span class=<span class="s">"n"</span>>1</span>. 图构建 (Graph Construction)
      从文档中抽取实体和关系，构建知识图谱
 
-  <span class="n">2</span>. 混合检索 (Hybrid Retrieval)
+  <span class=<span class="s">"n"</span>>2</span>. 混合检索 (Hybrid Retrieval)
      同时使用向量搜索和图遍历
 
-  <span class="n">3</span>. 多跳推理 (Multi-hop Reasoning)
+  <span class=<span class="s">"n"</span>>3</span>. 多跳推理 (Multi-hop Reasoning)
      沿着图谱的边寻找推理路径
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 
-<span class="k">class</span> SimpleKnowledgeGraph:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"简化的知识图谱 —— 演示 GraphRAG 的核心概念。
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>SimpleKnowledgeGraph</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"简化的知识图谱 —— 演示 GraphRAG 的核心概念。
 
     节点: 实体（人、组织、概念）
     边: 关系（创建、工作于、属于）
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self):
-        self.graph = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># {entity: {relation: [target_entities]}}</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
+        <span class=<span class="s">"k"</span>>self</span>.graph = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># {entity: {relation: [target_entities]}}</span>
 
-    <span class="k">def</span> add_relation(self, subject: str, relation: str, obj: str):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"添加三元组：主语-关系-宾语。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_relation</span>(<span class=<span class="s">"k"</span>>self</span>, subject: <span class=<span class="s">"b"</span>>str</span>, relation: <span class=<span class="s">"b"</span>>str</span>, obj: <span class=<span class="s">"b"</span>>str</span>):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"添加三元组：主语-关系-宾语。
 
         Args:
             subject: 主语实体。
             relation: 关系类型。
             obj: 宾语实体。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">if</span> subject <span class="k">not</span> <span class="k">in</span> self.graph:
-            self.graph[subject] = {}
-        <span class="k">if</span> relation <span class="k">not</span> <span class="k">in</span> self.graph[subject]:
-            self.graph[subject][relation] = []
-        self.graph[subject][relation].append(obj)
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"k"</span>>if</span> subject <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph:
+            <span class=<span class="s">"k"</span>>self</span>.graph[subject] = {}
+        <span class=<span class="s">"k"</span>>if</span> relation <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph[subject]:
+            <span class=<span class="s">"k"</span>>self</span>.graph[subject][relation] = []
+        <span class=<span class="s">"k"</span>>self</span>.graph[subject][relation].append(obj)
 
-    <span class="k">def</span> traverse(self, start: str, max_depth: int = <span class="n">2</span>) -&gt; list[str]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"从起始节点出发进行图遍历。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>traverse</span>(<span class=<span class="s">"k"</span>>self</span>, start: <span class=<span class="s">"b"</span>>str</span>, max_depth: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>2</span>) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>str</span>]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"从起始节点出发进行图遍历。
 
         Args:
             start: 起始实体。
@@ -1105,22 +1123,22 @@ GraphRAG 的核心原理：
 
         Returns:
             到达的所有实体列表。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        visited = set()
-        to_visit = [(start, <span class="n">0</span>)]
-        <span class="k">while</span> to_visit:
-            node, depth = to_visit.pop(<span class="n">0</span>)
-            <span class="k">if</span> node <span class="k">in</span> visited <span class="k">or</span> depth &gt; max_depth:
-                <span class="k">continue</span>
+        <span class="s">""</span>"</span>
+        visited = <span class=<span class="s">"b"</span>>set</span>()
+        to_visit = [(start, <span class=<span class="s">"n"</span>>0</span>)]
+        <span class=<span class="s">"k"</span>>while</span> to_visit:
+            node, depth = to_visit.pop(<span class=<span class="s">"n"</span>>0</span>)
+            <span class=<span class="s">"k"</span>>if</span> node <span class=<span class="s">"k"</span>>in</span> visited <span class=<span class="s">"k"</span>>or</span> depth &gt; max_depth:
+                <span class=<span class="s">"k"</span>>continue</span>
             visited.add(node)
-            <span class="k">if</span> node <span class="k">in</span> self.graph:
-                <span class="k">for</span> relation, targets <span class="k">in</span> self.graph[node].items():
-                    <span class="k">for</span> target <span class="k">in</span> targets:
-                        to_visit.append((target, depth + <span class="n">1</span>))
-        <span class="k">return</span> list(visited)
+            <span class=<span class="s">"k"</span>>if</span> node <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph:
+                <span class=<span class="s">"k"</span>>for</span> relation, targets <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph[node].items():
+                    <span class=<span class="s">"k"</span>>for</span> target <span class=<span class="s">"k"</span>>in</span> targets:
+                        to_visit.append((target, depth + <span class=<span class="s">"n"</span>>1</span>))
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"b"</span>>list</span>(visited)
 
-    <span class="k">def</span> find_path(self, start: str, end: str, max_depth: int = <span class="n">3</span>) -&gt; Optional[list]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"寻找两个实体之间的路径（简化版 BFS）。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>find_path</span>(<span class=<span class="s">"k"</span>>self</span>, start: <span class=<span class="s">"b"</span>>str</span>, end: <span class=<span class="s">"b"</span>>str</span>, max_depth: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>3</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>list</span>]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"寻找两个实体之间的路径（简化版 BFS）。
 
         Args:
             start: 起始实体。
@@ -1128,72 +1146,72 @@ GraphRAG 的核心原理：
             max_depth: 最大搜索深度。
 
         Returns:
-            路径列表，未找到返回 <span class="k">None</span>。
-        <span <span class="k">class</span>="s">""</span>"</span>
+            路径列表，未找到返回 <span class=<span class="s">"k"</span>>None</span>。
+        <span class="s">""</span>"</span>
         queue = [(start, [start])]
         visited = {start}
-        <span class="k">while</span> queue:
-            node, path = queue.pop(<span class="n">0</span>)
-            <span class="k">if</span> len(path) &gt; max_depth + <span class="n">1</span>:
-                <span class="k">continue</span>
-            <span class="k">if</span> node == end <span class="k">and</span> len(path) &gt; <span class="n">1</span>:
-                <span class="k">return</span> path
-            <span class="k">if</span> node <span class="k">in</span> self.graph:
-                <span class="k">for</span> relation, targets <span class="k">in</span> self.graph[node].items():
-                    <span class="k">for</span> target <span class="k">in</span> targets:
-                        <span class="k">if</span> target <span class="k">not</span> <span class="k">in</span> visited:
+        <span class=<span class="s">"k"</span>>while</span> queue:
+            node, path = queue.pop(<span class=<span class="s">"n"</span>>0</span>)
+            <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"b"</span>>len</span>(path) &gt; max_depth + <span class=<span class="s">"n"</span>>1</span>:
+                <span class=<span class="s">"k"</span>>continue</span>
+            <span class=<span class="s">"k"</span>>if</span> node == end <span class=<span class="s">"k"</span>>and</span> <span class=<span class="s">"b"</span>>len</span>(path) &gt; <span class=<span class="s">"n"</span>>1</span>:
+                <span class=<span class="s">"k"</span>>return</span> path
+            <span class=<span class="s">"k"</span>>if</span> node <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph:
+                <span class=<span class="s">"k"</span>>for</span> relation, targets <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.graph[node].items():
+                    <span class=<span class="s">"k"</span>>for</span> target <span class=<span class="s">"k"</span>>in</span> targets:
+                        <span class=<span class="s">"k"</span>>if</span> target <span class=<span class="s">"k"</span>>not</span> <span class=<span class="s">"k"</span>>in</span> visited:
                             visited.add(target)
                             queue.append((target, path + [target]))
-        <span class="k">return</span> <span class="k">None</span>
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>None</span>
 
 
-<span class="k">def</span> demo_graphrag():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 GraphRAG 的多跳推理能力。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  GraphRAG 多跳推理演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_graphrag</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 GraphRAG 的多跳推理能力。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  GraphRAG 多跳推理演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
     kg = SimpleKnowledgeGraph()
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 构建知识图谱</span>
-    kg.add_relation(<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"创建"</span>, <span <span class="k">class</span>="s">"Python"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"工作于"</span>, <span <span class="k">class</span>="s">"Google"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"工作于"</span>, <span <span class="k">class</span>="s">"Dropbox"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"工作于"</span>, <span <span class="k">class</span>="s">"Microsoft"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Python"</span>, <span <span class="k">class</span>="s">"用于"</span>, <span <span class="k">class</span>="s">"AI Agent"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Python"</span>, <span <span class="k">class</span>="s">"用于"</span>, <span <span class="k">class</span>="s">"数据分析"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"AI Agent"</span>, <span <span class="k">class</span>="s">"依赖"</span>, <span <span class="k">class</span>="s">"LLM"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"LLM"</span>, <span <span class="k">class</span>="s">"包括"</span>, <span <span class="k">class</span>="s">"GPT-<span class="n">4</span>"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"LLM"</span>, <span <span class="k">class</span>="s">"包括"</span>, <span <span class="k">class</span>="s">"Claude"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Google"</span>, <span <span class="k">class</span>="s">"开发"</span>, <span <span class="k">class</span>="s">"TensorFlow"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"Microsoft"</span>, <span <span class="k">class</span>="s">"投资"</span>, <span <span class="k">class</span>="s">"OpenAI"</span>)
-    kg.add_relation(<span <span class="k">class</span>="s">"OpenAI"</span>, <span <span class="k">class</span>="s">"开发"</span>, <span <span class="k">class</span>="s">"GPT-<span class="n">4</span>"</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 构建知识图谱</span>
+    kg.add_relation(<span class="s">"Guido van Rossum"</span>, <span class="s">"创建"</span>, <span class="s">"Python"</span>)
+    kg.add_relation(<span class="s">"Guido van Rossum"</span>, <span class="s">"工作于"</span>, <span class="s">"Google"</span>)
+    kg.add_relation(<span class="s">"Guido van Rossum"</span>, <span class="s">"工作于"</span>, <span class="s">"Dropbox"</span>)
+    kg.add_relation(<span class="s">"Guido van Rossum"</span>, <span class="s">"工作于"</span>, <span class="s">"Microsoft"</span>)
+    kg.add_relation(<span class="s">"Python"</span>, <span class="s">"用于"</span>, <span class="s">"AI Agent"</span>)
+    kg.add_relation(<span class="s">"Python"</span>, <span class="s">"用于"</span>, <span class="s">"数据分析"</span>)
+    kg.add_relation(<span class="s">"AI Agent"</span>, <span class="s">"依赖"</span>, <span class="s">"LLM"</span>)
+    kg.add_relation(<span class="s">"LLM"</span>, <span class="s">"包括"</span>, <span class="s">"GPT-<span class="</span>n<span class="s">">4</span>"</span>)
+    kg.add_relation(<span class="s">"LLM"</span>, <span class="s">"包括"</span>, <span class="s">"Claude"</span>)
+    kg.add_relation(<span class="s">"Google"</span>, <span class="s">"开发"</span>, <span class="s">"TensorFlow"</span>)
+    kg.add_relation(<span class="s">"Microsoft"</span>, <span class="s">"投资"</span>, <span class="s">"OpenAI"</span>)
+    kg.add_relation(<span class="s">"OpenAI"</span>, <span class="s">"开发"</span>, <span class="s">"GPT-<span class="</span>n<span class="s">">4</span>"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n  知识图谱已构建:"</span>)
-    <span class="k">for</span> subj, relations <span class="k">in</span> kg.graph.items():
-        <span class="k">for</span> rel, objs <span class="k">in</span> relations.items():
-            <span class="k">for</span> obj <span class="k">in</span> objs:
-                print(f<span <span class="k">class</span>="s">"    {subj} --[{rel}]--&gt; {obj}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  知识图谱已构建:"</span>)
+    <span class=<span class="s">"k"</span>>for</span> subj, relations <span class=<span class="s">"k"</span>>in</span> kg.graph.items():
+        <span class=<span class="s">"k"</span>>for</span> rel, objs <span class=<span class="s">"k"</span>>in</span> relations.items():
+            <span class=<span class="s">"k"</span>>for</span> obj <span class=<span class="s">"k"</span>>in</span> objs:
+                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {subj} --[{rel}]--&gt; {obj}"</span>)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 多跳推理示例</span>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 多跳推理示例</span>
     queries = [
-        (<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"TensorFlow"</span>),  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Guido → Google → TensorFlow</span>
-        (<span <span class="k">class</span>="s">"Python"</span>, <span <span class="k">class</span>="s">"GPT-<span class="n">4</span>"</span>),                 <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Python → AI Agent → LLM → GPT-<span class="n">4</span></span>
-        (<span <span class="k">class</span>="s">"Guido van Rossum"</span>, <span <span class="k">class</span>="s">"OpenAI"</span>),      <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Guido → Microsoft → OpenAI</span>
+        (<span class="s">"Guido van Rossum"</span>, <span class="s">"TensorFlow"</span>),  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Guido → Google → TensorFlow</span>
+        (<span class="s">"Python"</span>, <span class="s">"GPT-<span class="</span>n<span class="s">">4</span>"</span>),                 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Python → AI Agent → LLM → GPT-<span class=<span class="s">"n"</span>>4</span></span>
+        (<span class="s">"Guido van Rossum"</span>, <span class="s">"OpenAI"</span>),      <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Guido → Microsoft → OpenAI</span>
     ]
 
-    print(<span <span class="k">class</span>="s">"\n  多跳推理测试:"</span>)
-    <span class="k">for</span> start, end <span class="k">in</span> queries:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  多跳推理测试:"</span>)
+    <span class=<span class="s">"k"</span>>for</span> start, end <span class=<span class="s">"k"</span>>in</span> queries:
         path = kg.find_path(start, end)
-        <span class="k">if</span> path:
-            print(f<span <span class="k">class</span>="s">"    {start} → {end}: {<span <span class="k">class</span>='s'>' → '</span>.join(path)}"</span>)
-        <span class="k">else</span>:
-            print(f<span <span class="k">class</span>="s">"    {start} → {end}: 未找到路径"</span>)
+        <span class=<span class="s">"k"</span>>if</span> path:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {start} → {end}: {<span class='s'>' → '</span>.join(path)}"</span>)
+        <span class=<span class="s">"k"</span>>else</span>:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    {start} → {end}: 未找到路径"</span>)
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">9.5</span> Agentic RAG —— 让 RAG 自己思考
+<span class=<span class="s">"n"</span>>9.5</span> Agentic RAG —— 让 RAG 自己思考
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 传统 RAG 是固定流水线：
@@ -1216,33 +1234,33 @@ Agentic RAG 是有判断力的系统：
 
 Agentic RAG 的工作流程:
 
-  用户: <span <span class="k">class</span>="s">"2024年OpenAI的营收比2023年增长了百分之多少？"</span>
+  用户: <span class="s">"2024年OpenAI的营收比2023年增长了百分之多少？"</span>
 
   传统 RAG:
-    → 检索「OpenAI 营收」→ 可能找到 <span class="n">2023</span> 和 <span class="n">2024</span> 的数据
+    → 检索「OpenAI 营收」→ 可能找到 <span class=<span class="s">"n"</span>>2023</span> 和 <span class=<span class="s">"n"</span>>2024</span> 的数据
     → 但 RAG 不会算百分比，直接给了用户两段数字
     → 用户还需要自己算
 
   Agentic RAG:
-    → Step <span class="n">1</span>: 分析问题 → 需要「2023营收」「2024营收」「百分比计算」
-    → Step <span class="n">2</span>: 搜索「OpenAI 2023年营收」 → 得到 $<span class="n">1.</span>6B
-    → Step <span class="n">3</span>: 搜索「OpenAI 2024年营收」 → 得到 $<span class="n">3.</span>7B
-    → Step <span class="n">4</span>: 计算 (<span class="n">3.7</span>-<span class="n">1.6</span>)/<span class="n">1.6</span> = <span class="n">131.25</span>%
-    → Step <span class="n">5</span>: 回答「增长约 <span class="n">131</span>%」
+    → Step <span class=<span class="s">"n"</span>>1</span>: 分析问题 → 需要「2023营收」「2024营收」「百分比计算」
+    → Step <span class=<span class="s">"n"</span>>2</span>: 搜索「OpenAI 2023年营收」 → 得到 $<span class=<span class="s">"n"</span>>1.</span>6B
+    → Step <span class=<span class="s">"n"</span>>3</span>: 搜索「OpenAI 2024年营收」 → 得到 $<span class=<span class="s">"n"</span>>3.</span>7B
+    → Step <span class=<span class="s">"n"</span>>4</span>: 计算 (<span class=<span class="s">"n"</span>>3.7</span>-<span class=<span class="s">"n"</span>>1.6</span>)/<span class=<span class="s">"n"</span>>1.6</span> = <span class=<span class="s">"n"</span>>131.25</span>%
+    → Step <span class=<span class="s">"n"</span>>5</span>: 回答「增长约 <span class=<span class="s">"n"</span>>131</span>%」
 
   Agentic RAG 包含了一个 Agent 循环：
     思考需要什么信息 → 检索/计算 → 不满足就继续 → 满足则输出
 
 业内数据（2025年）：
-  - Agentic RAG 在复杂查询上的准确率比传统 RAG 高 <span class="n">30</span>-<span class="n">50</span>%
-  - 但 <span class="n">90</span>% 的 Agentic RAG 项目在生产中失败！
+  - Agentic RAG 在复杂查询上的准确率比传统 RAG 高 <span class=<span class="s">"n"</span>>30</span>-<span class=<span class="s">"n"</span>>50</span>%
+  - 但 <span class=<span class="s">"n"</span>>90</span>% 的 Agentic RAG 项目在生产中失败！
   - 失败原因：过度设计、缺少评估、成本失控
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">9.6</span> RAG 评估体系 —— 如何衡量 RAG 质量？
+<span class=<span class="s">"n"</span>>9.6</span> RAG 评估体系 —— 如何衡量 RAG 质量？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 RAGAS (RAG Assessment) 是最流行的 RAG 评估框架。
@@ -1259,108 +1277,108 @@ RAGAS (RAG Assessment) 是最流行的 RAG 评估框架。
   └──────────────────┴────────────────────────────────────┘
 
 2025年评估趋势：
-  - LLM-<span class="k">as</span>-Judge 成为主流（用 GPT-<span class="n">4</span> 评估 RAG 输出）
+  - LLM-<span class=<span class="s">"k"</span>>as</span>-Judge 成为主流（用 GPT-<span class=<span class="s">"n"</span>>4</span> 评估 RAG 输出）
   - 人工标注仍然重要（作为 Ground Truth）
   - 多维度评估 &gt; 单一指标
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">9.7</span> 本章总结
+<span class=<span class="s">"n"</span>>9.7</span> 本章总结
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class="n">1</span>. Naive RAG = 问 → 检索 → 生成
+<span class=<span class="s">"n"</span>>1</span>. Naive RAG = 问 → 检索 → 生成
    问题：检索不准、无自检、无法多跳推理
 
-<span class="n">2</span>. Advanced RAG = Naive + 查询重写 + 混合检索 + 重排序
+<span class=<span class="s">"n"</span>>2</span>. Advanced RAG = Naive + 查询重写 + 混合检索 + 重排序
    面试重点：为什么混合检索比纯向量好？
    → 向量擅长语义，但不懂精确关键词匹配
    → 法律/金融/监管领域，精确匹配和语义理解同等重要
 
-<span class="n">3</span>. GraphRAG = RAG + 知识图谱
+<span class=<span class="s">"n"</span>>3</span>. GraphRAG = RAG + 知识图谱
    核心价值：多跳推理能力
    适用场景：关系密集型问题（「A影响了B，B又影响了C」）
 
-<span class="n">4</span>. Agentic RAG = RAG + Agent 循环
+<span class=<span class="s">"n"</span>>4</span>. Agentic RAG = RAG + Agent 循环
    核心价值：动态决策 → 自主判断需要什么信息
-   注意：<span class="n">90</span>% 的生产失败率 — 从简单开始，逐步迭代
+   注意：<span class=<span class="s">"n"</span>>90</span>% 的生产失败率 — 从简单开始，逐步迭代
 
 面试速记：
-  <span <span class="k">class</span>="s">"RAG 有什么高级技术？"</span>
+  <span class="s">"RAG 有什么高级技术？"</span>
   → 查询重写(HyDE) → 混合检索(Hybrid) → 重排序(Reranker)
   → GraphRAG(知识图谱) → Agentic RAG(Agent 循环)
   → 每个技术解决一个具体痛点，不要盲目叠加
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 
-<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║  第9章：RAG 原理与实现详解                             ║"</span>)
-    print(<span <span class="k">class</span>="s">"║  Naive RAG → Advanced → GraphRAG → Agentic RAG      ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第9章：RAG 原理与实现详解                             ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Naive RAG → Advanced → GraphRAG → Agentic RAG      ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">9.2</span> Naive RAG 演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">9.2</span> Naive RAG 演示"</span>)
     demo_naive_rag()
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">9.3</span> Advanced RAG 演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">9.3</span> Advanced RAG 演示"</span>)
     rag = AdvancedRAG()
     docs = [
-        <span <span class="k">class</span>="s">"Python是一种由Guido van Rossum创建的编程语言，"</span>
-        <span <span class="k">class</span>="s">"首次发布于1991年。它以简洁的语法风格著称。"</span>,
+        <span class="s">"Python是一种由Guido van Rossum创建的编程语言，"</span>
+        <span class="s">"首次发布于1991年。它以简洁的语法风格著称。"</span>,
 
-        <span <span class="k">class</span>="s">"AI Agent能自主感知环境、做出决策并执行行动。"</span>
-        <span <span class="k">class</span>="s">"它集成了LLM、规划器、记忆系统和工具调用。"</span>,
+        <span class="s">"AI Agent能自主感知环境、做出决策并执行行动。"</span>
+        <span class="s">"它集成了LLM、规划器、记忆系统和工具调用。"</span>,
 
-        <span <span class="k">class</span>="s">"RAG通过从知识库检索相关信息来增强LLM的生成能力，"</span>
-        <span <span class="k">class</span>="s">"有效减少模型的幻觉问题。GraphRAG加入了知识图谱。"</span>,
+        <span class="s">"RAG通过从知识库检索相关信息来增强LLM的生成能力，"</span>
+        <span class="s">"有效减少模型的幻觉问题。GraphRAG加入了知识图谱。"</span>,
     ]
     rag.add_documents(docs)
 
-    query = <span <span class="k">class</span>="s">"如何用Python构建AI Agent？"</span>
-    print(f<span <span class="k">class</span>="s">"\n  🔍 原始查询: {query}"</span>)
+    query = <span class="s">"如何用Python构建AI Agent？"</span>
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  🔍 原始查询: {query}"</span>)
 
     variations = rag.query_rewrite(query)
-    print(f<span <span class="k">class</span>="s">"  ✏️ 查询变体: {variations}"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✏️ 查询变体: {variations}"</span>)
 
-    <span class="k">for</span> v <span class="k">in</span> variations:
-        results = rag.hybrid_search(v, top_k=<span class="n">2</span>)
-        print(f<span <span class="k">class</span>="s">"\n  查询变体「{v}」的混合检索结果:"</span>)
-        <span class="k">for</span> chunk, score <span class="k">in</span> results:
-            print(f<span <span class="k">class</span>="s">"    [{score:.3f}] {chunk[:<span class="n">100</span>]}..."</span>)
+    <span class=<span class="s">"k"</span>>for</span> v <span class=<span class="s">"k"</span>>in</span> variations:
+        results = rag.hybrid_search(v, top_k=<span class=<span class="s">"n"</span>>2</span>)
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  查询变体「{v}」的混合检索结果:"</span>)
+        <span class=<span class="s">"k"</span>>for</span> chunk, score <span class=<span class="s">"k"</span>>in</span> results:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{score:.3f}] {chunk[:<span class="</span>n<span class="s">">100</span>]}..."</span>)
 
-        reranked = rag.rerank(v, results, top_k=<span class="n">2</span>)
-        print(f<span <span class="k">class</span>="s">"  重排序后:"</span>)
-        <span class="k">for</span> chunk, score <span class="k">in</span> reranked:
-            print(f<span <span class="k">class</span>="s">"    [{score:.3f}] {chunk[:<span class="n">100</span>]}..."</span>)
+        reranked = rag.rerank(v, results, top_k=<span class=<span class="s">"n"</span>>2</span>)
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  重排序后:"</span>)
+        <span class=<span class="s">"k"</span>>for</span> chunk, score <span class=<span class="s">"k"</span>>in</span> reranked:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"    [{score:.3f}] {chunk[:<span class="</span>n<span class="s">">100</span>]}..."</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">9.4</span> GraphRAG 演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">9.4</span> GraphRAG 演示"</span>)
     demo_graphrag()
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">9.5</span> Agentic RAG 概念"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
-    print(<span <span class="k">class</span>="s">"核心区别："</span>)
-    print(<span <span class="k">class</span>="s">"  传统RAG: 固定流水线「检索→生成」"</span>)
-    print(<span <span class="k">class</span>="s">"  Agentic RAG: 动态决策 「思考→检索→判断→再检索→...」"</span>)
-    print(<span <span class="k">class</span>="s">""</span>)
-    print(<span <span class="k">class</span>="s">"2025年行业数据："</span>)
-    print(<span <span class="k">class</span>="s">"  准确率提升 <span class="n">30</span>-<span class="n">50</span>%，但 <span class="n">90</span>% 生产失败率"</span>)
-    print(<span <span class="k">class</span>="s">"  建议：从简单开始，逐步迭代，持续评估"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">9.5</span> Agentic RAG 概念"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"核心区别："</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  传统RAG: 固定流水线「检索→生成」"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Agentic RAG: 动态决策 「思考→检索→判断→再检索→...」"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">""</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"2025年行业数据："</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  准确率提升 <span class="</span>n<span class="s">">30</span>-<span class="</span>n<span class="s">">50</span>%，但 <span class="</span>n<span class="s">">90</span>% 生产失败率"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  建议：从简单开始，逐步迭代，持续评估"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">9.6</span> RAGAS 评估体系"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">9.6</span> RAGAS 评估体系"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     metrics = [
-        (<span <span class="k">class</span>="s">"Faithfulness"</span>, <span <span class="k">class</span>="s">"回答是否基于检索到的内容？"</span>),
-        (<span <span class="k">class</span>="s">"Answer Relevance"</span>, <span <span class="k">class</span>="s">"回答是否直接回应了问题？"</span>),
-        (<span <span class="k">class</span>="s">"Context Recall"</span>, <span <span class="k">class</span>="s">"检索是否覆盖了所有必要信息？"</span>),
-        (<span <span class="k">class</span>="s">"Context Precision"</span>, <span <span class="k">class</span>="s">"检索到的内容有多少是相关的？"</span>),
+        (<span class="s">"Faithfulness"</span>, <span class="s">"回答是否基于检索到的内容？"</span>),
+        (<span class="s">"Answer Relevance"</span>, <span class="s">"回答是否直接回应了问题？"</span>),
+        (<span class="s">"Context Recall"</span>, <span class="s">"检索是否覆盖了所有必要信息？"</span>),
+        (<span class="s">"Context Precision"</span>, <span class="s">"检索到的内容有多少是相关的？"</span>),
     ]
-    <span class="k">for</span> name, desc <span class="k">in</span> metrics:
-        print(f<span <span class="k">class</span>="s">"  {name}: {desc}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> name, desc <span class=<span class="s">"k"</span>>in</span> metrics:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {name}: {desc}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第9章完成！"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第9章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html" title="Claude Code 架构 — nO·h2A·压缩·SubAgent">← 第8章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

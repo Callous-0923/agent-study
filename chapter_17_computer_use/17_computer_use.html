@@ -85,6 +85,15 @@ body {
   line-height: 1.6; max-height: 70vh; overflow-y: auto;
 }
 
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -300,59 +309,59 @@ body {
 <p>Never run with admin privileges."</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>17.6 模拟 Computer Use Agent</h2></div><div class="code-section"><details><summary>💻 代码 (211 行)</summary><div class="code-block"><pre><span class="k">import</span> time
-<span class="k">import</span> json
-<span class="k">from</span> typing <span class="k">import</span> Optional
+<h2>17.6 模拟 Computer Use Agent</h2></div><div class="code-section"><details open><summary>💻 代码 (211 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> time
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
 
 
-<span class="k">class</span> VirtualScreen:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"模拟计算机屏幕 —— 用作 Computer Use 的目标环境。"</span><span <span class="k">class</span>="s">""</span></span>
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>VirtualScreen</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"模拟计算机屏幕 —— 用作 Computer Use 的目标环境。"</span><span class="s">""</span></span>
 
-    <span class="k">def</span> __init__(self, width: int = <span class="n">1280</span>, height: int = <span class="n">800</span>):
-        self.width = width
-        self.height = height
-        self.elements = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 屏幕上的 UI 元素 {name: (x, y, w, h)}</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, width: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>1280</span>, height: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>800</span>):
+        <span class=<span class="s">"k"</span>>self</span>.width = width
+        <span class=<span class="s">"k"</span>>self</span>.height = height
+        <span class=<span class="s">"k"</span>>self</span>.elements = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 屏幕上的 UI 元素 {name: (x, y, w, h)}</span>
 
-    <span class="k">def</span> add_element(self, name: str, x: int, y: int,
-                    w: int, h: int, text: str = <span <span class="k">class</span>="s">""</span>):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"添加一个 UI 元素（按钮/输入框/文本）。"</span><span <span class="k">class</span>="s">""</span></span>
-        self.elements[name] = {
-            <span <span class="k">class</span>="s">"x"</span>: x, <span <span class="k">class</span>="s">"y"</span>: y, <span <span class="k">class</span>="s">"w"</span>: w, <span <span class="k">class</span>="s">"h"</span>: h, <span <span class="k">class</span>="s">"text"</span>: text,
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_element</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>, x: <span class=<span class="s">"b"</span>>int</span>, y: <span class=<span class="s">"b"</span>>int</span>,
+                    w: <span class=<span class="s">"b"</span>>int</span>, h: <span class=<span class="s">"b"</span>>int</span>, text: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加一个 UI 元素（按钮/输入框/文本）。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"k"</span>>self</span>.elements[name] = {
+            <span class="s">"x"</span>: x, <span class="s">"y"</span>: y, <span class="s">"w"</span>: w, <span class="s">"h"</span>: h, <span class="s">"text"</span>: text,
         }
 
-    <span class="k">def</span> find_element_at(self, click_x: int, click_y: int) -&gt; Optional[str]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"根据坐标查找被点击的元素。"</span><span <span class="k">class</span>="s">""</span></span>
-        <span class="k">for</span> name, elem <span class="k">in</span> self.elements.items():
-            <span class="k">if</span> (elem[<span <span class="k">class</span>="s">"x"</span>] &lt;= click_x &lt;= elem[<span <span class="k">class</span>="s">"x"</span>] + elem[<span <span class="k">class</span>="s">"w"</span>] <span class="k">and</span>
-                    elem[<span <span class="k">class</span>="s">"y"</span>] &lt;= click_y &lt;= elem[<span <span class="k">class</span>="s">"y"</span>] + elem[<span <span class="k">class</span>="s">"h"</span>]):
-                <span class="k">return</span> name
-        <span class="k">return</span> <span class="k">None</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>find_element_at</span>(<span class=<span class="s">"k"</span>>self</span>, click_x: <span class=<span class="s">"b"</span>>int</span>, click_y: <span class=<span class="s">"b"</span>>int</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>str</span>]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"根据坐标查找被点击的元素。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"k"</span>>for</span> name, elem <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.elements.items():
+            <span class=<span class="s">"k"</span>>if</span> (elem[<span class="s">"x"</span>] &lt;= click_x &lt;= elem[<span class="s">"x"</span>] + elem[<span class="s">"w"</span>] <span class=<span class="s">"k"</span>>and</span>
+                    elem[<span class="s">"y"</span>] &lt;= click_y &lt;= elem[<span class="s">"y"</span>] + elem[<span class="s">"h"</span>]):
+                <span class=<span class="s">"k"</span>>return</span> name
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>None</span>
 
-    <span class="k">def</span> describe(self) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"生成屏幕描述（模拟 LLM 视觉分析的结果）。"</span><span <span class="k">class</span>="s">""</span></span>
-        lines = [f<span <span class="k">class</span>="s">"屏幕分辨率: {self.width}x{self.height}"</span>]
-        <span class="k">for</span> name, elem <span class="k">in</span> self.elements.items():
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>describe</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"生成屏幕描述（模拟 LLM 视觉分析的结果）。"</span><span class="s">""</span></span>
+        lines = [f<span class="s">"屏幕分辨率: {<span class="</span>k<span class="s">">self</span>.width}x{<span class="</span>k<span class="s">">self</span>.height}"</span>]
+        <span class=<span class="s">"k"</span>>for</span> name, elem <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.elements.items():
             lines.append(
-                f<span <span class="k">class</span>="s">"  [{name}] 位置({elem[<span <span class="k">class</span>='s'>'x'</span>]},{elem[<span <span class="k">class</span>='s'>'y'</span>]}) "</span>
-                f<span <span class="k">class</span>="s">"大小({elem[<span <span class="k">class</span>='s'>'w'</span>]}x{elem[<span <span class="k">class</span>='s'>'h'</span>]}) 文本:「{elem[<span <span class="k">class</span>='s'>'text'</span>]}」"</span>
+                f<span class="s">"  [{name}] 位置({elem[<span class='s'>'x'</span>]},{elem[<span class='s'>'y'</span>]}) "</span>
+                f<span class="s">"大小({elem[<span class='s'>'w'</span>]}x{elem[<span class='s'>'h'</span>]}) 文本:「{elem[<span class='s'>'text'</span>]}」"</span>
             )
-        <span class="k">return</span> <span <span class="k">class</span>="s">"\n"</span>.join(lines)
+        <span class=<span class="s">"k"</span>>return</span> <span class="s">"\n"</span>.join(lines)
 
 
-<span class="k">class</span> ComputerUseAgent:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Computer Use Agent —— 模拟完整的 Screenshot-Action Loop。
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ComputerUseAgent</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Computer Use Agent —— 模拟完整的 Screenshot-Action Loop。
 
     核心循环：
-      <span class="k">while</span> <span class="k">not</span> done:
+      <span class=<span class="s">"k"</span>>while</span> <span class=<span class="s">"k"</span>>not</span> done:
           screenshot → analyze → decide → execute → observe
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self):
-        self.action_log = []
-        self.max_actions = <span class="n">10</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
+        <span class=<span class="s">"k"</span>>self</span>.action_log = []
+        <span class=<span class="s">"k"</span>>self</span>.max_actions = <span class=<span class="s">"n"</span>>10</span>
 
-    <span class="k">def</span> analyze_screen(self, screen: VirtualScreen) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 LLM 分析屏幕截图的结果。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>analyze_screen</span>(<span class=<span class="s">"k"</span>>self</span>, screen: VirtualScreen) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 LLM 分析屏幕截图的结果。
 
         真实实现中，这一步由 Claude 的视觉能力完成：
           - 上传截图（base64）到 Claude API
@@ -363,21 +372,21 @@ body {
 
         Returns:
             分析结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="s">""</span>"</span>
         description = screen.describe()
-        <span class="k">return</span> {
-            <span <span class="k">class</span>="s">"resolution"</span>: f<span <span class="k">class</span>="s">"{screen.width}x{screen.height}"</span>,
-            <span <span class="k">class</span>="s">"elements_found"</span>: len(screen.elements),
-            <span <span class="k">class</span>="s">"description"</span>: description,
+        <span class=<span class="s">"k"</span>>return</span> {
+            <span class="s">"resolution"</span>: f<span class="s">"{screen.width}x{screen.height}"</span>,
+            <span class="s">"elements_found"</span>: <span class=<span class="s">"b"</span>>len</span>(screen.elements),
+            <span class="s">"description"</span>: description,
         }
 
-    <span class="k">def</span> decide_action(self, task: str,
-                      screen: VirtualScreen) -&gt; Optional[dict]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 LLM 决定的下一步操作。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>decide_action</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>,
+                      screen: VirtualScreen) -&gt; Optional[<span class=<span class="s">"b"</span>>dict</span>]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 LLM 决定的下一步操作。
 
         真实实现中，Claude 返回结构化的工具调用：
-          tool: <span <span class="k">class</span>="s">"computer"</span>
-          action: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"left_click"</span>, <span <span class="k">class</span>="s">"x"</span>: <span class="n">450</span>, <span <span class="k">class</span>="s">"y"</span>: <span class="n">200</span>}
+          tool: <span class="s">"computer"</span>
+          action: {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"left_click"</span>, <span class="s">"x"</span>: <span class=<span class="s">"n"</span>>450</span>, <span class="s">"y"</span>: <span class=<span class="s">"n"</span>>200</span>}
 
         这里用简化的规则模拟：
           根据任务关键词匹配屏幕上的元素。
@@ -388,30 +397,30 @@ body {
 
         Returns:
             操作指令字典。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">for</span> name, elem <span class="k">in</span> screen.elements.items():
-            <span class="k">if</span> name.lower() <span class="k">in</span> task.lower():
-                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 计算元素中心坐标</span>
-                cx = elem[<span <span class="k">class</span>="s">"x"</span>] + elem[<span <span class="k">class</span>="s">"w"</span>] // <span class="n">2</span>
-                cy = elem[<span <span class="k">class</span>="s">"y"</span>] + elem[<span <span class="k">class</span>="s">"h"</span>] // <span class="n">2</span>
-                <span class="k">return</span> {
-                    <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"left_click"</span>,
-                    <span <span class="k">class</span>="s">"x"</span>: cx,
-                    <span <span class="k">class</span>="s">"y"</span>: cy,
-                    <span <span class="k">class</span>="s">"target"</span>: name,
-                    <span <span class="k">class</span>="s">"reasoning"</span>: f<span <span class="k">class</span>="s">"找到了匹配元素 <span <span class="k">class</span>='s'>'{name}'</span>，点击其中心({cx}, {cy})"</span>,
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"k"</span>>for</span> name, elem <span class=<span class="s">"k"</span>>in</span> screen.elements.items():
+            <span class=<span class="s">"k"</span>>if</span> name.lower() <span class=<span class="s">"k"</span>>in</span> task.lower():
+                <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 计算元素中心坐标</span>
+                cx = elem[<span class="s">"x"</span>] + elem[<span class="s">"w"</span>] // <span class=<span class="s">"n"</span>>2</span>
+                cy = elem[<span class="s">"y"</span>] + elem[<span class="s">"h"</span>] // <span class=<span class="s">"n"</span>>2</span>
+                <span class=<span class="s">"k"</span>>return</span> {
+                    <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"left_click"</span>,
+                    <span class="s">"x"</span>: cx,
+                    <span class="s">"y"</span>: cy,
+                    <span class="s">"target"</span>: name,
+                    <span class="s">"reasoning"</span>: f<span class="s">"找到了匹配元素 <span class='s'>'{name}'</span>，点击其中心({cx}, {cy})"</span>,
                 }
 
-        <span class="k">return</span> {
-            <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"type_text"</span>,
-            <span <span class="k">class</span>="s">"text"</span>: task,
-            <span <span class="k">class</span>="s">"target"</span>: <span <span class="k">class</span>="s">"search_box"</span>,
-            <span <span class="k">class</span>="s">"reasoning"</span>: <span <span class="k">class</span>="s">"未找到匹配按钮，尝试搜索"</span>,
+        <span class=<span class="s">"k"</span>>return</span> {
+            <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"type_text"</span>,
+            <span class="s">"text"</span>: task,
+            <span class="s">"target"</span>: <span class="s">"search_box"</span>,
+            <span class="s">"reasoning"</span>: <span class="s">"未找到匹配按钮，尝试搜索"</span>,
         }
 
-    <span class="k">def</span> execute_action(self, action: dict,
-                       screen: VirtualScreen) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"执行操作并返回结果。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>execute_action</span>(<span class=<span class="s">"k"</span>>self</span>, action: <span class=<span class="s">"b"</span>>dict</span>,
+                       screen: VirtualScreen) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"执行操作并返回结果。
 
         Args:
             action: 操作指令。
@@ -419,28 +428,28 @@ body {
 
         Returns:
             执行结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        action_type = action[<span <span class="k">class</span>="s">"type"</span>]
-        result = {<span <span class="k">class</span>="s">"success"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"action"</span>: action}
+        <span class="s">""</span>"</span>
+        action_type = action[<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>]
+        result = {<span class="s">"success"</span>: <span class=<span class="s">"k"</span>>True</span>, <span class="s">"action"</span>: action}
 
-        <span class="k">if</span> action_type == <span <span class="k">class</span>="s">"left_click"</span>:
-            target = screen.find_element_at(action[<span <span class="k">class</span>="s">"x"</span>], action[<span <span class="k">class</span>="s">"y"</span>])
-            result[<span <span class="k">class</span>="s">"clicked"</span>] = target <span class="k">or</span> <span <span class="k">class</span>="s">"空白区域"</span>
-            <span class="k">if</span> target <span class="k">is</span> <span class="k">None</span>:
-                result[<span <span class="k">class</span>="s">"success"</span>] = <span class="k">False</span>
-                result[<span <span class="k">class</span>="s">"error"</span>] = <span <span class="k">class</span>="s">"未找到可点击的元素"</span>
+        <span class=<span class="s">"k"</span>>if</span> action_type == <span class="s">"left_click"</span>:
+            target = screen.find_element_at(action[<span class="s">"x"</span>], action[<span class="s">"y"</span>])
+            result[<span class="s">"clicked"</span>] = target <span class=<span class="s">"k"</span>>or</span> <span class="s">"空白区域"</span>
+            <span class=<span class="s">"k"</span>>if</span> target <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+                result[<span class="s">"success"</span>] = <span class=<span class="s">"k"</span>>False</span>
+                result[<span class="s">"error"</span>] = <span class="s">"未找到可点击的元素"</span>
 
-        <span class="k">elif</span> action_type == <span <span class="k">class</span>="s">"type_text"</span>:
-            result[<span <span class="k">class</span>="s">"input"</span>] = action[<span <span class="k">class</span>="s">"text"</span>]
+        <span class=<span class="s">"k"</span>>elif</span> action_type == <span class="s">"type_text"</span>:
+            result[<span class="s">"<span class="</span>b<span class="s">">input</span>"</span>] = action[<span class="s">"text"</span>]
 
-        <span class="k">elif</span> action_type == <span <span class="k">class</span>="s">"scroll"</span>:
-            result[<span <span class="k">class</span>="s">"scroll"</span>] = action.get(<span <span class="k">class</span>="s">"direction"</span>, <span <span class="k">class</span>="s">"down"</span>)
+        <span class=<span class="s">"k"</span>>elif</span> action_type == <span class="s">"scroll"</span>:
+            result[<span class="s">"scroll"</span>] = action.get(<span class="s">"direction"</span>, <span class="s">"down"</span>)
 
-        self.action_log.append(result)
-        <span class="k">return</span> result
+        <span class=<span class="s">"k"</span>>self</span>.action_log.append(result)
+        <span class=<span class="s">"k"</span>>return</span> result
 
-    <span class="k">def</span> run_task(self, task: str, screen: VirtualScreen) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"运行完整的 Computer Use 任务。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run_task</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, screen: VirtualScreen) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"运行完整的 Computer Use 任务。
 
         Args:
             task: 任务描述。
@@ -448,69 +457,69 @@ body {
 
         Returns:
             包含执行记录的结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        print(f<span <span class="k">class</span>="s">"\n  🎯 任务: {task}"</span>)
-        print(f<span <span class="k">class</span>="s">"  📺 {screen.describe()}\n"</span>)
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  🎯 任务: {task}"</span>)
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  📺 {screen.describe()}\n"</span>)
 
-        <span class="k">for</span> step <span class="k">in</span> range(<span class="n">1</span>, self.max_actions + <span class="n">1</span>):
-            print(f<span <span class="k">class</span>="s">"  --- Step {step} ---"</span>)
+        <span class=<span class="s">"k"</span>>for</span> step <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>1</span>, <span class=<span class="s">"k"</span>>self</span>.max_actions + <span class=<span class="s">"n"</span>>1</span>):
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  --- Step {step} ---"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">1</span>. 分析屏幕</span>
-            analysis = self.analyze_screen(screen)
-            print(f<span <span class="k">class</span>="s">"  👁️  分析: 发现 {analysis[<span <span class="k">class</span>='s'>'elements_found'</span>]} 个元素"</span>)
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># <span class=<span class="s">"n"</span>>1</span>. 分析屏幕</span>
+            analysis = <span class=<span class="s">"k"</span>>self</span>.analyze_screen(screen)
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  👁️  分析: 发现 {analysis[<span class='s'>'elements_found'</span>]} 个元素"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">2</span>. 决策</span>
-            action = self.decide_action(task, screen)
-            <span class="k">if</span> action <span class="k">is</span> <span class="k">None</span>:
-                print(f<span <span class="k">class</span>="s">"  ✅ 任务完成，无需更多操作"</span>)
-                <span class="k">break</span>
-            print(f<span <span class="k">class</span>="s">"  🤔 决策: {action[<span <span class="k">class</span>='s'>'reasoning'</span>]}"</span>)
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># <span class=<span class="s">"n"</span>>2</span>. 决策</span>
+            action = <span class=<span class="s">"k"</span>>self</span>.decide_action(task, screen)
+            <span class=<span class="s">"k"</span>>if</span> action <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✅ 任务完成，无需更多操作"</span>)
+                <span class=<span class="s">"k"</span>>break</span>
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  🤔 决策: {action[<span class='s'>'reasoning'</span>]}"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">3</span>. 执行</span>
-            result = self.execute_action(action, screen)
-            status = <span <span class="k">class</span>="s">"✅"</span> <span class="k">if</span> result[<span <span class="k">class</span>="s">"success"</span>] <span class="k">else</span> <span <span class="k">class</span>="s">"❌"</span>
-            print(f<span <span class="k">class</span>="s">"  🖱️  执行: {status} {action[<span <span class="k">class</span>='s'>'type'</span>]} → {result.get(<span <span class="k">class</span>='s'>'clicked'</span>, result.get(<span <span class="k">class</span>='s'>'input'</span>, <span <span class="k">class</span>='s'>''</span>))}"</span>)
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># <span class=<span class="s">"n"</span>>3</span>. 执行</span>
+            result = <span class=<span class="s">"k"</span>>self</span>.execute_action(action, screen)
+            status = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> result[<span class="s">"success"</span>] <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌"</span>
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  🖱️  执行: {status} {action[<span class='s'>'<span class="</span>b<span class="s">">type</span>'</span>]} → {result.get(<span class='s'>'clicked'</span>, result.get(<span class='s'>'<span class="</span>b<span class="s">">input</span>'</span>, <span class='s'>''</span>))}"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">4</span>. 判断是否完成</span>
-            <span class="k">if</span> action.get(<span <span class="k">class</span>="s">"target"</span>) <span class="k">and</span> result[<span <span class="k">class</span>="s">"success"</span>]:
-                print(f<span <span class="k">class</span>="s">"  🎉 成功点击目标元素，任务完成！"</span>)
-                <span class="k">break</span>
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># <span class=<span class="s">"n"</span>>4</span>. 判断是否完成</span>
+            <span class=<span class="s">"k"</span>>if</span> action.get(<span class="s">"target"</span>) <span class=<span class="s">"k"</span>>and</span> result[<span class="s">"success"</span>]:
+                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  🎉 成功点击目标元素，任务完成！"</span>)
+                <span class=<span class="s">"k"</span>>break</span>
 
-            time.sleep(<span class="n">0.3</span>)  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟操作延迟</span>
+            time.sleep(<span class=<span class="s">"n"</span>>0.3</span>)  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟操作延迟</span>
 
-        <span class="k">return</span> {
-            <span <span class="k">class</span>="s">"task"</span>: task,
-            <span <span class="k">class</span>="s">"steps"</span>: len(self.action_log),
-            <span <span class="k">class</span>="s">"actions"</span>: self.action_log,
+        <span class=<span class="s">"k"</span>>return</span> {
+            <span class="s">"task"</span>: task,
+            <span class="s">"steps"</span>: <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.action_log),
+            <span class="s">"actions"</span>: <span class=<span class="s">"k"</span>>self</span>.action_log,
         }
 
 
-<span class="k">def</span> demo_computer_use():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Computer Use 的完整流程。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  Computer Use Agent 演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_computer_use</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 Computer Use 的完整流程。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Computer Use Agent 演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 场景1：模拟「登录网页」</span>
-    print(<span <span class="k">class</span>="s">"\n  ── 场景1：登录网页 ──"</span>)
-    login_screen = VirtualScreen(<span class="n">1280</span>, <span class="n">800</span>)
-    login_screen.add_element(<span <span class="k">class</span>="s">"username_input"</span>, <span class="n">500</span>, <span class="n">300</span>, <span class="n">200</span>, <span class="n">30</span>, <span <span class="k">class</span>="s">"请输入用户名"</span>)
-    login_screen.add_element(<span <span class="k">class</span>="s">"password_input"</span>, <span class="n">500</span>, <span class="n">350</span>, <span class="n">200</span>, <span class="n">30</span>, <span <span class="k">class</span>="s">"请输入密码"</span>)
-    login_screen.add_element(<span <span class="k">class</span>="s">"login_button"</span>, <span class="n">550</span>, <span class="n">400</span>, <span class="n">100</span>, <span class="n">40</span>, <span <span class="k">class</span>="s">"登录"</span>)
-
-    agent = ComputerUseAgent()
-    result = agent.run_task(<span <span class="k">class</span>="s">"点击登录按钮"</span>, login_screen)
-
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 场景2：模拟「搜索」</span>
-    print(<span <span class="k">class</span>="s">"\n  ── 场景2：搜索操作 ──"</span>)
-    search_screen = VirtualScreen(<span class="n">1280</span>, <span class="n">800</span>)
-    search_screen.add_element(<span <span class="k">class</span>="s">"search_box"</span>, <span class="n">400</span>, <span class="n">200</span>, <span class="n">400</span>, <span class="n">35</span>, <span <span class="k">class</span>="s">"搜索..."</span>)
-    search_screen.add_element(<span <span class="k">class</span>="s">"search_button"</span>, <span class="n">810</span>, <span class="n">200</span>, <span class="n">80</span>, <span class="n">35</span>, <span <span class="k">class</span>="s">"搜索"</span>)
-    search_screen.add_element(<span <span class="k">class</span>="s">"result1"</span>, <span class="n">400</span>, <span class="n">300</span>, <span class="n">500</span>, <span class="n">50</span>, <span <span class="k">class</span>="s">"结果1: Python教程"</span>)
-    search_screen.add_element(<span <span class="k">class</span>="s">"result2"</span>, <span class="n">400</span>, <span class="n">360</span>, <span class="n">500</span>, <span class="n">50</span>, <span <span class="k">class</span>="s">"结果2: AI Agent 入门"</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 场景1：模拟「登录网页」</span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── 场景1：登录网页 ──"</span>)
+    login_screen = VirtualScreen(<span class=<span class="s">"n"</span>>1280</span>, <span class=<span class="s">"n"</span>>800</span>)
+    login_screen.add_element(<span class="s">"username_input"</span>, <span class=<span class="s">"n"</span>>500</span>, <span class=<span class="s">"n"</span>>300</span>, <span class=<span class="s">"n"</span>>200</span>, <span class=<span class="s">"n"</span>>30</span>, <span class="s">"请输入用户名"</span>)
+    login_screen.add_element(<span class="s">"password_input"</span>, <span class=<span class="s">"n"</span>>500</span>, <span class=<span class="s">"n"</span>>350</span>, <span class=<span class="s">"n"</span>>200</span>, <span class=<span class="s">"n"</span>>30</span>, <span class="s">"请输入密码"</span>)
+    login_screen.add_element(<span class="s">"login_button"</span>, <span class=<span class="s">"n"</span>>550</span>, <span class=<span class="s">"n"</span>>400</span>, <span class=<span class="s">"n"</span>>100</span>, <span class=<span class="s">"n"</span>>40</span>, <span class="s">"登录"</span>)
 
     agent = ComputerUseAgent()
-    result = agent.run_task(<span <span class="k">class</span>="s">"点击搜索按钮"</span>, search_screen)</pre></div></details></div><div class="lecture"><h2>17.7 本章总结</h2>
+    result = agent.run_task(<span class="s">"点击登录按钮"</span>, login_screen)
+
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 场景2：模拟「搜索」</span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── 场景2：搜索操作 ──"</span>)
+    search_screen = VirtualScreen(<span class=<span class="s">"n"</span>>1280</span>, <span class=<span class="s">"n"</span>>800</span>)
+    search_screen.add_element(<span class="s">"search_box"</span>, <span class=<span class="s">"n"</span>>400</span>, <span class=<span class="s">"n"</span>>200</span>, <span class=<span class="s">"n"</span>>400</span>, <span class=<span class="s">"n"</span>>35</span>, <span class="s">"搜索..."</span>)
+    search_screen.add_element(<span class="s">"search_button"</span>, <span class=<span class="s">"n"</span>>810</span>, <span class=<span class="s">"n"</span>>200</span>, <span class=<span class="s">"n"</span>>80</span>, <span class=<span class="s">"n"</span>>35</span>, <span class="s">"搜索"</span>)
+    search_screen.add_element(<span class="s">"result1"</span>, <span class=<span class="s">"n"</span>>400</span>, <span class=<span class="s">"n"</span>>300</span>, <span class=<span class="s">"n"</span>>500</span>, <span class=<span class="s">"n"</span>>50</span>, <span class="s">"结果1: Python教程"</span>)
+    search_screen.add_element(<span class="s">"result2"</span>, <span class=<span class="s">"n"</span>>400</span>, <span class=<span class="s">"n"</span>>360</span>, <span class=<span class="s">"n"</span>>500</span>, <span class=<span class="s">"n"</span>>50</span>, <span class="s">"结果2: AI Agent 入门"</span>)
+
+    agent = ComputerUseAgent()
+    result = agent.run_task(<span class="s">"点击搜索按钮"</span>, search_screen)</pre></div></details></div><div class="lecture"><h2>17.7 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
@@ -537,44 +546,48 @@ body {
 <p>"Computer Use 的原理和挑战？"</p>
 <p>→ 原理：Screenshot-Action Loop（截图→视觉分析→坐标→操作）</p>
 <p>→ 挑战：像素坐标精确度、延迟、安全风险</p>
-<p>→ 定位：不是替代传统自动化，而是覆盖「API无法触及」的长尾</p></div><div class="code-section"><details><summary>💻 代码 (29 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║  第17章：Computer Use + GUI Agent                     ║"</span>)
-    print(<span <span class="k">class</span>="s">"║  Screenshot-Action Loop · 坐标计算 · 安全沙箱        ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<p>→ 定位：不是替代传统自动化，而是覆盖「API无法触及」的长尾</p></div><div class="code-section"><details open><summary>💻 代码 (33 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> time
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
+
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第17章：Computer Use + GUI Agent                     ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Screenshot-Action Loop · 坐标计算 · 安全沙箱        ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_computer_use()
 
-    print(<span <span class="k">class</span>="s">"\n▶ OSWorld Benchmark 成绩"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
-    print(<span <span class="k">class</span>="s">"  人类                <span class="n">75.0</span>%"</span>)
-    print(<span <span class="k">class</span>="s">"  Claude <span class="n">3.5</span> Sonnet  <span class="n">14.9</span>%  (Computer Use)"</span>)
-    print(<span <span class="k">class</span>="s">"  GPT-4V              <span class="n">7.8</span>%  (传统视觉模式)"</span>)
-    print()
-    print(<span <span class="k">class</span>="s">"  结论：Computer Use 翻倍了前最好成绩，"</span>)
-    print(<span <span class="k">class</span>="s">"        但离人类水平仍有巨大差距。"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ OSWorld Benchmark 成绩"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  人类                <span class="</span>n<span class="s">">75.0</span>%"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Claude <span class="</span>n<span class="s">">3.5</span> Sonnet  <span class="</span>n<span class="s">">14.9</span>%  (Computer Use)"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  GPT-4V              <span class="</span>n<span class="s">">7.8</span>%  (传统视觉模式)"</span>)
+    <span class=<span class="s">"b"</span>>print</span>()
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  结论：Computer Use 翻倍了前最好成绩，"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"        但离人类水平仍有巨大差距。"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ Anthropic vs OpenAI Computer Use 对比"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ Anthropic vs OpenAI Computer Use 对比"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     comparisons = [
-        (<span <span class="k">class</span>="s">"操作范围"</span>, <span <span class="k">class</span>="s">"Anthropic: 整个操作系统"</span>, <span <span class="k">class</span>="s">"OpenAI: 浏览器内"</span>),
-        (<span <span class="k">class</span>="s">"安全性"</span>, <span <span class="k">class</span>="s">"Anthropic: 需自行沙箱"</span>, <span <span class="k">class</span>="s">"OpenAI: 内置安全隔离"</span>),
-        (<span <span class="k">class</span>="s">"适用场景"</span>, <span <span class="k">class</span>="s">"Anthropic: 桌面软件+Web"</span>, <span <span class="k">class</span>="s">"OpenAI: Web任务"</span>),
-        (<span <span class="k">class</span>="s">"成本"</span>, <span <span class="k">class</span>="s">"Anthropic: 截图Token较贵"</span>, <span <span class="k">class</span>="s">"OpenAI: 操作Token较低"</span>),
+        (<span class="s">"操作范围"</span>, <span class="s">"Anthropic: 整个操作系统"</span>, <span class="s">"OpenAI: 浏览器内"</span>),
+        (<span class="s">"安全性"</span>, <span class="s">"Anthropic: 需自行沙箱"</span>, <span class="s">"OpenAI: 内置安全隔离"</span>),
+        (<span class="s">"适用场景"</span>, <span class="s">"Anthropic: 桌面软件+Web"</span>, <span class="s">"OpenAI: Web任务"</span>),
+        (<span class="s">"成本"</span>, <span class="s">"Anthropic: 截图Token较贵"</span>, <span class="s">"OpenAI: 操作Token较低"</span>),
     ]
-    <span class="k">for</span> dim, a, o <span class="k">in</span> comparisons:
-        print(f<span <span class="k">class</span>="s">"  {dim:10s}  {a:30s}  {o}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> dim, a, o <span class=<span class="s">"k"</span>>in</span> comparisons:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {dim:10s}  {a:30s}  {o}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第17章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (464 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第17章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (464 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 第17章：Computer Use + GUI Agent —— AI 操控电脑
 ==================================================
 
 📌 本章目标：
-  <span class="n">1</span>. 理解 Computer Use / GUI Agent 的核心原理（Screenshot-Action Loop）
-  <span class="n">2</span>. 掌握 Anthropic Computer Use 和 OpenAI CUA 的架构差异
-  <span class="n">3</span>. 理解像素坐标的计算与视觉定位机制
-  <span class="n">4</span>. 了解 Browser Use 等开源方案
-  <span class="n">5</span>. 认识安全沙箱的必要性和实现方式
+  <span class=<span class="s">"n"</span>>1</span>. 理解 Computer Use / GUI Agent 的核心原理（Screenshot-Action Loop）
+  <span class=<span class="s">"n"</span>>2</span>. 掌握 Anthropic Computer Use 和 OpenAI CUA 的架构差异
+  <span class=<span class="s">"n"</span>>3</span>. 理解像素坐标的计算与视觉定位机制
+  <span class=<span class="s">"n"</span>>4</span>. 了解 Browser Use 等开源方案
+  <span class=<span class="s">"n"</span>>5</span>. 认识安全沙箱的必要性和实现方式
 
 📌 面试高频点：
   - Computer Use 的原理是什么？和传统 API 调用有什么区别？
@@ -583,7 +596,7 @@ body {
   - Computer Use 的安全风险有哪些？怎么防护？
 
 
-<span class="n">17.1</span> 为什么需要 Computer Use？
+<span class=<span class="s">"n"</span>>17.1</span> 为什么需要 Computer Use？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 传统 Agent 的局限：
@@ -602,43 +615,43 @@ Computer Use 的突破：
   Computer Use = 能走进办公室的人（可以和任何人面对面交流）
 
 
-<span class="n">17.2</span> Screenshot-Action Loop —— 核心循环
+<span class=<span class="s">"n"</span>>17.2</span> Screenshot-Action Loop —— 核心循环
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 这是所有 Computer Use 系统的底层逻辑：
 
   ┌──────────────────────────────────────────────────┐
   │                                                    │
-  │  <span class="n">1</span>. 📸 Screenshot: 截取当前屏幕画面                 │
+  │  <span class=<span class="s">"n"</span>>1</span>. 📸 Screenshot: 截取当前屏幕画面                 │
   │         │                                          │
   │         ▼                                          │
-  │  <span class="n">2</span>. 👁️ Analyze: LLM 视觉分析画面                    │
+  │  <span class=<span class="s">"n"</span>>2</span>. 👁️ Analyze: LLM 视觉分析画面                    │
   │     - 识别窗口、按钮、文本框                        │
   │     - 读取屏幕上的文字内容                          │
   │     - 理解当前界面的状态                            │
   │         │                                          │
   │         ▼                                          │
-  │  <span class="n">3</span>. 🤔 Decide: 决定下一步操作                       │
+  │  <span class=<span class="s">"n"</span>>3</span>. 🤔 Decide: 决定下一步操作                       │
   │     - 应该点击哪里？                                │
   │     - 应该输入什么？                                │
   │     - 是否需要滚动？                                │
   │         │                                          │
   │         ▼                                          │
-  │  <span class="n">4</span>. 🖱️ Execute: 执行操作                            │
+  │  <span class=<span class="s">"n"</span>>4</span>. 🖱️ Execute: 执行操作                            │
   │     - mouse_move(x, y)                             │
   │     - left_click()                                 │
-  │     - type(<span <span class="k">class</span>="s">"文本"</span>)                                 │
+  │     - <span class=<span class="s">"b"</span>>type</span>(<span class="s">"文本"</span>)                                 │
   │     - scroll(direction)                            │
-  │     - key_press(<span <span class="k">class</span>="s">"Enter"</span>)                           │
+  │     - key_press(<span class="s">"Enter"</span>)                           │
   │         │                                          │
   │         ▼                                          │
-  │     回到步骤 <span class="n">1</span>（直到任务完成）                       │
+  │     回到步骤 <span class=<span class="s">"n"</span>>1</span>（直到任务完成）                       │
   │                                                    │
   └──────────────────────────────────────────────────┘
 
 关键挑战：像素坐标的精确计算
 
-  问题：LLM 需要输出 「点击 (<span class="n">450</span>, <span class="n">200</span>)」这样的坐标
+  问题：LLM 需要输出 「点击 (<span class=<span class="s">"n"</span>>450</span>, <span class=<span class="s">"n"</span>>200</span>)」这样的坐标
   但 LLM 是文本模型，不理解像素
 
   Anthropic 的解决方案（训练阶段）：
@@ -652,21 +665,21 @@ Computer Use 的突破：
     - 返回格式：(x_pct, y_pct) 百分比比绝对像素更稳健
 
 
-<span class="n">17.3</span> Anthropic Computer Use vs OpenAI CUA
+<span class=<span class="s">"n"</span>>17.3</span> Anthropic Computer Use vs OpenAI CUA
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ┌──────────────┬─────────────────────────┬─────────────────────────┐
 │     维度      │  Anthropic Computer Use  │   OpenAI CUA            │
 ├──────────────┼─────────────────────────┼─────────────────────────┤
-│ 发布时间      │ <span class="n">2024.10</span> (API)            │ <span class="n">2025.01</span> (Operator)       │
-│             │ <span class="n">2025.10</span> (正式发布)        │                         │
+│ 发布时间      │ <span class=<span class="s">"n"</span>>2024.10</span> (API)            │ <span class=<span class="s">"n"</span>>2025.01</span> (Operator)       │
+│             │ <span class=<span class="s">"n"</span>>2025.10</span> (正式发布)        │                         │
 │ 操作范围      │ 整个操作系统              │ 浏览器内（虚拟浏览器）    │
-│ 模型          │ Claude <span class="n">3.5</span>+ Sonnet      │ GPT-4o (CUA 微调版)     │
+│ 模型          │ Claude <span class=<span class="s">"n"</span>>3.5</span>+ Sonnet      │ GPT-4o (CUA 微调版)     │
 │ 环境          │ 用户真实桌面/Docker      │ 安全的虚拟浏览器环境      │
 │ 安全性        │ 依赖使用者自行沙箱         │ 平台内置安全隔离         │
 │ 动作类型      │ 鼠标+键盘+截图            │ 浏览器操作（点击/输入/滚动）│
 │ 成本          │ 截图Token昂贵            │ 浏览器操作Token消耗较低   │
-│ Benchmark    │ OSWorld <span class="n">14.9</span>%            │ 未公布独立评分           │
+│ Benchmark    │ OSWorld <span class=<span class="s">"n"</span>>14.9</span>%            │ 未公布独立评分           │
 └──────────────┴─────────────────────────┴─────────────────────────┘
 
 Anthropic 的设计哲学：
@@ -681,38 +694,38 @@ OpenAI 的设计哲学：
   - 想要完全控制 → Anthropic + Docker 沙箱
 
 
-<span class="n">17.4</span> 性能数据与局限
+<span class=<span class="s">"n"</span>>17.4</span> 性能数据与局限
 ━━━━━━━━━━━━━━━━━━━
 
 OSWorld Benchmark 成绩：
   ┌──────────────────┬───────────┐
   │      系统         │   得分     │
   ├──────────────────┼───────────┤
-  │ 人类              │   <span class="n">75.0</span>%   │
-  │ Claude <span class="n">3.5</span> Sonnet │   <span class="n">14.9</span>%   │
-  │ GPT-4V            │    <span class="n">7.8</span>%   │
+  │ 人类              │   <span class=<span class="s">"n"</span>>75.0</span>%   │
+  │ Claude <span class=<span class="s">"n"</span>>3.5</span> Sonnet │   <span class=<span class="s">"n"</span>>14.9</span>%   │
+  │ GPT-4V            │    <span class=<span class="s">"n"</span>>7.8</span>%   │
   └──────────────────┴───────────┘
 
   → Claude 翻倍了前最好成绩，但离人类还很远
 
 延迟：
-  - 每个动作 <span class="n">3</span>-<span class="n">4</span> 秒（截取→分析→执行）
-  - 10步任务 = <span class="n">30</span>-40秒
-  - 对比 Selenium 的 <span class="n">0.</span>1秒/步，差距巨大
+  - 每个动作 <span class=<span class="s">"n"</span>>3</span>-<span class=<span class="s">"n"</span>>4</span> 秒（截取→分析→执行）
+  - 10步任务 = <span class=<span class="s">"n"</span>>30</span>-40秒
+  - 对比 Selenium 的 <span class=<span class="s">"n"</span>>0.</span>1秒/步，差距巨大
 
 成本：
-  - 每张 1080p 截图消耗约 <span class="n">1500</span> tokens
-  - 每分钟成本约 $<span class="n">0.10</span>-<span class="n">0.30</span>
-  - 对比 API 调用的 $<span class="n">0.001</span>/分钟，贵 <span class="n">100</span> 倍
+  - 每张 1080p 截图消耗约 <span class=<span class="s">"n"</span>>1500</span> tokens
+  - 每分钟成本约 $<span class=<span class="s">"n"</span>>0.10</span>-<span class=<span class="s">"n"</span>>0.30</span>
+  - 对比 API 调用的 $<span class=<span class="s">"n"</span>>0.001</span>/分钟，贵 <span class=<span class="s">"n"</span>>100</span> 倍
 
-当前定位（<span class="n">2025</span>-<span class="n">2026</span>）：
+当前定位（<span class=<span class="s">"n"</span>>2025</span>-<span class=<span class="s">"n"</span>>2026</span>）：
   → 不是 Selenium 的替代品
   → 适合「API 无法覆盖的长尾场景」
   → 适合「快速原型验证」
   → 生产级自动化仍需传统方案
 
 
-<span class="n">17.5</span> 安全沙箱 —— 必须学！
+<span class=<span class="s">"n"</span>>17.5</span> 安全沙箱 —— 必须学！
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 给 AI 鼠标键盘的权限 = 极高的安全风险：
@@ -723,7 +736,7 @@ OSWorld Benchmark 成绩：
 
 安全措施（必须！）：
 
-  <span class="n">1</span>. Docker 容器隔离
+  <span class=<span class="s">"n"</span>>1</span>. Docker 容器隔离
      docker run -d \
        --security-opt=no-new-privileges \
        --cap-drop=ALL \
@@ -731,81 +744,81 @@ OSWorld Benchmark 成绩：
        --read-only \
        computer-use-sandbox
 
-  <span class="n">2</span>. 操作系统级隔离
+  <span class=<span class="s">"n"</span>>2</span>. 操作系统级隔离
      - 非管理员用户
      - 只读挂载关键目录
      - 网络访问白名单
 
-  <span class="n">3</span>. 操作确认（Human-<span class="k">in</span>-the-Loop）
+  <span class=<span class="s">"n"</span>>3</span>. 操作确认（Human-<span class=<span class="s">"k"</span>>in</span>-the-Loop）
      - 危险操作需用户确认
      - 大额交易/删除文件 → 二次确认
 
-  <span class="n">4</span>. 审计日志
+  <span class=<span class="s">"n"</span>>4</span>. 审计日志
      - 记录每一次鼠标点击和键盘输入
      - 可追溯所有操作
 
 Anthropic 官方建议：
-  "Always sandbox <span class="k">in</span> Docker containers <span class="k">with</span> limited permissions.
-   Never run <span class="k">with</span> admin privileges."
+  <span class="s">"Always sandbox <span class="</span>k<span class="s">">in</span> Docker containers <span class="</span>k">with</span> limited permissions.
+   Never run <span class=<span class="s">"k"</span>>with</span> admin privileges."
 
 
-<span class="n">17.6</span> 模拟 Computer Use Agent
+<span class=<span class="s">"n"</span>>17.6</span> 模拟 Computer Use Agent
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
-<span class="k">import</span> time
-<span class="k">import</span> json
-<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class=<span class="s">"k"</span>>import</span> time
+<span class=<span class="s">"k"</span>>import</span> json
+<span class=<span class="s">"k"</span>>from</span> typing <span class=<span class="s">"k"</span>>import</span> Optional
 
 
-<span class="k">class</span> VirtualScreen:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"模拟计算机屏幕 —— 用作 Computer Use 的目标环境。"</span><span <span class="k">class</span>="s">""</span></span>
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>VirtualScreen</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"模拟计算机屏幕 —— 用作 Computer Use 的目标环境。"</span><span class="s">""</span></span>
 
-    <span class="k">def</span> __init__(self, width: int = <span class="n">1280</span>, height: int = <span class="n">800</span>):
-        self.width = width
-        self.height = height
-        self.elements = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 屏幕上的 UI 元素 {name: (x, y, w, h)}</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>, width: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>1280</span>, height: <span class=<span class="s">"b"</span>>int</span> = <span class=<span class="s">"n"</span>>800</span>):
+        <span class=<span class="s">"k"</span>>self</span>.width = width
+        <span class=<span class="s">"k"</span>>self</span>.height = height
+        <span class=<span class="s">"k"</span>>self</span>.elements = {}  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 屏幕上的 UI 元素 {name: (x, y, w, h)}</span>
 
-    <span class="k">def</span> add_element(self, name: str, x: int, y: int,
-                    w: int, h: int, text: str = <span <span class="k">class</span>="s">""</span>):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"添加一个 UI 元素（按钮/输入框/文本）。"</span><span <span class="k">class</span>="s">""</span></span>
-        self.elements[name] = {
-            <span <span class="k">class</span>="s">"x"</span>: x, <span <span class="k">class</span>="s">"y"</span>: y, <span <span class="k">class</span>="s">"w"</span>: w, <span <span class="k">class</span>="s">"h"</span>: h, <span <span class="k">class</span>="s">"text"</span>: text,
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>add_element</span>(<span class=<span class="s">"k"</span>>self</span>, name: <span class=<span class="s">"b"</span>>str</span>, x: <span class=<span class="s">"b"</span>>int</span>, y: <span class=<span class="s">"b"</span>>int</span>,
+                    w: <span class=<span class="s">"b"</span>>int</span>, h: <span class=<span class="s">"b"</span>>int</span>, text: <span class=<span class="s">"b"</span>>str</span> = <span class="s">""</span>):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"添加一个 UI 元素（按钮/输入框/文本）。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"k"</span>>self</span>.elements[name] = {
+            <span class="s">"x"</span>: x, <span class="s">"y"</span>: y, <span class="s">"w"</span>: w, <span class="s">"h"</span>: h, <span class="s">"text"</span>: text,
         }
 
-    <span class="k">def</span> find_element_at(self, click_x: int, click_y: int) -&gt; Optional[str]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"根据坐标查找被点击的元素。"</span><span <span class="k">class</span>="s">""</span></span>
-        <span class="k">for</span> name, elem <span class="k">in</span> self.elements.items():
-            <span class="k">if</span> (elem[<span <span class="k">class</span>="s">"x"</span>] &lt;= click_x &lt;= elem[<span <span class="k">class</span>="s">"x"</span>] + elem[<span <span class="k">class</span>="s">"w"</span>] <span class="k">and</span>
-                    elem[<span <span class="k">class</span>="s">"y"</span>] &lt;= click_y &lt;= elem[<span <span class="k">class</span>="s">"y"</span>] + elem[<span <span class="k">class</span>="s">"h"</span>]):
-                <span class="k">return</span> name
-        <span class="k">return</span> <span class="k">None</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>find_element_at</span>(<span class=<span class="s">"k"</span>>self</span>, click_x: <span class=<span class="s">"b"</span>>int</span>, click_y: <span class=<span class="s">"b"</span>>int</span>) -&gt; Optional[<span class=<span class="s">"b"</span>>str</span>]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"根据坐标查找被点击的元素。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"k"</span>>for</span> name, elem <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.elements.items():
+            <span class=<span class="s">"k"</span>>if</span> (elem[<span class="s">"x"</span>] &lt;= click_x &lt;= elem[<span class="s">"x"</span>] + elem[<span class="s">"w"</span>] <span class=<span class="s">"k"</span>>and</span>
+                    elem[<span class="s">"y"</span>] &lt;= click_y &lt;= elem[<span class="s">"y"</span>] + elem[<span class="s">"h"</span>]):
+                <span class=<span class="s">"k"</span>>return</span> name
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>None</span>
 
-    <span class="k">def</span> describe(self) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"生成屏幕描述（模拟 LLM 视觉分析的结果）。"</span><span <span class="k">class</span>="s">""</span></span>
-        lines = [f<span <span class="k">class</span>="s">"屏幕分辨率: {self.width}x{self.height}"</span>]
-        <span class="k">for</span> name, elem <span class="k">in</span> self.elements.items():
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>describe</span>(<span class=<span class="s">"k"</span>>self</span>) -&gt; <span class=<span class="s">"b"</span>>str</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"生成屏幕描述（模拟 LLM 视觉分析的结果）。"</span><span class="s">""</span></span>
+        lines = [f<span class="s">"屏幕分辨率: {<span class="</span>k<span class="s">">self</span>.width}x{<span class="</span>k<span class="s">">self</span>.height}"</span>]
+        <span class=<span class="s">"k"</span>>for</span> name, elem <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"k"</span>>self</span>.elements.items():
             lines.append(
-                f<span <span class="k">class</span>="s">"  [{name}] 位置({elem[<span <span class="k">class</span>='s'>'x'</span>]},{elem[<span <span class="k">class</span>='s'>'y'</span>]}) "</span>
-                f<span <span class="k">class</span>="s">"大小({elem[<span <span class="k">class</span>='s'>'w'</span>]}x{elem[<span <span class="k">class</span>='s'>'h'</span>]}) 文本:「{elem[<span <span class="k">class</span>='s'>'text'</span>]}」"</span>
+                f<span class="s">"  [{name}] 位置({elem[<span class='s'>'x'</span>]},{elem[<span class='s'>'y'</span>]}) "</span>
+                f<span class="s">"大小({elem[<span class='s'>'w'</span>]}x{elem[<span class='s'>'h'</span>]}) 文本:「{elem[<span class='s'>'text'</span>]}」"</span>
             )
-        <span class="k">return</span> <span <span class="k">class</span>="s">"\n"</span>.join(lines)
+        <span class=<span class="s">"k"</span>>return</span> <span class="s">"\n"</span>.join(lines)
 
 
-<span class="k">class</span> ComputerUseAgent:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Computer Use Agent —— 模拟完整的 Screenshot-Action Loop。
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>ComputerUseAgent</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"Computer Use Agent —— 模拟完整的 Screenshot-Action Loop。
 
     核心循环：
-      <span class="k">while</span> <span class="k">not</span> done:
+      <span class=<span class="s">"k"</span>>while</span> <span class=<span class="s">"k"</span>>not</span> done:
           screenshot → analyze → decide → execute → observe
-    <span <span class="k">class</span>="s">""</span>"</span>
+    <span class="s">""</span>"</span>
 
-    <span class="k">def</span> __init__(self):
-        self.action_log = []
-        self.max_actions = <span class="n">10</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>__init__</span>(<span class=<span class="s">"k"</span>>self</span>):
+        <span class=<span class="s">"k"</span>>self</span>.action_log = []
+        <span class=<span class="s">"k"</span>>self</span>.max_actions = <span class=<span class="s">"n"</span>>10</span>
 
-    <span class="k">def</span> analyze_screen(self, screen: VirtualScreen) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 LLM 分析屏幕截图的结果。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>analyze_screen</span>(<span class=<span class="s">"k"</span>>self</span>, screen: VirtualScreen) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 LLM 分析屏幕截图的结果。
 
         真实实现中，这一步由 Claude 的视觉能力完成：
           - 上传截图（base64）到 Claude API
@@ -816,21 +829,21 @@ Anthropic 官方建议：
 
         Returns:
             分析结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="s">""</span>"</span>
         description = screen.describe()
-        <span class="k">return</span> {
-            <span <span class="k">class</span>="s">"resolution"</span>: f<span <span class="k">class</span>="s">"{screen.width}x{screen.height}"</span>,
-            <span <span class="k">class</span>="s">"elements_found"</span>: len(screen.elements),
-            <span <span class="k">class</span>="s">"description"</span>: description,
+        <span class=<span class="s">"k"</span>>return</span> {
+            <span class="s">"resolution"</span>: f<span class="s">"{screen.width}x{screen.height}"</span>,
+            <span class="s">"elements_found"</span>: <span class=<span class="s">"b"</span>>len</span>(screen.elements),
+            <span class="s">"description"</span>: description,
         }
 
-    <span class="k">def</span> decide_action(self, task: str,
-                      screen: VirtualScreen) -&gt; Optional[dict]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 LLM 决定的下一步操作。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>decide_action</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>,
+                      screen: VirtualScreen) -&gt; Optional[<span class=<span class="s">"b"</span>>dict</span>]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"模拟 LLM 决定的下一步操作。
 
         真实实现中，Claude 返回结构化的工具调用：
-          tool: <span <span class="k">class</span>="s">"computer"</span>
-          action: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"left_click"</span>, <span <span class="k">class</span>="s">"x"</span>: <span class="n">450</span>, <span <span class="k">class</span>="s">"y"</span>: <span class="n">200</span>}
+          tool: <span class="s">"computer"</span>
+          action: {<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"left_click"</span>, <span class="s">"x"</span>: <span class=<span class="s">"n"</span>>450</span>, <span class="s">"y"</span>: <span class=<span class="s">"n"</span>>200</span>}
 
         这里用简化的规则模拟：
           根据任务关键词匹配屏幕上的元素。
@@ -841,30 +854,30 @@ Anthropic 官方建议：
 
         Returns:
             操作指令字典。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">for</span> name, elem <span class="k">in</span> screen.elements.items():
-            <span class="k">if</span> name.lower() <span class="k">in</span> task.lower():
-                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 计算元素中心坐标</span>
-                cx = elem[<span <span class="k">class</span>="s">"x"</span>] + elem[<span <span class="k">class</span>="s">"w"</span>] // <span class="n">2</span>
-                cy = elem[<span <span class="k">class</span>="s">"y"</span>] + elem[<span <span class="k">class</span>="s">"h"</span>] // <span class="n">2</span>
-                <span class="k">return</span> {
-                    <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"left_click"</span>,
-                    <span <span class="k">class</span>="s">"x"</span>: cx,
-                    <span <span class="k">class</span>="s">"y"</span>: cy,
-                    <span <span class="k">class</span>="s">"target"</span>: name,
-                    <span <span class="k">class</span>="s">"reasoning"</span>: f<span <span class="k">class</span>="s">"找到了匹配元素 <span <span class="k">class</span>='s'>'{name}'</span>，点击其中心({cx}, {cy})"</span>,
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"k"</span>>for</span> name, elem <span class=<span class="s">"k"</span>>in</span> screen.elements.items():
+            <span class=<span class="s">"k"</span>>if</span> name.lower() <span class=<span class="s">"k"</span>>in</span> task.lower():
+                <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 计算元素中心坐标</span>
+                cx = elem[<span class="s">"x"</span>] + elem[<span class="s">"w"</span>] // <span class=<span class="s">"n"</span>>2</span>
+                cy = elem[<span class="s">"y"</span>] + elem[<span class="s">"h"</span>] // <span class=<span class="s">"n"</span>>2</span>
+                <span class=<span class="s">"k"</span>>return</span> {
+                    <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"left_click"</span>,
+                    <span class="s">"x"</span>: cx,
+                    <span class="s">"y"</span>: cy,
+                    <span class="s">"target"</span>: name,
+                    <span class="s">"reasoning"</span>: f<span class="s">"找到了匹配元素 <span class='s'>'{name}'</span>，点击其中心({cx}, {cy})"</span>,
                 }
 
-        <span class="k">return</span> {
-            <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"type_text"</span>,
-            <span <span class="k">class</span>="s">"text"</span>: task,
-            <span <span class="k">class</span>="s">"target"</span>: <span <span class="k">class</span>="s">"search_box"</span>,
-            <span <span class="k">class</span>="s">"reasoning"</span>: <span <span class="k">class</span>="s">"未找到匹配按钮，尝试搜索"</span>,
+        <span class=<span class="s">"k"</span>>return</span> {
+            <span class="s">"<span class="</span>b<span class="s">">type</span>"</span>: <span class="s">"type_text"</span>,
+            <span class="s">"text"</span>: task,
+            <span class="s">"target"</span>: <span class="s">"search_box"</span>,
+            <span class="s">"reasoning"</span>: <span class="s">"未找到匹配按钮，尝试搜索"</span>,
         }
 
-    <span class="k">def</span> execute_action(self, action: dict,
-                       screen: VirtualScreen) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"执行操作并返回结果。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>execute_action</span>(<span class=<span class="s">"k"</span>>self</span>, action: <span class=<span class="s">"b"</span>>dict</span>,
+                       screen: VirtualScreen) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"执行操作并返回结果。
 
         Args:
             action: 操作指令。
@@ -872,28 +885,28 @@ Anthropic 官方建议：
 
         Returns:
             执行结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        action_type = action[<span <span class="k">class</span>="s">"type"</span>]
-        result = {<span <span class="k">class</span>="s">"success"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"action"</span>: action}
+        <span class="s">""</span>"</span>
+        action_type = action[<span class="s">"<span class="</span>b<span class="s">">type</span>"</span>]
+        result = {<span class="s">"success"</span>: <span class=<span class="s">"k"</span>>True</span>, <span class="s">"action"</span>: action}
 
-        <span class="k">if</span> action_type == <span <span class="k">class</span>="s">"left_click"</span>:
-            target = screen.find_element_at(action[<span <span class="k">class</span>="s">"x"</span>], action[<span <span class="k">class</span>="s">"y"</span>])
-            result[<span <span class="k">class</span>="s">"clicked"</span>] = target <span class="k">or</span> <span <span class="k">class</span>="s">"空白区域"</span>
-            <span class="k">if</span> target <span class="k">is</span> <span class="k">None</span>:
-                result[<span <span class="k">class</span>="s">"success"</span>] = <span class="k">False</span>
-                result[<span <span class="k">class</span>="s">"error"</span>] = <span <span class="k">class</span>="s">"未找到可点击的元素"</span>
+        <span class=<span class="s">"k"</span>>if</span> action_type == <span class="s">"left_click"</span>:
+            target = screen.find_element_at(action[<span class="s">"x"</span>], action[<span class="s">"y"</span>])
+            result[<span class="s">"clicked"</span>] = target <span class=<span class="s">"k"</span>>or</span> <span class="s">"空白区域"</span>
+            <span class=<span class="s">"k"</span>>if</span> target <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+                result[<span class="s">"success"</span>] = <span class=<span class="s">"k"</span>>False</span>
+                result[<span class="s">"error"</span>] = <span class="s">"未找到可点击的元素"</span>
 
-        <span class="k">elif</span> action_type == <span <span class="k">class</span>="s">"type_text"</span>:
-            result[<span <span class="k">class</span>="s">"input"</span>] = action[<span <span class="k">class</span>="s">"text"</span>]
+        <span class=<span class="s">"k"</span>>elif</span> action_type == <span class="s">"type_text"</span>:
+            result[<span class="s">"<span class="</span>b<span class="s">">input</span>"</span>] = action[<span class="s">"text"</span>]
 
-        <span class="k">elif</span> action_type == <span <span class="k">class</span>="s">"scroll"</span>:
-            result[<span <span class="k">class</span>="s">"scroll"</span>] = action.get(<span <span class="k">class</span>="s">"direction"</span>, <span <span class="k">class</span>="s">"down"</span>)
+        <span class=<span class="s">"k"</span>>elif</span> action_type == <span class="s">"scroll"</span>:
+            result[<span class="s">"scroll"</span>] = action.get(<span class="s">"direction"</span>, <span class="s">"down"</span>)
 
-        self.action_log.append(result)
-        <span class="k">return</span> result
+        <span class=<span class="s">"k"</span>>self</span>.action_log.append(result)
+        <span class=<span class="s">"k"</span>>return</span> result
 
-    <span class="k">def</span> run_task(self, task: str, screen: VirtualScreen) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"运行完整的 Computer Use 任务。
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>run_task</span>(<span class=<span class="s">"k"</span>>self</span>, task: <span class=<span class="s">"b"</span>>str</span>, screen: VirtualScreen) -&gt; <span class=<span class="s">"b"</span>>dict</span>:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"运行完整的 Computer Use 任务。
 
         Args:
             task: 任务描述。
@@ -901,133 +914,133 @@ Anthropic 官方建议：
 
         Returns:
             包含执行记录的结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        print(f<span <span class="k">class</span>="s">"\n  🎯 任务: {task}"</span>)
-        print(f<span <span class="k">class</span>="s">"  📺 {screen.describe()}\n"</span>)
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"\n  🎯 任务: {task}"</span>)
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  📺 {screen.describe()}\n"</span>)
 
-        <span class="k">for</span> step <span class="k">in</span> range(<span class="n">1</span>, self.max_actions + <span class="n">1</span>):
-            print(f<span <span class="k">class</span>="s">"  --- Step {step} ---"</span>)
+        <span class=<span class="s">"k"</span>>for</span> step <span class=<span class="s">"k"</span>>in</span> <span class=<span class="s">"b"</span>>range</span>(<span class=<span class="s">"n"</span>>1</span>, <span class=<span class="s">"k"</span>>self</span>.max_actions + <span class=<span class="s">"n"</span>>1</span>):
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  --- Step {step} ---"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">1</span>. 分析屏幕</span>
-            analysis = self.analyze_screen(screen)
-            print(f<span <span class="k">class</span>="s">"  👁️  分析: 发现 {analysis[<span <span class="k">class</span>='s'>'elements_found'</span>]} 个元素"</span>)
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># <span class=<span class="s">"n"</span>>1</span>. 分析屏幕</span>
+            analysis = <span class=<span class="s">"k"</span>>self</span>.analyze_screen(screen)
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  👁️  分析: 发现 {analysis[<span class='s'>'elements_found'</span>]} 个元素"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">2</span>. 决策</span>
-            action = self.decide_action(task, screen)
-            <span class="k">if</span> action <span class="k">is</span> <span class="k">None</span>:
-                print(f<span <span class="k">class</span>="s">"  ✅ 任务完成，无需更多操作"</span>)
-                <span class="k">break</span>
-            print(f<span <span class="k">class</span>="s">"  🤔 决策: {action[<span <span class="k">class</span>='s'>'reasoning'</span>]}"</span>)
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># <span class=<span class="s">"n"</span>>2</span>. 决策</span>
+            action = <span class=<span class="s">"k"</span>>self</span>.decide_action(task, screen)
+            <span class=<span class="s">"k"</span>>if</span> action <span class=<span class="s">"k"</span>>is</span> <span class=<span class="s">"k"</span>>None</span>:
+                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  ✅ 任务完成，无需更多操作"</span>)
+                <span class=<span class="s">"k"</span>>break</span>
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  🤔 决策: {action[<span class='s'>'reasoning'</span>]}"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">3</span>. 执行</span>
-            result = self.execute_action(action, screen)
-            status = <span <span class="k">class</span>="s">"✅"</span> <span class="k">if</span> result[<span <span class="k">class</span>="s">"success"</span>] <span class="k">else</span> <span <span class="k">class</span>="s">"❌"</span>
-            print(f<span <span class="k">class</span>="s">"  🖱️  执行: {status} {action[<span <span class="k">class</span>='s'>'type'</span>]} → {result.get(<span <span class="k">class</span>='s'>'clicked'</span>, result.get(<span <span class="k">class</span>='s'>'input'</span>, <span <span class="k">class</span>='s'>''</span>))}"</span>)
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># <span class=<span class="s">"n"</span>>3</span>. 执行</span>
+            result = <span class=<span class="s">"k"</span>>self</span>.execute_action(action, screen)
+            status = <span class="s">"✅"</span> <span class=<span class="s">"k"</span>>if</span> result[<span class="s">"success"</span>] <span class=<span class="s">"k"</span>>else</span> <span class="s">"❌"</span>
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  🖱️  执行: {status} {action[<span class='s'>'<span class="</span>b<span class="s">">type</span>'</span>]} → {result.get(<span class='s'>'clicked'</span>, result.get(<span class='s'>'<span class="</span>b<span class="s">">input</span>'</span>, <span class='s'>''</span>))}"</span>)
 
-            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">4</span>. 判断是否完成</span>
-            <span class="k">if</span> action.get(<span <span class="k">class</span>="s">"target"</span>) <span class="k">and</span> result[<span <span class="k">class</span>="s">"success"</span>]:
-                print(f<span <span class="k">class</span>="s">"  🎉 成功点击目标元素，任务完成！"</span>)
-                <span class="k">break</span>
+            <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># <span class=<span class="s">"n"</span>>4</span>. 判断是否完成</span>
+            <span class=<span class="s">"k"</span>>if</span> action.get(<span class="s">"target"</span>) <span class=<span class="s">"k"</span>>and</span> result[<span class="s">"success"</span>]:
+                <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  🎉 成功点击目标元素，任务完成！"</span>)
+                <span class=<span class="s">"k"</span>>break</span>
 
-            time.sleep(<span class="n">0.3</span>)  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟操作延迟</span>
+            time.sleep(<span class=<span class="s">"n"</span>>0.3</span>)  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 模拟操作延迟</span>
 
-        <span class="k">return</span> {
-            <span <span class="k">class</span>="s">"task"</span>: task,
-            <span <span class="k">class</span>="s">"steps"</span>: len(self.action_log),
-            <span <span class="k">class</span>="s">"actions"</span>: self.action_log,
+        <span class=<span class="s">"k"</span>>return</span> {
+            <span class="s">"task"</span>: task,
+            <span class="s">"steps"</span>: <span class=<span class="s">"b"</span>>len</span>(<span class=<span class="s">"k"</span>>self</span>.action_log),
+            <span class="s">"actions"</span>: <span class=<span class="s">"k"</span>>self</span>.action_log,
         }
 
 
-<span class="k">def</span> demo_computer_use():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Computer Use 的完整流程。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  Computer Use Agent 演示"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>demo_computer_use</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"演示 Computer Use 的完整流程。"</span><span class="s">""</span></span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Computer Use Agent 演示"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 场景1：模拟「登录网页」</span>
-    print(<span <span class="k">class</span>="s">"\n  ── 场景1：登录网页 ──"</span>)
-    login_screen = VirtualScreen(<span class="n">1280</span>, <span class="n">800</span>)
-    login_screen.add_element(<span <span class="k">class</span>="s">"username_input"</span>, <span class="n">500</span>, <span class="n">300</span>, <span class="n">200</span>, <span class="n">30</span>, <span <span class="k">class</span>="s">"请输入用户名"</span>)
-    login_screen.add_element(<span <span class="k">class</span>="s">"password_input"</span>, <span class="n">500</span>, <span class="n">350</span>, <span class="n">200</span>, <span class="n">30</span>, <span <span class="k">class</span>="s">"请输入密码"</span>)
-    login_screen.add_element(<span <span class="k">class</span>="s">"login_button"</span>, <span class="n">550</span>, <span class="n">400</span>, <span class="n">100</span>, <span class="n">40</span>, <span <span class="k">class</span>="s">"登录"</span>)
-
-    agent = ComputerUseAgent()
-    result = agent.run_task(<span <span class="k">class</span>="s">"点击登录按钮"</span>, login_screen)
-
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 场景2：模拟「搜索」</span>
-    print(<span <span class="k">class</span>="s">"\n  ── 场景2：搜索操作 ──"</span>)
-    search_screen = VirtualScreen(<span class="n">1280</span>, <span class="n">800</span>)
-    search_screen.add_element(<span <span class="k">class</span>="s">"search_box"</span>, <span class="n">400</span>, <span class="n">200</span>, <span class="n">400</span>, <span class="n">35</span>, <span <span class="k">class</span>="s">"搜索..."</span>)
-    search_screen.add_element(<span <span class="k">class</span>="s">"search_button"</span>, <span class="n">810</span>, <span class="n">200</span>, <span class="n">80</span>, <span class="n">35</span>, <span <span class="k">class</span>="s">"搜索"</span>)
-    search_screen.add_element(<span <span class="k">class</span>="s">"result1"</span>, <span class="n">400</span>, <span class="n">300</span>, <span class="n">500</span>, <span class="n">50</span>, <span <span class="k">class</span>="s">"结果1: Python教程"</span>)
-    search_screen.add_element(<span <span class="k">class</span>="s">"result2"</span>, <span class="n">400</span>, <span class="n">360</span>, <span class="n">500</span>, <span class="n">50</span>, <span <span class="k">class</span>="s">"结果2: AI Agent 入门"</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 场景1：模拟「登录网页」</span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── 场景1：登录网页 ──"</span>)
+    login_screen = VirtualScreen(<span class=<span class="s">"n"</span>>1280</span>, <span class=<span class="s">"n"</span>>800</span>)
+    login_screen.add_element(<span class="s">"username_input"</span>, <span class=<span class="s">"n"</span>>500</span>, <span class=<span class="s">"n"</span>>300</span>, <span class=<span class="s">"n"</span>>200</span>, <span class=<span class="s">"n"</span>>30</span>, <span class="s">"请输入用户名"</span>)
+    login_screen.add_element(<span class="s">"password_input"</span>, <span class=<span class="s">"n"</span>>500</span>, <span class=<span class="s">"n"</span>>350</span>, <span class=<span class="s">"n"</span>>200</span>, <span class=<span class="s">"n"</span>>30</span>, <span class="s">"请输入密码"</span>)
+    login_screen.add_element(<span class="s">"login_button"</span>, <span class=<span class="s">"n"</span>>550</span>, <span class=<span class="s">"n"</span>>400</span>, <span class=<span class="s">"n"</span>>100</span>, <span class=<span class="s">"n"</span>>40</span>, <span class="s">"登录"</span>)
 
     agent = ComputerUseAgent()
-    result = agent.run_task(<span <span class="k">class</span>="s">"点击搜索按钮"</span>, search_screen)
+    result = agent.run_task(<span class="s">"点击登录按钮"</span>, login_screen)
+
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 场景2：模拟「搜索」</span>
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n  ── 场景2：搜索操作 ──"</span>)
+    search_screen = VirtualScreen(<span class=<span class="s">"n"</span>>1280</span>, <span class=<span class="s">"n"</span>>800</span>)
+    search_screen.add_element(<span class="s">"search_box"</span>, <span class=<span class="s">"n"</span>>400</span>, <span class=<span class="s">"n"</span>>200</span>, <span class=<span class="s">"n"</span>>400</span>, <span class=<span class="s">"n"</span>>35</span>, <span class="s">"搜索..."</span>)
+    search_screen.add_element(<span class="s">"search_button"</span>, <span class=<span class="s">"n"</span>>810</span>, <span class=<span class="s">"n"</span>>200</span>, <span class=<span class="s">"n"</span>>80</span>, <span class=<span class="s">"n"</span>>35</span>, <span class="s">"搜索"</span>)
+    search_screen.add_element(<span class="s">"result1"</span>, <span class=<span class="s">"n"</span>>400</span>, <span class=<span class="s">"n"</span>>300</span>, <span class=<span class="s">"n"</span>>500</span>, <span class=<span class="s">"n"</span>>50</span>, <span class="s">"结果1: Python教程"</span>)
+    search_screen.add_element(<span class="s">"result2"</span>, <span class=<span class="s">"n"</span>>400</span>, <span class=<span class="s">"n"</span>>360</span>, <span class=<span class="s">"n"</span>>500</span>, <span class=<span class="s">"n"</span>>50</span>, <span class="s">"结果2: AI Agent 入门"</span>)
+
+    agent = ComputerUseAgent()
+    result = agent.run_task(<span class="s">"点击搜索按钮"</span>, search_screen)
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">17.7</span> 本章总结
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class=<span class="s">"n"</span>>17.7</span> 本章总结
 ━━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class="n">1</span>. Computer Use = AI 用人类的方式操作电脑
+<span class=<span class="s">"n"</span>>1</span>. Computer Use = AI 用人类的方式操作电脑
    - Screenshot-Action Loop: 截图→分析→决策→执行
    - 不依赖 API，可以操作任何软件
    - 核心挑战：像素坐标计算 + 视觉理解
 
-<span class="n">2</span>. 两大阵营
+<span class=<span class="s">"n"</span>>2</span>. 两大阵营
    - Anthropic: 控制真实电脑（通用但危险）
    - OpenAI CUA: 虚拟浏览器（安全但局限）
 
-<span class="n">3</span>. 当前局限性（面试时坦诚讨论）
-   - OSWorld <span class="n">14.9</span>%（人类 <span class="n">75</span>%）—— 还有很长的路
-   - 延迟 <span class="n">3</span>-4秒/步，成本 100倍于 API
+<span class=<span class="s">"n"</span>>3</span>. 当前局限性（面试时坦诚讨论）
+   - OSWorld <span class=<span class="s">"n"</span>>14.9</span>%（人类 <span class=<span class="s">"n"</span>>75</span>%）—— 还有很长的路
+   - 延迟 <span class=<span class="s">"n"</span>>3</span>-4秒/步，成本 100倍于 API
    - 安全风险高
 
-<span class="n">4</span>. 安全第一
+<span class=<span class="s">"n"</span>>4</span>. 安全第一
    - Docker 沙箱 + 非管理员 + 只读挂载
    - 操作确认 + 审计日志
    - 「Always sandbox. Never admin.」
 
 面试速记：
-  <span <span class="k">class</span>="s">"Computer Use 的原理和挑战？"</span>
+  <span class="s">"Computer Use 的原理和挑战？"</span>
   → 原理：Screenshot-Action Loop（截图→视觉分析→坐标→操作）
   → 挑战：像素坐标精确度、延迟、安全风险
   → 定位：不是替代传统自动化，而是覆盖「API无法触及」的长尾
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 
-<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║  第17章：Computer Use + GUI Agent                     ║"</span>)
-    print(<span <span class="k">class</span>="s">"║  Screenshot-Action Loop · 坐标计算 · 安全沙箱        ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第17章：Computer Use + GUI Agent                     ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Screenshot-Action Loop · 坐标计算 · 安全沙箱        ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
     demo_computer_use()
 
-    print(<span <span class="k">class</span>="s">"\n▶ OSWorld Benchmark 成绩"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
-    print(<span <span class="k">class</span>="s">"  人类                <span class="n">75.0</span>%"</span>)
-    print(<span <span class="k">class</span>="s">"  Claude <span class="n">3.5</span> Sonnet  <span class="n">14.9</span>%  (Computer Use)"</span>)
-    print(<span <span class="k">class</span>="s">"  GPT-4V              <span class="n">7.8</span>%  (传统视觉模式)"</span>)
-    print()
-    print(<span <span class="k">class</span>="s">"  结论：Computer Use 翻倍了前最好成绩，"</span>)
-    print(<span <span class="k">class</span>="s">"        但离人类水平仍有巨大差距。"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ OSWorld Benchmark 成绩"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  人类                <span class="</span>n<span class="s">">75.0</span>%"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  Claude <span class="</span>n<span class="s">">3.5</span> Sonnet  <span class="</span>n<span class="s">">14.9</span>%  (Computer Use)"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  GPT-4V              <span class="</span>n<span class="s">">7.8</span>%  (传统视觉模式)"</span>)
+    <span class=<span class="s">"b"</span>>print</span>()
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  结论：Computer Use 翻倍了前最好成绩，"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"        但离人类水平仍有巨大差距。"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ Anthropic vs OpenAI Computer Use 对比"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ Anthropic vs OpenAI Computer Use 对比"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     comparisons = [
-        (<span <span class="k">class</span>="s">"操作范围"</span>, <span <span class="k">class</span>="s">"Anthropic: 整个操作系统"</span>, <span <span class="k">class</span>="s">"OpenAI: 浏览器内"</span>),
-        (<span <span class="k">class</span>="s">"安全性"</span>, <span <span class="k">class</span>="s">"Anthropic: 需自行沙箱"</span>, <span <span class="k">class</span>="s">"OpenAI: 内置安全隔离"</span>),
-        (<span <span class="k">class</span>="s">"适用场景"</span>, <span <span class="k">class</span>="s">"Anthropic: 桌面软件+Web"</span>, <span <span class="k">class</span>="s">"OpenAI: Web任务"</span>),
-        (<span <span class="k">class</span>="s">"成本"</span>, <span <span class="k">class</span>="s">"Anthropic: 截图Token较贵"</span>, <span <span class="k">class</span>="s">"OpenAI: 操作Token较低"</span>),
+        (<span class="s">"操作范围"</span>, <span class="s">"Anthropic: 整个操作系统"</span>, <span class="s">"OpenAI: 浏览器内"</span>),
+        (<span class="s">"安全性"</span>, <span class="s">"Anthropic: 需自行沙箱"</span>, <span class="s">"OpenAI: 内置安全隔离"</span>),
+        (<span class="s">"适用场景"</span>, <span class="s">"Anthropic: 桌面软件+Web"</span>, <span class="s">"OpenAI: Web任务"</span>),
+        (<span class="s">"成本"</span>, <span class="s">"Anthropic: 截图Token较贵"</span>, <span class="s">"OpenAI: 操作Token较低"</span>),
     ]
-    <span class="k">for</span> dim, a, o <span class="k">in</span> comparisons:
-        print(f<span <span class="k">class</span>="s">"  {dim:10s}  {a:30s}  {o}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> dim, a, o <span class=<span class="s">"k"</span>>in</span> comparisons:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {dim:10s}  {a:30s}  {o}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n✅ 第17章完成！"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n✅ 第17章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_16_memgpt/16_memgpt_letta.html" title="MemGPT/Letta 记忆 — Core Memory·Heartbeat·Sleep-Time">← 第16章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>

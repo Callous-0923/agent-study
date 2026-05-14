@@ -85,6 +85,15 @@ body {
   line-height: 1.6; max-height: 70vh; overflow-y: auto;
 }
 
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -326,122 +335,122 @@ body {
   │ Ch13 FastAPI       │ fastapi, uvicorn                  │
   │ Ch14 SQLite        │ 标准库（无需额外安装）              │
   │ Ch15-18 其他       │ 无需额外依赖                       │
-  └────────────────────┴────────────────────────────────────┘</pre></div><div class="code-section"><details><summary>💻 代码 (83 行)</summary><div class="code-block"><pre><span class="k">import</span> subprocess
-<span class="k">import</span> sys
+  └────────────────────┴────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (83 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>import</span> subprocess
+<span class=<span class="s">"k"</span>>import</span> sys
 
 
-<span class="k">def</span> check_python_version():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"检查 Python 版本是否满足要求（&gt;= <span class="n">3.10</span>）。"</span><span <span class="k">class</span>="s">""</span></span>
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>check_python_version</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"检查 Python 版本是否满足要求（&gt;= <span class="</span>n<span class="s">">3.10</span>）。"</span><span class="s">""</span></span>
     version = sys.version_info
-    <span class="k">if</span> version.major &gt;= <span class="n">3</span> <span class="k">and</span> version.minor &gt;= <span class="n">10</span>:
-        print(f<span <span class="k">class</span>="s">"[✓] Python {version.major}.{version.minor}.{version.micro} - 满足要求"</span>)
-        <span class="k">return</span> <span class="k">True</span>
-    print(f<span <span class="k">class</span>="s">"[✗] Python {version.major}.{version.minor} - 需要 Python <span class="n">3.10</span>+"</span>)
-    <span class="k">return</span> <span class="k">False</span>
+    <span class=<span class="s">"k"</span>>if</span> version.major &gt;= <span class=<span class="s">"n"</span>>3</span> <span class=<span class="s">"k"</span>>and</span> version.minor &gt;= <span class=<span class="s">"n"</span>>10</span>:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"[✓] Python {version.major}.{version.minor}.{version.micro} - 满足要求"</span>)
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>True</span>
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"[✗] Python {version.major}.{version.minor} - 需要 Python <span class="</span>n<span class="s">">3.10</span>+"</span>)
+    <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>False</span>
 
 
-<span class="k">def</span> install_dependencies():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"一键安装本课程所需的所有核心依赖。"</span><span <span class="k">class</span>="s">""</span></span>
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>install_dependencies</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"一键安装本课程所需的所有核心依赖。"</span><span class="s">""</span></span>
     packages = [
-        <span <span class="k">class</span>="s">"openai&gt;=<span class="n">1.0</span>.<span class="n">0</span>"</span>,           <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># OpenAI API 调用 (Ch1-<span class="n">12</span>)</span>
-        <span <span class="k">class</span>="s">"langchain&gt;=<span class="n">0.3</span>.<span class="n">0</span>"</span>,       <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LangChain 核心框架 (Ch4-<span class="n">5</span>)</span>
-        <span <span class="k">class</span>="s">"langchain-openai"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LangChain OpenAI 集成 (Ch4-<span class="n">5</span>)</span>
-        <span <span class="k">class</span>="s">"langgraph"</span>,               <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LangGraph 状态机 (Ch4-<span class="n">5</span>)</span>
-        <span <span class="k">class</span>="s">"pydantic&gt;=<span class="n">2.0</span>.<span class="n">0</span>"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 数据验证 (Ch13)</span>
-        <span <span class="k">class</span>="s">"python-dotenv"</span>,           <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 环境变量管理</span>
-        <span <span class="k">class</span>="s">"httpx"</span>,                   <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># HTTP 请求</span>
-        <span <span class="k">class</span>="s">"tiktoken"</span>,                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Token 计数</span>
-        <span <span class="k">class</span>="s">"fastapi"</span>,                 <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Web 框架 (Ch13)</span>
-        <span <span class="k">class</span>="s">"uvicorn"</span>,                 <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ASGI 服务器 (Ch13)</span>
+        <span class="s">"openai&gt;=<span class="</span>n<span class="s">">1.0</span>.<span class="</span>n<span class="s">">0</span>"</span>,           <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># OpenAI API 调用 (Ch1-<span class=<span class="s">"n"</span>>12</span>)</span>
+        <span class="s">"langchain&gt;=<span class="</span>n<span class="s">">0.3</span>.<span class="</span>n<span class="s">">0</span>"</span>,       <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># LangChain 核心框架 (Ch4-<span class=<span class="s">"n"</span>>5</span>)</span>
+        <span class="s">"langchain-openai"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># LangChain OpenAI 集成 (Ch4-<span class=<span class="s">"n"</span>>5</span>)</span>
+        <span class="s">"langgraph"</span>,               <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># LangGraph 状态机 (Ch4-<span class=<span class="s">"n"</span>>5</span>)</span>
+        <span class="s">"pydantic&gt;=<span class="</span>n<span class="s">">2.0</span>.<span class="</span>n<span class="s">">0</span>"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 数据验证 (Ch13)</span>
+        <span class="s">"python-dotenv"</span>,           <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 环境变量管理</span>
+        <span class="s">"httpx"</span>,                   <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># HTTP 请求</span>
+        <span class="s">"tiktoken"</span>,                <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Token 计数</span>
+        <span class="s">"fastapi"</span>,                 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Web 框架 (Ch13)</span>
+        <span class="s">"uvicorn"</span>,                 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ASGI 服务器 (Ch13)</span>
     ]
-    <span class="k">for</span> pkg <span class="k">in</span> packages:
-        print(f<span <span class="k">class</span>="s">"正在安装 {pkg}..."</span>)
+    <span class=<span class="s">"k"</span>>for</span> pkg <span class=<span class="s">"k"</span>>in</span> packages:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"正在安装 {pkg}..."</span>)
         subprocess.check_call(
-            [sys.executable, <span <span class="k">class</span>="s">"-m"</span>, <span <span class="k">class</span>="s">"pip"</span>, <span <span class="k">class</span>="s">"install"</span>, pkg, <span <span class="k">class</span>="s">"-q"</span>]
+            [sys.executable, <span class="s">"-m"</span>, <span class="s">"pip"</span>, <span class="s">"install"</span>, pkg, <span class="s">"-q"</span>]
         )
-    print(<span <span class="k">class</span>="s">"\n[✓] 所有依赖安装完成！"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n[✓] 所有依赖安装完成！"</span>)
 
 
-<span class="k">def</span> show_env_setup_guide():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"展示 API Key 配置说明。"</span><span <span class="k">class</span>="s">""</span></span>
-    guide = <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>show_env_setup_guide</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"展示 API Key 配置说明。"</span><span class="s">""</span></span>
+    guide = <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
     ╔══════════════════════════════════════════════════════════╗
     ║              API Key 配置指南                             ║
     ╠══════════════════════════════════════════════════════════╣
     ║                                                          ║
-    ║  <span class="n">1</span>. 在项目根目录创建 .env 文件：                           ║
+    ║  <span class=<span class="s">"n"</span>>1</span>. 在项目根目录创建 .env 文件：                           ║
     ║     OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx               ║
     ║     OPENAI_BASE_URL=https://api.openai.com/v1            ║
     ║                                                          ║
-    ║  <span class="n">2</span>. 如使用国产模型（如 DeepSeek / 通义千问）：              ║
+    ║  <span class=<span class="s">"n"</span>>2</span>. 如使用国产模型（如 DeepSeek / 通义千问）：              ║
     ║     OPENAI_API_KEY=your-deepseek-key                     ║
     ║     OPENAI_BASE_URL=https://api.deepseek.com/v1          ║
     ║     LLM_MODEL=deepseek-chat                             ║
     ║                                                          ║
-    ║  <span class="n">3</span>. 验证配置：                                            ║
-    ║     python -c "<span class="k">from</span> openai <span class="k">import</span> OpenAI;                ║
-    ║       <span class="k">import</span> os; <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv;         ║
+    ║  <span class=<span class="s">"n"</span>>3</span>. 验证配置：                                            ║
+    ║     python -c <span class="s">"<span class="</span>k<span class="s">">from</span> openai <span class="</span>k">import</span> OpenAI;                ║
+    ║       <span class=<span class="s">"k"</span>>import</span> os; <span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv;         ║
     ║       load_dotenv();                                    ║
     ║       client = OpenAI();                                ║
-    ║       print(client.models.list().data[<span class="n">0</span>].id)"            ║
+    ║       <span class=<span class="s">"b"</span>>print</span>(client.models.<span class=<span class="s">"b"</span>>list</span>().data[<span class=<span class="s">"n"</span>>0</span>].<span class=<span class="s">"b"</span>>id</span>)"            ║
     ║                                                          ║
     ╚══════════════════════════════════════════════════════════╝
-    <span <span class="k">class</span>="s">""</span>"</span>
-    print(guide)
+    <span class="s">""</span>"</span>
+    <span class=<span class="s">"b"</span>>print</span>(guide)
 
 
-<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"   AI Agent 课程 - 环境检查与安装"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print()
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"   AI Agent 课程 - 环境检查与安装"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>()
 
-    <span class="k">if</span> <span class="k">not</span> check_python_version():
-        sys.exit(<span class="n">1</span>)
+    <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> check_python_version():
+        sys.exit(<span class=<span class="s">"n"</span>>1</span>)
 
-    print()
-    print(<span <span class="k">class</span>="s">"后续章节运行前，请先执行依赖安装："</span>)
-    print(<span <span class="k">class</span>="s">"  修改下方 install=<span class="k">True</span> 后运行本文件"</span>)
-    print()
+    <span class=<span class="s">"b"</span>>print</span>()
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"后续章节运行前，请先执行依赖安装："</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  修改下方 install=<span class="</span>k<span class="s">">True</span> 后运行本文件"</span>)
+    <span class=<span class="s">"b"</span>>print</span>()
 
-    install = <span class="k">False</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 改为 <span class="k">True</span> 以执行安装</span>
-    <span class="k">if</span> install:
+    install = <span class=<span class="s">"k"</span>>False</span>  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 改为 <span class=<span class="s">"k"</span>>True</span> 以执行安装</span>
+    <span class=<span class="s">"k"</span>>if</span> install:
         install_dependencies()
 
-    show_env_setup_guide()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (299 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+    show_env_setup_guide()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (299 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 第0章：AI Agent 课程概览与前置知识
 ===================================
 
 📌 本章目标：
-  <span class="n">1</span>. 理解「什么是 AI Agent」- 建立直觉认知
-  <span class="n">2</span>. 掌握 Agent 的核心组成公式：Agent = LLM + 规划 + 记忆 + 工具
-  <span class="n">3</span>. 了解 Agent 开发的完整技术栈和 <span class="n">18</span> 章学习路线
-  <span class="n">4</span>. 确认学习本课程所需的前置知识
+  <span class=<span class="s">"n"</span>>1</span>. 理解「什么是 AI Agent」- 建立直觉认知
+  <span class=<span class="s">"n"</span>>2</span>. 掌握 Agent 的核心组成公式：Agent = LLM + 规划 + 记忆 + 工具
+  <span class=<span class="s">"n"</span>>3</span>. 了解 Agent 开发的完整技术栈和 <span class=<span class="s">"n"</span>>18</span> 章学习路线
+  <span class=<span class="s">"n"</span>>4</span>. 确认学习本课程所需的前置知识
 
 📌 本章结构：
-  <span class="n">0.1</span> Agent 是什么？（5分钟理解）
-  <span class="n">0.2</span> 为什么 <span class="n">2024</span>-<span class="n">2026</span> 年是 Agent 爆发期？
-  <span class="n">0.3</span> Agent 核心公式：Agent = LLM + 规划 + 记忆 + 工具
-  <span class="n">0.4</span> 全套学习路线图（18章四层递进）
-  <span class="n">0.5</span> 前置知识自查清单
-  <span class="n">0.6</span> 环境搭建（一键运行）
+  <span class=<span class="s">"n"</span>>0.1</span> Agent 是什么？（5分钟理解）
+  <span class=<span class="s">"n"</span>>0.2</span> 为什么 <span class=<span class="s">"n"</span>>2024</span>-<span class=<span class="s">"n"</span>>2026</span> 年是 Agent 爆发期？
+  <span class=<span class="s">"n"</span>>0.3</span> Agent 核心公式：Agent = LLM + 规划 + 记忆 + 工具
+  <span class=<span class="s">"n"</span>>0.4</span> 全套学习路线图（18章四层递进）
+  <span class=<span class="s">"n"</span>>0.5</span> 前置知识自查清单
+  <span class=<span class="s">"n"</span>>0.6</span> 环境搭建（一键运行）
 
 ---
 
-<span class="n">0.1</span> Agent 是什么？—— 用类比建立直觉
+<span class=<span class="s">"n"</span>>0.1</span> Agent 是什么？—— 用类比建立直觉
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ❌ 普通 LLM（如 ChatGPT 基础版）：
    用户：「北京明天天气怎么样？」
-   LLM：「抱歉，我无法获取实时数据。」  ← 只会<span <span class="k">class</span>="s">"说"</span>，不会<span <span class="k">class</span>="s">"做"</span>
+   LLM：「抱歉，我无法获取实时数据。」  ← 只会<span class="s">"说"</span>，不会<span class="s">"做"</span>
 
 ✅ AI Agent（如 AutoGPT / LangChain Agent）：
    用户：「北京明天天气怎么样？」
    Agent：
-     <span class="n">1</span>. 思考：我需要调用天气 API
-     <span class="n">2</span>. 行动：调用 get_weather(<span <span class="k">class</span>="s">"北京"</span>) → 获取 JSON 数据
-     <span class="n">3</span>. 观察：返回 {<span <span class="k">class</span>="s">"明天"</span>: <span <span class="k">class</span>="s">"晴，<span class="n">25</span>°C"</span>}
-     <span class="n">4</span>. 回答：「北京明天晴天，气温 <span class="n">25</span>°C」  ← 能<span <span class="k">class</span>="s">"说"</span>也能<span <span class="k">class</span>="s">"做"</span>
+     <span class=<span class="s">"n"</span>>1</span>. 思考：我需要调用天气 API
+     <span class=<span class="s">"n"</span>>2</span>. 行动：调用 get_weather(<span class="s">"北京"</span>) → 获取 JSON 数据
+     <span class=<span class="s">"n"</span>>3</span>. 观察：返回 {<span class="s">"明天"</span>: <span class="s">"晴，<span class="</span>n<span class="s">">25</span>°C"</span>}
+     <span class=<span class="s">"n"</span>>4</span>. 回答：「北京明天晴天，气温 <span class=<span class="s">"n"</span>>25</span>°C」  ← 能<span class="s">"说"</span>也能<span class="s">"做"</span>
 
 核心区别：
   - LLM 是「大脑」（会思考）
@@ -453,45 +462,45 @@ body {
 
 ---
 
-<span class="n">0.2</span> 为什么 Agent 是 <span class="n">2024</span>-<span class="n">2026</span> 年最热门方向？
+<span class=<span class="s">"n"</span>>0.2</span> 为什么 Agent 是 <span class=<span class="s">"n"</span>>2024</span>-<span class=<span class="s">"n"</span>>2026</span> 年最热门方向？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 关键时间线：
 
-  ── <span class="n">2023</span>: LLM 之年 ──
-    • <span class="n">2023.03</span>: AutoGPT 开源，Star 数一周破 <span class="n">10</span> 万
-    • <span class="n">2023.06</span>: OpenAI 发布 Function Calling
-    • <span class="n">2023.10</span>: LangChain 发布 LangGraph（Agent 编排框架）
-    • <span class="n">2023.12</span>: MemGPT 论文发布（LLM <span class="k">as</span> Operating System）
+  ── <span class=<span class="s">"n"</span>>2023</span>: LLM 之年 ──
+    • <span class=<span class="s">"n"</span>>2023.03</span>: AutoGPT 开源，Star 数一周破 <span class=<span class="s">"n"</span>>10</span> 万
+    • <span class=<span class="s">"n"</span>>2023.06</span>: OpenAI 发布 Function Calling
+    • <span class=<span class="s">"n"</span>>2023.10</span>: LangChain 发布 LangGraph（Agent 编排框架）
+    • <span class=<span class="s">"n"</span>>2023.12</span>: MemGPT 论文发布（LLM <span class=<span class="s">"k"</span>>as</span> Operating System）
 
-  ── <span class="n">2024</span>: RAG 与 Agent 元年 ──
-    • <span class="n">2024.05</span>: OpenAI 发布 GPT-4o，原生支持工具调用
-    • <span class="n">2024.10</span>: Anthropic 发布 Computer Use（Claude 操控电脑）
-    • <span class="n">2024.11</span>: Anthropic 发布 MCP 协议（Agent ↔ 工具的 USB-C）
+  ── <span class=<span class="s">"n"</span>>2024</span>: RAG 与 Agent 元年 ──
+    • <span class=<span class="s">"n"</span>>2024.05</span>: OpenAI 发布 GPT-4o，原生支持工具调用
+    • <span class=<span class="s">"n"</span>>2024.10</span>: Anthropic 发布 Computer Use（Claude 操控电脑）
+    • <span class=<span class="s">"n"</span>>2024.11</span>: Anthropic 发布 MCP 协议（Agent ↔ 工具的 USB-C）
 
-  ── <span class="n">2025</span>: Agent 爆发之年 ──
-    • <span class="n">2025.01</span>: DeepSeek-R1 发布，推理能力大幅提升
-    • <span class="n">2025.02</span>: Claude Code 正式发布（工业级编码 Agent 标杆）
-    • <span class="n">2025.04</span>: Google 联合 <span class="n">50</span>+ 企业发布 A2A 协议（Agent ↔ Agent）
-    • <span class="n">2025.09</span>: Anthropic 发布 Claude Agent SDK（通用 Agent 框架）
-    • <span class="n">2025.10</span>: Anthropic Computer Use 正式发布（production-ready）
-    • <span class="n">2025.11</span>: OpenClaw (原 Clawdbot) 开源，145K+ GitHub Stars
-    • <span class="n">2025.12</span>: OpenAI 发布 CUA (Computer Using Agent)
+  ── <span class=<span class="s">"n"</span>>2025</span>: Agent 爆发之年 ──
+    • <span class=<span class="s">"n"</span>>2025.01</span>: DeepSeek-R1 发布，推理能力大幅提升
+    • <span class=<span class="s">"n"</span>>2025.02</span>: Claude Code 正式发布（工业级编码 Agent 标杆）
+    • <span class=<span class="s">"n"</span>>2025.04</span>: Google 联合 <span class=<span class="s">"n"</span>>50</span>+ 企业发布 A2A 协议（Agent ↔ Agent）
+    • <span class=<span class="s">"n"</span>>2025.09</span>: Anthropic 发布 Claude Agent SDK（通用 Agent 框架）
+    • <span class=<span class="s">"n"</span>>2025.10</span>: Anthropic Computer Use 正式发布（production-ready）
+    • <span class=<span class="s">"n"</span>>2025.11</span>: OpenClaw (原 Clawdbot) 开源，145K+ GitHub Stars
+    • <span class=<span class="s">"n"</span>>2025.12</span>: OpenAI 发布 CUA (Computer Using Agent)
 
-  ── <span class="n">2026</span>: Agent 基础设施成熟 ──
-    • <span class="n">2026.02</span>: Harness 在 Harness-Bench 上达到 <span class="n">100</span>% 评分
-    • <span class="n">2026.03</span>: Letta 发布 Filesystem Memory 方案（LoCoMo <span class="n">74.0</span>%）
-    • <span class="n">2026</span>: MCP / A2A 成为行业标准，Agent 中间件生态涌现
+  ── <span class=<span class="s">"n"</span>>2026</span>: Agent 基础设施成熟 ──
+    • <span class=<span class="s">"n"</span>>2026.02</span>: Harness 在 Harness-Bench 上达到 <span class=<span class="s">"n"</span>>100</span>% 评分
+    • <span class=<span class="s">"n"</span>>2026.03</span>: Letta 发布 Filesystem Memory 方案（LoCoMo <span class=<span class="s">"n"</span>>74.0</span>%）
+    • <span class=<span class="s">"n"</span>>2026</span>: MCP / A2A 成为行业标准，Agent 中间件生态涌现
 
-就业信号（<span class="n">2025</span>-<span class="n">2026</span>）：
-  - <span <span class="k">class</span>="s">"AI Agent 工程师"</span> 岗位同比增长 <span class="n">300</span>%+
+就业信号（<span class=<span class="s">"n"</span>>2025</span>-<span class=<span class="s">"n"</span>>2026</span>）：
+  - <span class="s">"AI Agent 工程师"</span> 岗位同比增长 <span class=<span class="s">"n"</span>>300</span>%+
   - 大厂（字节/腾讯/阿里/Google/Meta）均设立 Agent 专项团队
   - 硅谷 VC 投资方向全面转向 Agent 赛道
   - Agent 工程师薪资范围：一线城市 25K-80K（视经验和公司）
 
 ---
 
-<span class="n">0.3</span> Agent 核心公式
+<span class=<span class="s">"n"</span>>0.3</span> Agent 核心公式
 ━━━━━━━━━━━━━━━━━━
 
   Agent = LLM + 规划(Planning) + 记忆(Memory) + 工具(Tools)
@@ -513,30 +522,30 @@ body {
   └─────────────────────────────────────────────┘
 
   Agent 执行循环（核心，面试高频！）：
-    <span class="n">1</span>. 感知(Perceive)：接收用户输入和上一次行动的结果
-    <span class="n">2</span>. 思考(Think)：LLM 分析当前状态，决定下一步
-    <span class="n">3</span>. 行动(Act)：调用工具或生成最终回答
-    <span class="n">4</span>. 观察(Observe)：获取行动结果
-    → 回到步骤 <span class="n">1</span>，直到任务完成
+    <span class=<span class="s">"n"</span>>1</span>. 感知(Perceive)：接收用户输入和上一次行动的结果
+    <span class=<span class="s">"n"</span>>2</span>. 思考(Think)：LLM 分析当前状态，决定下一步
+    <span class=<span class="s">"n"</span>>3</span>. 行动(Act)：调用工具或生成最终回答
+    <span class=<span class="s">"n"</span>>4</span>. 观察(Observe)：获取行动结果
+    → 回到步骤 <span class=<span class="s">"n"</span>>1</span>，直到任务完成
 
   这个循环被称为「ReAct 循环」(Reasoning + Acting)，
-  是 <span class="n">99</span>% 的 Agent 框架的底层逻辑。
+  是 <span class=<span class="s">"n"</span>>99</span>% 的 Agent 框架的底层逻辑。
 
 
-<span class="n">0.4</span> 全套学习路线图（18章四层递进）
+<span class=<span class="s">"n"</span>>0.4</span> 全套学习路线图（18章四层递进）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 本课程按「理论 → 框架 → 深度 → 工程」四层递进组织：
 
   ┌─────────────────────────────────────────────────────────────┐
-  │ 第1层：Agent 理论基础（Ch1-<span class="n">3</span>）                                │
+  │ 第1层：Agent 理论基础（Ch1-<span class=<span class="s">"n"</span>>3</span>）                                │
   │ ┌──────────────┬──────────────────────────────────────────┐ │
   │ │ Ch1 基础概念  │ Agent 定义、LLM 调用、手写第一个 Agent    │ │
   │ │ Ch2 核心组件  │ 规划器 + 记忆系统 + 工具设计黄金法则       │ │
   │ │ Ch3 类型分类  │ ReAct / Plan-Execute / Reflexion 对比    │ │
   │ └──────────────┴──────────────────────────────────────────┘ │
   ├─────────────────────────────────────────────────────────────┤
-  │ 第2层：工程实践与框架（Ch4-<span class="n">7</span>）                                │
+  │ 第2层：工程实践与框架（Ch4-<span class=<span class="s">"n"</span>>7</span>）                                │
   │ ┌──────────────┬──────────────────────────────────────────┐ │
   │ │ Ch4 主流框架  │ LangChain Agent + LangGraph 状态机实战    │ │
   │ │ Ch5 多智能体  │ 协作式/分层式 Multi-Agent 架构            │ │
@@ -544,7 +553,7 @@ body {
   │ │ Ch7 求职面试  │ 20道高频面试题 + 项目指南 + 面试流程       │ │
   │ └──────────────┴──────────────────────────────────────────┘ │
   ├─────────────────────────────────────────────────────────────┤
-  │ 第3层：深度技术剖析（Ch8-<span class="n">12</span>）                                │
+  │ 第3层：深度技术剖析（Ch8-<span class=<span class="s">"n"</span>>12</span>）                                │
   │ ┌──────────────┬──────────────────────────────────────────┐ │
   │ │ Ch8 ClaudeCode│ nO主循环/h2A实时Steering/上下文压缩/SubAgent│
   │ │ Ch9 RAG深度   │ Naive→Advanced→GraphRAG→Agentic RAG      │
@@ -553,7 +562,7 @@ body {
   │ │ Ch12 基础设施  │ OpenClaw架构/Harness/Agent生产化Checklist │
   │ └──────────────┴──────────────────────────────────────────┘ │
   ├─────────────────────────────────────────────────────────────┤
-  │ 第4层：工程化与前沿（Ch13-<span class="n">18</span>）                                │
+  │ 第4层：工程化与前沿（Ch13-<span class=<span class="s">"n"</span>>18</span>）                                │
   │ ┌──────────────┬──────────────────────────────────────────┐ │
   │ │ Ch13 FastAPI  │ REST/SSE/WebSocket Agent 服务化部署      │
   │ │ Ch14 SQLite   │ 5表Schema + WAL + 会话/任务/用户管理     │
@@ -565,15 +574,15 @@ body {
   └─────────────────────────────────────────────────────────────┘
 
 学习建议：
-  <span class="n">1</span>. 如果你是 Agent 新手：按 Ch1→Ch18 顺序学习
-  <span class="n">2</span>. 如果你已有基础：直接跳到 Ch8 开始深度技术
-  <span class="n">3</span>. 如果你要准备面试：Ch7(面试题) + Ch8(Claude Code) + Ch10(MCP)
+  <span class=<span class="s">"n"</span>>1</span>. 如果你是 Agent 新手：按 Ch1→Ch18 顺序学习
+  <span class=<span class="s">"n"</span>>2</span>. 如果你已有基础：直接跳到 Ch8 开始深度技术
+  <span class=<span class="s">"n"</span>>3</span>. 如果你要准备面试：Ch7(面试题) + Ch8(Claude Code) + Ch10(MCP)
                        + Ch11(ToolCall) + Ch15(A2A) + Ch18(安全)
-  <span class="n">4</span>. 如果你要构建产品：Ch13(FastAPI) + Ch14(SQLite) + Ch12(生产)
+  <span class=<span class="s">"n"</span>>4</span>. 如果你要构建产品：Ch13(FastAPI) + Ch14(SQLite) + Ch12(生产)
 
 ---
 
-<span class="n">0.5</span> 前置知识自查清单
+<span class=<span class="s">"n"</span>>0.5</span> 前置知识自查清单
 ━━━━━━━━━━━━━━━━━━━
 
 学习本课程前，你需要具备：
@@ -581,7 +590,7 @@ body {
   ✅ Python 基础
      - 会写函数、类、装饰器
      - 会用 pip 安装包
-     - 理解异步编程（<span class="k">async</span>/<span class="k">await</span>）的概念（Ch1-<span class="n">12</span> 了解即可，Ch13 必须）
+     - 理解异步编程（<span class=<span class="s">"k"</span>>async</span>/<span class=<span class="s">"k"</span>>await</span>）的概念（Ch1-<span class=<span class="s">"n"</span>>12</span> 了解即可，Ch13 必须）
      - 了解 SQL 基础（Ch14 需要）
 
   ✅ LLM 基础认知
@@ -604,7 +613,7 @@ body {
 
 ---
 
-<span class="n">0.6</span> 环境搭建
+<span class=<span class="s">"n"</span>>0.6</span> 环境搭建
 ━━━━━━━━━━━
 
 下面是一键安装脚本，运行本文件即可检查环境。
@@ -613,96 +622,96 @@ body {
   ┌────────────────────┬────────────────────────────────────┐
   │       章节          │            需要的依赖               │
   ├────────────────────┼────────────────────────────────────┤
-  │ Ch1-<span class="n">3</span> 基础理论     │ openai, python-dotenv              │
-  │ Ch4-<span class="n">5</span> 框架         │ langchain, langchain-openai,      │
+  │ Ch1-<span class=<span class="s">"n"</span>>3</span> 基础理论     │ openai, python-dotenv              │
+  │ Ch4-<span class=<span class="s">"n"</span>>5</span> 框架         │ langchain, langchain-openai,      │
   │                    │ langgraph                         │
-  │ Ch8-<span class="n">12</span> 深度技术    │ pydantic, httpx, tiktoken         │
+  │ Ch8-<span class=<span class="s">"n"</span>>12</span> 深度技术    │ pydantic, httpx, tiktoken         │
   │ Ch13 FastAPI       │ fastapi, uvicorn                  │
   │ Ch14 SQLite        │ 标准库（无需额外安装）              │
-  │ Ch15-<span class="n">18</span> 其他       │ 无需额外依赖                       │
+  │ Ch15-<span class=<span class="s">"n"</span>>18</span> 其他       │ 无需额外依赖                       │
   └────────────────────┴────────────────────────────────────┘
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
-<span class="k">import</span> subprocess
-<span class="k">import</span> sys
+<span class=<span class="s">"k"</span>>import</span> subprocess
+<span class=<span class="s">"k"</span>>import</span> sys
 
 
-<span class="k">def</span> check_python_version():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"检查 Python 版本是否满足要求（&gt;= <span class="n">3.10</span>）。"</span><span <span class="k">class</span>="s">""</span></span>
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>check_python_version</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"检查 Python 版本是否满足要求（&gt;= <span class="</span>n<span class="s">">3.10</span>）。"</span><span class="s">""</span></span>
     version = sys.version_info
-    <span class="k">if</span> version.major &gt;= <span class="n">3</span> <span class="k">and</span> version.minor &gt;= <span class="n">10</span>:
-        print(f<span <span class="k">class</span>="s">"[✓] Python {version.major}.{version.minor}.{version.micro} - 满足要求"</span>)
-        <span class="k">return</span> <span class="k">True</span>
-    print(f<span <span class="k">class</span>="s">"[✗] Python {version.major}.{version.minor} - 需要 Python <span class="n">3.10</span>+"</span>)
-    <span class="k">return</span> <span class="k">False</span>
+    <span class=<span class="s">"k"</span>>if</span> version.major &gt;= <span class=<span class="s">"n"</span>>3</span> <span class=<span class="s">"k"</span>>and</span> version.minor &gt;= <span class=<span class="s">"n"</span>>10</span>:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"[✓] Python {version.major}.{version.minor}.{version.micro} - 满足要求"</span>)
+        <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>True</span>
+    <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"[✗] Python {version.major}.{version.minor} - 需要 Python <span class="</span>n<span class="s">">3.10</span>+"</span>)
+    <span class=<span class="s">"k"</span>>return</span> <span class=<span class="s">"k"</span>>False</span>
 
 
-<span class="k">def</span> install_dependencies():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"一键安装本课程所需的所有核心依赖。"</span><span <span class="k">class</span>="s">""</span></span>
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>install_dependencies</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"一键安装本课程所需的所有核心依赖。"</span><span class="s">""</span></span>
     packages = [
-        <span <span class="k">class</span>="s">"openai&gt;=<span class="n">1.0</span>.<span class="n">0</span>"</span>,           <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># OpenAI API 调用 (Ch1-<span class="n">12</span>)</span>
-        <span <span class="k">class</span>="s">"langchain&gt;=<span class="n">0.3</span>.<span class="n">0</span>"</span>,       <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LangChain 核心框架 (Ch4-<span class="n">5</span>)</span>
-        <span <span class="k">class</span>="s">"langchain-openai"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LangChain OpenAI 集成 (Ch4-<span class="n">5</span>)</span>
-        <span <span class="k">class</span>="s">"langgraph"</span>,               <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LangGraph 状态机 (Ch4-<span class="n">5</span>)</span>
-        <span <span class="k">class</span>="s">"pydantic&gt;=<span class="n">2.0</span>.<span class="n">0</span>"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 数据验证 (Ch13)</span>
-        <span <span class="k">class</span>="s">"python-dotenv"</span>,           <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 环境变量管理</span>
-        <span <span class="k">class</span>="s">"httpx"</span>,                   <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># HTTP 请求</span>
-        <span <span class="k">class</span>="s">"tiktoken"</span>,                <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Token 计数</span>
-        <span <span class="k">class</span>="s">"fastapi"</span>,                 <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Web 框架 (Ch13)</span>
-        <span <span class="k">class</span>="s">"uvicorn"</span>,                 <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ASGI 服务器 (Ch13)</span>
+        <span class="s">"openai&gt;=<span class="</span>n<span class="s">">1.0</span>.<span class="</span>n<span class="s">">0</span>"</span>,           <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># OpenAI API 调用 (Ch1-<span class=<span class="s">"n"</span>>12</span>)</span>
+        <span class="s">"langchain&gt;=<span class="</span>n<span class="s">">0.3</span>.<span class="</span>n<span class="s">">0</span>"</span>,       <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># LangChain 核心框架 (Ch4-<span class=<span class="s">"n"</span>>5</span>)</span>
+        <span class="s">"langchain-openai"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># LangChain OpenAI 集成 (Ch4-<span class=<span class="s">"n"</span>>5</span>)</span>
+        <span class="s">"langgraph"</span>,               <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># LangGraph 状态机 (Ch4-<span class=<span class="s">"n"</span>>5</span>)</span>
+        <span class="s">"pydantic&gt;=<span class="</span>n<span class="s">">2.0</span>.<span class="</span>n<span class="s">">0</span>"</span>,        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 数据验证 (Ch13)</span>
+        <span class="s">"python-dotenv"</span>,           <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 环境变量管理</span>
+        <span class="s">"httpx"</span>,                   <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># HTTP 请求</span>
+        <span class="s">"tiktoken"</span>,                <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Token 计数</span>
+        <span class="s">"fastapi"</span>,                 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># Web 框架 (Ch13)</span>
+        <span class="s">"uvicorn"</span>,                 <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># ASGI 服务器 (Ch13)</span>
     ]
-    <span class="k">for</span> pkg <span class="k">in</span> packages:
-        print(f<span <span class="k">class</span>="s">"正在安装 {pkg}..."</span>)
+    <span class=<span class="s">"k"</span>>for</span> pkg <span class=<span class="s">"k"</span>>in</span> packages:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"正在安装 {pkg}..."</span>)
         subprocess.check_call(
-            [sys.executable, <span <span class="k">class</span>="s">"-m"</span>, <span <span class="k">class</span>="s">"pip"</span>, <span <span class="k">class</span>="s">"install"</span>, pkg, <span <span class="k">class</span>="s">"-q"</span>]
+            [sys.executable, <span class="s">"-m"</span>, <span class="s">"pip"</span>, <span class="s">"install"</span>, pkg, <span class="s">"-q"</span>]
         )
-    print(<span <span class="k">class</span>="s">"\n[✓] 所有依赖安装完成！"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n[✓] 所有依赖安装完成！"</span>)
 
 
-<span class="k">def</span> show_env_setup_guide():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"展示 API Key 配置说明。"</span><span <span class="k">class</span>="s">""</span></span>
-    guide = <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>show_env_setup_guide</span>():
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"展示 API Key 配置说明。"</span><span class="s">""</span></span>
+    guide = <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
     ╔══════════════════════════════════════════════════════════╗
     ║              API Key 配置指南                             ║
     ╠══════════════════════════════════════════════════════════╣
     ║                                                          ║
-    ║  <span class="n">1</span>. 在项目根目录创建 .env 文件：                           ║
+    ║  <span class=<span class="s">"n"</span>>1</span>. 在项目根目录创建 .env 文件：                           ║
     ║     OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx               ║
     ║     OPENAI_BASE_URL=https://api.openai.com/v1            ║
     ║                                                          ║
-    ║  <span class="n">2</span>. 如使用国产模型（如 DeepSeek / 通义千问）：              ║
+    ║  <span class=<span class="s">"n"</span>>2</span>. 如使用国产模型（如 DeepSeek / 通义千问）：              ║
     ║     OPENAI_API_KEY=your-deepseek-key                     ║
     ║     OPENAI_BASE_URL=https://api.deepseek.com/v1          ║
     ║     LLM_MODEL=deepseek-chat                             ║
     ║                                                          ║
-    ║  <span class="n">3</span>. 验证配置：                                            ║
-    ║     python -c "<span class="k">from</span> openai <span class="k">import</span> OpenAI;                ║
-    ║       <span class="k">import</span> os; <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv;         ║
+    ║  <span class=<span class="s">"n"</span>>3</span>. 验证配置：                                            ║
+    ║     python -c <span class="s">"<span class="</span>k<span class="s">">from</span> openai <span class="</span>k">import</span> OpenAI;                ║
+    ║       <span class=<span class="s">"k"</span>>import</span> os; <span class=<span class="s">"k"</span>>from</span> dotenv <span class=<span class="s">"k"</span>>import</span> load_dotenv;         ║
     ║       load_dotenv();                                    ║
     ║       client = OpenAI();                                ║
-    ║       print(client.models.list().data[<span class="n">0</span>].id)"            ║
+    ║       <span class=<span class="s">"b"</span>>print</span>(client.models.<span class=<span class="s">"b"</span>>list</span>().data[<span class=<span class="s">"n"</span>>0</span>].<span class=<span class="s">"b"</span>>id</span>)"            ║
     ║                                                          ║
     ╚══════════════════════════════════════════════════════════╝
-    <span <span class="k">class</span>="s">""</span>"</span>
-    print(guide)
+    <span class="s">""</span>"</span>
+    <span class=<span class="s">"b"</span>>print</span>(guide)
 
 
-<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"   AI Agent 课程 - 环境检查与安装"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print()
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"   AI Agent 课程 - 环境检查与安装"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>()
 
-    <span class="k">if</span> <span class="k">not</span> check_python_version():
-        sys.exit(<span class="n">1</span>)
+    <span class=<span class="s">"k"</span>>if</span> <span class=<span class="s">"k"</span>>not</span> check_python_version():
+        sys.exit(<span class=<span class="s">"n"</span>>1</span>)
 
-    print()
-    print(<span <span class="k">class</span>="s">"后续章节运行前，请先执行依赖安装："</span>)
-    print(<span <span class="k">class</span>="s">"  修改下方 install=<span class="k">True</span> 后运行本文件"</span>)
-    print()
+    <span class=<span class="s">"b"</span>>print</span>()
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"后续章节运行前，请先执行依赖安装："</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  修改下方 install=<span class="</span>k<span class="s">">True</span> 后运行本文件"</span>)
+    <span class=<span class="s">"b"</span>>print</span>()
 
-    install = <span class="k">False</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 改为 <span class="k">True</span> 以执行安装</span>
-    <span class="k">if</span> install:
+    install = <span class=<span class="s">"k"</span>>False</span>  <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 改为 <span class=<span class="s">"k"</span>>True</span> 以执行安装</span>
+    <span class=<span class="s">"k"</span>>if</span> install:
         install_dependencies()
 
     show_env_setup_guide()

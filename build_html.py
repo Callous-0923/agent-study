@@ -131,6 +131,15 @@ body {
   line-height: 1.6; max-height: 70vh; overflow-y: auto;
 }
 
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -298,18 +307,44 @@ def build_html(filepath: str, output_path: str = None):
     html += f'<div class="hero"><h1>第{ch_num}章 {title}</h1>'
     html += f'<p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div>'
 
+    # 提取并缓存首段 imports / 公共头部代码
+    imports = ""
+    if sections:
+        first_code = sections[0][1]
+        # 提取 import ... / from ... import ... / load_dotenv() 等顶部语句
+        imp_lines = []
+        for line in first_code.split('\n'):
+            s = line.strip()
+            if (s.startswith('import ') or s.startswith('from ') or
+                s.startswith('load_dotenv(') or s.startswith('client = ') or
+                s == '' or s.startswith('#') or s.startswith('MODEL = ') or
+                s.startswith('DB_PATH = ') or s.startswith('CSS = ') or
+                s.startswith('BASE_URL = ')):
+                imp_lines.append(line)
+            elif imp_lines and not line.strip():
+                imp_lines.append(line)
+            else:
+                break
+        imports = '\n'.join(imp_lines).strip() + '\n\n' if imp_lines else ""
+
     # 讲义+代码交替渲染
     for i, (lecture_text, code_text) in enumerate(sections):
         # 讲义部分
         lecture_html = parse_lecture(lecture_text)
         html += f'<div class="lecture">{lecture_html}</div>'
 
-        # 对应代码部分（如果有代码）
-        if code_text:
-            highlighted = highlight_python(code_text)
-            lines = code_text.count('\n') + 1
-            html += f'<div class="code-section">'
-            html += f'<details><summary>💻 代码 ({lines} 行)</summary>'
+        # 代码：第2段起自动补上 imports
+        display_code = code_text
+        if i > 0 and imports and code_text:
+            # 检查已含公共头部则不加
+            if 'import os' not in code_text[:200] and 'import sys' not in code_text[:200]:
+                display_code = imports + code_text
+
+        if display_code.strip():
+            highlighted = highlight_python(display_code)
+            lines = display_code.count('\n') + 1
+            html += f'<div class="code-section"><details open>'
+            html += f'<summary>💻 代码 ({lines} 行)</summary>'
             html += f'<div class="code-block"><pre>{highlighted}</pre></div>'
             html += f'</details></div>'
 
@@ -564,35 +599,48 @@ def parse_lecture(docstring: str) -> str:
 
 
 def highlight_python(code: str) -> str:
-    """Python 语法高亮（简单版）。"""
-    # 转义 HTML
+    # IDE 风格语法高亮（VS Code Dark+ 配色）
     code = code.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
     # 注释
-    code = re.sub(r'(<span class="h">)?(#[^\n]*)(</span>)?',
-                  r'<span class="h">\2</span>', code)
+    code = re.sub(r'(#[^\n]*)', r'<span class="h">\1</span>', code)
 
-    # 字符串
+    # 三引号字符串（先处理，避免内部内容被误标）
     code = re.sub(r'("""[\s\S]*?""")', r'<span class="s">\1</span>', code)
     code = re.sub(r"('''[\s\S]*?''')", r'<span class="s">\1</span>', code)
-    code = re.sub(r'"([^"\\\n]*(\\.[^"\\\n]*)*)"', r'<span class="s">"\1"</span>', code)
-    code = re.sub(r"'([^'\\\n]*(\\.[^'\\\n]*)*)'", r"<span class='s'>'\1'</span>", code)
+
+    # 装饰器
+    code = re.sub(r'(@\w+)', r'<span class="d">\1</span>', code)
 
     # 关键字
     kw = r'\b(def|class|import|from|return|if|else|elif|for|while|try|except|' \
          r'with|as|in|not|and|or|is|None|True|False|async|await|yield|' \
-         r'raise|break|continue|pass|lambda|global|nonlocal)\b'
+         r'raise|break|continue|pass|lambda|global|nonlocal|self)\b'
     code = re.sub(kw, r'<span class="k">\1</span>', code)
 
-    # 装饰器
-    code = re.sub(r'(<span class="h">)?(@\w+)', r'<span class="d">\2</span>', code)
+    # 函数名（def xxx 后面的名称）
+    code = re.sub(r'(<span class="k">def</span>)\s+(\w+)',
+                  r'\1 <span class="f">\2</span>', code)
+
+    # 类名
+    code = re.sub(r'(<span class="k">class</span>)\s+(\w+)',
+                  r'\1 <span class="f">\2</span>', code)
+
+    # 内置函数
+    builtins = r'\b(print|len|range|int|str|float|list|dict|set|tuple|' \
+               r'type|isinstance|enumerate|zip|map|filter|sorted|reversed|' \
+               r'open|input|abs|max|min|sum|any|all|super|hasattr|getattr|' \
+               r'setattr|delattr|callable|iter|next|round|hash|id|repr)\b'
+    code = re.sub(builtins, r'<span class="b">\1</span>', code)
 
     # 数字
     code = re.sub(r'\b(\d+\.?\d*)\b', r'<span class="n">\1</span>', code)
 
-    # f-string 前缀
-    code = code.replace('<span class="s">f"', '<span class="s">f"')
-    code = code.replace("<span class='s'>f'", "<span class='s'>f'")
+    # 字符串（单引号和双引号）
+    code = re.sub(r'"([^"\\\n]*(\\.[^"\\\n]*)*)"',
+                  r'<span class="s">"\1"</span>', code)
+    code = re.sub(r"'([^'\\\n]*(\\.[^'\\\n]*)*)'",
+                  r"<span class='s'>'\1'</span>", code)
 
     return code
 

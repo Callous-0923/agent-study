@@ -85,6 +85,15 @@ body {
   line-height: 1.6; max-height: 70vh; overflow-y: auto;
 }
 
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
 /* 移动端 */
 @media (max-width: 640px) {
   .container { padding: 16px 12px 60px; }
@@ -353,49 +362,49 @@ skill/code-review     → 代码审查</pre>
 <pre>                        ▼
                   ┌──────────┐
                   │ 告警系统  │ ← PagerDuty / Slack
-                  └──────────┘</pre></div><div class="code-section"><details><summary>💻 代码 (43 行)</summary><div class="code-block"><pre><span class="k">class</span> AgentProductionChecklist:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Agent 生产化就绪度检查清单。"</span><span <span class="k">class</span>="s">""</span></span>
+                  └──────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (43 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentProductionChecklist</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Agent 生产化就绪度检查清单。"</span><span class="s">""</span></span>
 
     CHECKLIST = [
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 可观测性</span>
-        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"每次 LLM 调用记录 input/output tokens + latency"</span>),
-        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"每次 Tool Call 记录工具名 + 参数 + 结果 + 耗时"</span>),
-        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"核心指标看板：成功率 / P50/P99延迟 / Token消耗趋势"</span>),
-        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"告警规则：成功率 &lt; <span class="n">95</span>% → 通知"</span>),
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 评测</span>
-        (<span <span class="k">class</span>="s">"评测"</span>, <span <span class="k">class</span>="s">"离线评测集覆盖典型场景 + 边界条件 + Bad Case"</span>),
-        (<span <span class="k">class</span>="s">"评测"</span>, <span <span class="k">class</span>="s">"上线前回归评测（确保新版本不退化）"</span>),
-        (<span <span class="k">class</span>="s">"评测"</span>, <span <span class="k">class</span>="s">"A/B 测试框架（对比新老版本效果）"</span>),
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 安全</span>
-        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"Prompt Injection 检测与过滤"</span>),
-        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"工具调用分级：读自动 / 写确认 / 危险需二次确认"</span>),
-        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"审计日志：记录所有操作，可追溯"</span>),
-        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"敏感信息脱敏（API Key、用户数据等）"</span>),
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 成本</span>
-        (<span <span class="k">class</span>="s">"成本"</span>, <span <span class="k">class</span>="s">"模型分层：简单任务用小模型 (gpt-4o-mini)"</span>),
-        (<span <span class="k">class</span>="s">"成本"</span>, <span <span class="k">class</span>="s">"语义缓存：避免重复查询消耗 Token"</span>),
-        (<span <span class="k">class</span>="s">"成本"</span>, <span <span class="k">class</span>="s">"Token 预算告警：单用户/单日/单月上限"</span>),
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 可靠性</span>
-        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"LLM 调用重试 (exponential backoff)"</span>),
-        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"超时控制 (30s 超时 + 降级策略)"</span>),
-        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"熔断器：连续失败 N 次 → 暂停 → 恢复"</span>),
-        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"优雅降级：LLM 不可用时返回兜底回答"</span>),
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 可观测性</span>
+        (<span class="s">"可观测性"</span>, <span class="s">"每次 LLM 调用记录 <span class="</span>b<span class="s">">input</span>/output tokens + latency"</span>),
+        (<span class="s">"可观测性"</span>, <span class="s">"每次 Tool Call 记录工具名 + 参数 + 结果 + 耗时"</span>),
+        (<span class="s">"可观测性"</span>, <span class="s">"核心指标看板：成功率 / P50/P99延迟 / Token消耗趋势"</span>),
+        (<span class="s">"可观测性"</span>, <span class="s">"告警规则：成功率 &lt; <span class="</span>n<span class="s">">95</span>% → 通知"</span>),
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 评测</span>
+        (<span class="s">"评测"</span>, <span class="s">"离线评测集覆盖典型场景 + 边界条件 + Bad Case"</span>),
+        (<span class="s">"评测"</span>, <span class="s">"上线前回归评测（确保新版本不退化）"</span>),
+        (<span class="s">"评测"</span>, <span class="s">"A/B 测试框架（对比新老版本效果）"</span>),
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 安全</span>
+        (<span class="s">"安全"</span>, <span class="s">"Prompt Injection 检测与过滤"</span>),
+        (<span class="s">"安全"</span>, <span class="s">"工具调用分级：读自动 / 写确认 / 危险需二次确认"</span>),
+        (<span class="s">"安全"</span>, <span class="s">"审计日志：记录所有操作，可追溯"</span>),
+        (<span class="s">"安全"</span>, <span class="s">"敏感信息脱敏（API Key、用户数据等）"</span>),
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 成本</span>
+        (<span class="s">"成本"</span>, <span class="s">"模型分层：简单任务用小模型 (gpt-4o-mini)"</span>),
+        (<span class="s">"成本"</span>, <span class="s">"语义缓存：避免重复查询消耗 Token"</span>),
+        (<span class="s">"成本"</span>, <span class="s">"Token 预算告警：单用户/单日/单月上限"</span>),
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 可靠性</span>
+        (<span class="s">"可靠性"</span>, <span class="s">"LLM 调用重试 (exponential backoff)"</span>),
+        (<span class="s">"可靠性"</span>, <span class="s">"超时控制 (30s 超时 + 降级策略)"</span>),
+        (<span class="s">"可靠性"</span>, <span class="s">"熔断器：连续失败 N 次 → 暂停 → 恢复"</span>),
+        (<span class="s">"可靠性"</span>, <span class="s">"优雅降级：LLM 不可用时返回兜底回答"</span>),
     ]
 
-    <span class="d">@classmethod</span>
-    <span class="k">def</span> check(cls) -&gt; list[tuple[str, str, bool]]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"返回检查清单及每项的完成状态（这里标注为待检查）。
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>check</span>(cls) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>str</span>, bool]]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"返回检查清单及每项的完成状态（这里标注为待检查）。
 
         Returns:
             (类别, 检查项, 是否完成) 的列表。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">return</span> [(cat, item, <span class="k">False</span>) <span class="k">for</span> cat, item <span class="k">in</span> cls.CHECKLIST]
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"k"</span>>return</span> [(cat, item, <span class=<span class="s">"k"</span>>False</span>) <span class=<span class="s">"k"</span>>for</span> cat, item <span class=<span class="s">"k"</span>>in</span> cls.CHECKLIST]
 
-    <span class="d">@classmethod</span>
-    <span class="k">def</span> print_checklist(cls):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"打印检查清单。"</span><span <span class="k">class</span>="s">""</span></span>
-        <span class="k">for</span> cat, item <span class="k">in</span> cls.CHECKLIST:
-            print(f<span <span class="k">class</span>="s">"  [{cat:8s}] ☐ {item}"</span>)</pre></div></details></div><div class="lecture"><h2>12.6 全课程体系梳理 —— 回顾与展望</h2>
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>print_checklist</span>(cls):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"打印检查清单。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"k"</span>>for</span> cat, item <span class=<span class="s">"k"</span>>in</span> cls.CHECKLIST:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  [{cat:8s}] ☐ {item}"</span>)</pre></div></details></div><div class="lecture"><h2>12.6 全课程体系梳理 —— 回顾与展望</h2>
 <p>&nbsp;</p>
 <p>现在你学完了全部 12 章：</p>
 <p>&nbsp;</p>
@@ -462,79 +471,79 @@ skill/code-review     → 代码审查</pre>
 <p>"Agent 怎么上生产？"</p>
 <p>→ 可观测性 + 评测体系 + 安全防护 + 成本控制 + 可靠性</p>
 <p>→ 每个环节都可以展开讲具体方案</p>
-<p>→ 关键在于「工程化思维」而非「Demo 思维」</p></div><div class="code-section"><details><summary>💻 代码 (64 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║  第12章：OpenClaw / Harness 与 Agent 生产基础设施      ║"</span>)
-    print(<span <span class="k">class</span>="s">"║  Gateway架构 · AgentSkills · 评测 · 生产Checklist    ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<p>→ 关键在于「工程化思维」而非「Demo 思维」</p></div><div class="code-section"><details open><summary>💻 代码 (64 行)</summary><div class="code-block"><pre><span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第12章：OpenClaw / Harness 与 Agent 生产基础设施      ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Gateway架构 · AgentSkills · 评测 · 生产Checklist    ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.1</span> OpenClaw 架构概览"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">12.1</span> OpenClaw 架构概览"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     oc_features = [
-        <span <span class="k">class</span>="s">"Gateway 中心化架构（Node.js 控制平面）"</span>,
-        <span <span class="k">class</span>="s">"多 Channel 接入：WhatsApp / Telegram / Discord / Slack"</span>,
-        <span <span class="k">class</span>="s">"LLM Provider 抽象：Claude / GPT / Gemini / Ollama"</span>,
-        <span <span class="k">class</span>="s">"持久化记忆存储：用户偏好 + 对话历史"</span>,
-        <span <span class="k">class</span>="s">"AgentSkills + ClawHub：Agent 技能生态"</span>,
-        <span <span class="k">class</span>="s">"145K+ GitHub Stars"</span>,
+        <span class="s">"Gateway 中心化架构（Node.js 控制平面）"</span>,
+        <span class="s">"多 Channel 接入：WhatsApp / Telegram / Discord / Slack"</span>,
+        <span class="s">"LLM Provider 抽象：Claude / GPT / Gemini / Ollama"</span>,
+        <span class="s">"持久化记忆存储：用户偏好 + 对话历史"</span>,
+        <span class="s">"AgentSkills + ClawHub：Agent 技能生态"</span>,
+        <span class="s">"145K+ GitHub Stars"</span>,
     ]
-    <span class="k">for</span> f <span class="k">in</span> oc_features:
-        print(f<span <span class="k">class</span>="s">"  • {f}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> f <span class=<span class="s">"k"</span>>in</span> oc_features:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  • {f}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.2</span> AgentSkills vs MCP 关系"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
-    print(<span <span class="k">class</span>="s">"  MCP 定义「协议」—— 如何连接和通信"</span>)
-    print(<span <span class="k">class</span>="s">"  AgentSkill 定义「能力」—— 具体做什么"</span>)
-    print(<span <span class="k">class</span>="s">"  关系：AgentSkill 通过 MCP 协议暴露给 LLM"</span>)
-    print(<span <span class="k">class</span>="s">"  类比：MCP = USB-C标准，AgentSkill = USB设备"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">12.2</span> AgentSkills vs MCP 关系"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  MCP 定义「协议」—— 如何连接和通信"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  AgentSkill 定义「能力」—— 具体做什么"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  关系：AgentSkill 通过 MCP 协议暴露给 LLM"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  类比：MCP = USB-C标准，AgentSkill = USB设备"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.3</span> Harness 亮点"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">12.3</span> Harness 亮点"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     h_features = [
-        <span <span class="k">class</span>="s">"CLI + SDK 双模式"</span>,
-        <span <span class="k">class</span>="s">"支持任意 LLM（Claude/GPT/Gemini/Ollama）"</span>,
-        <span <span class="k">class</span>="s">"Harness-Bench <span class="n">100</span>% 评分"</span>,
-        <span <span class="k">class</span>="s">"/plan /review /team /status /cost 命令"</span>,
-        <span <span class="k">class</span>="s">"Bypass 模式（CI/CD 友好）"</span>,
+        <span class="s">"CLI + SDK 双模式"</span>,
+        <span class="s">"支持任意 LLM（Claude/GPT/Gemini/Ollama）"</span>,
+        <span class="s">"Harness-Bench <span class="</span>n<span class="s">">100</span>% 评分"</span>,
+        <span class="s">"/plan /review /team /status /cost 命令"</span>,
+        <span class="s">"Bypass 模式（CI/CD 友好）"</span>,
     ]
-    <span class="k">for</span> f <span class="k">in</span> h_features:
-        print(f<span <span class="k">class</span>="s">"  • {f}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> f <span class=<span class="s">"k"</span>>in</span> h_features:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  • {f}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.5</span> Agent 生产化 Checklist"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">12.5</span> Agent 生产化 Checklist"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     AgentProductionChecklist.print_checklist()
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.6</span> 全课程回顾"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">12.6</span> 全课程回顾"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     chapters = [
-        <span <span class="k">class</span>="s">"Ch0   → 课程概览"</span>,
-        <span <span class="k">class</span>="s">"Ch1-<span class="n">3</span> → Agent 基础理论（循环/组件/类型）"</span>,
-        <span <span class="k">class</span>="s">"Ch4-<span class="n">5</span> → 工程实践（框架/Multi-Agent）"</span>,
-        <span <span class="k">class</span>="s">"Ch6-<span class="n">7</span> → 评估与求职（评测/面试）"</span>,
-        <span <span class="k">class</span>="s">"Ch8   → Claude Code 架构深度剖析"</span>,
-        <span <span class="k">class</span>="s">"Ch9   → RAG 技术全览（Naive→Agentic RAG）"</span>,
-        <span <span class="k">class</span>="s">"Ch10  → MCP 协议详解"</span>,
-        <span <span class="k">class</span>="s">"Ch11  → Tool Calling 底层机制"</span>,
-        <span <span class="k">class</span>="s">"Ch12  → 生产基础设施（OpenClaw/Harness/评测）"</span>,
+        <span class="s">"Ch0   → 课程概览"</span>,
+        <span class="s">"Ch1-<span class="</span>n<span class="s">">3</span> → Agent 基础理论（循环/组件/类型）"</span>,
+        <span class="s">"Ch4-<span class="</span>n<span class="s">">5</span> → 工程实践（框架/Multi-Agent）"</span>,
+        <span class="s">"Ch6-<span class="</span>n<span class="s">">7</span> → 评估与求职（评测/面试）"</span>,
+        <span class="s">"Ch8   → Claude Code 架构深度剖析"</span>,
+        <span class="s">"Ch9   → RAG 技术全览（Naive→Agentic RAG）"</span>,
+        <span class="s">"Ch10  → MCP 协议详解"</span>,
+        <span class="s">"Ch11  → Tool Calling 底层机制"</span>,
+        <span class="s">"Ch12  → 生产基础设施（OpenClaw/Harness/评测）"</span>,
     ]
-    <span class="k">for</span> ch <span class="k">in</span> chapters:
-        print(f<span <span class="k">class</span>="s">"  {ch}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> ch <span class=<span class="s">"k"</span>>in</span> chapters:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {ch}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  🎓 全课程体系完成！"</span>)
-    print(<span <span class="k">class</span>="s">"  从 Agent 基础到 Claude Code 逆向分析"</span>)
-    print(<span <span class="k">class</span>="s">"  从 RAG 到 MCP 到 Tool Calling 底层原理"</span>)
-    print(<span <span class="k">class</span>="s">"  你现在已经具备了成为顶级 Agent 工程师的所有知识"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (431 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  🎓 全课程体系完成！"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  从 Agent 基础到 Claude Code 逆向分析"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  从 RAG 到 MCP 到 Tool Calling 底层原理"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  你现在已经具备了成为顶级 Agent 工程师的所有知识"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (431 行)</summary><div class="code-block"><pre><span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
 第12章：OpenClaw / Harness 与 Agent 生产基础设施
 ================================================
 
 📌 本章目标：
-  <span class="n">1</span>. 深入理解 OpenClaw 的 Gateway 中心化架构
-  <span class="n">2</span>. 掌握 AgentSkills 和 ClawHub 的插件生态
-  <span class="n">3</span>. 了解 Harness (OpenHarness) 作为开源编码 Agent 的设计亮点
-  <span class="n">4</span>. 理解 Agent 生产基础设施的全景图（Tracing / 评测 / 安全 / 部署）
-  <span class="n">5</span>. 学会 Agent 评测框架 MultiAgentEval 的使用方式
+  <span class=<span class="s">"n"</span>>1</span>. 深入理解 OpenClaw 的 Gateway 中心化架构
+  <span class=<span class="s">"n"</span>>2</span>. 掌握 AgentSkills 和 ClawHub 的插件生态
+  <span class=<span class="s">"n"</span>>3</span>. 了解 Harness (OpenHarness) 作为开源编码 Agent 的设计亮点
+  <span class=<span class="s">"n"</span>>4</span>. 理解 Agent 生产基础设施的全景图（Tracing / 评测 / 安全 / 部署）
+  <span class=<span class="s">"n"</span>>5</span>. 学会 Agent 评测框架 MultiAgentEval 的使用方式
 
 📌 面试高频点：
   - OpenClaw 和 Claude Code 的架构差异？
@@ -544,7 +553,7 @@ skill/code-review     → 代码审查</pre>
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">12.1</span> OpenClaw —— 145K Star 的现象级开源 Agent
+<span class=<span class="s">"n"</span>>12.1</span> OpenClaw —— 145K Star 的现象级开源 Agent
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 OpenClaw 的故事：
@@ -579,15 +588,15 @@ OpenClaw 的 Gateway 中心化架构：
   └─────────────────────────────────────────────────────────┘
            │                  │                  │
     ┌──────┴──────┐   ┌──────┴──────┐   ┌──────┴──────┐
-    │  Channel <span class="n">1</span>   │   │  Channel <span class="n">2</span>   │   │  Channel <span class="n">3</span>   │
+    │  Channel <span class=<span class="s">"n"</span>>1</span>   │   │  Channel <span class=<span class="s">"n"</span>>2</span>   │   │  Channel <span class=<span class="s">"n"</span>>3</span>   │
     │  WhatsApp    │   │  Telegram    │   │   Discord    │
     └─────────────┘   └─────────────┘   └─────────────┘
 
 Gateway 的职责：
-  <span class="n">1</span>. 消息路由：从不同 Channel 接收消息，路由到正确的 LLM Provider
-  <span class="n">2</span>. 状态管理：维护每个用户的对话状态和 Agent 运行状态
-  <span class="n">3</span>. 安全策略：权限控制、速率限制、内容过滤
-  <span class="n">4</span>. Provider 抽象：统一接口，可热切换底层 LLM
+  <span class=<span class="s">"n"</span>>1</span>. 消息路由：从不同 Channel 接收消息，路由到正确的 LLM Provider
+  <span class=<span class="s">"n"</span>>2</span>. 状态管理：维护每个用户的对话状态和 Agent 运行状态
+  <span class=<span class="s">"n"</span>>3</span>. 安全策略：权限控制、速率限制、内容过滤
+  <span class=<span class="s">"n"</span>>4</span>. Provider 抽象：统一接口，可热切换底层 LLM
 
 Channel Integrations（消息渠道）：
   OpenClaw 不是只能通过 CLI 交互，它可以接入：
@@ -601,7 +610,7 @@ Channel Integrations（消息渠道）：
   Agent 在这些渠道上表现得像一个「真人」。
 
 
-<span class="n">12.2</span> OpenClaw 的 AgentSkills 和 ClawHub
+<span class=<span class="s">"n"</span>>12.2</span> OpenClaw 的 AgentSkills 和 ClawHub
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 这是 OpenClaw 最具特色的设计。
@@ -630,15 +639,15 @@ ClawHub：
   - 两者是协议层和功能层的关系
 
 
-<span class="n">12.3</span> Harness (OpenHarness) —— 开源编码 Agent 黑马
+<span class=<span class="s">"n"</span>>12.3</span> Harness (OpenHarness) —— 开源编码 Agent 黑马
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Harness 是 <span class="n">2026</span> 年崛起的开源编码 Agent。
+Harness 是 <span class=<span class="s">"n"</span>>2026</span> 年崛起的开源编码 Agent。
 
 核心亮点：
   - CLI + SDK 双模式（既可以命令行用，也可以嵌入代码）
   - 支持任意 LLM（Claude、GPT、Gemini、Ollama 等）
-  - 在 Harness-Bench 上获得 <span class="n">100</span>%
+  - 在 Harness-Bench 上获得 <span class=<span class="s">"n"</span>>100</span>%
   - 多提供商兼容（一个命令切换模型）
 
 Harness 的 REPL 命令体系：
@@ -648,7 +657,7 @@ Harness 的 REPL 命令体系：
   ├────────────────┼──────────────────────────────────────┤
   │ /help          │ 帮助和提示                            │
   │ /connect       │ 配置 API Key                         │
-  │ /model         │ 切换模型（/model gpt-<span class="n">5.2</span>）            │
+  │ /model         │ 切换模型（/model gpt-<span class=<span class="s">"n"</span>>5.2</span>）            │
   │ /plan          │ 用只读 Agent 规划实现方案              │
   │ /review        │ 审查代码变更                          │
   │ /team          │ 分解任务并并行执行多个 Agent           │
@@ -661,9 +670,9 @@ Harness 的权限模式：
   - Bypass 模式：完全自动批准（适合 CI/CD 脚本）
 
 应用场景：
-  harness <span <span class="k">class</span>="s">"Fix the authentication bug <span class="k">in</span> auth.py"</span>
-  harness --permission bypass <span <span class="k">class</span>="s">"Run all tests <span class="k">and</span> fix failures"</span>
-  harness -p ollama -m llama3.<span class="n">3</span> <span <span class="k">class</span>="s">"Write unit tests <span class="k">for</span> utils.py"</span>
+  harness <span class="s">"Fix the authentication bug <span class="</span>k<span class="s">">in</span> auth.py"</span>
+  harness --permission bypass <span class="s">"Run <span class="</span>b<span class="s">">all</span> tests <span class="</span>k<span class="s">">and</span> fix failures"</span>
+  harness -p ollama -m llama3.<span class=<span class="s">"n"</span>>3</span> <span class="s">"Write unit tests <span class="</span>k<span class="s">">for</span> utils.py"</span>
 
 与 Claude Code 的对比：
   ┌──────────────┬────────────────────┬───────────────────┐
@@ -678,17 +687,17 @@ Harness 的权限模式：
   └──────────────┴────────────────────┴───────────────────┘
 
 
-<span class="n">12.4</span> Agent 评测基础设施 —— MultiAgentEval
+<span class=<span class="s">"n"</span>>12.4</span> Agent 评测基础设施 —— MultiAgentEval
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 MultiAgentEval 是一个企业级的 Agent 评测框架。
 
 核心概念：
 
-  <span class="n">1</span>. Scenario（评测场景）
+  <span class=<span class="s">"n"</span>>1</span>. Scenario（评测场景）
      定义要评测什么：场景描述 + 任务列表 + 成功标准
 
-  <span class="n">2</span>. Task（评测任务）
+  <span class=<span class="s">"n"</span>>2</span>. Task（评测任务）
      每个 Scenario 包含多个 Task：
      - task_id：任务ID
      - description：Agent 收到的提示词
@@ -696,12 +705,12 @@ MultiAgentEval 是一个企业级的 Agent 评测框架。
      - required_tools：Agent 应该调用的工具
      - expected_state_changes：期望的状态变化
 
-  <span class="n">3</span>. Tool Sandbox（工具沙箱）
+  <span class=<span class="s">"n"</span>>3</span>. Tool Sandbox（工具沙箱）
      - 模拟工具调用（不调用真实 API）
      - 工具行为由 Scenario 定义控制
      - 支持策略检查（Policy Check）
 
-  <span class="n">4</span>. Metrics（评测指标）
+  <span class=<span class="s">"n"</span>>4</span>. Metrics（评测指标）
      - policy_compliance：策略合规性
      - path_parsimony：执行效率（步骤越少越好）
      - state_verification：状态验证
@@ -709,7 +718,7 @@ MultiAgentEval 是一个企业级的 Agent 评测框架。
      - planning_quality：规划质量
      - root_cause_analysis_correctness：诊断准确性
      - consistency_score：多次运行一致性
-     - luna_judge_score：LLM-<span class="k">as</span>-Judge 语义评测
+     - luna_judge_score：LLM-<span class=<span class="s">"k"</span>>as</span>-Judge 语义评测
 
 评测流程：
   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
@@ -723,7 +732,7 @@ MultiAgentEval 是一个企业级的 Agent 评测框架。
                └───────────────┘
 
 
-<span class="n">12.5</span> Agent 生产基础设施全景图
+<span class=<span class="s">"n"</span>>12.5</span> Agent 生产基础设施全景图
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 一个生产级 Agent 系统需要以下基础设施：
@@ -764,64 +773,64 @@ MultiAgentEval 是一个企业级的 Agent 评测框架。
                       ┌──────────┐
                       │ 告警系统  │ ← PagerDuty / Slack
                       └──────────┘
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 
-<span class="k">class</span> AgentProductionChecklist:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Agent 生产化就绪度检查清单。"</span><span <span class="k">class</span>="s">""</span></span>
+<span class=<span class="s">"k"</span>>class</span> <span class=<span class="s">"f"</span>>AgentProductionChecklist</span>:
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"Agent 生产化就绪度检查清单。"</span><span class="s">""</span></span>
 
     CHECKLIST = [
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 可观测性</span>
-        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"每次 LLM 调用记录 input/output tokens + latency"</span>),
-        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"每次 Tool Call 记录工具名 + 参数 + 结果 + 耗时"</span>),
-        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"核心指标看板：成功率 / P50/P99延迟 / Token消耗趋势"</span>),
-        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"告警规则：成功率 &lt; <span class="n">95</span>% → 通知"</span>),
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 评测</span>
-        (<span <span class="k">class</span>="s">"评测"</span>, <span <span class="k">class</span>="s">"离线评测集覆盖典型场景 + 边界条件 + Bad Case"</span>),
-        (<span <span class="k">class</span>="s">"评测"</span>, <span <span class="k">class</span>="s">"上线前回归评测（确保新版本不退化）"</span>),
-        (<span <span class="k">class</span>="s">"评测"</span>, <span <span class="k">class</span>="s">"A/B 测试框架（对比新老版本效果）"</span>),
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 安全</span>
-        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"Prompt Injection 检测与过滤"</span>),
-        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"工具调用分级：读自动 / 写确认 / 危险需二次确认"</span>),
-        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"审计日志：记录所有操作，可追溯"</span>),
-        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"敏感信息脱敏（API Key、用户数据等）"</span>),
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 成本</span>
-        (<span <span class="k">class</span>="s">"成本"</span>, <span <span class="k">class</span>="s">"模型分层：简单任务用小模型 (gpt-4o-mini)"</span>),
-        (<span <span class="k">class</span>="s">"成本"</span>, <span <span class="k">class</span>="s">"语义缓存：避免重复查询消耗 Token"</span>),
-        (<span <span class="k">class</span>="s">"成本"</span>, <span <span class="k">class</span>="s">"Token 预算告警：单用户/单日/单月上限"</span>),
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 可靠性</span>
-        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"LLM 调用重试 (exponential backoff)"</span>),
-        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"超时控制 (30s 超时 + 降级策略)"</span>),
-        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"熔断器：连续失败 N 次 → 暂停 → 恢复"</span>),
-        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"优雅降级：LLM 不可用时返回兜底回答"</span>),
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 可观测性</span>
+        (<span class="s">"可观测性"</span>, <span class="s">"每次 LLM 调用记录 <span class="</span>b<span class="s">">input</span>/output tokens + latency"</span>),
+        (<span class="s">"可观测性"</span>, <span class="s">"每次 Tool Call 记录工具名 + 参数 + 结果 + 耗时"</span>),
+        (<span class="s">"可观测性"</span>, <span class="s">"核心指标看板：成功率 / P50/P99延迟 / Token消耗趋势"</span>),
+        (<span class="s">"可观测性"</span>, <span class="s">"告警规则：成功率 &lt; <span class="</span>n<span class="s">">95</span>% → 通知"</span>),
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 评测</span>
+        (<span class="s">"评测"</span>, <span class="s">"离线评测集覆盖典型场景 + 边界条件 + Bad Case"</span>),
+        (<span class="s">"评测"</span>, <span class="s">"上线前回归评测（确保新版本不退化）"</span>),
+        (<span class="s">"评测"</span>, <span class="s">"A/B 测试框架（对比新老版本效果）"</span>),
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 安全</span>
+        (<span class="s">"安全"</span>, <span class="s">"Prompt Injection 检测与过滤"</span>),
+        (<span class="s">"安全"</span>, <span class="s">"工具调用分级：读自动 / 写确认 / 危险需二次确认"</span>),
+        (<span class="s">"安全"</span>, <span class="s">"审计日志：记录所有操作，可追溯"</span>),
+        (<span class="s">"安全"</span>, <span class="s">"敏感信息脱敏（API Key、用户数据等）"</span>),
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 成本</span>
+        (<span class="s">"成本"</span>, <span class="s">"模型分层：简单任务用小模型 (gpt-4o-mini)"</span>),
+        (<span class="s">"成本"</span>, <span class="s">"语义缓存：避免重复查询消耗 Token"</span>),
+        (<span class="s">"成本"</span>, <span class="s">"Token 预算告警：单用户/单日/单月上限"</span>),
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"h"</span>># 可靠性</span>
+        (<span class="s">"可靠性"</span>, <span class="s">"LLM 调用重试 (exponential backoff)"</span>),
+        (<span class="s">"可靠性"</span>, <span class="s">"超时控制 (30s 超时 + 降级策略)"</span>),
+        (<span class="s">"可靠性"</span>, <span class="s">"熔断器：连续失败 N 次 → 暂停 → 恢复"</span>),
+        (<span class="s">"可靠性"</span>, <span class="s">"优雅降级：LLM 不可用时返回兜底回答"</span>),
     ]
 
-    <span class="d">@classmethod</span>
-    <span class="k">def</span> check(cls) -&gt; list[tuple[str, str, bool]]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"返回检查清单及每项的完成状态（这里标注为待检查）。
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>check</span>(cls) -&gt; <span class=<span class="s">"b"</span>>list</span>[<span class=<span class="s">"b"</span>>tuple</span>[<span class=<span class="s">"b"</span>>str</span>, <span class=<span class="s">"b"</span>>str</span>, bool]]:
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"返回检查清单及每项的完成状态（这里标注为待检查）。
 
         Returns:
             (类别, 检查项, 是否完成) 的列表。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">return</span> [(cat, item, <span class="k">False</span>) <span class="k">for</span> cat, item <span class="k">in</span> cls.CHECKLIST]
+        <span class="s">""</span>"</span>
+        <span class=<span class="s">"k"</span>>return</span> [(cat, item, <span class=<span class="s">"k"</span>>False</span>) <span class=<span class="s">"k"</span>>for</span> cat, item <span class=<span class="s">"k"</span>>in</span> cls.CHECKLIST]
 
-    <span class="d">@classmethod</span>
-    <span class="k">def</span> print_checklist(cls):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"打印检查清单。"</span><span <span class="k">class</span>="s">""</span></span>
-        <span class="k">for</span> cat, item <span class="k">in</span> cls.CHECKLIST:
-            print(f<span <span class="k">class</span>="s">"  [{cat:8s}] ☐ {item}"</span>)
+    <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"d"</span>>@classmethod</span>
+    <span class=<span class="s">"k"</span>>def</span> <span class=<span class="s">"f"</span>>print_checklist</span>(cls):
+        <span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span><span class="s">"打印检查清单。"</span><span class="s">""</span></span>
+        <span class=<span class="s">"k"</span>>for</span> cat, item <span class=<span class="s">"k"</span>>in</span> cls.CHECKLIST:
+            <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  [{cat:8s}] ☐ {item}"</span>)
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">12.6</span> 全课程体系梳理 —— 回顾与展望
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class=<span class="s">"n"</span>>12.6</span> 全课程体系梳理 —— 回顾与展望
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-现在你学完了全部 <span class="n">12</span> 章：
+现在你学完了全部 <span class=<span class="s">"n"</span>>12</span> 章：
 
   Ch0   → 课程概览，理解 Agent 是什么
-  Ch1-<span class="n">3</span> → Agent 的基础理论（循环、组件、类型）
-  Ch4-<span class="n">5</span> → Agent 的工程实践（框架、Multi-Agent）
-  Ch6-<span class="n">7</span> → Agent 的评估与求职（评测、面试）
+  Ch1-<span class=<span class="s">"n"</span>>3</span> → Agent 的基础理论（循环、组件、类型）
+  Ch4-<span class=<span class="s">"n"</span>>5</span> → Agent 的工程实践（框架、Multi-Agent）
+  Ch6-<span class=<span class="s">"n"</span>>7</span> → Agent 的评估与求职（评测、面试）
   Ch8   → Claude Code 架构（nO/h2A/Compaction/SubAgent）
   Ch9   → RAG 深度（Naive→Advanced→GraphRAG→Agentic RAG）
   Ch10  → MCP 协议（JSON-RPC/原语/能力协商/传输层）
@@ -850,33 +859,33 @@ MultiAgentEval 是一个企业级的 Agent 评测框架。
 │ 生产基础设施      │ Ch6, Ch12                │  ⭐⭐⭐  │
 │ 面试准备          │ Ch7                      │  ⭐⭐⭐⭐ │
 └──────────────────┴──────────────────────────┴─────────┘
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">12.7</span> 本章总结
+<span <span class=<span class="s">"k"</span>>class</span>=<span class="s">"s"</span>><span class="s">""</span>"
+<span class=<span class="s">"n"</span>>12.7</span> 本章总结
 ━━━━━━━━━━━━━━
 
 核心要点回顾：
 
-<span class="n">1</span>. OpenClaw
+<span class=<span class="s">"n"</span>>1</span>. OpenClaw
    - Gateway 中心化架构（Node.js 控制平面）
    - 多 Channel 接入（WhatsApp/Telegram/Discord）
    - AgentSkills + ClawHub 插件生态
    - 定位：「是 Agent，不是框架」
 
-<span class="n">2</span>. Harness (OpenHarness)
+<span class=<span class="s">"n"</span>>2</span>. Harness (OpenHarness)
    - CLI + SDK 双模式
    - 支持任意 LLM + 本地模型
    - /team 命令实现并行 Multi-Agent
    - Alpha 阶段，但增长速度惊人
 
-<span class="n">3</span>. Agent 评测基础设施
+<span class=<span class="s">"n"</span>>3</span>. Agent 评测基础设施
    - MultiAgentEval：企业级评测框架
    - 核心概念：Scenario → Task → Sandbox → Metrics
-   - <span class="n">8</span> 种内置评测指标
+   - <span class=<span class="s">"n"</span>>8</span> 种内置评测指标
 
-<span class="n">4</span>. 生产 Checklist（面试最爱问！）
+<span class=<span class="s">"n"</span>>4</span>. 生产 Checklist（面试最爱问！）
    - 可观测性（Tracing + Dashboard + Alerting）
    - 评测体系（离线评测 + A/B测试 + 回归评测）
    - 安全防护（Prompt Injection + 权限分级 + 审计）
@@ -884,77 +893,77 @@ MultiAgentEval 是一个企业级的 Agent 评测框架。
    - 可靠性（重试 + 超时 + 熔断 + 降级）
 
 面试速记：
-  <span <span class="k">class</span>="s">"Agent 怎么上生产？"</span>
+  <span class="s">"Agent 怎么上生产？"</span>
   → 可观测性 + 评测体系 + 安全防护 + 成本控制 + 可靠性
   → 每个环节都可以展开讲具体方案
   → 关键在于「工程化思维」而非「Demo 思维」
-<span <span class="k">class</span>="s">""</span>"</span>
+<span class="s">""</span>"</span>
 
 
-<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
-    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
-    print(<span <span class="k">class</span>="s">"║  第12章：OpenClaw / Harness 与 Agent 生产基础设施      ║"</span>)
-    print(<span <span class="k">class</span>="s">"║  Gateway架构 · AgentSkills · 评测 · 生产Checklist    ║"</span>)
-    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+<span class=<span class="s">"k"</span>>if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  第12章：OpenClaw / Harness 与 Agent 生产基础设施      ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"║  Gateway架构 · AgentSkills · 评测 · 生产Checklist    ║"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.1</span> OpenClaw 架构概览"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">12.1</span> OpenClaw 架构概览"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     oc_features = [
-        <span <span class="k">class</span>="s">"Gateway 中心化架构（Node.js 控制平面）"</span>,
-        <span <span class="k">class</span>="s">"多 Channel 接入：WhatsApp / Telegram / Discord / Slack"</span>,
-        <span <span class="k">class</span>="s">"LLM Provider 抽象：Claude / GPT / Gemini / Ollama"</span>,
-        <span <span class="k">class</span>="s">"持久化记忆存储：用户偏好 + 对话历史"</span>,
-        <span <span class="k">class</span>="s">"AgentSkills + ClawHub：Agent 技能生态"</span>,
-        <span <span class="k">class</span>="s">"145K+ GitHub Stars"</span>,
+        <span class="s">"Gateway 中心化架构（Node.js 控制平面）"</span>,
+        <span class="s">"多 Channel 接入：WhatsApp / Telegram / Discord / Slack"</span>,
+        <span class="s">"LLM Provider 抽象：Claude / GPT / Gemini / Ollama"</span>,
+        <span class="s">"持久化记忆存储：用户偏好 + 对话历史"</span>,
+        <span class="s">"AgentSkills + ClawHub：Agent 技能生态"</span>,
+        <span class="s">"145K+ GitHub Stars"</span>,
     ]
-    <span class="k">for</span> f <span class="k">in</span> oc_features:
-        print(f<span <span class="k">class</span>="s">"  • {f}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> f <span class=<span class="s">"k"</span>>in</span> oc_features:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  • {f}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.2</span> AgentSkills vs MCP 关系"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
-    print(<span <span class="k">class</span>="s">"  MCP 定义「协议」—— 如何连接和通信"</span>)
-    print(<span <span class="k">class</span>="s">"  AgentSkill 定义「能力」—— 具体做什么"</span>)
-    print(<span <span class="k">class</span>="s">"  关系：AgentSkill 通过 MCP 协议暴露给 LLM"</span>)
-    print(<span <span class="k">class</span>="s">"  类比：MCP = USB-C标准，AgentSkill = USB设备"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">12.2</span> AgentSkills vs MCP 关系"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  MCP 定义「协议」—— 如何连接和通信"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  AgentSkill 定义「能力」—— 具体做什么"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  关系：AgentSkill 通过 MCP 协议暴露给 LLM"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  类比：MCP = USB-C标准，AgentSkill = USB设备"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.3</span> Harness 亮点"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">12.3</span> Harness 亮点"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     h_features = [
-        <span <span class="k">class</span>="s">"CLI + SDK 双模式"</span>,
-        <span <span class="k">class</span>="s">"支持任意 LLM（Claude/GPT/Gemini/Ollama）"</span>,
-        <span <span class="k">class</span>="s">"Harness-Bench <span class="n">100</span>% 评分"</span>,
-        <span <span class="k">class</span>="s">"/plan /review /team /status /cost 命令"</span>,
-        <span <span class="k">class</span>="s">"Bypass 模式（CI/CD 友好）"</span>,
+        <span class="s">"CLI + SDK 双模式"</span>,
+        <span class="s">"支持任意 LLM（Claude/GPT/Gemini/Ollama）"</span>,
+        <span class="s">"Harness-Bench <span class="</span>n<span class="s">">100</span>% 评分"</span>,
+        <span class="s">"/plan /review /team /status /cost 命令"</span>,
+        <span class="s">"Bypass 模式（CI/CD 友好）"</span>,
     ]
-    <span class="k">for</span> f <span class="k">in</span> h_features:
-        print(f<span <span class="k">class</span>="s">"  • {f}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> f <span class=<span class="s">"k"</span>>in</span> h_features:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  • {f}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.5</span> Agent 生产化 Checklist"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">12.5</span> Agent 生产化 Checklist"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     AgentProductionChecklist.print_checklist()
 
-    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.6</span> 全课程回顾"</span>)
-    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n▶ <span class="</span>n<span class="s">">12.6</span> 全课程回顾"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"-"</span> * <span class=<span class="s">"n"</span>>50</span>)
     chapters = [
-        <span <span class="k">class</span>="s">"Ch0   → 课程概览"</span>,
-        <span <span class="k">class</span>="s">"Ch1-<span class="n">3</span> → Agent 基础理论（循环/组件/类型）"</span>,
-        <span <span class="k">class</span>="s">"Ch4-<span class="n">5</span> → 工程实践（框架/Multi-Agent）"</span>,
-        <span <span class="k">class</span>="s">"Ch6-<span class="n">7</span> → 评估与求职（评测/面试）"</span>,
-        <span <span class="k">class</span>="s">"Ch8   → Claude Code 架构深度剖析"</span>,
-        <span <span class="k">class</span>="s">"Ch9   → RAG 技术全览（Naive→Agentic RAG）"</span>,
-        <span <span class="k">class</span>="s">"Ch10  → MCP 协议详解"</span>,
-        <span <span class="k">class</span>="s">"Ch11  → Tool Calling 底层机制"</span>,
-        <span <span class="k">class</span>="s">"Ch12  → 生产基础设施（OpenClaw/Harness/评测）"</span>,
+        <span class="s">"Ch0   → 课程概览"</span>,
+        <span class="s">"Ch1-<span class="</span>n<span class="s">">3</span> → Agent 基础理论（循环/组件/类型）"</span>,
+        <span class="s">"Ch4-<span class="</span>n<span class="s">">5</span> → 工程实践（框架/Multi-Agent）"</span>,
+        <span class="s">"Ch6-<span class="</span>n<span class="s">">7</span> → 评估与求职（评测/面试）"</span>,
+        <span class="s">"Ch8   → Claude Code 架构深度剖析"</span>,
+        <span class="s">"Ch9   → RAG 技术全览（Naive→Agentic RAG）"</span>,
+        <span class="s">"Ch10  → MCP 协议详解"</span>,
+        <span class="s">"Ch11  → Tool Calling 底层机制"</span>,
+        <span class="s">"Ch12  → 生产基础设施（OpenClaw/Harness/评测）"</span>,
     ]
-    <span class="k">for</span> ch <span class="k">in</span> chapters:
-        print(f<span <span class="k">class</span>="s">"  {ch}"</span>)
+    <span class=<span class="s">"k"</span>>for</span> ch <span class=<span class="s">"k"</span>>in</span> chapters:
+        <span class=<span class="s">"b"</span>>print</span>(f<span class="s">"  {ch}"</span>)
 
-    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
-    print(<span <span class="k">class</span>="s">"  🎓 全课程体系完成！"</span>)
-    print(<span <span class="k">class</span>="s">"  从 Agent 基础到 Claude Code 逆向分析"</span>)
-    print(<span <span class="k">class</span>="s">"  从 RAG 到 MCP 到 Tool Calling 底层原理"</span>)
-    print(<span <span class="k">class</span>="s">"  你现在已经具备了成为顶级 Agent 工程师的所有知识"</span>)
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"\n"</span> + <span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  🎓 全课程体系完成！"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  从 Agent 基础到 Claude Code 逆向分析"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  从 RAG 到 MCP 到 Tool Calling 底层原理"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"  你现在已经具备了成为顶级 Agent 工程师的所有知识"</span>)
+    <span class=<span class="s">"b"</span>>print</span>(<span class="s">"="</span> * <span class=<span class="s">"n"</span>>60</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html" title="Tool Calling 底层 — OpenAI vs Anthropic">← 第11章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
