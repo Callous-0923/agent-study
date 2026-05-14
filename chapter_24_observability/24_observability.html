@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第24章：Agent 可观测性 —— 生产环境的「监控仪表盘」 — AI Agent 全栈课程</title>
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* 标题 */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
+}
+.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero .subtitle { opacity: 0.9; font-size: 1.05em; }
+
+/* 讲义内容 */
+.lecture { background: white; border-radius: 10px; padding: 36px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
+.lecture h2 {
+  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
+}
+.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture p { margin: 10px 0; }
+.lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
+.lecture li { margin: 4px 0; }
+.lecture pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 18px 22px; overflow-x: auto; font-size: .88em;
+  line-height: 1.55; margin: 14px 0;
+}
+.lecture code { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; }
+.lecture p code, .lecture li code {
+  background: #eee8ff; padding: 1px 6px; border-radius: 4px;
+  font-size: .92em; color: #6c3cc0;
+}
+.lecture strong { color: #333; }
+.lecture em { color: #555; }
+.lecture blockquote {
+  border-left: 4px solid #667eea; padding: 8px 16px;
+  margin: 14px 0; background: #f4f4ff; border-radius: 0 8px 8px 0;
+  color: #555;
+}
+.lecture table {
+  border-collapse: collapse; width: 100%; margin: 14px 0;
+  font-size: .92em;
+}
+.lecture th, .lecture td {
+  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+}
+.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 目标/考点标签 */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: .85em; font-weight: 500;
+}
+.tag-goal { background: #e8f5e9; color: #2e7d32; }
+.tag-interview { background: #fff3e0; color: #e65100; }
+
+/* 代码块区域 */
+.code-section { margin-top: 24px; }
+.code-section summary {
+  font-size: 1.1em; font-weight: 600; cursor: pointer;
+  padding: 10px 16px; background: #1e1e2e; color: #cdd6f4;
+  border-radius: 8px 8px 0 0; user-select: none;
+}
+.code-section pre {
+  margin: 0; border-radius: 0 0 8px 8px; max-height: 70vh;
+  overflow-y: auto;
+}
+.code-block {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 0 0 8px 8px;
+  padding: 20px 24px; overflow-x: auto; font-size: .85em;
+  line-height: 1.6; max-height: 70vh; overflow-y: auto;
+}
+
+/* 移动端 */
+@media (max-width: 640px) {
+  .container { padding: 16px 12px 60px; }
+  .hero { padding: 28px 18px; }
+  .hero h1 { font-size: 1.4em; }
+  .lecture { padding: 20px 16px; }
+}
+
+/* 打印 */
+@media print {
+  body { background: white; }
+  .lecture { box-shadow: none; }
+  .code-block { background: #f5f5f5; color: #222; }
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><h1>第24章 Agent 可观测性 —— 生产环境的「监控仪表盘」</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 Agent 可观测性的 4 大支柱</span><span class="tag tag-goal">2. 掌握 Tracing 的核心设计模式</span><span class="tag tag-goal">3. 了解 LangSmith 和 LangFuse 的使用方式</span><span class="tag tag-goal">4. 学会构建 Agent 的监控仪表盘</span><span class="tag tag-interview">🎤 「Agent 的可观测性包含哪些维度？」</span><span class="tag tag-interview">🎤 「LangSmith 和 LangFuse 有什么区别？」</span><span class="tag tag-interview">🎤 「怎么追踪 Multi-Agent 的调用链？」</span><span class="tag tag-interview">🎤 「Level 2 Tracing 比 Level 1 多了什么？」</span></div><p>第24章：Agent 可观测性 —— 生产环境的「监控仪表盘」</p>
+<p>=====================================================</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>基于 2025 年 Agent Observability 五大主流平台对比</p>
+<p>+ OpenTelemetry GenAI SIG 标准</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>24.1 为什么 Agent 可观测性是「必需品」而非「可选项」？</h2>
+<p>&nbsp;</p>
+<p>传统 API 监控：</p>
+<p>请求 → 响应 → 记录 HTTP 状态码 + 延迟 → 完成</p>
+<p>&nbsp;</p>
+<p>Agent 监控的特殊性：</p>
+<p>一次「请求」包含 N 次 LLM 调用 + M 次工具调用</p>
+<p>错误可能在第 15 步才出现（难以定位）</p>
+<p>Multi-Agent 的调用链复杂（Agent A → Agent B → Agent C → ...）</p>
+<p>非确定性输出（同一输入，两次结果可能不同）</p>
+<p>&nbsp;</p>
+<p>Agent 可观测性的 4 大支柱：</p>
+<p>&nbsp;</p>
+<pre>  ┌──────────────┬──────────────────────────────────────┐
+  │    支柱        │              需要回答的问题            │
+  ├──────────────┼──────────────────────────────────────┤
+  │ 1. Tracing   │ Agent 执行了哪些步骤？每个步骤耗时？    │
+  │ 2. Metrics   │ 整体成功率？P50/P99 延迟？Token消耗？   │
+  │ 3. Evaluation │ 输出质量如何？是否满足用户需求？        │
+  │ 4. Alerts    │ 什么情况需要人工介入？                  │
+  └──────────────┴──────────────────────────────────────┘</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>24.2 Tracing —— 看见 Agent 的「每一根神经」</h2>
+<p>&nbsp;</p>
+<p>Tracing 的层次模型：</p>
+<p>&nbsp;</p>
+<p>Level 1: 单次 LLM 调用 Trace</p>
+<pre>记录: model / input_tokens / output_tokens / latency / status</pre>
+<p>&nbsp;</p>
+<p>Level 2: Chain/Agent 级别 Trace</p>
+<pre>记录: 完整的 Agent 执行链
+- 每个 tool_call: tool_name + args + result + latency
+- 每个 LLM 调用: system_prompt_snapshot + user_message
+- 每个步骤间的关系（父子 span）</pre>
+<p>&nbsp;</p>
+<p>Level 3: Multi-Agent Trace</p>
+<pre>记录: Agent 之间的消息传递
+- 哪个 Agent 把任务委派给了哪个 Agent
+- 委派的 context 是什么
+- 返回的 artifact 是什么</pre>
+<p>&nbsp;</p>
+<p>Trace 的核心数据结构：Span</p>
+<p>&nbsp;</p>
+<pre>  ┌──────────────────────────────────────────────┐
+  │                  Trace (根)                    │
+  │  ├── Span: Agent 步骤 1 (thinking)            │
+  │  │   ├── Span: LLM 调用                       │
+  │  │   │   ├── model: gpt-4o-mini              │
+  │  │   │   ├── input_tokens: 1250              │
+  │  │   │   ├── output_tokens: 86               │
+  │  │   │   └── latency_ms: 1520                │
+  │  │   └── Span: 工具调用                        │
+  │  │       ├── tool: search                    │
+  │  │       ├── args: {"query": "AI Agent"}      │
+  │  │       ├── result_summary: "找到5条结果"     │
+  │  │       └── latency_ms: 350                 │
+  │  ├── Span: Agent 步骤 2 (tool_call)           │
+  │  └── Span: Agent 步骤 3 (done)                │
+  └──────────────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 源代码 (424 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<span class="k">import</span> json
+<span class="k">import</span> hashlib
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+<span class="k">from</span> contextlib <span class="k">import</span> contextmanager
+
+
+<span class="d">@dataclass</span>
+<span class="k">class</span> TraceSpan:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Tracing Span —— 可观测性数据的基本单元。"</span><span <span class="k">class</span>="s">""</span></span>
+    trace_id: str
+    span_id: str
+    parent_span_id: Optional[str]
+    name: str                    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span <span class="k">class</span>="s">"llm_call"</span> / <span <span class="k">class</span>="s">"tool_call"</span> / <span <span class="k">class</span>="s">"agent_step"</span></span>
+    start_time: float
+    end_time: Optional[float] = <span class="k">None</span>
+    attributes: dict = field(default_factory=dict)
+    status: str = <span <span class="k">class</span>="s">"ok"</span>           <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ok / error</span>
+    children: list = field(default_factory=list)
+
+    <span class="d">@property</span>
+    <span class="k">def</span> latency_ms(self) -&gt; float:
+        <span class="k">if</span> self.end_time <span class="k">is</span> <span class="k">None</span>:
+            <span class="k">return</span> <span class="n">0</span>
+        <span class="k">return</span> (self.end_time - self.start_time) * <span class="n">1000</span>
+
+
+<span class="k">class</span> AgentTracer:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Agent 专用 Tracer —— 模拟 LangSmith/LangFuse 的功能。
+
+    实现：
+      <span class="n">1</span>. Trace 管理（创建/结束/嵌套）
+      <span class="n">2</span>. LLM 调用自动记录
+      <span class="n">3</span>. 工具调用自动记录
+      <span class="n">4</span>. 跨 Agent 调用链
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, project_name: str = <span <span class="k">class</span>="s">"agent-study"</span>):
+        self.project_name = project_name
+        self.traces: dict[str, list[TraceSpan]] = defaultdict(list)
+        self._active_spans: dict[str, TraceSpan] = {}
+        self.metrics = defaultdict(int)
+
+    <span class="k">def</span> start_trace(self, name: str,
+                    session_id: str = <span class="k">None</span>) -&gt; str:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"开始一个新的 Trace。
+
+        Args:
+            name: Trace 名称（如 <span <span class="k">class</span>="s">"user_query"</span>）。
+            session_id: 会话 ID。
+
+        Returns:
+            trace_id。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        trace_id = session_id <span class="k">or</span> hashlib.md5(
+            f<span <span class="k">class</span>="s">"{name}-{time.time()}"</span>.encode()
+        ).hexdigest()[:<span class="n">16</span>]
+
+        span = TraceSpan(
+            trace_id=trace_id,
+            span_id=f<span <span class="k">class</span>="s">"span_{len(self.traces[trace_id])}"</span>,
+            parent_span_id=<span class="k">None</span>,
+            name=name,
+            start_time=time.time(),
+        )
+        self.traces[trace_id].append(span)
+        self._active_spans[trace_id] = span
+        <span class="k">return</span> trace_id
+
+    <span class="d">@contextmanager</span>
+    <span class="k">def</span> span(self, trace_id: str, name: str, **attributes):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"创建一个子 Span（上下文管理器）。
+
+        用法:
+          <span class="k">with</span> tracer.span(tid, <span <span class="k">class</span>="s">"llm_call"</span>, model=<span <span class="k">class</span>="s">"gpt-4o"</span>):
+              result = llm.invoke(...)
+
+        Args:
+            trace_id: 父 Trace ID。
+            name: Span 名称。
+            **attributes: 附加属性。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        parent = self._active_spans.get(trace_id)
+
+        span = TraceSpan(
+            trace_id=trace_id,
+            span_id=f<span <span class="k">class</span>="s">"span_{len(self.traces[trace_id])}"</span>,
+            parent_span_id=parent.span_id <span class="k">if</span> parent <span class="k">else</span> <span class="k">None</span>,
+            name=name,
+            start_time=time.time(),
+            attributes=attributes,
+        )
+        self.traces[trace_id].append(span)
+        <span class="k">if</span> parent:
+            parent.children.append(span)
+
+        <span class="k">try</span>:
+            <span class="k">yield</span> span
+        <span class="k">except</span> Exception <span class="k">as</span> e:
+            span.status = <span <span class="k">class</span>="s">"error"</span>
+            span.attributes[<span <span class="k">class</span>="s">"error"</span>] = str(e)
+            <span class="k">raise</span>
+        finally:
+            span.end_time = time.time()
+            span.attributes[<span <span class="k">class</span>="s">"latency_ms"</span>] = span.latency_ms
+
+    <span class="k">def</span> log_llm_call(self, trace_id: str, model: str,
+                     input_tokens: int, output_tokens: int,
+                     latency_ms: float, success: bool = <span class="k">True</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"记录一次 LLM 调用（便捷方法）。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">with</span> self.span(trace_id, <span <span class="k">class</span>="s">"llm_call"</span>,
+                       model=model,
+                       input_tokens=input_tokens,
+                       output_tokens=output_tokens,
+                       success=success) <span class="k">as</span> span:
+            span.end_time = span.start_time + latency_ms / <span class="n">1000</span>
+
+        self.metrics[<span <span class="k">class</span>="s">"total_llm_calls"</span>] += <span class="n">1</span>
+        self.metrics[<span <span class="k">class</span>="s">"total_input_tokens"</span>] += input_tokens
+        self.metrics[<span <span class="k">class</span>="s">"total_output_tokens"</span>] += output_tokens
+        <span class="k">if</span> <span class="k">not</span> success:
+            self.metrics[<span <span class="k">class</span>="s">"failed_llm_calls"</span>] += <span class="n">1</span>
+
+    <span class="k">def</span> log_tool_call(self, trace_id: str, tool_name: str,
+                      input_args: dict, output_summary: str,
+                      latency_ms: float, success: bool = <span class="k">True</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"记录一次工具调用（便捷方法）。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">with</span> self.span(trace_id, <span <span class="k">class</span>="s">"tool_call"</span>,
+                       tool_name=tool_name,
+                       input_args=str(input_args)[:<span class="n">200</span>],
+                       output_summary=output_summary[:<span class="n">200</span>],
+                       success=success) <span class="k">as</span> span:
+            span.end_time = span.start_time + latency_ms / <span class="n">1000</span>
+
+        self.metrics[<span <span class="k">class</span>="s">"total_tool_calls"</span>] += <span class="n">1</span>
+        <span class="k">if</span> <span class="k">not</span> success:
+            self.metrics[<span <span class="k">class</span>="s">"failed_tool_calls"</span>] += <span class="n">1</span>
+
+    <span class="k">def</span> get_trace(self, trace_id: str) -&gt; Optional[dict]:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"获取 Trace 的完整信息（用于调试和展示）。"</span><span <span class="k">class</span>="s">""</span></span>
+        spans = self.traces.get(trace_id, [])
+        <span class="k">if</span> <span class="k">not</span> spans:
+            <span class="k">return</span> <span class="k">None</span>
+
+        total_latency = sum(
+            s.latency_ms <span class="k">for</span> s <span class="k">in</span> spans
+            <span class="k">if</span> s.end_time <span class="k">is</span> <span class="k">not</span> <span class="k">None</span>
+        )
+        failed = sum(<span class="n">1</span> <span class="k">for</span> s <span class="k">in</span> spans <span class="k">if</span> s.status == <span <span class="k">class</span>="s">"error"</span>)
+
+        <span class="k">return</span> {
+            <span <span class="k">class</span>="s">"trace_id"</span>: trace_id,
+            <span <span class="k">class</span>="s">"span_count"</span>: len(spans),
+            <span <span class="k">class</span>="s">"total_latency_ms"</span>: round(total_latency, <span class="n">1</span>),
+            <span <span class="k">class</span>="s">"failed_spans"</span>: failed,
+            <span <span class="k">class</span>="s">"spans"</span>: [
+                {
+                    <span <span class="k">class</span>="s">"name"</span>: s.name,
+                    <span <span class="k">class</span>="s">"latency_ms"</span>: round(s.latency_ms, <span class="n">1</span>),
+                    <span <span class="k">class</span>="s">"status"</span>: s.status,
+                    <span <span class="k">class</span>="s">"attributes"</span>: {
+                        k: v <span class="k">for</span> k, v <span class="k">in</span> s.attributes.items()
+                        <span class="k">if</span> k <span class="k">in</span> (<span <span class="k">class</span>="s">"model"</span>, <span <span class="k">class</span>="s">"tool_name"</span>, <span <span class="k">class</span>="s">"input_tokens"</span>,
+                                 <span <span class="k">class</span>="s">"output_tokens"</span>, <span <span class="k">class</span>="s">"success"</span>)
+                    },
+                    <span <span class="k">class</span>="s">"children"</span>: len(s.children),
+                }
+                <span class="k">for</span> s <span class="k">in</span> spans
+            ],
+        }
+
+    <span class="k">def</span> get_metrics(self) -&gt; dict:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"获取聚合指标。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">return</span> {
+            <span <span class="k">class</span>="s">"project"</span>: self.project_name,
+            <span <span class="k">class</span>="s">"traces"</span>: len(self.traces),
+            <span <span class="k">class</span>="s">"metrics"</span>: dict(self.metrics),
+            <span <span class="k">class</span>="s">"avg_tokens_per_call"</span>: (
+                self.metrics[<span <span class="k">class</span>="s">"total_input_tokens"</span>] /
+                max(self.metrics[<span <span class="k">class</span>="s">"total_llm_calls"</span>], <span class="n">1</span>)
+            ),
+            <span <span class="k">class</span>="s">"tool_success_rate"</span>: (
+                <span class="n">1</span> - self.metrics[<span <span class="k">class</span>="s">"failed_tool_calls"</span>] /
+                max(self.metrics[<span <span class="k">class</span>="s">"total_tool_calls"</span>], <span class="n">1</span>)
+            ) <span class="k">if</span> self.metrics[<span <span class="k">class</span>="s">"total_tool_calls"</span>] &gt; <span class="n">0</span> <span class="k">else</span> <span class="n">0</span>,
+        }
+
+    <span class="k">def</span> print_trace_tree(self, trace_id: str, indent: int = <span class="n">0</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"打印 Trace 树形结构（直观展示执行流程）。"</span><span <span class="k">class</span>="s">""</span></span>
+        spans = self.traces.get(trace_id, [])
+        <span class="k">if</span> <span class="k">not</span> spans:
+            print(<span <span class="k">class</span>="s">"  无 Trace 数据"</span>)
+            <span class="k">return</span>
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 找到根 Span</span>
+        root = <span class="k">None</span>
+        <span class="k">for</span> s <span class="k">in</span> spans:
+            <span class="k">if</span> s.parent_span_id <span class="k">is</span> <span class="k">None</span>:
+                root = s
+                <span class="k">break</span>
+
+        <span class="k">if</span> root <span class="k">is</span> <span class="k">None</span>:
+            root = spans[<span class="n">0</span>]
+
+        <span class="k">def</span> _print_span(span: TraceSpan, level: int):
+            prefix = <span <span class="k">class</span>="s">"  "</span> * level + (<span <span class="k">class</span>="s">"├─ "</span> <span class="k">if</span> level &gt; <span class="n">0</span> <span class="k">else</span> <span <span class="k">class</span>="s">""</span>)
+            status_icon = <span <span class="k">class</span>="s">"✅"</span> <span class="k">if</span> span.status == <span <span class="k">class</span>="s">"ok"</span> <span class="k">else</span> <span <span class="k">class</span>="s">"❌"</span>
+            attrs = <span <span class="k">class</span>="s">""</span>
+            <span class="k">if</span> <span <span class="k">class</span>="s">"model"</span> <span class="k">in</span> span.attributes:
+                attrs += f<span <span class="k">class</span>="s">" [{span.attributes[<span <span class="k">class</span>='s'>'model'</span>]}]"</span>
+            <span class="k">if</span> <span <span class="k">class</span>="s">"tool_name"</span> <span class="k">in</span> span.attributes:
+                attrs += f<span <span class="k">class</span>="s">" [{span.attributes[<span <span class="k">class</span>='s'>'tool_name'</span>]}]"</span>
+            print(f<span <span class="k">class</span>="s">"{prefix}{status_icon} {span.name}{attrs} "</span>
+                  f<span <span class="k">class</span>="s">"({span.latency_ms:.0f}ms)"</span>)
+
+            <span class="k">for</span> child <span class="k">in</span> span.children:
+                _print_span(child, level + <span class="n">1</span>)
+
+        _print_span(root, <span class="n">0</span>)
+
+    <span class="k">def</span> print_dashboard(self):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"打印监控仪表盘（模拟 Grafana 面板）。"</span><span <span class="k">class</span>="s">""</span></span>
+        m = self.get_metrics()
+        print(<span <span class="k">class</span>="s">"="</span> * <span class="n">55</span>)
+        print(<span <span class="k">class</span>="s">"  📊 Agent 监控仪表盘"</span>)
+        print(<span <span class="k">class</span>="s">"="</span> * <span class="n">55</span>)
+        print(f<span <span class="k">class</span>="s">"  项目: {m[<span <span class="k">class</span>='s'>'project'</span>]}"</span>)
+        print(f<span <span class="k">class</span>="s">"  Traces 总数: {m[<span <span class="k">class</span>='s'>'traces'</span>]}"</span>)
+        print(f<span <span class="k">class</span>="s">"  LLM 调用: {m[<span <span class="k">class</span>='s'>'metrics'</span>].get(<span <span class="k">class</span>='s'>'total_llm_calls'</span>, <span class="n">0</span>)}"</span>)
+        print(f<span <span class="k">class</span>="s">"  总输入 Tokens: {m[<span <span class="k">class</span>='s'>'metrics'</span>].get(<span <span class="k">class</span>='s'>'total_input_tokens'</span>, <span class="n">0</span>):,}"</span>)
+        print(f<span <span class="k">class</span>="s">"  总输出 Tokens: {m[<span <span class="k">class</span>='s'>'metrics'</span>].get(<span <span class="k">class</span>='s'>'total_output_tokens'</span>, <span class="n">0</span>):,}"</span>)
+        print(f<span <span class="k">class</span>="s">"  平均 Tokens/次: {m[<span <span class="k">class</span>='s'>'avg_tokens_per_call'</span>]:.0f}"</span>)
+        print(f<span <span class="k">class</span>="s">"  工具调用: {m[<span <span class="k">class</span>='s'>'metrics'</span>].get(<span <span class="k">class</span>='s'>'total_tool_calls'</span>, <span class="n">0</span>)}"</span>)
+        print(f<span <span class="k">class</span>="s">"  工具成功率: {m[<span <span class="k">class</span>='s'>'tool_success_rate'</span>]:.<span class="n">0</span>%}"</span>)
+        status = <span <span class="k">class</span>="s">"🟢 正常"</span> <span class="k">if</span> m[<span <span class="k">class</span>='s'>'metrics'</span>].get(<span <span class="k">class</span>='s'>'failed_llm_calls'</span>, <span class="n">0</span>) == <span class="n">0</span> <span class="k">else</span> <span <span class="k">class</span>="s">"🔴 异常"</span>
+        print(f<span <span class="k">class</span>="s">"  系统状态: {status}"</span>)
+        print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">55</span>)
+
+
+<span class="k">def</span> demo_agent_tracing():
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Agent Tracing 的完整流程。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"  Agent Tracing 完整演示"</span>)
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+
+    tracer = AgentTracer(project_name=<span <span class="k">class</span>="s">"my-agent-app"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟一个用户请求的完整 Agent 执行过程</span>
+    trace_id = tracer.start_trace(<span <span class="k">class</span>="s">"用户查询天气"</span>, session_id=<span <span class="k">class</span>="s">"session_abc"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LLM 调用 <span class="n">1</span>：理解用户意图</span>
+    tracer.log_llm_call(trace_id, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>,
+                        input_tokens=<span class="n">450</span>, output_tokens=<span class="n">85</span>,
+                        latency_ms=<span class="n">1200</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 工具调用 <span class="n">1</span>：搜索天气</span>
+    tracer.log_tool_call(trace_id, <span <span class="k">class</span>="s">"search_weather"</span>,
+                         {<span <span class="k">class</span>="s">"city"</span>: <span <span class="k">class</span>="s">"北京"</span>}, <span <span class="k">class</span>="s">"晴天 <span class="n">25</span>°C"</span>,
+                         latency_ms=<span class="n">320</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LLM 调用 <span class="n">2</span>：整理回答</span>
+    tracer.log_llm_call(trace_id, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>,
+                        input_tokens=<span class="n">650</span>, output_tokens=<span class="n">120</span>,
+                        latency_ms=<span class="n">980</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 展示 Trace 树</span>
+    print(<span <span class="k">class</span>="s">"\n  🌲 Trace 树形结构:"</span>)
+    tracer.print_trace_tree(trace_id)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 展示 Trace 详细数据</span>
+    trace_info = tracer.get_trace(trace_id)
+    print(f<span <span class="k">class</span>="s">"\n  📋 Trace 摘要: {trace_info[<span <span class="k">class</span>='s'>'span_count'</span>]} 个 Span, "</span>
+          f<span <span class="k">class</span>="s">"总延迟 {trace_info[<span <span class="k">class</span>='s'>'total_latency_ms'</span>]}ms, "</span>
+          f<span <span class="k">class</span>="s">"失败 {trace_info[<span <span class="k">class</span>='s'>'failed_spans'</span>]}"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟第二个请求（带工具失败）</span>
+    trace_id2 = tracer.start_trace(<span <span class="k">class</span>="s">"用户计算数学题"</span>, session_id=<span <span class="k">class</span>="s">"session_abc"</span>)
+    tracer.log_llm_call(trace_id2, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>,
+                        input_tokens=<span class="n">300</span>, output_tokens=<span class="n">65</span>,
+                        latency_ms=<span class="n">800</span>)
+    tracer.log_tool_call(trace_id2, <span <span class="k">class</span>="s">"calculator"</span>,
+                         {<span <span class="k">class</span>="s">"expr"</span>: <span <span class="k">class</span>="s">"<span class="n">123</span>+<span class="n">456</span>"</span>}, <span <span class="k">class</span>="s">""</span>,
+                         latency_ms=<span class="n">50</span>, success=<span class="k">False</span>)
+    tracer.log_tool_call(trace_id2, <span <span class="k">class</span>="s">"calculator"</span>,
+                         {<span <span class="k">class</span>="s">"expr"</span>: <span <span class="k">class</span>="s">"<span class="n">123</span>+<span class="n">456</span>"</span>}, <span <span class="k">class</span>="s">"<span class="n">579</span>"</span>,
+                         latency_ms=<span class="n">45</span>, success=<span class="k">True</span>)
+    tracer.log_llm_call(trace_id2, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>,
+                        input_tokens=<span class="n">400</span>, output_tokens=<span class="n">70</span>,
+                        latency_ms=<span class="n">600</span>)
+
+    print(f<span <span class="k">class</span>="s">"\n  🌲 第二个 Trace:"</span>)
+    tracer.print_trace_tree(trace_id2)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Dashboard</span>
+    print(f<span <span class="k">class</span>="s">"\n"</span>)
+    tracer.print_dashboard()
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">24.3</span> LangSmith vs LangFuse —— 两大平台对比
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌──────────────┬─────────────────────┬─────────────────────┐
+  │     维度      │      LangSmith       │      LangFuse        │
+  ├──────────────┼─────────────────────┼─────────────────────┤
+  │ 开发者        │ LangChain 公司       │ 独立开源社区         │
+  │ 开源          │ 部分开源             │ 完全开源 (MIT)       │
+  │ 部署          │ SaaS (托管)          │ SaaS + 自托管 (Docker/K8s)│
+  │ LangChain集成 │ 原生（环境变量开箱）   │ 通过回调集成         │
+  │ 定价          │ 免费层 + Pro/Enterprise│ 免费层 + Cloud/Enterprise│
+  │ 特色功能       │ Hub (Prompt共享)     │ Prompt Management    │
+  │ 评测          │ LLM-<span class="k">as</span>-Judge 评测     │ Dataset Runs 评测    │
+  └──────────────┴─────────────────────┴─────────────────────┘
+
+选型建议：
+  - 重度用 LangChain/LangGraph → LangSmith（原生集成）
+  - 需要自托管 + 完全开源 → LangFuse
+  - 小团队快速上手 → LangSmith Cloud
+  - 需要 Prompt 版本管理 → LangFuse
+
+
+<span class="n">24.4</span> 告警系统 —— 被忽视的关键
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Agent 告警规则（面试时脱口而出！）：
+
+  关键指标告警：
+    ☐ 成功率 &lt; <span class="n">95</span>% (1h 窗口) → PagerDuty/Slack 告警
+    ☐ P99 延迟 &gt; 60s → 延迟告警
+    ☐ Token 消耗 &gt; 预算 × <span class="n">80</span>% → 预算告警
+    ☐ 工具调用失败率 &gt; <span class="n">10</span>% → 工具故障告警
+    ☐ 连续 N 次相同错误 → 死循环告警
+
+  异常检测：
+    ☐ 用户输入异常（Prompt Injection 检测触发）
+    ☐ 输出异常（内容安全审核触发）
+    ☐ 流量异常（Rate Limiting 触发）
+
+
+<span class="n">24.5</span> Agent 可观测性 Checklist
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Tracing
+  ☐ 每次 LLM 调用：model + tokens + latency
+  ☐ 每次工具调用：tool_name + args + result + latency
+  ☐ 父子 Span 关系（便于定位性能瓶颈）
+  ☐ 错误 Span 标记 + 错误原因
+
+✅ Metrics
+  ☐ 成功率 Dashboard（按模型/按工具/按时段）
+  ☐ P50/P95/P99 延迟趋势
+  ☐ Token 消耗趋势（按天/按用户）
+  ☐ 错误分布热力图
+
+✅ Evaluation
+  ☐ 离线评测集 + 自动回归
+  ☐ LLM-<span class="k">as</span>-Judge 质量评分
+  ☐ 用户反馈收集
+
+✅ Alerts
+  ☐ 核心指标告警规则
+  ☐ 异常检测
+  ☐ 人工介入流程
+
+
+<span class="n">24.6</span> 本章总结
+━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. Agent 可观测性 <span class="n">4</span> 大支柱
+   Tracing / Metrics / Evaluation / Alerts
+
+<span class="n">2</span>. Tracing 三层模型
+   Level <span class="n">1</span> (LLM调用) → Level <span class="n">2</span> (Agent链) → Level <span class="n">3</span> (Multi-Agent)
+
+<span class="n">3</span>. LangSmith vs LangFuse
+   LangSmith: LangChain 原生集成
+   LangFuse: 完全开源 + 自托管
+
+面试速记：
+  <span <span class="k">class</span>="s">"Agent 怎么监控？"</span>
+  → <span class="n">4</span> 大支柱：Tracing + Metrics + Evaluation + Alerts
+  → Tracing：记录每个 LLM 调用 + 工具调用
+  → LangSmith/LangFuse 选型
+  → 告警：成功率 &lt; <span class="n">95</span>% → 通知
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
+    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    print(<span <span class="k">class</span>="s">"║  第24章：Agent 可观测性                                 ║"</span>)
+    print(<span <span class="k">class</span>="s">"║  Tracing · Metrics · Dashboard · LangSmith/LangFuse ║"</span>)
+    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+
+    demo_agent_tracing()
+
+    print(<span <span class="k">class</span>="s">"\n▶ LangSmith vs LangFuse"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    pairs = [
+        (<span <span class="k">class</span>="s">"开发者"</span>, <span <span class="k">class</span>="s">"LangSmith: LangChain公司"</span>, <span <span class="k">class</span>="s">"LangFuse: 独立开源社区"</span>),
+        (<span <span class="k">class</span>="s">"开源"</span>, <span <span class="k">class</span>="s">"LangSmith: 部分开源"</span>, <span <span class="k">class</span>="s">"LangFuse: 完全开源 MIT"</span>),
+        (<span <span class="k">class</span>="s">"部署"</span>, <span <span class="k">class</span>="s">"LangSmith: SaaS (托管)"</span>, <span <span class="k">class</span>="s">"LangFuse: SaaS + 自托管"</span>),
+        (<span <span class="k">class</span>="s">"LangChain集成"</span>, <span <span class="k">class</span>="s">"LangSmith: 原生(环境变量)"</span>, <span <span class="k">class</span>="s">"LangFuse: 回调集成"</span>),
+        (<span <span class="k">class</span>="s">"推荐场景"</span>, <span <span class="k">class</span>="s">"LangSmith: 重度LangChain用户"</span>, <span <span class="k">class</span>="s">"LangFuse: 自建/开源优先"</span>),
+    ]
+    <span class="k">for</span> dim, ls, lf <span class="k">in</span> pairs:
+        print(f<span <span class="k">class</span>="s">"  {dim:12s} | {ls:30s} | {lf}"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ 告警规则 Checklist"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    alerts = [
+        <span <span class="k">class</span>="s">"成功率 &lt; <span class="n">95</span>% (1h) → PagerDuty/Slack"</span>,
+        <span <span class="k">class</span>="s">"P99 延迟 &gt; 60s → 延迟告警"</span>,
+        <span <span class="k">class</span>="s">"Token 消耗 &gt; 预算×<span class="n">80</span>% → 预算告警"</span>,
+        <span <span class="k">class</span>="s">"工具调用失败率 &gt; <span class="n">10</span>% → 工具故障"</span>,
+        <span <span class="k">class</span>="s">"连续 N 次相同错误 → 死循环告警"</span>,
+    ]
+    <span class="k">for</span> a <span class="k">in</span> alerts:
+        print(f<span <span class="k">class</span>="s">"   🔔 {a}"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n✅ 第24章完成！"</span>)</pre></div></details></div></div></body></html>

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第10章：MCP（Model Context Protocol）原理与调用全流程 — AI Agent 全栈课程</title>
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* 标题 */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
+}
+.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero .subtitle { opacity: 0.9; font-size: 1.05em; }
+
+/* 讲义内容 */
+.lecture { background: white; border-radius: 10px; padding: 36px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
+.lecture h2 {
+  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
+}
+.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture p { margin: 10px 0; }
+.lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
+.lecture li { margin: 4px 0; }
+.lecture pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 18px 22px; overflow-x: auto; font-size: .88em;
+  line-height: 1.55; margin: 14px 0;
+}
+.lecture code { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; }
+.lecture p code, .lecture li code {
+  background: #eee8ff; padding: 1px 6px; border-radius: 4px;
+  font-size: .92em; color: #6c3cc0;
+}
+.lecture strong { color: #333; }
+.lecture em { color: #555; }
+.lecture blockquote {
+  border-left: 4px solid #667eea; padding: 8px 16px;
+  margin: 14px 0; background: #f4f4ff; border-radius: 0 8px 8px 0;
+  color: #555;
+}
+.lecture table {
+  border-collapse: collapse; width: 100%; margin: 14px 0;
+  font-size: .92em;
+}
+.lecture th, .lecture td {
+  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+}
+.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 目标/考点标签 */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: .85em; font-weight: 500;
+}
+.tag-goal { background: #e8f5e9; color: #2e7d32; }
+.tag-interview { background: #fff3e0; color: #e65100; }
+
+/* 代码块区域 */
+.code-section { margin-top: 24px; }
+.code-section summary {
+  font-size: 1.1em; font-weight: 600; cursor: pointer;
+  padding: 10px 16px; background: #1e1e2e; color: #cdd6f4;
+  border-radius: 8px 8px 0 0; user-select: none;
+}
+.code-section pre {
+  margin: 0; border-radius: 0 0 8px 8px; max-height: 70vh;
+  overflow-y: auto;
+}
+.code-block {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 0 0 8px 8px;
+  padding: 20px 24px; overflow-x: auto; font-size: .85em;
+  line-height: 1.6; max-height: 70vh; overflow-y: auto;
+}
+
+/* 移动端 */
+@media (max-width: 640px) {
+  .container { padding: 16px 12px 60px; }
+  .hero { padding: 28px 18px; }
+  .hero h1 { font-size: 1.4em; }
+  .lecture { padding: 20px 16px; }
+}
+
+/* 打印 */
+@media print {
+  body { background: white; }
+  .lecture { box-shadow: none; }
+  .code-block { background: #f5f5f5; color: #222; }
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><h1>第10章 MCP（Model Context Protocol）原理与调用全流程</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 深入理解 MCP 协议的完整架构和设计哲学</span><span class="tag tag-goal">2. 掌握 JSON-RPC 2.0 消息格式和 MCP 的三种消息类型</span><span class="tag tag-goal">3. 理解 Client-Host-Server 三层架构</span><span class="tag tag-goal">4. 掌握 MCP 核心原语：Tools / Resources / Prompts / Sampling</span><span class="tag tag-goal">5. 学会 MCP 的生命周期管理（Initialize → Capability Negotiation → Teardown）</span><span class="tag tag-goal">6. 理解 stdio 和 SSE 两种传输方式的使用场景</span><span class="tag tag-interview">🎤 MCP 和传统的 REST API 有什么区别？</span><span class="tag tag-interview">🎤 MCP 的 Client-Host-Server 架构中，Host 的作用是什么？</span><span class="tag tag-interview">🎤 什么是 Capability Negotiation？怎么工作的？</span><span class="tag tag-interview">🎤 MCP 的三个核心原语（Tools / Resources / Prompts）分别是什么？</span><span class="tag tag-interview">🎤 MCP 和 Function Calling 是什么关系？</span></div><p>第10章：MCP（Model Context Protocol）原理与调用全流程</p>
+<p>=====================================================</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>本章内容基于 MCP 官方规范 (2025-06-18 版) 和 SDK 源码</p>
+<p>官方文档: https://modelcontextprotocol.io</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>10.1 MCP 是什么？—— 用类比建立直觉</h2>
+<p>&nbsp;</p>
+<p>类比：USB-C 接口</p>
+<p>&nbsp;</p>
+<p>在没有 USB-C 之前：</p>
+<pre>手机用 Micro-USB、电脑用 USB-A、显示器用 HDMI、硬盘用 Thunderbolt
+每种设备需要不同的线，接口混乱不堪</pre>
+<p>&nbsp;</p>
+<p>USB-C 统一了这一切：</p>
+<pre>一个接口，连接所有设备
+协议统一，但每个设备的「功能」不同</pre>
+<p>&nbsp;</p>
+<p>MCP 就是 AI 世界的 USB-C：</p>
+<pre>一个协议，连接所有外部系统
+协议统一（JSON-RPC），但每个 Server 的「工具」不同
+2024年11月由 Anthropic 发布，迅速成为行业标准</pre>
+<p>&nbsp;</p>
+<p>MCP 解决了什么核心问题？</p>
+<p>&nbsp;</p>
+<p>旧世界（MCP 之前）：</p>
+<pre>    ┌──────┐   自定义协议   ┌──────────┐
+    │ LLM   │──────────────→│ Google API│
+    │       │   自定义协议   ├──────────┤
+    │       │──────────────→│ GitHub API│
+    │       │   自定义协议   ├──────────┤
+    │       │──────────────→│ 数据库     │
+    └──────┘                └──────────┘</pre>
+<pre>每连接一个新系统，都要写新的适配代码！</pre>
+<p>&nbsp;</p>
+<p>新世界（MCP 之后）：</p>
+<pre>    ┌──────┐     MCP       ┌──────────┐
+    │ LLM   │──────────────→│ MCP Server│→ Google
+    │       │     MCP       ├──────────┤
+    │       │──────────────→│ MCP Server│→ GitHub
+    │       │     MCP       ├──────────┤
+    │       │──────────────→│ MCP Server│→ Database
+    └──────┘                └──────────┘</pre>
+<pre>一个协议，连接所有！新系统只需实现一个 MCP Server。</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>10.2 MCP 的三层架构 —— Host / Client / Server</h2>
+<p>&nbsp;</p>
+<pre>  ┌──────────────────────────────────────────────────────────┐
+  │                     Host Application                      │
+  │  ┌─────────────────┐  ┌─────────────────┐                │
+  │  │   MCP Client 1   │  │   MCP Client 2  │  ...          │
+  │  │  (1:1 连接)     │  │  (1:1 连接)     │                │
+  │  └────────┬────────┘  └────────┬────────┘                │
+  │           │                    │                          │
+  └───────────┼────────────────────┼──────────────────────────┘
+              │                    │
+     MCP协议  │           MCP协议  │
+    (JSON-RPC)│          (JSON-RPC)│</pre>
+<pre>          ▼                    ▼</pre>
+<pre>  ┌──────────────────┐  ┌──────────────────┐
+  │   MCP Server 1    │  │   MCP Server 2    │
+  │   文件系统 & Git   │  │     数据库        │
+  │                   │  │                   │
+  │  • read_file()    │  │  • query()        │
+  │  • write_file()   │  │  • insert()       │
+  │  • git_status()   │  │  • schema()       │
+  └──────────────────┘  └──────────────────┘</pre>
+<p>&nbsp;</p>
+<p>三个角色的职责：</p>
+<p>&nbsp;</p>
+<p>Host（主机）</p>
+<li>LLM 所在的应用程序（如 Claude Desktop、Claude Code）</li>
+<li>创建和管理多个 Client 实例</li>
+<li>控制安全策略和用户授权</li>
+<li>聚合多个 Server 提供的上下文</li>
+<p>&nbsp;</p>
+<p>Client（客户端）</p>
+<li>Host 内部的组件，每个 Client 连接一个 Server</li>
+<li>1:1 关系：一个 Client ↔ 一个 Server</li>
+<li>处理协议握手和能力协商</li>
+<li>路由协议消息</li>
+<p>&nbsp;</p>
+<p>Server（服务器）</p>
+<li>提供具体的上下文的进程/服务</li>
+<li>通过 MCP 原语暴露能力</li>
+<li>可以是本地进程（stdio）或远程服务（SSE）</li>
+<p>&nbsp;</p>
+<p>关键设计原则（面试常问！）：</p>
+<li>Server 不能看到完整对话，也不能「看到」其他 Server</li>
+<pre> → 安全隔离：对话历史留在 Host，Server 只收到必要信息</pre>
+<li>Server 应极其简单易构建</li>
+<pre> → 复杂逻辑留给 Host，Server 只做一件事</pre>
+<li>Server 应高度可组合</li>
+<pre> → 多个 Server 可以无缝组合使用</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>10.3 MCP 的消息格式 —— JSON-RPC 2.0</h2>
+<p>&nbsp;</p>
+<p>MCP 使用 JSON-RPC 2.0 作为通信协议。</p>
+<p>这是理解 MCP 调用流程的基础。</p>
+<p>&nbsp;</p>
+<p>三种消息类型：</p></div><div class="code-section"><details open><summary>💻 源代码 (467 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># === Request（请求）===</span>
+REQUEST_EXAMPLE = {
+    <span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>,
+    <span <span class="k">class</span>="s">"id"</span>: <span class="n">1</span>,                    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 请求ID，用于匹配响应</span>
+    <span <span class="k">class</span>="s">"method"</span>: <span <span class="k">class</span>="s">"tools/call"</span>,     <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 方法名</span>
+    <span <span class="k">class</span>="s">"params"</span>: {                 <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 参数</span>
+        <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"get_weather"</span>,
+        <span <span class="k">class</span>="s">"arguments"</span>: {<span <span class="k">class</span>="s">"city"</span>: <span <span class="k">class</span>="s">"北京"</span>}
+    }
+}
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># === Response（成功响应）===</span>
+RESPONSE_EXAMPLE = {
+    <span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>,
+    <span <span class="k">class</span>="s">"id"</span>: <span class="n">1</span>,                    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 对应请求的ID</span>
+    <span <span class="k">class</span>="s">"result"</span>: {                 <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 成功结果</span>
+        <span <span class="k">class</span>="s">"content"</span>: [
+            {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"text"</span>, <span <span class="k">class</span>="s">"text"</span>: <span <span class="k">class</span>="s">"北京天气：晴，<span class="n">25</span>°C"</span>}
+        ]
+    }
+}
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># === Error Response（错误响应）===</span>
+ERROR_RESPONSE_EXAMPLE = {
+    <span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>,
+    <span <span class="k">class</span>="s">"id"</span>: <span class="n">1</span>,
+    <span <span class="k">class</span>="s">"error"</span>: {
+        <span <span class="k">class</span>="s">"code"</span>: -<span class="n">32602</span>,         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 标准 JSON-RPC 错误码</span>
+        <span <span class="k">class</span>="s">"message"</span>: <span <span class="k">class</span>="s">"Invalid params"</span>,
+        <span <span class="k">class</span>="s">"data"</span>: {<span <span class="k">class</span>="s">"detail"</span>: <span <span class="k">class</span>="s">"缺少必填参数 <span <span class="k">class</span>='s'>'city'</span>"</span>}
+    }
+}
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># === Notification（通知 — 无需响应）===</span>
+NOTIFICATION_EXAMPLE = {
+    <span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>,
+    <span <span class="k">class</span>="s">"method"</span>: <span <span class="k">class</span>="s">"notifications/tools/list_changed"</span>,  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 无 id 字段！</span>
+    <span <span class="k">class</span>="s">"params"</span>: {}
+}
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+关键区别：
+  - Request/Response 有 id 字段（双向匹配）
+  - Notification 没有 id（不需要响应）
+
+
+<span class="n">10.4</span> MCP 的核心方法（Primitives）—— 按调用流程
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+完整的 MCP 调用生命周期：
+
+  ┌────────────────────────────────────────────┐
+  │  Phase <span class="n">1</span>: 初始化 (Initialize)              │
+  │  ┌──────────────────────────────────────┐  │
+  │  │ Client                    Server     │  │
+  │  │   │── initialize ──────────→│        │  │
+  │  │   │←─ capabilities + info ─│        │  │
+  │  │   │── initialized ─────────→│        │  │
+  │  └──────────────────────────────────────┘  │
+  ├────────────────────────────────────────────┤
+  │  Phase <span class="n">2</span>: 发现工具 (Tool Discovery)         │
+  │  ┌──────────────────────────────────────┐  │
+  │  │   │── tools/list ──────────→│        │  │
+  │  │   │←─ [工具1, 工具2, ...] ─│        │  │
+  │  └──────────────────────────────────────┘  │
+  ├────────────────────────────────────────────┤
+  │  Phase <span class="n">3</span>: 调用工具 (Tool Invocation)        │
+  │  ┌──────────────────────────────────────┐  │
+  │  │   │── tools/call ──────────→│        │  │
+  │  │   │←─ tool_result ────────│        │  │
+  │  └──────────────────────────────────────┘  │
+  ├────────────────────────────────────────────┤
+  │  Phase <span class="n">4</span>: 关闭 (Teardown)                  │
+  │  ┌──────────────────────────────────────┐  │
+  │  │   │── 关闭连接 ─────────────→│        │  │
+  │  └──────────────────────────────────────┘  │
+  └────────────────────────────────────────────┘
+
+MCP 的三大核心原语（Server 能力）：
+
+  <span class="n">1</span>. Tools（工具）
+     - 让 LLM 可以「做」事情
+     - 示例：查询数据库、调用API、执行计算
+     - 对应方法：tools/list, tools/call
+
+  <span class="n">2</span>. Resources（资源）
+     - 让 LLM 可以「读」数据
+     - 示例：读取文件、获取数据库schema
+     - 对应方法：resources/list, resources/read
+
+  <span class="n">3</span>. Prompts（提示模板）
+     - 预定义的提示词模板
+     - 示例：「代码审查模板」「Bug报告模板」
+     - 对应方法：prompts/list, prompts/get
+
+  <span class="n">4</span>. Sampling（采样）—— Client 能力
+     - Server 可以请求 Host 的 LLM 生成内容
+     - 示例：Server 需要 LLM 帮助分类或总结
+
+
+<span class="n">10.5</span> Capability Negotiation（能力协商）—— 面试重点！
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MCP 不是「一刀切」的协议。Client 和 Server 在连接初始化时
+互相声明自己的「能力」，只有双方都支持的功能才可用。
+
+Server 声明的能力（capabilities）:
+  {
+    <span <span class="k">class</span>="s">"capabilities"</span>: {
+      <span <span class="k">class</span>="s">"tools"</span>: {<span <span class="k">class</span>="s">"listChanged"</span>: true},     // 支持工具，且工具列表可动态变化
+      <span <span class="k">class</span>="s">"resources"</span>: {<span <span class="k">class</span>="s">"subscribe"</span>: true},   // 支持资源，且支持订阅更新
+      <span <span class="k">class</span>="s">"prompts"</span>: {<span <span class="k">class</span>="s">"listChanged"</span>: false},  // 支持提示模板，列表静态不变
+      <span <span class="k">class</span>="s">"logging"</span>: {}                       // 支持日志输出
+    }
+  }
+
+Client 声明的能力:
+  {
+    <span <span class="k">class</span>="s">"capabilities"</span>: {
+      <span <span class="k">class</span>="s">"sampling"</span>: {},                     // 支持 LLM 采样
+      <span <span class="k">class</span>="s">"roots"</span>: {<span <span class="k">class</span>="s">"listChanged"</span>: true},     // 支持根目录声明
+      <span <span class="k">class</span>="s">"experimental"</span>: {<span <span class="k">class</span>="s">"featureX"</span>: {}}    // 实验性功能
+    }
+  }
+
+为什么需要能力协商？
+  <span class="n">1</span>. 向后兼容：新版本可降级到老版本的功能集
+  <span class="n">2</span>. 渐进增强：功能可以逐步添加，不破坏现有 Server
+  <span class="n">3</span>. 安全隔离：Host 可以拒绝某些能力（如不启用 sampling）
+
+  类比：两人见面先握手说「我会英语、中文、日语」
+        然后选择双方都会的语言交流。
+
+
+<span class="n">10.6</span> MCP 传输层 —— stdio vs SSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MCP 内置两种传输方式：
+
+<span class="n">1</span>. stdio（标准输入/输出）
+   - 适用：本地进程、命令行工具
+   - 原理：Client 启动 Server 作为子进程
+   - 通信：通过 stdin/stdout 交换 JSON-RPC 消息
+   - 优点：简单、安全（进程隔离）
+   - 示例：本地文件系统 Server、本地数据库 Server
+
+<span class="n">2</span>. SSE（Server-Sent Events）
+   - 适用：远程服务、Web 部署
+   - 原理：HTTP POST（Client→Server）+ SSE（Server→Client）
+   - 优点：支持远程部署、服务端推送
+   - 示例：云端 API Server、第三方服务集成
+
+还支持 <span class="n">2025</span> 年新增的 Streamable HTTP 传输方式。
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span class="k">class</span> SimulatedMCPServer:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 MCP Server —— 完整演示 MCP 的核心交互流程。
+
+    实现了 Tools 原语的完整调用链路。
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, name: str, version: str):
+        self.name = name
+        self.version = version
+        self.capabilities = {
+            <span <span class="k">class</span>="s">"tools"</span>: {<span <span class="k">class</span>="s">"listChanged"</span>: <span class="k">True</span>},
+            <span <span class="k">class</span>="s">"resources"</span>: {<span <span class="k">class</span>="s">"subscribe"</span>: <span class="k">False</span>},
+            <span <span class="k">class</span>="s">"prompts"</span>: {<span <span class="k">class</span>="s">"listChanged"</span>: <span class="k">False</span>},
+        }
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 注册工具</span>
+        self.tools = {
+            <span <span class="k">class</span>="s">"get_weather"</span>: {
+                <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"get_weather"</span>,
+                <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"查询指定城市的天气信息"</span>,
+                <span <span class="k">class</span>="s">"inputSchema"</span>: {
+                    <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"object"</span>,
+                    <span <span class="k">class</span>="s">"properties"</span>: {
+                        <span <span class="k">class</span>="s">"city"</span>: {
+                            <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>,
+                            <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"城市名称"</span>
+                        }
+                    },
+                    <span <span class="k">class</span>="s">"required"</span>: [<span <span class="k">class</span>="s">"city"</span>],
+                },
+                <span <span class="k">class</span>="s">"handler"</span>: self._handle_weather,
+            },
+            <span <span class="k">class</span>="s">"search_docs"</span>: {
+                <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"search_docs"</span>,
+                <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"在知识库中搜索文档"</span>,
+                <span <span class="k">class</span>="s">"inputSchema"</span>: {
+                    <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"object"</span>,
+                    <span <span class="k">class</span>="s">"properties"</span>: {
+                        <span <span class="k">class</span>="s">"query"</span>: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>, <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"搜索关键词"</span>},
+                        <span <span class="k">class</span>="s">"max_results"</span>: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"integer"</span>, <span <span class="k">class</span>="s">"default"</span>: <span class="n">5</span>},
+                    },
+                    <span <span class="k">class</span>="s">"required"</span>: [<span <span class="k">class</span>="s">"query"</span>],
+                },
+                <span <span class="k">class</span>="s">"handler"</span>: self._handle_search,
+            },
+        }
+
+    <span class="k">def</span> _handle_weather(self, args: dict) -&gt; dict:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"处理天气查询工具调用。"</span><span <span class="k">class</span>="s">""</span></span>
+        weather = {<span <span class="k">class</span>="s">"北京"</span>: <span <span class="k">class</span>="s">"晴 <span class="n">25</span>°C"</span>, <span <span class="k">class</span>="s">"上海"</span>: <span <span class="k">class</span>="s">"多云 <span class="n">28</span>°C"</span>,
+                   <span <span class="k">class</span>="s">"深圳"</span>: <span <span class="k">class</span>="s">"阵雨 <span class="n">30</span>°C"</span>}
+        city = args.get(<span <span class="k">class</span>="s">"city"</span>, <span <span class="k">class</span>="s">""</span>)
+        <span class="k">return</span> {
+            <span <span class="k">class</span>="s">"content"</span>: [{<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"text"</span>,
+                        <span <span class="k">class</span>="s">"text"</span>: weather.get(city, f<span <span class="k">class</span>="s">"未找到{city}的天气数据"</span>)}],
+            <span <span class="k">class</span>="s">"isError"</span>: city <span class="k">not</span> <span class="k">in</span> weather,
+        }
+
+    <span class="k">def</span> _handle_search(self, args: dict) -&gt; dict:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"处理文档搜索工具调用。"</span><span <span class="k">class</span>="s">""</span></span>
+        query = args.get(<span <span class="k">class</span>="s">"query"</span>, <span <span class="k">class</span>="s">""</span>)
+        max_results = args.get(<span <span class="k">class</span>="s">"max_results"</span>, <span class="n">5</span>)
+        mock_results = [f<span <span class="k">class</span>="s">"文档{i}: 关于<span <span class="k">class</span>='s'>'{query}'</span>的内容片段..."</span> 
+                        <span class="k">for</span> i <span class="k">in</span> range(min(max_results, <span class="n">3</span>))]
+        <span class="k">return</span> {
+            <span <span class="k">class</span>="s">"content"</span>: [{<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"text"</span>, <span <span class="k">class</span>="s">"text"</span>: <span <span class="k">class</span>="s">"\n"</span>.join(mock_results)}],
+            <span <span class="k">class</span>="s">"isError"</span>: <span class="k">False</span>,
+        }
+
+    <span class="k">def</span> handle_request(self, request: dict) -&gt; dict:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"MCP Server 的消息路由（核心！）。
+
+        Args:
+            request: JSON-RPC 请求。
+
+        Returns:
+            JSON-RPC 响应。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        req_id = request.get(<span <span class="k">class</span>="s">"id"</span>)
+        method = request.get(<span <span class="k">class</span>="s">"method"</span>, <span <span class="k">class</span>="s">""</span>)
+        params = request.get(<span <span class="k">class</span>="s">"params"</span>, {})
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># === Phase <span class="n">1</span>: initialize ===</span>
+        <span class="k">if</span> method == <span <span class="k">class</span>="s">"initialize"</span>:
+            <span class="k">return</span> {
+                <span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>,
+                <span <span class="k">class</span>="s">"id"</span>: req_id,
+                <span <span class="k">class</span>="s">"result"</span>: {
+                    <span <span class="k">class</span>="s">"protocolVersion"</span>: <span <span class="k">class</span>="s">"<span class="n">2025</span>-<span class="n">06</span>-<span class="n">18</span>"</span>,
+                    <span <span class="k">class</span>="s">"capabilities"</span>: self.capabilities,
+                    <span <span class="k">class</span>="s">"serverInfo"</span>: {
+                        <span <span class="k">class</span>="s">"name"</span>: self.name,
+                        <span <span class="k">class</span>="s">"version"</span>: self.version,
+                    },
+                },
+            }
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># === Phase <span class="n">2</span>: tools/list ===</span>
+        <span class="k">if</span> method == <span <span class="k">class</span>="s">"tools/list"</span>:
+            tool_list = []
+            <span class="k">for</span> t <span class="k">in</span> self.tools.values():
+                tool_list.append({
+                    <span <span class="k">class</span>="s">"name"</span>: t[<span <span class="k">class</span>="s">"name"</span>],
+                    <span <span class="k">class</span>="s">"description"</span>: t[<span <span class="k">class</span>="s">"description"</span>],
+                    <span <span class="k">class</span>="s">"inputSchema"</span>: t[<span <span class="k">class</span>="s">"inputSchema"</span>],
+                })
+            <span class="k">return</span> {
+                <span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>,
+                <span <span class="k">class</span>="s">"id"</span>: req_id,
+                <span <span class="k">class</span>="s">"result"</span>: {<span <span class="k">class</span>="s">"tools"</span>: tool_list},
+            }
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># === Phase <span class="n">3</span>: tools/call ===</span>
+        <span class="k">if</span> method == <span <span class="k">class</span>="s">"tools/call"</span>:
+            tool_name = params.get(<span <span class="k">class</span>="s">"name"</span>, <span <span class="k">class</span>="s">""</span>)
+            tool_args = params.get(<span <span class="k">class</span>="s">"arguments"</span>, {})
+            tool = self.tools.get(tool_name)
+            <span class="k">if</span> tool <span class="k">is</span> <span class="k">None</span>:
+                <span class="k">return</span> {
+                    <span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>,
+                    <span <span class="k">class</span>="s">"id"</span>: req_id,
+                    <span <span class="k">class</span>="s">"error"</span>: {
+                        <span <span class="k">class</span>="s">"code"</span>: -<span class="n">32601</span>,
+                        <span <span class="k">class</span>="s">"message"</span>: f<span <span class="k">class</span>="s">"未知工具: {tool_name}"</span>
+                    },
+                }
+            result = tool[<span <span class="k">class</span>="s">"handler"</span>](tool_args)
+            <span class="k">return</span> {
+                <span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>,
+                <span <span class="k">class</span>="s">"id"</span>: req_id,
+                <span <span class="k">class</span>="s">"result"</span>: result,
+            }
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 未知方法</span>
+        <span class="k">return</span> {
+            <span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>,
+            <span <span class="k">class</span>="s">"id"</span>: req_id,
+            <span <span class="k">class</span>="s">"error"</span>: {
+                <span <span class="k">class</span>="s">"code"</span>: -<span class="n">32601</span>,
+                <span <span class="k">class</span>="s">"message"</span>: f<span <span class="k">class</span>="s">"未知方法: {method}"</span>
+            },
+        }
+
+
+<span class="k">def</span> demo_mcp_full_flow():
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 MCP 的完整调用流程。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"  MCP 完整调用流程演示"</span>)
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+
+    server = SimulatedMCPServer(<span <span class="k">class</span>="s">"WeatherServer"</span>, <span <span class="k">class</span>="s">"<span class="n">1.0</span>.<span class="n">0</span>"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Phase <span class="n">1</span>: 初始化 + 能力协商</span>
+    print(<span <span class="k">class</span>="s">"\n  [Phase <span class="n">1</span>] 初始化与能力协商"</span>)
+    init_request = {
+        <span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>,
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">1</span>,
+        <span <span class="k">class</span>="s">"method"</span>: <span <span class="k">class</span>="s">"initialize"</span>,
+        <span <span class="k">class</span>="s">"params"</span>: {
+            <span <span class="k">class</span>="s">"protocolVersion"</span>: <span <span class="k">class</span>="s">"<span class="n">2025</span>-<span class="n">06</span>-<span class="n">18</span>"</span>,
+            <span <span class="k">class</span>="s">"capabilities"</span>: {<span <span class="k">class</span>="s">"sampling"</span>: {}},
+            <span <span class="k">class</span>="s">"clientInfo"</span>: {<span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"ClaudeCode"</span>, <span <span class="k">class</span>="s">"version"</span>: <span <span class="k">class</span>="s">"<span class="n">1.0</span>.<span class="n">60</span>"</span>},
+        },
+    }
+    print(f<span <span class="k">class</span>="s">"  Client → Server: {init_request[<span <span class="k">class</span>='s'>'method'</span>]}"</span>)
+    init_response = server.handle_request(init_request)
+    caps = init_response[<span <span class="k">class</span>="s">"result"</span>][<span <span class="k">class</span>="s">"capabilities"</span>]
+    print(f<span <span class="k">class</span>="s">"  Server → Client: 协议版本 {init_response[<span <span class="k">class</span>='s'>'result'</span>][<span <span class="k">class</span>='s'>'protocolVersion'</span>]}"</span>)
+    print(f<span <span class="k">class</span>="s">"  Server 能力: {list(caps.keys())}"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 发送 initialized 通知</span>
+    print(f<span <span class="k">class</span>="s">"  Client → Server: initialized (通知，无需响应)"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Phase <span class="n">2</span>: 发现工具</span>
+    print(<span <span class="k">class</span>="s">"\n  [Phase <span class="n">2</span>] 发现工具列表"</span>)
+    list_request = {
+        <span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>,
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">2</span>,
+        <span <span class="k">class</span>="s">"method"</span>: <span <span class="k">class</span>="s">"tools/list"</span>,
+        <span <span class="k">class</span>="s">"params"</span>: {},
+    }
+    print(f<span <span class="k">class</span>="s">"  Client → Server: {list_request[<span <span class="k">class</span>='s'>'method'</span>]}"</span>)
+    list_response = server.handle_request(list_request)
+    tools = list_response[<span <span class="k">class</span>="s">"result"</span>][<span <span class="k">class</span>="s">"tools"</span>]
+    <span class="k">for</span> t <span class="k">in</span> tools:
+        print(f<span <span class="k">class</span>="s">"    工具: {t[<span <span class="k">class</span>='s'>'name'</span>]} - {t[<span <span class="k">class</span>='s'>'description'</span>]}"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Phase <span class="n">3</span>: 调用工具</span>
+    print(<span <span class="k">class</span>="s">"\n  [Phase <span class="n">3</span>] 调用工具"</span>)
+    call_requests = [
+        (<span <span class="k">class</span>="s">"tools/call"</span>, {<span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"get_weather"</span>, <span <span class="k">class</span>="s">"arguments"</span>: {<span <span class="k">class</span>="s">"city"</span>: <span <span class="k">class</span>="s">"北京"</span>}}),
+        (<span <span class="k">class</span>="s">"tools/call"</span>, {<span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"search_docs"</span>, <span <span class="k">class</span>="s">"arguments"</span>: {<span <span class="k">class</span>="s">"query"</span>: <span <span class="k">class</span>="s">"MCP协议"</span>}}),
+        (<span <span class="k">class</span>="s">"tools/call"</span>, {<span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"get_weather"</span>, <span <span class="k">class</span>="s">"arguments"</span>: {<span <span class="k">class</span>="s">"city"</span>: <span <span class="k">class</span>="s">"火星"</span>}}),
+    ]
+    <span class="k">for</span> method, params <span class="k">in</span> call_requests:
+        req = {<span <span class="k">class</span>="s">"jsonrpc"</span>: <span <span class="k">class</span>="s">"<span class="n">2.0</span>"</span>, <span <span class="k">class</span>="s">"id"</span>: <span class="n">3</span>, <span <span class="k">class</span>="s">"method"</span>: method, <span <span class="k">class</span>="s">"params"</span>: params}
+        print(f<span <span class="k">class</span>="s">"  Client → Server: {params[<span <span class="k">class</span>='s'>'name'</span>]}({params[<span <span class="k">class</span>='s'>'arguments'</span>]})"</span>)
+        response = server.handle_request(req)
+        <span class="k">if</span> <span <span class="k">class</span>="s">"result"</span> <span class="k">in</span> response:
+            content = response[<span <span class="k">class</span>="s">"result"</span>][<span <span class="k">class</span>="s">"content"</span>][<span class="n">0</span>][<span <span class="k">class</span>="s">"text"</span>]
+            is_error = response[<span <span class="k">class</span>="s">"result"</span>].get(<span <span class="k">class</span>="s">"isError"</span>, <span class="k">False</span>)
+            flag = <span <span class="k">class</span>="s">"⚠️ 错误:"</span> <span class="k">if</span> is_error <span class="k">else</span> <span <span class="k">class</span>="s">"  ✅"</span>
+            print(f<span <span class="k">class</span>="s">"  Server → Client: {flag} {content}"</span>)
+        <span class="k">else</span>:
+            print(f<span <span class="k">class</span>="s">"  Server → Client: ❌ {response[<span <span class="k">class</span>='s'>'error'</span>][<span <span class="k">class</span>='s'>'message'</span>]}"</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">10.7</span> MCP vs OpenAI Function Calling —— 对比
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+这是面试中的高频问题！
+
+  ┌──────────────┬──────────────────┬───────────────────┐
+  │     维度      │   MCP             │  Function Calling  │
+  ├──────────────┼──────────────────┼───────────────────┤
+  │ 本质          │ 通信协议          │ LLM 能力            │
+  │ 标准化        │ 开放标准          │ 厂商自有实现        │
+  │ 连接模式      │ Client↔Server    │ 直接在 API 调用中    │
+  │ 工具发现      │ tools/list 动态   │ 每次请求手动传入     │
+  │ 服务器生态    │ 独立部署 MCP Server│ 无独立服务器概念     │
+  │ 可组合性      │ 多 Server 组合    │ 依赖应用代码         │
+  │ 跨模型支持    │ 是（协议层面）     │ 取决于厂商           │
+  └──────────────┴──────────────────┴───────────────────┘
+
+关系：
+  - Function Calling 定义「LLM 如何决定调用工具」
+  - MCP 定义「工具如何被发现、连接、执行」
+  - 两者是互补的，不是替代关系
+
+实际架构中的配合：
+  <span class="n">1</span>. MCP Client 通过 tools/list 获取所有工具定义
+  <span class="n">2</span>. 将工具定义转换为 OpenAI function 格式传给 LLM
+  <span class="n">3</span>. LLM 返回 function call
+  <span class="n">4</span>. MCP Client 通过 tools/call 执行工具
+  <span class="n">5</span>. 将结果返回给 LLM
+
+
+<span class="n">10.8</span> 本章总结
+━━━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. MCP = AI 世界的 USB-C
+   - 一个协议连接所有外部系统
+   - Client-Host-Server 三层架构
+   - JSON-RPC <span class="n">2.0</span> 消息格式
+
+<span class="n">2</span>. 核心原语（面试必问！）
+   - Tools：让 LLM「做事」
+   - Resources：让 LLM「读数据」
+   - Prompts：预定义提示模板
+   - Sampling：Server 请求 LLM 生成
+
+<span class="n">3</span>. 能力协商
+   - 初始化时双方声明 capabilities
+   - 只有双方都支持的功能才可用
+   - 确保向后兼容和渐进增强
+
+<span class="n">4</span>. 传输层
+   - stdio：本地进程（简单、安全）
+   - SSE：远程服务（HTTP + 推送）
+   - Streamable HTTP：<span class="n">2025</span> 新增
+
+<span class="n">5</span>. MCP vs Function Calling
+   - MCP 是协议，FC 是 LLM 能力
+   - 互补关系：MCP 负责连接管理，FC 负责执行决策
+
+面试速记：
+  <span <span class="k">class</span>="s">"请解释 MCP 的工作原理"</span>
+  → 三层架构(Host/Client/Server) + JSON-RPC 通信
+  → 生命周期：Initialize → Capability Negotiation → 
+    Tools/Resources/Prompts → Teardown
+  → 核心价值：标准化 LLM 与外部工具/数据的交互
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
+    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    print(<span <span class="k">class</span>="s">"║  第10章：MCP 协议原理与调用全流程                      ║"</span>)
+    print(<span <span class="k">class</span>="s">"║  JSON-RPC · 原语 · 能力协商 · stdio/SSE             ║"</span>)
+    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">10.1</span>-<span class="n">10.3</span> MCP 架构与消息格式"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    print(<span <span class="k">class</span>="s">"MCP = Client-Host-Server 架构"</span>)
+    print(<span <span class="k">class</span>="s">"通信协议: JSON-RPC <span class="n">2.0</span>"</span>)
+    print(<span <span class="k">class</span>="s">"消息类型: Request / Response / Notification"</span>)
+    print()
+    print(<span <span class="k">class</span>="s">"Request 示例:"</span>)
+    <span class="k">import</span> pprint
+    pprint.pprint(REQUEST_EXAMPLE, width=<span class="n">60</span>)
+    print()
+    print(<span <span class="k">class</span>="s">"Response 示例:"</span>)
+    pprint.pprint(RESPONSE_EXAMPLE, width=<span class="n">60</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">10.6</span> MCP 完整调用流程演示"</span>)
+    demo_mcp_full_flow()
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">10.7</span> MCP vs Function Calling 对比"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    comparisons = [
+        (<span <span class="k">class</span>="s">"本质"</span>, <span <span class="k">class</span>="s">"MCP: 通信协议"</span>, <span <span class="k">class</span>="s">"FC: LLM 能力"</span>),
+        (<span <span class="k">class</span>="s">"标准化"</span>, <span <span class="k">class</span>="s">"MCP: 开放标准"</span>, <span <span class="k">class</span>="s">"FC: 厂商自有实现"</span>),
+        (<span <span class="k">class</span>="s">"工具发现"</span>, <span <span class="k">class</span>="s">"MCP: tools/list 动态发现"</span>, <span <span class="k">class</span>="s">"FC: 每次手动传入"</span>),
+        (<span <span class="k">class</span>="s">"可组合性"</span>, <span <span class="k">class</span>="s">"MCP: 多 Server 组合"</span>, <span <span class="k">class</span>="s">"FC: 依赖应用代码"</span>),
+        (<span <span class="k">class</span>="s">"关系"</span>, <span <span class="k">class</span>="s">"MCP 管理连接"</span>, <span <span class="k">class</span>="s">"FC 管理执行决策"</span>),
+    ]
+    <span class="k">for</span> dim, mcp, fc <span class="k">in</span> comparisons:
+        print(f<span <span class="k">class</span>="s">"  {dim:12s}  {mcp:30s}  {fc}"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n✅ 第10章完成！"</span>)</pre></div></details></div></div></body></html>

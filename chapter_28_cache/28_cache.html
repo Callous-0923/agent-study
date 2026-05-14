@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第28章：语义缓存与 Token 优化 —— 不花钱的 Agent 调用 — AI Agent 全栈课程</title>
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* 标题 */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
+}
+.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero .subtitle { opacity: 0.9; font-size: 1.05em; }
+
+/* 讲义内容 */
+.lecture { background: white; border-radius: 10px; padding: 36px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
+.lecture h2 {
+  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
+}
+.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture p { margin: 10px 0; }
+.lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
+.lecture li { margin: 4px 0; }
+.lecture pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 18px 22px; overflow-x: auto; font-size: .88em;
+  line-height: 1.55; margin: 14px 0;
+}
+.lecture code { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; }
+.lecture p code, .lecture li code {
+  background: #eee8ff; padding: 1px 6px; border-radius: 4px;
+  font-size: .92em; color: #6c3cc0;
+}
+.lecture strong { color: #333; }
+.lecture em { color: #555; }
+.lecture blockquote {
+  border-left: 4px solid #667eea; padding: 8px 16px;
+  margin: 14px 0; background: #f4f4ff; border-radius: 0 8px 8px 0;
+  color: #555;
+}
+.lecture table {
+  border-collapse: collapse; width: 100%; margin: 14px 0;
+  font-size: .92em;
+}
+.lecture th, .lecture td {
+  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+}
+.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 目标/考点标签 */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: .85em; font-weight: 500;
+}
+.tag-goal { background: #e8f5e9; color: #2e7d32; }
+.tag-interview { background: #fff3e0; color: #e65100; }
+
+/* 代码块区域 */
+.code-section { margin-top: 24px; }
+.code-section summary {
+  font-size: 1.1em; font-weight: 600; cursor: pointer;
+  padding: 10px 16px; background: #1e1e2e; color: #cdd6f4;
+  border-radius: 8px 8px 0 0; user-select: none;
+}
+.code-section pre {
+  margin: 0; border-radius: 0 0 8px 8px; max-height: 70vh;
+  overflow-y: auto;
+}
+.code-block {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 0 0 8px 8px;
+  padding: 20px 24px; overflow-x: auto; font-size: .85em;
+  line-height: 1.6; max-height: 70vh; overflow-y: auto;
+}
+
+/* 移动端 */
+@media (max-width: 640px) {
+  .container { padding: 16px 12px 60px; }
+  .hero { padding: 28px 18px; }
+  .hero h1 { font-size: 1.4em; }
+  .lecture { padding: 20px 16px; }
+}
+
+/* 打印 */
+@media print {
+  body { background: white; }
+  .lecture { box-shadow: none; }
+  .code-block { background: #f5f5f5; color: #222; }
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><h1>第28章 语义缓存与 Token 优化 —— 不花钱的 Agent 调用</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解语义缓存的核心原理和三级缓存架构</span><span class="tag tag-goal">2. 掌握 Exact Match / Embedding / LLM-as-Cache 的实现</span><span class="tag tag-goal">3. 学会量化缓存收益和缓存命中率预测</span><span class="tag tag-goal">4. 掌握 Token 预算管理系统</span><span class="tag tag-interview">🎤 「Agent 的 Token 成本怎么优化？」</span><span class="tag tag-interview">🎤 「语义缓存怎么实现？和普通缓存有什么区别？」</span><span class="tag tag-interview">🎤 「缓存命中率怎么估算？实际能省多少钱？」</span></div><p>第28章：语义缓存与 Token 优化 —— 不花钱的 Agent 调用</p>
+<p>========================================================</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>综合 CDN 缓存思想 + LLM 成本优化实践</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>28.1 为什么 Agent 场景特别需要缓存？</h2>
+<p>&nbsp;</p>
+<p>Agent 的 LLM 调用特征：</p>
+<li>重复率高：用户问相似的问题（客服/教育场景 30-50% 重复）</li>
+<li>代价高：每次调用 = 金钱 + 时间</li>
+<li>步骤多：一个 Agent 任务可能调 5-10 次 LLM</li>
+<p>&nbsp;</p>
+<p>缓存收益估算：</p>
+<p>假设：日请求 10000 次，30% 可缓存，每次 $0.01</p>
+<p>日节省：10000 × 0.3 × $0.01 = $30/天</p>
+<p>年节省：$30 × 365 = $10,950/年</p>
+<p>&nbsp;</p>
+<p>加上延迟改善：缓存命中 P99 < 10ms vs LLM 调用 P99 > 2s)</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>28.2 三级缓存架构</h2>
+<p>&nbsp;</p>
+<pre>  ┌─────────────────────────────────────────────────┐
+  │                 L1: Exact Match Cache              │
+  │  ─────────────────────────────────               │
+  │  查询: "今天天气" → 缓存中查 "今天天气"             │
+  │  命中条件: 完全相同的文本                           │
+  │  命中率: 5-10%                                    │
+  │  延迟: <1ms                                       │
+  ├─────────────────────────────────────────────────┤
+  │                 L2: Semantic Cache                 │
+  │  ─────────────────────────────────               │
+  │  查询: "今天天气" → 缓存中查相似查询 → 命中 "今天天气怎么样"│
+  │  命中条件: 余弦相似度 > 0.95                        │
+  │  命中率: 20-40%                                    │
+  │  延迟: ~10ms                                       │
+  ├─────────────────────────────────────────────────┤
+  │                 L3: LLM-as-Cache                   │
+  │  ─────────────────────────────────               │
+  │  查询: 无法在前2级命中 → 调用廉价小模型               │
+  │  如果小模型回答合适 → 缓存结果                       │
+  │  命中率: 10-20% (加上前两级：总 40-70%)              │
+  │  延迟: ~500ms                                      │
+  └─────────────────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 源代码 (342 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<span class="k">import</span> json
+<span class="k">import</span> hashlib
+<span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> collections <span class="k">import</span> OrderedDict
+
+
+<span class="k">class</span> ExactMatchCache:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"L1 缓存 —— 精确匹配。
+
+    最简单的缓存：完全相同的输入 → 直接返回缓存结果。
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, max_size: int = <span class="n">1000</span>):
+        self._store = OrderedDict()
+        self.max_size = max_size
+        self.hits = <span class="n">0</span>
+        self.misses = <span class="n">0</span>
+
+    <span class="k">def</span> get(self, query: str) -&gt; Optional[str]:
+        key = hashlib.md5(query.encode()).hexdigest()
+        <span class="k">if</span> key <span class="k">in</span> self._store:
+            self._store.move_to_end(key)  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LRU 更新</span>
+            self.hits += <span class="n">1</span>
+            <span class="k">return</span> self._store[key]
+        self.misses += <span class="n">1</span>
+        <span class="k">return</span> <span class="k">None</span>
+
+    <span class="k">def</span> set(self, query: str, response: str):
+        key = hashlib.md5(query.encode()).hexdigest()
+        <span class="k">if</span> len(self._store) &gt;= self.max_size:
+            self._store.popitem(last=<span class="k">False</span>)  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 淘汰最久未用</span>
+        self._store[key] = response
+
+    <span class="d">@property</span>
+    <span class="k">def</span> hit_rate(self) -&gt; float:
+        total = self.hits + self.misses
+        <span class="k">return</span> self.hits / total <span class="k">if</span> total &gt; <span class="n">0</span> <span class="k">else</span> <span class="n">0</span>
+
+
+<span class="k">class</span> SemanticCache:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"L2 缓存 —— 语义相似度匹配。
+
+    不要求完全相同的查询，语义相似即可命中。
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, similarity_threshold: float = <span class="n">0.92</span>,
+                 max_size: int = <span class="n">2000</span>):
+        self.threshold = similarity_threshold
+        self.max_size = max_size
+        self.queries = []      <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># [(embedding, query, response)]</span>
+        self.hits = <span class="n">0</span>
+        self.misses = <span class="n">0</span>
+
+    <span class="k">def</span> _embed(self, text: str, dim: int = <span class="n">128</span>) -&gt; np.ndarray:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"简化的向量化（实际使用 OpenAI Embeddings API）。"</span><span <span class="k">class</span>="s">""</span></span>
+        vec = np.zeros(dim)
+        <span class="k">for</span> i, ch <span class="k">in</span> enumerate(text):
+            vec[hash(ch) % dim] += <span class="n">1</span>
+        norm = np.linalg.norm(vec)
+        <span class="k">return</span> vec / norm <span class="k">if</span> norm &gt; <span class="n">0</span> <span class="k">else</span> vec
+
+    <span class="k">def</span> get(self, query: str) -&gt; Optional[str]:
+        q_vec = self._embed(query)
+        <span class="k">for</span> emb, cached_query, response <span class="k">in</span> self.queries:
+            sim = float(np.dot(q_vec, emb))
+            <span class="k">if</span> sim &gt;= self.threshold:
+                self.hits += <span class="n">1</span>
+                <span class="k">return</span> response
+        self.misses += <span class="n">1</span>
+        <span class="k">return</span> <span class="k">None</span>
+
+    <span class="k">def</span> set(self, query: str, response: str):
+        emb = self._embed(query)
+        self.queries.append((emb, query, response))
+        <span class="k">if</span> len(self.queries) &gt; self.max_size:
+            self.queries = self.queries[-self.max_size:]
+
+    <span class="d">@property</span>
+    <span class="k">def</span> hit_rate(self) -&gt; float:
+        total = self.hits + self.misses
+        <span class="k">return</span> self.hits / total <span class="k">if</span> total &gt; <span class="n">0</span> <span class="k">else</span> <span class="n">0</span>
+
+
+<span class="k">class</span> ThreeLevelCache:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"三级缓存 —— 层层降级，最大化命中率。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    <span class="k">def</span> __init__(self):
+        self.l1 = ExactMatchCache(max_size=<span class="n">500</span>)
+        self.l2 = SemanticCache(similarity_threshold=<span class="n">0.90</span>)
+        self.stats = {<span <span class="k">class</span>="s">"l1_hits"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"l2_hits"</span>: <span class="n">0</span>,
+                      <span <span class="k">class</span>="s">"l3_hits"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"misses"</span>: <span class="n">0</span>,
+                      <span <span class="k">class</span>="s">"cost_saved"</span>: <span class="n">0.0</span>}
+        self.COST_PER_LLM_CALL = <span class="n">0.01</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 每次 LLM 调用成本</span>
+
+    <span class="k">def</span> query(self, query: str,
+              llm_func: callable = <span class="k">None</span>) -&gt; tuple[str, int, bool]:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"三级缓存查询。
+
+        Returns:
+            (response, cache_level, was_cached)
+            cache_level: <span class="n">1</span>=L1, <span class="n">2</span>=L2, <span class="n">3</span>=L3, <span class="n">0</span>=miss
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L1: Exact Match</span>
+        result = self.l1.get(query)
+        <span class="k">if</span> result:
+            self.stats[<span <span class="k">class</span>="s">"l1_hits"</span>] += <span class="n">1</span>
+            self.stats[<span <span class="k">class</span>="s">"cost_saved"</span>] += self.COST_PER_LLM_CALL
+            <span class="k">return</span> result, <span class="n">1</span>, <span class="k">True</span>
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L2: Semantic</span>
+        result = self.l2.get(query)
+        <span class="k">if</span> result:
+            self.stats[<span <span class="k">class</span>="s">"l2_hits"</span>] += <span class="n">1</span>
+            self.stats[<span <span class="k">class</span>="s">"cost_saved"</span>] += self.COST_PER_LLM_CALL
+            <span class="k">return</span> result, <span class="n">2</span>, <span class="k">True</span>
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># L3: LLM</span>
+        <span class="k">if</span> llm_func:
+            response = llm_func(query)
+        <span class="k">else</span>:
+            response = f<span <span class="k">class</span>="s">"[LLM 响应] 关于「{query[:<span class="n">30</span>]}...」的回答"</span>
+        self.stats[<span <span class="k">class</span>="s">"l3_hits"</span>] += <span class="n">1</span>
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 写入缓存</span>
+        self.l1.set(query, response)
+        self.l2.set(query, response)
+
+        <span class="k">return</span> response, <span class="n">3</span>, <span class="k">False</span>
+
+    <span class="k">def</span> report(self) -&gt; dict:
+        total = sum([self.stats[<span <span class="k">class</span>="s">"l1_hits"</span>], self.stats[<span <span class="k">class</span>="s">"l2_hits"</span>],
+                     self.stats[<span <span class="k">class</span>="s">"l3_hits"</span>], self.stats[<span <span class="k">class</span>="s">"misses"</span>]])
+        total = max(total, <span class="n">1</span>)
+        <span class="k">return</span> {
+            <span <span class="k">class</span>="s">"total_queries"</span>: total,
+            <span <span class="k">class</span>="s">"l1_hit_rate"</span>: f<span <span class="k">class</span>="s">"{self.stats[<span <span class="k">class</span>='s'>'l1_hits'</span>] / total:.<span class="n">1</span>%}"</span>,
+            <span <span class="k">class</span>="s">"l2_hit_rate"</span>: f<span <span class="k">class</span>="s">"{self.stats[<span <span class="k">class</span>='s'>'l2_hits'</span>] / total:.<span class="n">1</span>%}"</span>,
+            <span <span class="k">class</span>="s">"l3_rate"</span>: f<span <span class="k">class</span>="s">"{self.stats[<span <span class="k">class</span>='s'>'l3_hits'</span>] / total:.<span class="n">1</span>%}"</span>,
+            <span <span class="k">class</span>="s">"total_cache_hit"</span>: (f<span <span class="k">class</span>="s">"{(self.stats[<span <span class="k">class</span>='s'>'l1_hits'</span>] + self.stats[<span <span class="k">class</span>='s'>'l2_hits'</span>]) / total:.<span class="n">1</span>%}"</span>),
+            <span <span class="k">class</span>="s">"cost_saved"</span>: f<span <span class="k">class</span>="s">"${self.stats[<span <span class="k">class</span>='s'>'cost_saved'</span>]:.3f}"</span>,
+            <span <span class="k">class</span>="s">"l1_size"</span>: len(self.l1._store),
+            <span <span class="k">class</span>="s">"l2_size"</span>: len(self.l2.queries),
+        }
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">28.3</span> Token 预算管理系统
+━━━━━━━━━━━━━━━━━━━━━━━
+
+类比：手机流量套餐
+
+  每月 50GB：
+    - 日常浏览（微信/网页）→ 低消耗
+    - 看视频 → 高消耗
+    - 快超标 → 限速 → 降级策略
+
+  Agent Token 预算：
+    每月 100M tokens：
+      - 简单问答 → gpt-4o-mini (便宜)
+      - 复杂分析 → gpt-4o (贵)
+      - 快超标 → 只允许 mini + 摘要压缩
+
+Token 预算的 <span class="n">4</span> 个层级：
+  <span class="n">1</span>. 用户级：每人每月 N tokens
+  <span class="n">2</span>. 会话级：每会话 N tokens
+  <span class="n">3</span>. 请求级：每次 N tokens
+  <span class="n">4</span>. 步骤级：每步 N tokens（防死循环）
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span class="k">class</span> TokenBudget:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Token 预算管理器 —— 类比流量套餐管理。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    <span class="k">def</span> __init__(self, daily_limit: int = 1_000_000):
+        self.daily_limit = daily_limit
+        self.used_today = <span class="n">0</span>
+        self.warning_threshold = <span class="n">0.8</span>
+        self.critical_threshold = <span class="n">0.95</span>
+        self.cost_per_1k = <span class="n">0.002</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># $/1K tokens</span>
+        self.history = []
+
+    <span class="k">def</span> check(self, required_tokens: int) -&gt; dict:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"检查预算是否充足。
+
+        Returns:
+            预算状态。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        projected = self.used_today + required_tokens
+        pct = projected / self.daily_limit
+
+        <span class="k">if</span> pct &gt;= <span class="n">1.0</span>:
+            <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">False</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"exceeded"</span>,
+                    <span <span class="k">class</span>="s">"message"</span>: f<span <span class="k">class</span>="s">"今日预算已用完 ({self.daily_limit:,} tokens)"</span>}
+
+        <span class="k">if</span> pct &gt;= self.critical_threshold:
+            <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"critical"</span>,
+                    <span <span class="k">class</span>="s">"message"</span>: f<span <span class="k">class</span>="s">"接近预算上限 ({pct:.<span class="n">0</span>%})，建议用小模型"</span>}
+
+        <span class="k">if</span> pct &gt;= self.warning_threshold:
+            <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"warning"</span>,
+                    <span <span class="k">class</span>="s">"message"</span>: f<span <span class="k">class</span>="s">"预算已达 {pct:.<span class="n">0</span>%}"</span>}
+
+        <span class="k">return</span> {<span <span class="k">class</span>="s">"allowed"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"ok"</span>}
+
+    <span class="k">def</span> consume(self, tokens: int):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"消耗预算。"</span><span <span class="k">class</span>="s">""</span></span>
+        self.used_today += tokens
+        self.history.append({
+            <span <span class="k">class</span>="s">"tokens"</span>: tokens,
+            <span <span class="k">class</span>="s">"remaining"</span>: self.daily_limit - self.used_today,
+            <span <span class="k">class</span>="s">"pct"</span>: self.used_today / self.daily_limit,
+        })
+
+    <span class="k">def</span> daily_report(self) -&gt; dict:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"每日预算报告。"</span><span <span class="k">class</span>="s">""</span></span>
+        pct = self.used_today / self.daily_limit
+        cost = self.used_today / <span class="n">1000</span> * self.cost_per_1k
+        <span class="k">return</span> {
+            <span <span class="k">class</span>="s">"daily_limit"</span>: f<span <span class="k">class</span>="s">"{self.daily_limit:,}"</span>,
+            <span <span class="k">class</span>="s">"used"</span>: f<span <span class="k">class</span>="s">"{self.used_today:,}"</span>,
+            <span <span class="k">class</span>="s">"remaining"</span>: f<span <span class="k">class</span>="s">"{self.daily_limit - self.used_today:,}"</span>,
+            <span <span class="k">class</span>="s">"usage_pct"</span>: f<span <span class="k">class</span>="s">"{pct:.<span class="n">1</span>%}"</span>,
+            <span <span class="k">class</span>="s">"est_cost"</span>: f<span <span class="k">class</span>="s">"${cost:.2f}"</span>,
+            <span <span class="k">class</span>="s">"status"</span>: <span <span class="k">class</span>="s">"🟢"</span> <span class="k">if</span> pct &lt; <span class="n">0.8</span> <span class="k">else</span> (<span <span class="k">class</span>="s">"🟡"</span> <span class="k">if</span> pct &lt; <span class="n">0.95</span> <span class="k">else</span> <span <span class="k">class</span>="s">"🔴"</span>),
+        }
+
+
+<span class="k">def</span> demo_cache():
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示三级缓存。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"  三级缓存演示"</span>)
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+
+    cache = ThreeLevelCache()
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟 FAQ 场景（高重复率）</span>
+    queries = [
+        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,
+        <span <span class="k">class</span>="s">"如何修改密码？"</span>,
+        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
+        <span <span class="k">class</span>="s">"退货的步骤是啥？"</span>,         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 语义相似（L2命中）</span>
+        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
+        <span <span class="k">class</span>="s">"怎么联系客服？"</span>,          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 新查询</span>
+        <span <span class="k">class</span>="s">"如何修改密码？"</span>,          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
+        <span <span class="k">class</span>="s">"怎么退换货物？"</span>,          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 语义相似（L2命中）</span>
+        <span <span class="k">class</span>="s">"订单在哪里查询？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 新查询</span>
+        <span <span class="k">class</span>="s">"退货流程是什么？"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ← 重复（L1命中）</span>
+    ]
+
+    <span class="k">for</span> q <span class="k">in</span> queries:
+        response, level, cached = cache.query(q)
+        icon = <span <span class="k">class</span>="s">"🎯"</span> <span class="k">if</span> cached <span class="k">else</span> <span <span class="k">class</span>="s">"🆕"</span>
+        print(f<span <span class="k">class</span>="s">"  {icon} L{level} 「{q[:<span class="n">15</span>]}...」→ {response[:<span class="n">40</span>]}..."</span>)
+
+    print(f<span <span class="k">class</span>="s">"\n  📊 缓存报告: {json.dumps(cache.report(), indent=<span class="n">2</span>)}"</span>)
+
+
+<span class="k">def</span> demo_token_budget():
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Token 预算管理。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"  Token 预算管理演示"</span>)
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+
+    budget = TokenBudget(daily_limit=<span class="n">10000</span>)
+
+    requests = [<span class="n">500</span>, <span class="n">2000</span>, <span class="n">4000</span>, <span class="n">3000</span>, <span class="n">1000</span>]
+    <span class="k">for</span> i, tokens <span class="k">in</span> enumerate(requests):
+        check = budget.check(tokens)
+        status = check[<span <span class="k">class</span>="s">"status"</span>]
+        icon = <span <span class="k">class</span>="s">"✅"</span> <span class="k">if</span> check[<span <span class="k">class</span>="s">"allowed"</span>] <span class="k">else</span> <span <span class="k">class</span>="s">"❌"</span>
+        status_msgs = {
+            <span <span class="k">class</span>="s">"ok"</span>: <span <span class="k">class</span>="s">"预算正常"</span>,
+            <span <span class="k">class</span>="s">"warning"</span>: f<span <span class="k">class</span>='s'>'预算已达 {(budget.used_today + tokens) / budget.daily_limit:.<span class="n">0</span>%}'</span>,
+            <span <span class="k">class</span>="s">"critical"</span>: f<span <span class="k">class</span>='s'>'接近预算上限 ({(budget.used_today + tokens) / budget.daily_limit:.<span class="n">0</span>%})'</span>,
+            <span <span class="k">class</span>="s">"exceeded"</span>: f<span <span class="k">class</span>='s'>'今日预算已用完 ({budget.daily_limit:,} tokens)'</span>,
+        }
+        msg = status_msgs.get(status, <span <span class="k">class</span>="s">"未知状态"</span>)
+        print(f<span <span class="k">class</span>="s">"  请求{i+<span class="n">1</span>} {icon} {tokens:,}tokens → {status}: {msg}"</span>)
+        <span class="k">if</span> check[<span <span class="k">class</span>="s">"allowed"</span>]:
+            budget.consume(tokens)
+
+    report = budget.daily_report()
+    print(f<span <span class="k">class</span>="s">"\n  📊 日预算报告:"</span>)
+    <span class="k">for</span> k, v <span class="k">in</span> report.items():
+        print(f<span <span class="k">class</span>="s">"    {k}: {v}"</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<span class="n">28.4</span> 缓存的进阶策略
+━━━━━━━━━━━━━━━━━━━
+
+<span class="n">1</span>. 分层 TTL
+   L1 精确缓存：永久（直到 LRU 淘汰）
+   L2 语义缓存：24小时 TTL（信息会过时）
+   L3 LLM 缓存：按查询类型设 TTL（新闻类 1h / 知识类 7天）
+
+<span class="n">2</span>. 缓存预热
+   上线前用常见问题预填充缓存
+
+<span class="n">3</span>. 缓存失效
+   知识库更新 → 相关缓存全部失效
+
+<span class="n">4</span>. 监控指标
+   命中率 / 节省成本 / 缓存大小 / L1/L2/L3 分流比例
+
+
+<span class="n">28.5</span> 本章总结
+━━━━━━━━━━━━
+
+核心要点回顾：
+
+<span class="n">1</span>. 三级缓存：Exact → Semantic → LLM
+<span class="n">2</span>. Token 预算 = 流量套餐管理
+<span class="n">3</span>. 缓存 + 路由 = 成本降低 <span class="n">50</span>-<span class="n">80</span>%
+
+面试速记：
+  「Agent 成本怎么优化？」
+  → 三级缓存（Exact/Semantic/LLM）命中率 <span class="n">40</span>-<span class="n">70</span>%
+  → 模型路由（简单用小模型，复杂用大模型）
+  → Token 预算管理（防超支）
+  → 三管齐下：年省 <span class="n">50</span>-<span class="n">80</span>%
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
+    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    print(<span <span class="k">class</span>="s">"║  第28章：语义缓存与 Token 优化                          ║"</span>)
+    print(<span <span class="k">class</span>="s">"║  Exact Match · Semantic Cache · Token Budget        ║"</span>)
+    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_cache()
+    demo_token_budget()
+    print(<span <span class="k">class</span>="s">"\n▶ 成本优化组合拳"</span>)
+    <span class="k">for</span> item <span class="k">in</span> [
+        <span <span class="k">class</span>="s">"三级缓存 → <span class="n">30</span>-<span class="n">50</span>% 请求免调 LLM"</span>,
+        <span <span class="k">class</span>="s">"模型路由 → <span class="n">80</span>% 简单请求用小模型"</span>,
+        <span <span class="k">class</span>="s">"Token 预算 → 防止单用户消耗超标"</span>,
+        <span <span class="k">class</span>="s">"三者叠加 → 年省 <span class="n">50</span>-<span class="n">80</span>% LLM 成本"</span>,
+    ]:
+        print(f<span <span class="k">class</span>="s">"  💰 {item}"</span>)
+    print(<span <span class="k">class</span>="s">"\n✅ 第28章完成！🎓 全部课程构建完成！"</span>)</pre></div></details></div></div></body></html>

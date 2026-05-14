@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第07章：Agent 求职面试准备与行业实践 — AI Agent 全栈课程</title>
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* 标题 */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
+}
+.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero .subtitle { opacity: 0.9; font-size: 1.05em; }
+
+/* 讲义内容 */
+.lecture { background: white; border-radius: 10px; padding: 36px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
+.lecture h2 {
+  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
+}
+.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture p { margin: 10px 0; }
+.lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
+.lecture li { margin: 4px 0; }
+.lecture pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 18px 22px; overflow-x: auto; font-size: .88em;
+  line-height: 1.55; margin: 14px 0;
+}
+.lecture code { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; }
+.lecture p code, .lecture li code {
+  background: #eee8ff; padding: 1px 6px; border-radius: 4px;
+  font-size: .92em; color: #6c3cc0;
+}
+.lecture strong { color: #333; }
+.lecture em { color: #555; }
+.lecture blockquote {
+  border-left: 4px solid #667eea; padding: 8px 16px;
+  margin: 14px 0; background: #f4f4ff; border-radius: 0 8px 8px 0;
+  color: #555;
+}
+.lecture table {
+  border-collapse: collapse; width: 100%; margin: 14px 0;
+  font-size: .92em;
+}
+.lecture th, .lecture td {
+  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+}
+.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 目标/考点标签 */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: .85em; font-weight: 500;
+}
+.tag-goal { background: #e8f5e9; color: #2e7d32; }
+.tag-interview { background: #fff3e0; color: #e65100; }
+
+/* 代码块区域 */
+.code-section { margin-top: 24px; }
+.code-section summary {
+  font-size: 1.1em; font-weight: 600; cursor: pointer;
+  padding: 10px 16px; background: #1e1e2e; color: #cdd6f4;
+  border-radius: 8px 8px 0 0; user-select: none;
+}
+.code-section pre {
+  margin: 0; border-radius: 0 0 8px 8px; max-height: 70vh;
+  overflow-y: auto;
+}
+.code-block {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 0 0 8px 8px;
+  padding: 20px 24px; overflow-x: auto; font-size: .85em;
+  line-height: 1.6; max-height: 70vh; overflow-y: auto;
+}
+
+/* 移动端 */
+@media (max-width: 640px) {
+  .container { padding: 16px 12px 60px; }
+  .hero { padding: 28px 18px; }
+  .hero h1 { font-size: 1.4em; }
+  .lecture { padding: 20px 16px; }
+}
+
+/* 打印 */
+@media print {
+  body { background: white; }
+  .lecture { box-shadow: none; }
+  .code-block { background: #f5f5f5; color: #222; }
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><h1>第07章 Agent 求职面试准备与行业实践</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 了解 Agent 相关岗位的类型和要求</span><span class="tag tag-goal">2. 掌握 Agent 面试的高频问题和答题框架</span><span class="tag tag-goal">3. 学会准备有竞争力的项目作品集</span><span class="tag tag-goal">4. 了解行业趋势和发展方向</span></div><p>第7章：Agent 求职面试准备与行业实践</p>
+<p>===================================</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>📌 注意：</p>
+<p>本章不包含代码，是一份完整的面试备战手册。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>7.1 Agent 岗位全景图</h2>
+<p>&nbsp;</p>
+<p>当前市场上 Agent 相关的岗位类型：</p>
+<p>&nbsp;</p>
+<pre>┌──────────────────┬─────────────────────────────────────────┐
+│      岗位         │             工作内容与要求                │
+├──────────────────┼─────────────────────────────────────────┤
+│ Agent 应用工程师  │ 用 LangChain/LangGraph 构建 Agent 应用    │
+│                  │ 要求：Python + 框架熟练 + 业务理解力       │
+├──────────────────┼─────────────────────────────────────────┤
+│ Agent 平台工程师  │ 开发 Agent 基础设施（编排/评测/监控）      │
+│                  │ 要求：Python/Go + 分布式系统 + 工程能力    │
+├──────────────────┼─────────────────────────────────────────┤
+│ Agent 产品经理    │ 定义 Agent 产品形态和用户体验             │
+│                  │ 要求：产品感 + Agent 技术理解 + 数据分析   │
+├──────────────────┼─────────────────────────────────────────┤
+│ Prompt 工程师     │ 专门设计和优化 Agent 的提示词             │
+│                  │ 要求：语言学功底 + 系统思维 + 评测经验     │
+├──────────────────┼─────────────────────────────────────────┤
+│ Agent 研究员      │ Agent 学术研究（新架构/新范式）           │
+│                  │ 要求：顶会论文 + 理论基础 + 工程实现能力   │
+└──────────────────┴─────────────────────────────────────────┘</pre>
+<p>&nbsp;</p>
+<p>招聘趋势（2024-2025）：</p>
+<li>Agent 应用工程师需求量最大（占 60%+）</li>
+<li>岗位从大厂向中厂/创业公司扩散</li>
+<li>薪资范围：一线城市 25K-60K（视经验和公司而定）</li>
+<li>关键技能排序：LangChain/LangGraph > Python > LLM 原理 > 系统设计</li>
+<p>&nbsp;</p>
+<p>主要雇主类型：</p>
+<li>大厂：字节跳动(Coze)、阿里(Tongyi Agent)、腾讯</li>
+<li>Agent 创业公司：Dify、扣子、澜码科技</li>
+<li>AI 平台公司：智谱AI、百川智能、月之暗面</li>
+<li>传统企业 AI 部门：金融、电商、教育等行业</li></div><div class="code-section"><details open><summary>💻 源代码 (546 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">7.2</span> 面试高频问题 TOP <span class="n">20</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+每道题都附「回答框架」和「得分点」。
+<span <span class="k">class</span>="s">""</span>"</span>
+
+AGENT_INTERVIEW_QUESTIONS = [
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 基础概念篇（必考 <span class="n">5</span> 题）=====</span>
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">1</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"什么是 AI Agent？它和普通 LLM 调用有什么区别？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"基础概念"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 定义：Agent = LLM + 规划 + 记忆 + 工具\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 区别：LLM 只能生成文本，Agent 能自主决策、调用工具、执行行动\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 举例：ChatGPT 只能回答问题，AutoGPT 能自己搜索+计算+总结\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 核心循环：Perceive → Think → Act → Observe"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"提到「Agent = LLM + 规划 + 记忆 + 工具」这个公式"</span>,
+            <span <span class="k">class</span>="s">"能描述 Perceive-Think-Act-Observe 循环"</span>,
+            <span <span class="k">class</span>="s">"给出具体的对比示例"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">2</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"解释一下 ReAct 模式，它在 Agent 中如何工作？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"基础概念"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. ReAct = Reasoning + Acting\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 流程：Thought → Action → Observation → Thought → ...\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 每次循环：LLM 先推理(Thought)，然后决定行动(Action)，"</span>
+            <span <span class="k">class</span>="s">"根据结果(Observation)继续推理\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 优点：灵活、通用；缺点：每步都调 LLM，成本高"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"能画出 ReAct 循环的流程图"</span>,
+            <span <span class="k">class</span>="s">"提到 ReAct 论文(Yao et al., ICLR <span class="n">2023</span>)"</span>,
+            <span <span class="k">class</span>="s">"能对比 ReAct 和其他模式的优劣"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">3</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"Agent 的记忆系统有哪些类型？各自怎么实现？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"基础概念"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 短期记忆：对话上下文 → messages 列表 → 受上下文窗口限制\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 长期记忆：跨会话持久化 → 向量数据库(ChromaDB/Pinecone) → RAG 检索\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 工作记忆：当前任务中间状态 → Python 变量/缓存 → 任务完成后释放\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 面试加分：提及滑动窗口、摘要压缩、混合检索等上下文管理策略"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"三种记忆类型都说全"</span>,
+            <span <span class="k">class</span>="s">"给出具体的实现方案（不是抽象的）"</span>,
+            <span <span class="k">class</span>="s">"提到上下文窗口限制的解决方案"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">4</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"Function Calling 的原理是什么？LLM 如何知道该调用哪个函数？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"基础概念"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. Function Calling 是 LLM 的结构化输出能力\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 我们预定义工具的 JSON Schema（名称、描述、参数）\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. LLM 推理后输出一个 JSON 对象 {\"name\": \"...\", \"arguments\": {...}}\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 我们的代码解析这个 JSON 并执行对应的函数\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">5</span>. 将执行结果返回给 LLM，让它继续推理"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"理解工具描述(description)是 LLM 选工具的唯一依据"</span>,
+            <span <span class="k">class</span>="s">"说明 Function Calling 是结构化输出，不是 LLM 真的「调用」函数"</span>,
+            <span <span class="k">class</span>="s">"提到完整的调用-执行-返回循环"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">5</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"Agent 和 RAG 是什么关系？什么场景下分别使用？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"基础概念"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. RAG = 检索增强生成：从知识库检索相关信息 + LLM 生成回答\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. Agent 包含 RAG：RAG 可以作为 Agent 的一个工具\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 简单问答用 RAG，需要多步骤推理/工具调用用 Agent\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. RAG 是 Agent 记忆系统（长期记忆）的常用实现方式"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"明确 RAG 和 Agent 不是互斥的，是包含关系"</span>,
+            <span <span class="k">class</span>="s">"给出选择 RAG vs Agent 的判断标准"</span>,
+            <span <span class="k">class</span>="s">"能举例说明融合使用的场景"</span>,
+        ],
+    },
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 框架与工程篇（必考 <span class="n">5</span> 题）=====</span>
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">6</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"LangChain Agent 的核心架构是什么？和裸写有什么区别？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"框架工程"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 核心：create_react_agent(LLM, tools, checkpointer)\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 对比裸写：自动管理 messages、自动处理 tool_calls 循环、"</span>
+            <span <span class="k">class</span>="s">"内置记忆管理\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. LangChain 提供了 Tool/Toolkit/AgentExecutor 等抽象层\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 优势是开发效率，劣势是多了一层抽象（调试困难）"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"能说出 LangChain 帮我们做的 <span class="n">3</span> 件事"</span>,
+            <span <span class="k">class</span>="s">"理解抽象层的利弊"</span>,
+            <span <span class="k">class</span>="s">"提到自己手写过 Agent（说明懂底层原理）"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">7</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"LangGraph 是什么？它和 LangChain Agent 有什么区别？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"框架工程"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. LangGraph = 基于状态机的 Agent 编排框架\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 核心概念：State(共享状态) + Node(执行节点) + Edge(流转控制)\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. LangChain Agent 是固定的 ReAct 循环\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. LangGraph 可以自定义任意复杂的执行图（分支/循环/并行）\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">5</span>. 生产环境建议用 LangGraph（更可控）"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"解释 State-Node-Edge 三要素"</span>,
+            <span <span class="k">class</span>="s">"举例说明什么场景需要自定义执行图"</span>,
+            <span <span class="k">class</span>="s">"提到 LangGraph 在生产环境的优势"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">8</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"你在实际项目中遇到过什么 Agent 的困难？怎么解决的？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"框架工程"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"准备 <span class="n">2</span>-<span class="n">3</span> 个真实的踩坑经历：\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. LLM 幻觉导致工具参数错误 → 增加参数校验 + enum 限制\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 上下文过长超出限制 → 滑动窗口 + 摘要压缩\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. Agent 陷入死循环 → 设置 max_iterations + 检测重复调用\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 用具体数字说明效果（错误率从 X% 降到 Y%）"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"问题描述具体（不是泛泛而谈）"</span>,
+            <span <span class="k">class</span>="s">"有数据对比（修复前/后）"</span>,
+            <span <span class="k">class</span>="s">"展现问题分析和解决能力"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">9</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"多 Agent 系统怎么设计？Agent 之间怎么通信？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"框架工程"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 三种架构：协作式、分层式、竞争式\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 通信方式：\n"</span>
+            <span <span class="k">class</span>="s">"   - 共享状态（LangGraph）：通过 TypedDict 共享数据\n"</span>
+            <span <span class="k">class</span>="s">"   - 消息传递（AutoGen）：Agent 之间发消息对话\n"</span>
+            <span <span class="k">class</span>="s">"   - 任务委派（crewAI）：上级分配任务给下级\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 关键设计：职责单一、接口标准化、错误隔离"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"三种架构都说全"</span>,
+            <span <span class="k">class</span>="s">"能对比三种通信方式的优劣"</span>,
+            <span <span class="k">class</span>="s">"提到错误隔离和成本控制"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">10</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"生产环境的 Agent 需要注意什么？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"框架工程"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 可观测性：Tracing(LangSmith) + Metrics + Alerting\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 成本控制：模型分层、缓存、流式输出\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 安全：Prompt Injection 防护、权限最小化、人在回路\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 可靠性：重试机制、超时控制、降级策略\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">5</span>. 性能：工具并行调用、长连接复用"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"不只说功能，说运维和生产质量"</span>,
+            <span <span class="k">class</span>="s">"提到具体的工具和策略"</span>,
+            <span <span class="k">class</span>="s">"展现了「工程化思维」而非「Demo 思维」"</span>,
+        ],
+    },
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 系统设计篇（必考 <span class="n">5</span> 题）=====</span>
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">11</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"设计一个智能客服 Agent，你会怎么做？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"系统设计"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 需求分析：用户意图识别、FAQ 匹配、工单创建、人工转接\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 工具设计：知识库检索(RAG)、订单查询API、工单系统API\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. Agent 架构：\n"</span>
+            <span <span class="k">class</span>="s">"   - 路由层：意图识别 Agent 分发到不同子 Agent\n"</span>
+            <span <span class="k">class</span>="s">"   - 执行层：FAQ Agent / 订单 Agent / 投诉 Agent\n"</span>
+            <span <span class="k">class</span>="s">"   - 记忆：对话历史 + 用户画像 + 知识库\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 评估：解决率、响应时间、用户满意度"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"体现了分层架构设计"</span>,
+            <span <span class="k">class</span>="s">"考虑了人机协作（转人工）"</span>,
+            <span <span class="k">class</span>="s">"定义了明确的评估指标"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">12</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"Agent 的上下文窗口只有 128K，如何处理超长对话？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"系统设计"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 滑动窗口：只保留最近 N 条消息\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 摘要压缩：将早期对话用 LLM 总结为摘要\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 向量检索：将历史存入向量库，按相关性检索\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 分层记忆：近期用全量，中期用摘要，远期用检索\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">5</span>. 混合策略：滑动窗口(最新) + 摘要(中期) + 向量检索(远期)"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"不只说摘要压缩，提到多种策略"</span>,
+            <span <span class="k">class</span>="s">"能解释混合策略的优势"</span>,
+            <span <span class="k">class</span>="s">"提到向量数据库的具体实现"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">13</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"如何保证 Agent 的工具调用安全性？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"系统设计"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 权限最小化：每个 Agent 只能访问必要的工具\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 输入校验：参数类型检查 + 值域限制(enum) + 正则过滤\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 操作分级：读操作自动执行，写操作需人工确认\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. Prompt Injection 防护：\n"</span>
+            <span <span class="k">class</span>="s">"   - 用户输入和系统指令用分隔符隔离\n"</span>
+            <span <span class="k">class</span>="s">"   - 对用户输入做消毒处理\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">5</span>. 审计日志：记录所有工具调用"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"提到 Prompt Injection 及其防护"</span>,
+            <span <span class="k">class</span>="s">"理解「读自动、写入确认」的分级策略"</span>,
+            <span <span class="k">class</span>="s">"提到审计和可追溯性"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">14</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"怎么降低 Agent 的 API 调用成本？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"系统设计"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 模型分层：简单任务用小模型(gpt-4o-mini)，复杂任务用大模型\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 语义缓存：相同问题缓存结果，避免重复调用\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 减少 round-trip：一次 prompt 解决多个问题\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. Batching：将多个独立工具调用合并\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">5</span>. 响应长度控制：合理设置 max_tokens"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"不只说「换个便宜模型」"</span>,
+            <span <span class="k">class</span>="s">"提到语义缓存的实现思路"</span>,
+            <span <span class="k">class</span>="s">"给出量化的降本预测(如从 $X 降到 $Y)"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">15</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"如何评估 Agent 的表现？怎么建立评测体系？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"系统设计"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 多维度：任务完成率、工具准确率、执行效率、用户满意度\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 评测方法：LLM-<span class="k">as</span>-Judge + 人工标注 + A/B 测试\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 评测集建设：覆盖典型场景 + 边界情况 + Bad Case 回归\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 持续监控：线上指标看板 + 告警阈值 + 定期巡检"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"提到 LLM-<span class="k">as</span>-Judge 方法"</span>,
+            <span <span class="k">class</span>="s">"懂得评测不是一次性的而是持续的"</span>,
+            <span <span class="k">class</span>="s">"提到 Bad Case 回归机制"</span>,
+        ],
+    },
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 开放讨论篇（必考 <span class="n">5</span> 题）=====</span>
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">16</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"Agent 当前最大的技术挑战是什么？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"开放讨论"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 可靠性：LLM 的不确定性导致 Agent 行为不可预测\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 规划能力：复杂任务的分解和编排还不成熟\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 执行效率：多步推理的延迟和成本\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 安全性：Prompt Injection 和权限控制\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">5</span>. 评估困难：缺乏标准化的 Agent 评测体系\n"</span>
+            <span <span class="k">class</span>="s">"任选 <span class="n">2</span>-<span class="n">3</span> 个深入展开，要有自己的见解"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"展现对行业痛点的理解深度"</span>,
+            <span <span class="k">class</span>="s">"有自己的独立见解而非人云亦云"</span>,
+            <span <span class="k">class</span>="s">"能联系自己的实践经验"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">17</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"Agent 的未来发展趋势是什么？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"开放讨论"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 从单 Agent 到 Multi-Agent 协作\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 从文本到多模态（视觉Agent、操作Agent）\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. 从辅助到自主（Computer Use、代码自主修复）\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 从通用到垂直（金融Agent、医疗Agent、法律Agent）\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">5</span>. Agent 基础设施成熟（评测、监控、安全）"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"观点有逻辑支撑"</span>,
+            <span <span class="k">class</span>="s">"关注行业前沿（提到 Claude Computer Use 等）"</span>,
+            <span <span class="k">class</span>="s">"能和自己的职业规划联系起来"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">18</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"你最近关注了哪些 Agent 相关的论文/开源项目？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"开放讨论"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"必读论文(面试前至少读过3篇):\n"</span>
+            <span <span class="k">class</span>="s">"- ReAct (Yao et al., <span class="n">2023</span>)\n"</span>
+            <span <span class="k">class</span>="s">"- Reflexion (Shinn et al., <span class="n">2023</span>)\n"</span>
+            <span <span class="k">class</span>="s">"- AutoGPT / SWE-Agent / Devin\n"</span>
+            <span <span class="k">class</span>="s">"\n"</span>
+            <span <span class="k">class</span>="s">"必知项目:\n"</span>
+            <span <span class="k">class</span>="s">"- LangChain / LangGraph\n"</span>
+            <span <span class="k">class</span>="s">"- crewAI / AutoGen\n"</span>
+            <span <span class="k">class</span>="s">"- Coze / Dify\n"</span>
+            <span <span class="k">class</span>="s">"- Anthropic Computer Use\n"</span>
+            <span <span class="k">class</span>="s">"\n"</span>
+            <span <span class="k">class</span>="s">"回答时要能说出「这个工作的核心贡献是什么」"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"能说出 <span class="n">2</span>-<span class="n">3</span> 篇论文的核心贡献"</span>,
+            <span <span class="k">class</span>="s">"不只是「知道」而是「读过并理解」"</span>,
+            <span <span class="k">class</span>="s">"能评论论文的优缺点"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">19</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"给你一个想法，你如何从零构建一个 Agent 产品？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"开放讨论"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"<span class="n">1</span>. 需求定义：用户是谁？解决什么问题？核心场景是什么？\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">2</span>. 技术选型：裸写 vs LangChain vs LangGraph？用什么模型？\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">3</span>. MVP 开发：最小可验证产品，<span class="n">1</span>-<span class="n">2</span> 周出 demo\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">4</span>. 评测迭代：收集反馈 → 改进 prompt → 调整工具 → 迭代\n"</span>
+            <span <span class="k">class</span>="s">"<span class="n">5</span>. 生产化：监控、安全、性能优化、成本控制"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"展现产品思维（不是纯技术视角）"</span>,
+            <span <span class="k">class</span>="s">"有清晰的阶段划分和时间预期"</span>,
+            <span <span class="k">class</span>="s">"提到迭代和反馈循环"</span>,
+        ],
+    },
+    {
+        <span <span class="k">class</span>="s">"id"</span>: <span class="n">20</span>,
+        <span <span class="k">class</span>="s">"question"</span>: <span <span class="k">class</span>="s">"你有什么想问我们的？"</span>,
+        <span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"开放讨论"</span>,
+        <span <span class="k">class</span>="s">"framework"</span>: (
+            <span <span class="k">class</span>="s">"推荐问的问题（展现你的深度）:\n"</span>
+            <span <span class="k">class</span>="s">"- 团队目前用的是什么 Agent 架构？为什么选它？\n"</span>
+            <span <span class="k">class</span>="s">"- Agent 在落地过程中最大的挑战是什么？\n"</span>
+            <span <span class="k">class</span>="s">"- 团队对 Agent 评测是怎么做的？\n"</span>
+            <span <span class="k">class</span>="s">"- Agent 产品的下一步规划是什么？\n"</span>
+            <span <span class="k">class</span>="s">"\n"</span>
+            <span <span class="k">class</span>="s">"避免问:\n"</span>
+            <span <span class="k">class</span>="s">"- 薪资福利（留给 HR 面）\n"</span>
+            <span <span class="k">class</span>="s">"- 公司是做什么的（说明你没做功课）"</span>
+        ),
+        <span <span class="k">class</span>="s">"scoring_points"</span>: [
+            <span <span class="k">class</span>="s">"问题展现你对 Agent 技术的深入理解"</span>,
+            <span <span class="k">class</span>="s">"体现你对这份工作的认真态度"</span>,
+        ],
+    },
+]
+
+
+<span class="k">def</span> print_interview_questions():
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"打印所有高频面试题的分类摘要。"</span><span <span class="k">class</span>="s">""</span></span>
+    categories = {}
+    <span class="k">for</span> q <span class="k">in</span> AGENT_INTERVIEW_QUESTIONS:
+        cat = q[<span <span class="k">class</span>="s">"category"</span>]
+        <span class="k">if</span> cat <span class="k">not</span> <span class="k">in</span> categories:
+            categories[cat] = []
+        categories[cat].append(q)
+
+    <span class="k">for</span> cat, questions <span class="k">in</span> categories.items():
+        print(f<span <span class="k">class</span>="s">"\n{<span <span class="k">class</span>='s'>'='</span>*<span class="n">60</span>}"</span>)
+        print(f<span <span class="k">class</span>="s">"  📋 {cat} ({len(questions)} 题)"</span>)
+        print(f<span <span class="k">class</span>="s">"{<span <span class="k">class</span>='s'>'='</span>*<span class="n">60</span>}"</span>)
+        <span class="k">for</span> q <span class="k">in</span> questions:
+            print(f<span <span class="k">class</span>="s">"\n  Q{q[<span <span class="k">class</span>='s'>'id'</span>]}: {q[<span <span class="k">class</span>='s'>'question'</span>]}"</span>)
+            print(f<span <span class="k">class</span>="s">"  回答框架: {q[<span <span class="k">class</span>='s'>'framework'</span>][:<span class="n">120</span>]}..."</span>)
+            print(f<span <span class="k">class</span>="s">"  得分点: {<span <span class="k">class</span>='s'>', '</span>.join(q[<span <span class="k">class</span>='s'>'scoring_points'</span>][:<span class="n">2</span>])}..."</span>)
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">7.3</span> 项目准备指南
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+面试中最有说服力的永远是你的项目经验。
+以下是推荐的 Agent 项目组合：
+
+必做项目（基础)：
+  <span class="n">1</span>. 智能助手 Agent
+     - 功能：搜索 + 计算 + 天气 + 新闻
+     - 技术：LangChain + ReAct Agent
+     - 亮点：展示对 Agent 基本架构的理解
+
+  <span class="n">2</span>. 文档分析 Agent
+     - 功能：上传文档 → 提取关键信息 → 生成摘要 → 回答提问
+     - 技术：RAG + Agent + 向量数据库
+     - 亮点：展示记忆系统和工具调用的整合
+
+进阶项目（加分项）:
+  <span class="n">3</span>. 代码审查 Agent
+     - 功能：Read PR → Static Analysis → Code Review → 生成 Review 报告
+     - 技术：LangGraph + Git API + 代码分析工具
+     - 亮点：展示复杂工作流编排能力
+
+  <span class="n">4</span>. 数据分析 Agent
+     - 功能：自然语言提问 → 生成 SQL → 执行查询 → 可视化
+     - 技术：Text-to-SQL + Pandas + Plotly
+     - 亮点：展示多工具协作 + 结构化输出
+
+  <span class="n">5</span>. Multi-Agent 内容工厂
+     - 功能：策划 → 调研 → 写作 → 编辑 → 配图 → 发布
+     - 技术：crewAI / LangGraph Multi-Agent
+     - 亮点：展示多 Agent 架构设计能力
+
+项目展示技巧：
+  <span class="n">1</span>. 准备一个 <span class="n">3</span> 分钟的「Elevator Pitch」
+  <span class="n">2</span>. 提前画好架构图（面试时分享屏幕/画白板）
+  <span class="n">3</span>. 准备 <span class="n">1</span>-<span class="n">2</span> 个「技术难点 + 解决方案」的故事
+  <span class="n">4</span>. 有性能/成本的量化数据最好（延迟降到 Xms、成本降低 Y%）
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">7.4</span> 面试流程与时间线
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+典型 Agent 工程师面试流程（大厂）:
+
+  第 <span class="n">1</span> 轮：技术电话面试 (<span class="n">45</span> 分钟)
+    - 基础概念考核（本章 <span class="n">7.2</span> 的 Q1-Q5）
+    - 一道简单的手写代码（如工具定义、API 调用）
+
+  第 <span class="n">2</span> 轮：在线编码 (<span class="n">60</span> 分钟)
+    - 实现一个简易 Agent 循环
+    - 设计工具和评估方案
+
+  第 <span class="n">3</span> 轮：系统设计 (<span class="n">60</span> 分钟)
+    - 设计一个特定场景的 Agent 系统
+    - 考量架构合理性、扩展性、安全性
+
+  第 <span class="n">4</span> 轮：项目深挖 (<span class="n">45</span> 分钟)
+    - 详细介绍一个你做过的 Agent 项目
+    - 追问细节：为什么这么做？遇到什么问题？
+
+  第 <span class="n">5</span> 轮：行为面试 (<span class="n">45</span> 分钟)
+    - 团队协作、学习能力、职业规划
+    - STAR 法则回答（Situation-Task-Action-Result）
+
+准备时间线：
+  - 面试前 <span class="n">2</span> 周：回顾第 <span class="n">1</span>-<span class="n">3</span> 章（基础概念）
+  - 面试前 <span class="n">1</span> 周：复习第 <span class="n">4</span>-<span class="n">5</span> 章（框架实战）+ 准备项目故事
+  - 面试前 <span class="n">3</span> 天：过一遍 <span class="n">7.2</span> 的所有问题
+  - 面试前 <span class="n">1</span> 天：Mock Interview + 休息
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="n">7.5</span> 课程总结
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+回顾整个学习路线：
+
+  Ch0 概览        → 理解 Agent 是什么，搭建环境
+  Ch1 基础        → 手写第一个 Agent，理解 ReAct 循环
+  Ch2 组件        → 深入规划器、记忆系统、工具设计
+  Ch3 类型        → ReAct / Plan-Execute / Reflexion 对比
+  Ch4 框架        → LangChain Agent + LangGraph 实战
+  Ch5 多智能体    → Multi-Agent 架构与协作模式
+  Ch6 评估        → 评测体系、测试策略、生产实践
+  Ch7 求职        → 面试问题、项目准备、行业趋势 ← 你在这里
+
+下一步行动建议：
+  <span class="n">1</span>. 动手做一个完整的 Agent 项目（从本章 <span class="n">7.3</span> 选题）
+  <span class="n">2</span>. 把项目部署上线（Streamlit / Gradio / FastAPI）
+  <span class="n">3</span>. 写一篇技术博客分享你的项目（展示技术影响力）
+  <span class="n">4</span>. 参加 Agent 相关的 Hackathon
+  <span class="n">5</span>. 关注 arXiv 上最新的 Agent 论文
+<span <span class="k">class</span>="s">""</span>"</span>
+
+
+<span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
+    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    print(<span <span class="k">class</span>="s">"║    第7章：Agent 求职面试准备与行业实践                 ║"</span>)
+    print(<span <span class="k">class</span>="s">"║    高频面试题 · 项目指南 · 面试流程                   ║"</span>)
+    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">7.1</span> Agent 岗位全景图"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    roles = [
+        <span <span class="k">class</span>="s">"Agent 应用工程师 → 需求量最大(<span class="n">60</span>%+) → 25K-60K"</span>,
+        <span <span class="k">class</span>="s">"Agent 平台工程师 → 要求分布式系统能力"</span>,
+        <span <span class="k">class</span>="s">"Agent 产品经理   → 产品感 + 技术理解"</span>,
+        <span <span class="k">class</span>="s">"Prompt 工程师    → 系统化提示词设计"</span>,
+        <span <span class="k">class</span>="s">"Agent 研究员     → 顶会论文 + 新范式探索"</span>,
+    ]
+    <span class="k">for</span> r <span class="k">in</span> roles:
+        print(f<span <span class="k">class</span>="s">"  • {r}"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">7.2</span> 高频面试题 TOP <span class="n">20</span>（摘要）"</span>)
+    print_interview_questions()
+
+    print(<span <span class="k">class</span>="s">"\n\n▶ <span class="n">7.3</span> 项目准备推荐"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    projects = [
+        <span <span class="k">class</span>="s">"必做: 智能助手 Agent (LangChain + ReAct)"</span>,
+        <span <span class="k">class</span>="s">"必做: 文档分析 Agent (RAG + Agent)"</span>,
+        <span <span class="k">class</span>="s">"进阶: 代码审查 Agent (LangGraph + Git API)"</span>,
+        <span <span class="k">class</span>="s">"进阶: 数据分析 Agent (Text-to-SQL + 可视化)"</span>,
+        <span <span class="k">class</span>="s">"进阶: Multi-Agent 内容工厂 (crewAI/LangGraph)"</span>,
+    ]
+    <span class="k">for</span> p <span class="k">in</span> projects:
+        print(f<span <span class="k">class</span>="s">"  • {p}"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">7.4</span> 面试流程"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    rounds = [
+        <span <span class="k">class</span>="s">"第1轮: 技术电话面(45min) - 基础概念 + 手写代码"</span>,
+        <span <span class="k">class</span>="s">"第2轮: 在线编码(60min)   - 实现 Agent 循环"</span>,
+        <span <span class="k">class</span>="s">"第3轮: 系统设计(60min)   - Agent 系统架构"</span>,
+        <span <span class="k">class</span>="s">"第4轮: 项目深挖(45min)   - 你的 Agent 项目"</span>,
+        <span <span class="k">class</span>="s">"第5轮: 行为面试(45min)   - STAR 法则"</span>,
+    ]
+    <span class="k">for</span> r <span class="k">in</span> rounds:
+        print(f<span <span class="k">class</span>="s">"  • {r}"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"  🎓 恭喜完成全部课程！"</span>)
+    print(<span <span class="k">class</span>="s">"  "</span>)
+    print(<span <span class="k">class</span>="s">"  从 Agent 基础概念到面试求职，你现在已经具备了"</span>)
+    print(<span <span class="k">class</span>="s">"  成为一名 AI Agent 工程师所需的核心知识体系。"</span>)
+    print(<span <span class="k">class</span>="s">"  "</span>)
+    print(<span <span class="k">class</span>="s">"  下一步：动手做一个项目，把它展示给面试官。"</span>)
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)</pre></div></details></div></div></body></html>
