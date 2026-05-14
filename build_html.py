@@ -221,76 +221,121 @@ def _make_nav(ch_num: int) -> str:
     return "\n".join(parts)
 
 
-def extract_docstring_and_code(filepath: str) -> tuple[str, str, str]:
-    # 提取讲义 docstring 和完整源代码
-    # 关键区分：
-    #   - 行首的三个引号块 -> 讲义内容（模块级 docstring）
-    #   - 缩进后的三个引号块 -> 代码的一部分（函数注释，不提取）
-    # 返回 (title, lecture_text, code_text)
+def extract_sections(filepath: str) -> tuple[str, list[tuple[str, str]], str]:
+    # 提取 (讲义, 对应代码) 的交替段 + 完整源码
+    # 结构: [讲义1] [代码1] [讲义2] [代码2] ... [最终代码]
+    # 返回 (title, [(lecture, code), ...], full_code)
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
 
-    docstrings = []
-    # 保留完整原始内容作为代码展示（供语法高亮）
-    full_code = content
-
+    segments = []  # [(start, end, is_lecture)]
     pos = 0
     while True:
-        # 找下一个 """ 的位置
         start = content.find('"""', pos)
         if start == -1:
             break
-
-        # 判断是否是行首的 """（讲义）还是缩进的 """（函数注释）
-        # 检查 start 前是否全是空白字符
+        # 判断是否行首
         line_start = content.rfind('\n', 0, start)
-        if line_start == -1:
-            line_start = 0
-        else:
-            line_start += 1
+        line_start = 0 if line_start == -1 else line_start + 1
         prefix = content[line_start:start]
-        # 如果 """ 前面没有缩进（全是空格或空），就是行首的讲义块
-        if prefix.strip() == "":
-            inner_start = start + 3
-            end = content.find('"""', inner_start)
-            if end != -1:
-                # 再确认结束的 """ 也是行首的（防止匹配到字符串内的 """ ）
-                end_line_start = content.rfind('\n', 0, end)
-                if end_line_start == -1:
-                    end_line_start = 0
-                else:
-                    end_line_start += 1
-                end_prefix = content[end_line_start:end]
-                if end_prefix.strip() == "":
-                    doc = content[inner_start:end].strip()
-                    if doc:
-                        docstrings.append(doc)
-                    pos = end + 3
-                else:
-                    pos = end + 3
-            else:
-                pos = inner_start
-        else:
+        if prefix != "":
             pos = start + 3
+            continue
+        inner_start = start + 3
+        end = content.find('"""', inner_start)
+        if end == -1:
+            break
+        end_line_start = content.rfind('\n', 0, end)
+        end_line_start = 0 if end_line_start == -1 else end_line_start + 1
+        end_prefix = content[end_line_start:end]
+        if end_prefix != "":
+            pos = end + 3
+            continue
+        doc = content[inner_start:end].strip()
+        if doc:
+            segments.append((start, end + 3, doc))
+        pos = end + 3
 
-    # 合并讲义
-    full_lecture = "\n\n".join(docstrings)
+    # 组装为讲义+代码交替列表
+    sections = []
+    for i, (s_start, s_end, doc) in enumerate(segments):
+        next_start = segments[i + 1][0] if i + 1 < len(segments) else len(content)
+        code = content[s_end:next_start].strip()
+        sections.append((doc, code))
 
-    # 提取标题
+    # 标题
     title = "未命名章节"
-    if docstrings:
-        first_line = docstrings[0].split("\n")[0].strip()
-        title = re.sub(r'^第\d+[章节]：?', '', first_line)
-        title=title.strip()
+    if sections:
+        first_line = sections[0][0].split("\n")[0].strip()
+        title = re.sub(r'^第\d+[章节]：?', '', first_line).strip()
     if not title:
         title = os.path.basename(filepath).replace(".py", "")
 
-    return title, full_lecture, full_code
+    return title, sections, content
+
+
+def build_html(filepath: str, output_path: str = None):
+    # 构建完整 HTML 文件（讲义+代码交替显示）
+    title, sections, full_code = extract_sections(filepath)
+
+    ch_num = 0
+    m = re.search(r'chapter_(\d+)', filepath)
+    if m:
+        ch_num = int(m.group(1))
+
+    html = HEADER.format(
+        title=f"第{ch_num}章：{title} — AI Agent 全栈课程",
+        css=CSS,
+    )
+
+    # 面包屑 + 导航 + hero
+    dir_name, file_name, ch_title = CHAPTERS.get(ch_num, ("", "", ""))
+    html += '<div class="breadcrumb">'
+    html += f'<a href="{BASE_URL}/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a>'
+    html += f' &raquo; <strong>第{ch_num}章 {ch_title}</strong>'
+    html += '</div>'
+    html += _make_nav(ch_num)
+    html += f'<div class="hero"><h1>第{ch_num}章 {title}</h1>'
+    html += f'<p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div>'
+
+    # 讲义+代码交替渲染
+    for i, (lecture_text, code_text) in enumerate(sections):
+        # 讲义部分
+        lecture_html = parse_lecture(lecture_text)
+        html += f'<div class="lecture">{lecture_html}</div>'
+
+        # 对应代码部分（如果有代码）
+        if code_text:
+            highlighted = highlight_python(code_text)
+            lines = code_text.count('\n') + 1
+            html += f'<div class="code-section">'
+            html += f'<details><summary>💻 代码 ({lines} 行)</summary>'
+            html += f'<div class="code-block"><pre>{highlighted}</pre></div>'
+            html += f'</details></div>'
+
+    # 完整源码（底部折叠）
+    total_lines = full_code.count('\n') + 1
+    highlighted_full = highlight_python(full_code)
+    html += '<hr style="margin:36px 0">'
+    html += f'<div class="code-section"><details>'
+    html += f'<summary>📦 完整源代码 ({total_lines} 行)</summary>'
+    html += f'<div class="code-block"><pre>{highlighted_full}</pre></div>'
+    html += f'</details></div>'
+
+    html += _make_nav(ch_num)
+    html += FOOTER
+
+    if output_path is None:
+        base = os.path.splitext(os.path.basename(filepath))[0]
+        output_path = os.path.join(os.path.dirname(filepath), f"{base}.html")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    return output_path
 
 
 def parse_lecture(docstring: str) -> str:
-    """解析讲义 docstring → HTML。
-
+    """
     处理:
       - ### / ## → h2/h3
       - ━━ 分隔线 → <hr>
@@ -550,63 +595,6 @@ def highlight_python(code: str) -> str:
     code = code.replace("<span class='s'>f'", "<span class='s'>f'")
 
     return code
-
-
-def build_html(filepath: str, output_path: str = None):
-    """构建完整 HTML 文件。"""
-    title, docstring, code = extract_docstring_and_code(filepath)
-    lecture_html = parse_lecture(docstring)
-    code_html = highlight_python(code)
-
-    ch_num = 0
-    m = re.search(r'chapter_(\d+)', filepath)
-    if m:
-        ch_num = int(m.group(1))
-
-    html = HEADER.format(
-        title=f"第{ch_num}章：{title} — AI Agent 全栈课程",
-        css=CSS,
-    )
-
-    # 面包屑
-    dir_name, file_name, ch_title = CHAPTERS.get(ch_num, ("", "", ""))
-    html += '<div class="breadcrumb">'
-    html += f'<a href="{BASE_URL}/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a>'
-    html += f' &raquo; <strong>第{ch_num}章 {ch_title}</strong>'
-    html += '</div>'
-
-    # 顶部导航
-    html += _make_nav(ch_num)
-
-    html += f'<div class="hero">'
-    html += f'<h1>第{ch_num}章 {title}</h1>'
-    html += f'<p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p>'
-    html += f'</div>'
-
-    html += f'<div class="lecture">'
-    html += lecture_html
-    html += f'</div>'
-
-    html += f'<div class="code-section"><details open>'
-    html += f'<summary>💻 源代码 ({len(code.splitlines())} 行)</summary>'
-    html += f'<div class="code-block"><pre>{code_html}</pre></div>'
-    html += f'</details></div>'
-
-    # 底部导航
-    html += _make_nav(ch_num)
-
-    html += FOOTER
-
-    if output_path is None:
-        base = os.path.splitext(os.path.basename(filepath))[0]
-        output_path = os.path.join(os.path.dirname(filepath),
-                                    f"{base}.html")
-
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(html)
-
-    return output_path
 
 
 if __name__ == "__main__":

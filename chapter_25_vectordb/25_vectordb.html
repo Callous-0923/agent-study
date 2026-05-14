@@ -205,42 +205,234 @@ body {
 <li>384 维：检索速度快 3x，召回率约 85%</li>
 <li>768 维：平衡点，召回率约 92%</li>
 <li>1536 维：精度最高，召回率约 95%</li>
-<p>→ 代价：维度越高存储越大、检索越慢</p>
-<p>&nbsp;</p>
-<p>轻量级向量存储 —— 演示向量数据库的核心原理。</p>
-<p>&nbsp;</p>
-<pre>支持：
-  1. 近似最近邻搜索 (ANN via HNSW 简化版)
-  2. 混合检索（向量 + 关键词）
-  3. 元数据过滤
-  4. 批量写入</pre>
-<p>&nbsp;</p>
-<pre>这个实现展示了所有向量数据库的共同底层：
-  - 添加：文本 → Embedding → 存储向量
-  - 搜索：查询 → Embedding → 相似度排序 → Top-K</pre>
-<p>&nbsp;</p>
-<p>添加文档到向量库。</p>
-<p>&nbsp;</p>
-<pre>    Args:
-        texts: 文档列表。
-        metadatas: 元数据列表。
-        ids: ID 列表。
-        embeddings: 预计算的向量（不传则用模拟向量）。</pre>
-<p>&nbsp;</p>
-<p>混合检索：向量搜索 + 关键词搜索。</p>
-<p>&nbsp;</p>
-<pre>    Args:
-        query: 查询文本。
-        top_k: 返回数量。
-        filter_meta: 元数据过滤条件。
-        hybrid_weight: 向量搜索权重（0-1），剩余给关键词。</pre>
-<p>&nbsp;</p>
-<pre>    Returns:
-        检索结果列表。</pre>
-<p>&nbsp;</p>
-<h2>25.4 Embedding 维度实验</h2>
-<p>&nbsp;</p>
-<h2>25.5 向量数据库 + Agent 的最佳实践</h2>
+<p>→ 代价：维度越高存储越大、检索越慢</p></div><div class="code-section"><details><summary>💻 代码 (201 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> collections <span class="k">import</span> OrderedDict
+
+
+<span class="k">class</span> SimpleVectorStore:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"轻量级向量存储 —— 演示向量数据库的核心原理。
+
+    支持：
+      <span class="n">1</span>. 近似最近邻搜索 (ANN via HNSW 简化版)
+      <span class="n">2</span>. 混合检索（向量 + 关键词）
+      <span class="n">3</span>. 元数据过滤
+      <span class="n">4</span>. 批量写入
+
+    这个实现展示了所有向量数据库的共同底层：
+      - 添加：文本 → Embedding → 存储向量
+      - 搜索：查询 → Embedding → 相似度排序 → Top-K
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, dim: int = <span class="n">384</span>, index_type: str = <span <span class="k">class</span>="s">"flat"</span>):
+        self.dim = dim
+        self.index_type = index_type
+        self.vectors = []         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># [np.array]</span>
+        self.documents = []       <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># [str]</span>
+        self.metadata = []        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># [dict]</span>
+        self._bm25_index = {}     <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 关键词索引</span>
+
+    <span class="k">def</span> add(self, texts: list[str],
+            metadatas: list[dict] = <span class="k">None</span>,
+            ids: list[str] = <span class="k">None</span>,
+            embeddings: np.ndarray = <span class="k">None</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"添加文档到向量库。
+
+        Args:
+            texts: 文档列表。
+            metadatas: 元数据列表。
+            ids: ID 列表。
+            embeddings: 预计算的向量（不传则用模拟向量）。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">if</span> metadatas <span class="k">is</span> <span class="k">None</span>:
+            metadatas = [{} <span class="k">for</span> _ <span class="k">in</span> texts]
+        <span class="k">if</span> ids <span class="k">is</span> <span class="k">None</span>:
+            ids = [hashlib.md5(t.encode()).hexdigest()[:<span class="n">12</span>] <span class="k">for</span> t <span class="k">in</span> texts]
+
+        <span class="k">for</span> i, text <span class="k">in</span> enumerate(texts):
+            self.documents.append(text)
+            self.metadata.append(metadatas[i])
+
+            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Embedding（模拟：基于文本哈希）</span>
+            <span class="k">if</span> embeddings <span class="k">is</span> <span class="k">not</span> <span class="k">None</span>:
+                vec = embeddings[i]
+            <span class="k">else</span>:
+                vec = self._hash_embed(text)
+            self.vectors.append(vec)
+
+            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 关键词索引（BM25 简化版）</span>
+            <span class="k">for</span> word <span class="k">in</span> set(text.lower().split()):
+                <span class="k">if</span> word <span class="k">not</span> <span class="k">in</span> self._bm25_index:
+                    self._bm25_index[word] = []
+                self._bm25_index[word].append(len(self.vectors) - <span class="n">1</span>)
+
+    <span class="k">def</span> search(self, query: str, top_k: int = <span class="n">5</span>,
+               filter_meta: dict = <span class="k">None</span>,
+               hybrid_weight: float = <span class="n">0.7</span>) -&gt; list[dict]:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"混合检索：向量搜索 + 关键词搜索。
+
+        Args:
+            query: 查询文本。
+            top_k: 返回数量。
+            filter_meta: 元数据过滤条件。
+            hybrid_weight: 向量搜索权重（<span class="n">0</span>-<span class="n">1</span>），剩余给关键词。
+
+        Returns:
+            检索结果列表。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        query_vec = self._hash_embed(query)
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">1</span>. 向量搜索得分</span>
+        vec_scores = []
+        <span class="k">for</span> i, vec <span class="k">in</span> enumerate(self.vectors):
+            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 元数据过滤</span>
+            <span class="k">if</span> filter_meta:
+                match = all(
+                    self.metadata[i].get(k) == v
+                    <span class="k">for</span> k, v <span class="k">in</span> filter_meta.items()
+                )
+                <span class="k">if</span> <span class="k">not</span> match:
+                    <span class="k">continue</span>
+
+            score = self._cosine_similarity(query_vec, vec)
+            vec_scores.append((i, score))
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">2</span>. 关键词搜索得分</span>
+        kw_scores = {}
+        <span class="k">for</span> word <span class="k">in</span> query.lower().split():
+            <span class="k">for</span> doc_id <span class="k">in</span> self._bm25_index.get(word, []):
+                kw_scores[doc_id] = kw_scores.get(doc_id, <span class="n">0</span>) + <span class="n">1</span>
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">3</span>. 混合打分</span>
+        max_kw = max(kw_scores.values()) <span class="k">if</span> kw_scores <span class="k">else</span> <span class="n">1</span>
+        results = {}
+        <span class="k">for</span> doc_id, v_score <span class="k">in</span> vec_scores:
+            k_score = kw_scores.get(doc_id, <span class="n">0</span>) / max_kw
+            results[doc_id] = v_score * hybrid_weight + k_score * (<span class="n">1</span> - hybrid_weight)
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">4</span>. 排序返回</span>
+        sorted_results = sorted(results.items(), key=<span class="k">lambda</span> x: x[<span class="n">1</span>], reverse=<span class="k">True</span>)
+        <span class="k">return</span> [
+            {
+                <span <span class="k">class</span>="s">"id"</span>: f<span <span class="k">class</span>="s">"doc_{doc_id}"</span>,
+                <span <span class="k">class</span>="s">"text"</span>: self.documents[doc_id][:<span class="n">100</span>],
+                <span <span class="k">class</span>="s">"score"</span>: round(score, <span class="n">3</span>),
+                <span <span class="k">class</span>="s">"metadata"</span>: self.metadata[doc_id],
+            }
+            <span class="k">for</span> doc_id, score <span class="k">in</span> sorted_results[:top_k]
+        ]
+
+    <span class="k">def</span> _hash_embed(self, text: str) -&gt; np.ndarray:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"简化的文本向量化（演示用）。"</span><span <span class="k">class</span>="s">""</span></span>
+        vec = np.zeros(self.dim)
+        <span class="k">for</span> i, ch <span class="k">in</span> enumerate(text):
+            vec[hash(ch) % self.dim] += <span class="n">1</span>
+        norm = np.linalg.norm(vec)
+        <span class="k">return</span> vec / norm <span class="k">if</span> norm &gt; <span class="n">0</span> <span class="k">else</span> vec
+
+    <span class="k">def</span> _cosine_similarity(self, a: np.ndarray, b: np.ndarray) -&gt; float:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"余弦相似度。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">return</span> float(np.dot(a, b))
+
+    <span class="k">def</span> stats(self) -&gt; dict:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"存储统计。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">return</span> {
+            <span <span class="k">class</span>="s">"total_docs"</span>: len(self.documents),
+            <span <span class="k">class</span>="s">"dim"</span>: self.dim,
+            <span <span class="k">class</span>="s">"index_type"</span>: self.index_type,
+            <span <span class="k">class</span>="s">"unique_keywords"</span>: len(self._bm25_index),
+        }
+
+
+<span class="k">def</span> demo_vector_db():
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示向量数据库的核心操作。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"  向量数据库完整演示"</span>)
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 初始化</span>
+    store = SimpleVectorStore(dim=<span class="n">384</span>, index_type=<span <span class="k">class</span>="s">"flat"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 添加文档</span>
+    docs = [
+        <span <span class="k">class</span>="s">"AI Agent 是一种能自主决策的智能系统"</span>,
+        <span <span class="k">class</span>="s">"Python 是 AI 开发中最流行的编程语言"</span>,
+        <span <span class="k">class</span>="s">"向量数据库用于存储和检索文本嵌入"</span>,
+        <span <span class="k">class</span>="s">"RAG 结合了检索和生成来提高答案准确性"</span>,
+        <span <span class="k">class</span>="s">"LangChain 是构建 LLM 应用的主流框架"</span>,
+        <span <span class="k">class</span>="s">"Agent 的记忆系统包括短期、长期和工作记忆"</span>,
+        <span <span class="k">class</span>="s">"FastAPI 适合构建 Agent 的 REST API 服务"</span>,
+        <span <span class="k">class</span>="s">"SQLite 是 Agent 持久化的轻量级选择"</span>,
+    ]
+    metas = [
+        {<span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"agent"</span>, <span <span class="k">class</span>="s">"difficulty"</span>: <span <span class="k">class</span>="s">"basic"</span>},
+        {<span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"language"</span>, <span <span class="k">class</span>="s">"difficulty"</span>: <span <span class="k">class</span>="s">"basic"</span>},
+        {<span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"database"</span>, <span <span class="k">class</span>="s">"difficulty"</span>: <span <span class="k">class</span>="s">"medium"</span>},
+        {<span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"rag"</span>, <span <span class="k">class</span>="s">"difficulty"</span>: <span <span class="k">class</span>="s">"medium"</span>},
+        {<span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"framework"</span>, <span <span class="k">class</span>="s">"difficulty"</span>: <span <span class="k">class</span>="s">"basic"</span>},
+        {<span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"agent"</span>, <span <span class="k">class</span>="s">"difficulty"</span>: <span <span class="k">class</span>="s">"advanced"</span>},
+        {<span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"framework"</span>, <span <span class="k">class</span>="s">"difficulty"</span>: <span <span class="k">class</span>="s">"medium"</span>},
+        {<span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"database"</span>, <span <span class="k">class</span>="s">"difficulty"</span>: <span <span class="k">class</span>="s">"basic"</span>},
+    ]
+
+    t0 = time.time()
+    store.add(docs, metas)
+    print(f<span <span class="k">class</span>="s">"  添加 {len(docs)} 条文档 ({time.time() - t0:.3f}s)"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 纯向量搜索</span>
+    t0 = time.time()
+    results = store.search(<span <span class="k">class</span>="s">"Agent 的组件有哪些"</span>, top_k=<span class="n">3</span>)
+    print(f<span <span class="k">class</span>="s">"\n  向量搜索「Agent 的组件有哪些」({time.time() - t0:.3f}s):"</span>)
+    <span class="k">for</span> r <span class="k">in</span> results:
+        print(f<span <span class="k">class</span>="s">"    [{r[<span <span class="k">class</span>='s'>'score'</span>]:.3f}] {r[<span <span class="k">class</span>='s'>'text'</span>]}... [{r[<span <span class="k">class</span>='s'>'metadata'</span>][<span <span class="k">class</span>='s'>'category'</span>]}]"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 混合检索</span>
+    t0 = time.time()
+    results = store.search(<span <span class="k">class</span>="s">"python"</span>, top_k=<span class="n">3</span>, hybrid_weight=<span class="n">0.5</span>)
+    print(f<span <span class="k">class</span>="s">"\n  混合检索「python」({time.time() - t0:.3f}s):"</span>)
+    <span class="k">for</span> r <span class="k">in</span> results:
+        print(f<span <span class="k">class</span>="s">"    [{r[<span <span class="k">class</span>='s'>'score'</span>]:.3f}] {r[<span <span class="k">class</span>='s'>'text'</span>]}..."</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 元数据过滤</span>
+    t0 = time.time()
+    results = store.search(<span <span class="k">class</span>="s">"技术"</span>, top_k=<span class="n">3</span>,
+                          filter_meta={<span <span class="k">class</span>="s">"category"</span>: <span <span class="k">class</span>="s">"agent"</span>})
+    print(f<span <span class="k">class</span>="s">"\n  过滤检索「技术」+ category=agent ({time.time() - t0:.3f}s):"</span>)
+    <span class="k">for</span> r <span class="k">in</span> results:
+        print(f<span <span class="k">class</span>="s">"    [{r[<span <span class="k">class</span>='s'>'score'</span>]:.3f}] {r[<span <span class="k">class</span>='s'>'text'</span>]}..."</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 存储统计</span>
+    print(f<span <span class="k">class</span>="s">"\n  📊 存储统计: {json.dumps(store.stats(), indent=<span class="n">2</span>)}"</span>)</pre></div></details></div><div class="lecture"><h2>25.4 Embedding 维度实验</h2></div><div class="code-section"><details><summary>💻 代码 (28 行)</summary><div class="code-block"><pre><span class="k">def</span> demo_embedding_dimension_tradeoff():
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Embedding 维度的性能权衡。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"  Embedding 维度性能实验"</span>)
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+
+    test_query = <span <span class="k">class</span>="s">"AI Agent 的架构设计"</span>
+    test_docs = [
+        <span <span class="k">class</span>="s">"AI Agent 是一种能自主决策的智能系统"</span>,
+        <span <span class="k">class</span>="s">"向量数据库用于存储和检索文本嵌入"</span>,
+        <span <span class="k">class</span>="s">"Python 是 AI 开发中最流行的编程语言"</span>,
+    ]
+
+    print(f<span <span class="k">class</span>="s">"\n  {<span <span class="k">class</span>='s'>'维度'</span>:&lt;8s} {<span <span class="k">class</span>='s'>'检索时间'</span>:&lt;12s} {<span <span class="k">class</span>='s'>'存储(字节)'</span>:&lt;12s} {<span <span class="k">class</span>='s'>'召回率'</span>:&lt;10s}"</span>)
+    print(f<span <span class="k">class</span>="s">"  {<span <span class="k">class</span>='s'>'-'</span>*<span class="n">42</span>}"</span>)
+
+    <span class="k">for</span> dim <span class="k">in</span> [<span class="n">128</span>, <span class="n">256</span>, <span class="n">384</span>, <span class="n">768</span>, <span class="n">1536</span>]:
+        store = SimpleVectorStore(dim=dim)
+        store.add(test_docs)
+
+        t0 = time.time()
+        results = store.search(test_query, top_k=<span class="n">1</span>)
+        elapsed = time.time() - t0
+
+        storage = sum(v.nbytes <span class="k">for</span> v <span class="k">in</span> store.vectors)
+        recall = <span class="n">1.0</span> <span class="k">if</span> results[<span class="n">0</span>][<span <span class="k">class</span>="s">"score"</span>] &gt; <span class="n">0.1</span> <span class="k">else</span> <span class="n">0.0</span>
+
+        print(f<span <span class="k">class</span>="s">"  {dim:&lt;8d} {elapsed*<span class="n">1000</span>:&lt;<span class="n">12.</span>2f}ms {storage:&lt;12d} {recall:.<span class="n">1</span>%}"</span>)</pre></div></details></div><div class="lecture"><h2>25.5 向量数据库 + Agent 的最佳实践</h2>
 <p>&nbsp;</p>
 <li>Embedding 缓存</li>
 <p>相同文本不做重复 embedding（省钱 + 省时间）</p>
@@ -272,7 +464,24 @@ body {
 <p>「向量数据库怎么选？」</p>
 <p>→ 快速原型 Chroma，生产 Milvus/Qdrant，不想运维 Pinecone</p>
 <p>→ 维度权衡：384快 768平衡 1536精</p>
-<p>→ 混合检索是标配：向量 + 关键词 = 最佳召回率</p></div><div class="code-section"><details open><summary>💻 源代码 (386 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<p>→ 混合检索是标配：向量 + 关键词 = 最佳召回率</p></div><div class="code-section"><details><summary>💻 代码 (18 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
+    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    print(<span <span class="k">class</span>="s">"║  第25章：向量数据库选型与实战                            ║"</span>)
+    print(<span <span class="k">class</span>="s">"║  Chroma/Pinecone/Milvus/Qdrant · Embedding 策略       ║"</span>)
+    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_vector_db()
+    demo_embedding_dimension_tradeoff()
+    print(<span <span class="k">class</span>="s">"\n▶ 选型决策树"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> item <span class="k">in</span> [
+        <span <span class="k">class</span>="s">"原型/学习 → Chroma"</span>,
+        <span <span class="k">class</span>="s">"不想运维 → Pinecone"</span>,
+        <span <span class="k">class</span>="s">"千万级+ → Qdrant 或 Milvus"</span>,
+        <span <span class="k">class</span>="s">"需要分布式 → Milvus"</span>,
+        <span <span class="k">class</span>="s">"已有PG/Redis → pgvector"</span>,
+    ]:
+        print(f<span <span class="k">class</span>="s">"  {item}"</span>)
+    print(<span <span class="k">class</span>="s">"\n✅ 第25章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (387 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
 第25章：向量数据库选型与实战 —— Agent 记忆与 RAG 的底座
 ============================================================
 

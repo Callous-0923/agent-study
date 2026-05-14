@@ -244,26 +244,85 @@ body {
 优点：平衡  | 缺点：实现复杂</pre>
 <p>&nbsp;</p>
 <p>策略 4: Claude Code 的 92% 触发压缩 (Ch8 讲过)</p>
-<pre>优点：自动化  | 缺点：92% 是经验值，不一定最优</pre>
-<p>&nbsp;</p>
-<p>上下文预算管理器。</p>
-<p>&nbsp;</p>
-<pre>帮助开发者系统化管理 LLM 的上下文窗口分配。</pre>
-<p>&nbsp;</p>
-<p>Args:</p>
-<pre>        total_tokens: 模型的上下文窗口大小。</pre>
-<p>&nbsp;</p>
-<p>分配一段上下文给指定部分。</p>
-<p>&nbsp;</p>
-<pre>    Args:
-        section: 部分名（如 'system_prompt'）。
-        data: 内容。
-        max_pct: 最大占比。</pre>
-<p>&nbsp;</p>
-<pre>    Returns:
-        实际使用的 token 估算值。</pre>
-<p>&nbsp;</p>
-<h2>20.4 XML 标签结构化 Prompt —— Anthropic 推荐做法</h2>
+<pre>优点：自动化  | 缺点：92% 是经验值，不一定最优</pre></div><div class="code-section"><details><summary>💻 代码 (79 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> re
+<span class="k">from</span> typing <span class="k">import</span> Optional
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass
+<span class="k">from</span> collections <span class="k">import</span> OrderedDict
+
+
+<span class="k">class</span> ContextBudget:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"上下文预算管理器。
+
+    帮助开发者系统化管理 LLM 的上下文窗口分配。
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, total_tokens: int = <span class="n">200000</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+        Args:
+            total_tokens: 模型的上下文窗口大小。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.total = total_tokens
+        self.allocations = OrderedDict()  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># {section: (tokens, data)}</span>
+        self.reserve_pct = <span class="n">0.20</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">20</span>% 预留（生成 + 安全余量）</span>
+
+    <span class="k">def</span> allocate(self, section: str, data: str,
+                 max_pct: float = <span class="k">None</span>) -&gt; int:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"分配一段上下文给指定部分。
+
+        Args:
+            section: 部分名（如 <span <span class="k">class</span>='s'>'system_prompt'</span>）。
+            data: 内容。
+            max_pct: 最大占比。
+
+        Returns:
+            实际使用的 token 估算值。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        tokens = _estimate_tokens(data)
+        available = self.available()
+
+        <span class="k">if</span> max_pct <span class="k">is</span> <span class="k">not</span> <span class="k">None</span>:
+            cap = int(self.total * max_pct)
+            <span class="k">if</span> tokens &gt; cap:
+                tokens = cap
+                data = data[:cap * <span class="n">3</span>]  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 粗略截断</span>
+
+        <span class="k">if</span> tokens &gt; available:
+            tokens = available
+            data = data[:tokens * <span class="n">3</span>]
+
+        self.allocations[section] = (tokens, data)
+        <span class="k">return</span> tokens
+
+    <span class="k">def</span> used(self) -&gt; int:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"已使用的 token 数。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">return</span> sum(alloc[<span class="n">0</span>] <span class="k">for</span> alloc <span class="k">in</span> self.allocations.values())
+
+    <span class="k">def</span> available(self) -&gt; int:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"可用的 token 数（扣除预留）。"</span><span <span class="k">class</span>="s">""</span></span>
+        usable = int(self.total * (<span class="n">1</span> - self.reserve_pct))
+        <span class="k">return</span> usable - self.used()
+
+    <span class="k">def</span> usage_report(self) -&gt; str:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"生成上下文使用报告。"</span><span <span class="k">class</span>="s">""</span></span>
+        lines = [
+            f<span <span class="k">class</span>="s">"上下文预算: {self.total:,} tokens"</span>,
+            f<span <span class="k">class</span>="s">"预留 (生成+安全): {int(self.total * self.reserve_pct):,} tokens"</span>,
+            f<span <span class="k">class</span>="s">"已使用: {self.used():,} tokens ({self.used() / self.total:.<span class="n">1</span>%})"</span>,
+            f<span <span class="k">class</span>="s">"可用: {self.available():,} tokens"</span>,
+            <span <span class="k">class</span>="s">"-"</span> * <span class="n">40</span>,
+        ]
+        <span class="k">for</span> section, (tokens, _) <span class="k">in</span> self.allocations.items():
+            pct = tokens / self.total
+            bar = <span <span class="k">class</span>="s">"█"</span> * int(pct * <span class="n">50</span>) + <span <span class="k">class</span>="s">"░"</span> * (<span class="n">50</span> - int(pct * <span class="n">50</span>))
+            lines.append(f<span <span class="k">class</span>="s">"  {section:20s} {tokens:&gt;<span class="n">8</span>,} tokens  {bar}"</span>)
+        <span class="k">return</span> <span <span class="k">class</span>="s">"\n"</span>.join(lines)
+
+
+<span class="k">def</span> _estimate_tokens(text: str) -&gt; int:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"粗略估算 token 数（约 <span class="n">4</span> 字符 = <span class="n">1</span> token）。"</span><span <span class="k">class</span>="s">""</span></span>
+    <span class="k">return</span> len(text) // <span class="n">4</span></pre></div></details></div><div class="lecture"><h2>20.4 XML 标签结构化 Prompt —— Anthropic 推荐做法</h2>
 <p>&nbsp;</p>
 <p>为什么用 XML 标签？</p>
 <li>LLM 训练数据中大量存在 XML/HTML</li>
@@ -292,33 +351,93 @@ body {
 <li>防御 Prompt Injection：用户内容在 <user_input> 中，</li>
 <pre> 不会混入指令区</pre>
 <li>便于动态拼接上下文：可以程序化增删 sections</li>
-<li>便于调试：按 tag 搜索对应的上下文块</li>
-<p>&nbsp;</p>
-<p>XML 结构化 Prompt 构建器。</p>
-<p>&nbsp;</p>
-<pre>展示 Anthropic 推荐的 Prompt 组织方式。</pre>
-<p>&nbsp;</p>
-<p>添加一个结构化 section。</p>
-<p>&nbsp;</p>
-<pre>    Args:
-        tag: XML 标签名。
-        content: section 内容。</pre>
-<p>&nbsp;</p>
-<p>构建完整的结构化 Prompt。</p>
-<p>&nbsp;</p>
-<pre>    Returns:
-        完整的 XML 标记文本。</pre>
-<p>&nbsp;</p>
-<p>从结构化 Prompt 中提取指定 section。</p>
-<p>&nbsp;</p>
-<pre>    Args:
-        prompt: 完整的 Prompt 文本。
-        tag: 要提取的标签名。</pre>
-<p>&nbsp;</p>
-<pre>    Returns:
-        section 内容，未找到返回 None。</pre>
-<p>&nbsp;</p>
-<h2>20.5 Prompt 的「上下文衰减曲线」与 Golden Zone</h2>
+<li>便于调试：按 tag 搜索对应的上下文块</li></div><div class="code-section"><details><summary>💻 代码 (87 行)</summary><div class="code-block"><pre><span class="k">class</span> StructuredPrompt:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"XML 结构化 Prompt 构建器。
+
+    展示 Anthropic 推荐的 Prompt 组织方式。
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self):
+        self.sections = OrderedDict()
+
+    <span class="k">def</span> add_section(self, tag: str, content: str):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"添加一个结构化 section。
+
+        Args:
+            tag: XML 标签名。
+            content: section 内容。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.sections[tag] = content
+
+    <span class="k">def</span> build(self) -&gt; str:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"构建完整的结构化 Prompt。
+
+        Returns:
+            完整的 XML 标记文本。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        parts = [<span <span class="k">class</span>="s">"&lt;system&gt;"</span>]
+        <span class="k">for</span> tag, content <span class="k">in</span> self.sections.items():
+            parts.append(f<span <span class="k">class</span>="s">"  &lt;{tag}&gt;"</span>)
+            parts.append(f<span <span class="k">class</span>="s">"    {content}"</span>)
+            parts.append(f<span <span class="k">class</span>="s">"  &lt;/{tag}&gt;"</span>)
+        parts.append(<span <span class="k">class</span>="s">"&lt;/system&gt;"</span>)
+        <span class="k">return</span> <span <span class="k">class</span>="s">"\n"</span>.join(parts)
+
+    <span class="d">@staticmethod</span>
+    <span class="k">def</span> extract_section(prompt: str, tag: str) -&gt; Optional[str]:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"从结构化 Prompt 中提取指定 section。
+
+        Args:
+            prompt: 完整的 Prompt 文本。
+            tag: 要提取的标签名。
+
+        Returns:
+            section 内容，未找到返回 <span class="k">None</span>。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        pattern = rf<span <span class="k">class</span>="s">"&lt;{tag}&gt;\s*(.*?)\s*&lt;/{tag}&gt;"</span>
+        match = re.search(pattern, prompt, re.DOTALL)
+        <span class="k">return</span> match.group(<span class="n">1</span>).strip() <span class="k">if</span> match <span class="k">else</span> <span class="k">None</span>
+
+
+<span class="k">def</span> demo_structured_prompt():
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示结构化 Prompt 的构建与使用。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"  XML 结构化 Prompt 演示"</span>)
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+
+    builder = StructuredPrompt()
+    builder.add_section(
+        <span <span class="k">class</span>="s">"background"</span>,
+        <span <span class="k">class</span>="s">"用户是一名 Python 开发者，正在学习 AI Agent 技术。"</span>
+    )
+    builder.add_section(
+        <span <span class="k">class</span>="s">"instructions"</span>,
+        <span <span class="k">class</span>="s">"请用简洁的语言解释上下文工程的核心概念。"</span>
+        <span <span class="k">class</span>="s">"不要超过 <span class="n">200</span> 字。使用中文回答。"</span>
+    )
+    builder.add_section(
+        <span <span class="k">class</span>="s">"tool_guidance"</span>,
+        <span <span class="k">class</span>="s">"如果用户问代码相关的问题，使用 code_exec 工具。"</span>
+        <span <span class="k">class</span>="s">"如果用户问事实性问题，使用 search 工具。"</span>
+    )
+    builder.add_section(
+        <span <span class="k">class</span>="s">"output_format"</span>,
+        <span <span class="k">class</span>="s">"用 Markdown 格式输出，包含标题和要点列表。"</span>
+    )
+    builder.add_section(
+        <span <span class="k">class</span>="s">"user_input"</span>,
+        <span <span class="k">class</span>="s">"什么是 Context Rot？为什么它很重要？"</span>
+    )
+
+    full_prompt = builder.build()
+    print(full_prompt)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 演示动态修改</span>
+    print(<span <span class="k">class</span>="s">"\n  📝 提取 user_input section:"</span>)
+    user_input = StructuredPrompt.extract_section(
+        full_prompt, <span <span class="k">class</span>="s">"user_input"</span>
+    )
+    print(f<span <span class="k">class</span>="s">"  → {user_input}"</span>)</pre></div></details></div><div class="lecture"><h2>20.5 Prompt 的「上下文衰减曲线」与 Golden Zone</h2>
 <p>&nbsp;</p>
 <p>Anthropic 的实践经验：</p>
 <p>&nbsp;</p>
@@ -385,9 +504,32 @@ body {
 <p>✅ Claude Code 经验（来自 Ch8）</p>
 <p>☐ 92% 是压缩触发阈值</p>
 <p>☐ Markdown 文件做长期记忆</p>
-<p>☐ TODO 列表管理短期任务状态</p>
-<p>&nbsp;</p>
-<h2>20.8 本章总结</h2>
+<p>☐ TODO 列表管理短期任务状态</p></div><div class="code-section"><details><summary>💻 代码 (26 行)</summary><div class="code-block"><pre><span class="k">def</span> demo_context_budget():
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示上下文预算管理。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"  上下文预算管理演示"</span>)
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+
+    budget = ContextBudget(<span class="n">200000</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 分配各部分</span>
+    system_prompt = <span <span class="k">class</span>="s">"你是一个 AI 助手..."</span> * <span class="n">100</span>
+    budget.allocate(<span <span class="k">class</span>="s">"system_prompt"</span>, system_prompt, max_pct=<span class="n">0.15</span>)
+    print(f<span <span class="k">class</span>="s">"  system_prompt: {budget.allocations[<span <span class="k">class</span>='s'>'system_prompt'</span>][<span class="n">0</span>]:,} tokens"</span>)
+
+    tool_defs = <span <span class="k">class</span>="s">"工具定义: search, calculator, ..."</span> * <span class="n">50</span>
+    budget.allocate(<span <span class="k">class</span>="s">"tool_definitions"</span>, tool_defs, max_pct=<span class="n">0.05</span>)
+    print(f<span <span class="k">class</span>="s">"  tool_definitions: {budget.allocations[<span <span class="k">class</span>='s'>'tool_definitions'</span>][<span class="n">0</span>]:,} tokens"</span>)
+
+    external = <span <span class="k">class</span>="s">"检索结果: ..."</span> * <span class="n">200</span>
+    budget.allocate(<span <span class="k">class</span>="s">"external_context"</span>, external, max_pct=<span class="n">0.15</span>)
+    print(f<span <span class="k">class</span>="s">"  external_context: {budget.allocations[<span <span class="k">class</span>='s'>'external_context'</span>][<span class="n">0</span>]:,} tokens"</span>)
+
+    history = <span <span class="k">class</span>="s">"对话历史..."</span> * <span class="n">500</span>
+    budget.allocate(<span <span class="k">class</span>="s">"conversation_history"</span>, history)
+    print(f<span <span class="k">class</span>="s">"  conversation_history: {budget.allocations[<span <span class="k">class</span>='s'>'conversation_history'</span>][<span class="n">0</span>]:,} tokens"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n"</span> + budget.usage_report())</pre></div></details></div><div class="lecture"><h2>20.8 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
@@ -414,7 +556,35 @@ body {
 <p>→ 从写 Prompt 升级到管理所有进 LLM 的 token</p>
 <p>→ 核心挑战：Context Rot（注意力随长度衰减）</p>
 <p>→ 解决方案：预算管理 + 结构化 + 压缩策略</p>
-<p>→ Anthropic 的 XML 标签法是当前最佳实践</p></div><div class="code-section"><details open><summary>💻 源代码 (502 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<p>→ Anthropic 的 XML 标签法是当前最佳实践</p></div><div class="code-section"><details><summary>💻 代码 (29 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
+    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    print(<span <span class="k">class</span>="s">"║  第20章：Context Engineering（上下文工程）              ║"</span>)
+    print(<span <span class="k">class</span>="s">"║  Context Rot · 预算管理 · XML Prompt · Skill.md      ║"</span>)
+    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">20.2</span> Context Rot 实验数据"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    print(<span <span class="k">class</span>="s">"  使用率 <span class="n">10</span>% (20K)  → 准确率 ~<span class="n">95</span>%"</span>)
+    print(<span <span class="k">class</span>="s">"  使用率 <span class="n">50</span>% (100K) → 准确率 ~<span class="n">88</span>%"</span>)
+    print(<span <span class="k">class</span>="s">"  使用率 <span class="n">90</span>% (180K) → 准确率 ~<span class="n">75</span>%"</span>)
+
+    demo_context_budget()
+    demo_structured_prompt()
+
+    print(<span <span class="k">class</span>="s">"\n▶ Context Engineering Checklist"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    items = [
+        <span <span class="k">class</span>="s">"使用 XML 标签分隔 Prompt 各部分"</span>,
+        <span <span class="k">class</span>="s">"用户输入放在独立标签中（防注入）"</span>,
+        <span <span class="k">class</span>="s">"设置上下文预算上限，监控使用率"</span>,
+        <span <span class="k">class</span>="s">"实现自动压缩（摘要/滑动窗口/分层记忆）"</span>,
+        <span <span class="k">class</span>="s">"每条信息都要有「信息价值 vs token 成本」的权衡"</span>,
+        <span <span class="k">class</span>="s">"Markdown 文件做长期记忆（Claude Code 经验）"</span>,
+    ]
+    <span class="k">for</span> item <span class="k">in</span> items:
+        print(f<span <span class="k">class</span>="s">"  ✅ {item}"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n✅ 第20章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (503 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
 第20章：Context Engineering（上下文工程）—— Agent 时代的新工程学科
 ====================================================================
 

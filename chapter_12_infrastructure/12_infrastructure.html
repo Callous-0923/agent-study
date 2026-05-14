@@ -353,14 +353,49 @@ skill/code-review     → 代码审查</pre>
 <pre>                        ▼
                   ┌──────────┐
                   │ 告警系统  │ ← PagerDuty / Slack
-                  └──────────┘</pre>
-<p>&nbsp;</p>
-<p>返回检查清单及每项的完成状态（这里标注为待检查）。</p>
-<p>&nbsp;</p>
-<pre>    Returns:
-        (类别, 检查项, 是否完成) 的列表。</pre>
-<p>&nbsp;</p>
-<h2>12.6 全课程体系梳理 —— 回顾与展望</h2>
+                  └──────────┘</pre></div><div class="code-section"><details><summary>💻 代码 (43 行)</summary><div class="code-block"><pre><span class="k">class</span> AgentProductionChecklist:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Agent 生产化就绪度检查清单。"</span><span <span class="k">class</span>="s">""</span></span>
+
+    CHECKLIST = [
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 可观测性</span>
+        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"每次 LLM 调用记录 input/output tokens + latency"</span>),
+        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"每次 Tool Call 记录工具名 + 参数 + 结果 + 耗时"</span>),
+        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"核心指标看板：成功率 / P50/P99延迟 / Token消耗趋势"</span>),
+        (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"告警规则：成功率 &lt; <span class="n">95</span>% → 通知"</span>),
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 评测</span>
+        (<span <span class="k">class</span>="s">"评测"</span>, <span <span class="k">class</span>="s">"离线评测集覆盖典型场景 + 边界条件 + Bad Case"</span>),
+        (<span <span class="k">class</span>="s">"评测"</span>, <span <span class="k">class</span>="s">"上线前回归评测（确保新版本不退化）"</span>),
+        (<span <span class="k">class</span>="s">"评测"</span>, <span <span class="k">class</span>="s">"A/B 测试框架（对比新老版本效果）"</span>),
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 安全</span>
+        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"Prompt Injection 检测与过滤"</span>),
+        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"工具调用分级：读自动 / 写确认 / 危险需二次确认"</span>),
+        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"审计日志：记录所有操作，可追溯"</span>),
+        (<span <span class="k">class</span>="s">"安全"</span>, <span <span class="k">class</span>="s">"敏感信息脱敏（API Key、用户数据等）"</span>),
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 成本</span>
+        (<span <span class="k">class</span>="s">"成本"</span>, <span <span class="k">class</span>="s">"模型分层：简单任务用小模型 (gpt-4o-mini)"</span>),
+        (<span <span class="k">class</span>="s">"成本"</span>, <span <span class="k">class</span>="s">"语义缓存：避免重复查询消耗 Token"</span>),
+        (<span <span class="k">class</span>="s">"成本"</span>, <span <span class="k">class</span>="s">"Token 预算告警：单用户/单日/单月上限"</span>),
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 可靠性</span>
+        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"LLM 调用重试 (exponential backoff)"</span>),
+        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"超时控制 (30s 超时 + 降级策略)"</span>),
+        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"熔断器：连续失败 N 次 → 暂停 → 恢复"</span>),
+        (<span <span class="k">class</span>="s">"可靠性"</span>, <span <span class="k">class</span>="s">"优雅降级：LLM 不可用时返回兜底回答"</span>),
+    ]
+
+    <span class="d">@classmethod</span>
+    <span class="k">def</span> check(cls) -&gt; list[tuple[str, str, bool]]:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"返回检查清单及每项的完成状态（这里标注为待检查）。
+
+        Returns:
+            (类别, 检查项, 是否完成) 的列表。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">return</span> [(cat, item, <span class="k">False</span>) <span class="k">for</span> cat, item <span class="k">in</span> cls.CHECKLIST]
+
+    <span class="d">@classmethod</span>
+    <span class="k">def</span> print_checklist(cls):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"打印检查清单。"</span><span <span class="k">class</span>="s">""</span></span>
+        <span class="k">for</span> cat, item <span class="k">in</span> cls.CHECKLIST:
+            print(f<span <span class="k">class</span>="s">"  [{cat:8s}] ☐ {item}"</span>)</pre></div></details></div><div class="lecture"><h2>12.6 全课程体系梳理 —— 回顾与展望</h2>
 <p>&nbsp;</p>
 <p>现在你学完了全部 12 章：</p>
 <p>&nbsp;</p>
@@ -395,9 +430,7 @@ skill/code-review     → 代码审查</pre>
 │ Claude Code 架构  │ Ch8                      │  ⭐⭐⭐⭐⭐│
 │ 生产基础设施      │ Ch6, Ch12                │  ⭐⭐⭐  │
 │ 面试准备          │ Ch7                      │  ⭐⭐⭐⭐ │
-└──────────────────┴──────────────────────────┴─────────┘</pre>
-<p>&nbsp;</p>
-<h2>12.7 本章总结</h2>
+└──────────────────┴──────────────────────────┴─────────┘</pre></div><div class="lecture"><h2>12.7 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
@@ -429,7 +462,70 @@ skill/code-review     → 代码审查</pre>
 <p>"Agent 怎么上生产？"</p>
 <p>→ 可观测性 + 评测体系 + 安全防护 + 成本控制 + 可靠性</p>
 <p>→ 每个环节都可以展开讲具体方案</p>
-<p>→ 关键在于「工程化思维」而非「Demo 思维」</p></div><div class="code-section"><details open><summary>💻 源代码 (430 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<p>→ 关键在于「工程化思维」而非「Demo 思维」</p></div><div class="code-section"><details><summary>💻 代码 (64 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
+    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    print(<span <span class="k">class</span>="s">"║  第12章：OpenClaw / Harness 与 Agent 生产基础设施      ║"</span>)
+    print(<span <span class="k">class</span>="s">"║  Gateway架构 · AgentSkills · 评测 · 生产Checklist    ║"</span>)
+    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.1</span> OpenClaw 架构概览"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    oc_features = [
+        <span <span class="k">class</span>="s">"Gateway 中心化架构（Node.js 控制平面）"</span>,
+        <span <span class="k">class</span>="s">"多 Channel 接入：WhatsApp / Telegram / Discord / Slack"</span>,
+        <span <span class="k">class</span>="s">"LLM Provider 抽象：Claude / GPT / Gemini / Ollama"</span>,
+        <span <span class="k">class</span>="s">"持久化记忆存储：用户偏好 + 对话历史"</span>,
+        <span <span class="k">class</span>="s">"AgentSkills + ClawHub：Agent 技能生态"</span>,
+        <span <span class="k">class</span>="s">"145K+ GitHub Stars"</span>,
+    ]
+    <span class="k">for</span> f <span class="k">in</span> oc_features:
+        print(f<span <span class="k">class</span>="s">"  • {f}"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.2</span> AgentSkills vs MCP 关系"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    print(<span <span class="k">class</span>="s">"  MCP 定义「协议」—— 如何连接和通信"</span>)
+    print(<span <span class="k">class</span>="s">"  AgentSkill 定义「能力」—— 具体做什么"</span>)
+    print(<span <span class="k">class</span>="s">"  关系：AgentSkill 通过 MCP 协议暴露给 LLM"</span>)
+    print(<span <span class="k">class</span>="s">"  类比：MCP = USB-C标准，AgentSkill = USB设备"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.3</span> Harness 亮点"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    h_features = [
+        <span <span class="k">class</span>="s">"CLI + SDK 双模式"</span>,
+        <span <span class="k">class</span>="s">"支持任意 LLM（Claude/GPT/Gemini/Ollama）"</span>,
+        <span <span class="k">class</span>="s">"Harness-Bench <span class="n">100</span>% 评分"</span>,
+        <span <span class="k">class</span>="s">"/plan /review /team /status /cost 命令"</span>,
+        <span <span class="k">class</span>="s">"Bypass 模式（CI/CD 友好）"</span>,
+    ]
+    <span class="k">for</span> f <span class="k">in</span> h_features:
+        print(f<span <span class="k">class</span>="s">"  • {f}"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.5</span> Agent 生产化 Checklist"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    AgentProductionChecklist.print_checklist()
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">12.6</span> 全课程回顾"</span>)
+    print(<span <span class="k">class</span>="s">"-"</span> * <span class="n">50</span>)
+    chapters = [
+        <span <span class="k">class</span>="s">"Ch0   → 课程概览"</span>,
+        <span <span class="k">class</span>="s">"Ch1-<span class="n">3</span> → Agent 基础理论（循环/组件/类型）"</span>,
+        <span <span class="k">class</span>="s">"Ch4-<span class="n">5</span> → 工程实践（框架/Multi-Agent）"</span>,
+        <span <span class="k">class</span>="s">"Ch6-<span class="n">7</span> → 评估与求职（评测/面试）"</span>,
+        <span <span class="k">class</span>="s">"Ch8   → Claude Code 架构深度剖析"</span>,
+        <span <span class="k">class</span>="s">"Ch9   → RAG 技术全览（Naive→Agentic RAG）"</span>,
+        <span <span class="k">class</span>="s">"Ch10  → MCP 协议详解"</span>,
+        <span <span class="k">class</span>="s">"Ch11  → Tool Calling 底层机制"</span>,
+        <span <span class="k">class</span>="s">"Ch12  → 生产基础设施（OpenClaw/Harness/评测）"</span>,
+    ]
+    <span class="k">for</span> ch <span class="k">in</span> chapters:
+        print(f<span <span class="k">class</span>="s">"  {ch}"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"  🎓 全课程体系完成！"</span>)
+    print(<span <span class="k">class</span>="s">"  从 Agent 基础到 Claude Code 逆向分析"</span>)
+    print(<span <span class="k">class</span>="s">"  从 RAG 到 MCP 到 Tool Calling 底层原理"</span>)
+    print(<span <span class="k">class</span>="s">"  你现在已经具备了成为顶级 Agent 工程师的所有知识"</span>)
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (431 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
 第12章：OpenClaw / Harness 与 Agent 生产基础设施
 ================================================
 

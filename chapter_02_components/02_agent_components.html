@@ -157,55 +157,97 @@ body {
 <p>答：</p>
 <p>ReAct：每一步都重新推理，灵活但效率低。</p>
 <p>Plan-Execute：一次性规划全部步骤，按计划执行，高效但不灵活。</p>
-<p>实际项目中常结合使用：高层用 Plan-Execute，每步内用 ReAct。</p>
-<p>&nbsp;</p>
-<p>调用 LLM 并强制返回 JSON 格式。</p>
-<p>&nbsp;</p>
-<pre>在 Agent 开发中，经常需要 LLM 返回结构化数据
-（如规划步骤、实体提取结果等）。</pre>
-<p>&nbsp;</p>
-<pre>Args:
-    prompt: 用户提示词。
-    system_msg: 系统消息（可选）。</pre>
-<p>&nbsp;</p>
-<pre>Returns:
-    LLM 返回的 JSON 字典。</pre>
-<p>&nbsp;</p>
-<p>2.1.1 Plan-Execute 规划器实战</p>
-<p>&nbsp;</p>
-<p>Plan-Execute 规划器：先制定完整的执行计划。</p>
-<p>&nbsp;</p>
-<pre>适用场景：
-  - 任务明确，不需要动态调整
-  - 多个步骤之间有依赖关系
-  - 需要整体把控任务进度</pre>
-<p>&nbsp;</p>
-<pre>Args:
-    task: 用户的任务描述。</pre>
-<p>&nbsp;</p>
-<pre>Returns:
-    包含计划步骤的字典。</pre>
-<p>&nbsp;</p>
-<p>2.1.2 Reflexion 反思器实战</p>
-<p>&nbsp;</p>
-<p>Reflexion 反思器：对已有的回答进行自我批评和改进。</p>
-<p>&nbsp;</p>
-<pre>核心思想：
-  Agent 完成一个动作后，让 LLM 自己审视结果：
-  - 哪里做得好？
-  - 哪里有不足？
-  - 下次应该怎么改进？</pre>
-<p>&nbsp;</p>
-<pre>类比：像学生做了一道题后，自己用红笔批改并写反思。</pre>
-<p>&nbsp;</p>
-<pre>Args:
-    original_answer: Agent 的原始输出。
-    criteria: 评估标准。</pre>
-<p>&nbsp;</p>
-<pre>Returns:
-    包含反思结果的字典。</pre>
-<p>&nbsp;</p>
-<h2>2.2 记忆系统 (Memory) —— Agent 的「大脑存储」</h2>
+<p>实际项目中常结合使用：高层用 Plan-Execute，每步内用 ReAct。</p></div><div class="code-section"><details><summary>💻 代码 (40 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<span class="k">import</span> json
+<span class="k">import</span> re
+<span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
+<span class="k">from</span> openai <span class="k">import</span> OpenAI
+
+load_dotenv()
+
+client = OpenAI(
+    api_key=os.getenv(<span <span class="k">class</span>="s">"OPENAI_API_KEY"</span>),
+    base_url=os.getenv(<span <span class="k">class</span>="s">"OPENAI_BASE_URL"</span>),
+)
+
+
+<span class="k">def</span> call_llm_with_json(prompt: str, system_msg: str = <span <span class="k">class</span>="s">""</span>) -&gt; dict:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"调用 LLM 并强制返回 JSON 格式。
+
+    在 Agent 开发中，经常需要 LLM 返回结构化数据
+    （如规划步骤、实体提取结果等）。
+
+    Args:
+        prompt: 用户提示词。
+        system_msg: 系统消息（可选）。
+
+    Returns:
+        LLM 返回的 JSON 字典。
+    <span <span class="k">class</span>="s">""</span>"</span>
+    model = os.getenv(<span <span class="k">class</span>="s">"LLM_MODEL"</span>, <span <span class="k">class</span>="s">"gpt-4o-mini"</span>)
+    messages = []
+    <span class="k">if</span> system_msg:
+        messages.append({<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"content"</span>: system_msg})
+    messages.append({<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"user"</span>, <span <span class="k">class</span>="s">"content"</span>: prompt})
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        response_format={<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"json_object"</span>},
+        temperature=<span class="n">0.3</span>,
+    )
+    <span class="k">return</span> json.loads(response.choices[<span class="n">0</span>].message.content)</pre></div></details></div><div class="lecture"><p>2.1.1 Plan-Execute 规划器实战</p></div><div class="code-section"><details><summary>💻 代码 (23 行)</summary><div class="code-block"><pre><span class="k">def</span> plan_execute(task: str) -&gt; dict:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Plan-Execute 规划器：先制定完整的执行计划。
+
+    适用场景：
+      - 任务明确，不需要动态调整
+      - 多个步骤之间有依赖关系
+      - 需要整体把控任务进度
+
+    Args:
+        task: 用户的任务描述。
+
+    Returns:
+        包含计划步骤的字典。
+    <span <span class="k">class</span>="s">""</span>"</span>
+    system_msg = (
+        <span <span class="k">class</span>="s">"你是一个任务规划专家。请将用户的任务分解为可执行的子步骤。"</span>
+        <span <span class="k">class</span>="s">"返回严格的 JSON 格式：\n"</span>
+        <span <span class="k">class</span>='s'>'{<span <span class="k">class</span>="s">"plan"</span>: [{<span <span class="k">class</span>="s">"step"</span>: <span class="n">1</span>, <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"..."</span>, <span <span class="k">class</span>="s">"tool"</span>: <span <span class="k">class</span>="s">"工具名"</span>, '</span>
+        <span <span class="k">class</span>='s'>'<span <span class="k">class</span>="s">"depends_on"</span>: []}, ...]}\n'</span>
+        <span <span class="k">class</span>='s'>'depends_on 表示该步骤依赖哪些步骤（填写步骤号）。'</span>
+    )
+    prompt = f<span <span class="k">class</span>="s">"任务：{task}\n请制定执行计划。"</span>
+    <span class="k">return</span> call_llm_with_json(prompt, system_msg)</pre></div></details></div><div class="lecture"><p>2.1.2 Reflexion 反思器实战</p></div><div class="code-section"><details><summary>💻 代码 (30 行)</summary><div class="code-block"><pre><span class="k">def</span> reflexion_review(original_answer: str, criteria: str) -&gt; dict:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Reflexion 反思器：对已有的回答进行自我批评和改进。
+
+    核心思想：
+      Agent 完成一个动作后，让 LLM 自己审视结果：
+      - 哪里做得好？
+      - 哪里有不足？
+      - 下次应该怎么改进？
+
+    类比：像学生做了一道题后，自己用红笔批改并写反思。
+
+    Args:
+        original_answer: Agent 的原始输出。
+        criteria: 评估标准。
+
+    Returns:
+        包含反思结果的字典。
+    <span <span class="k">class</span>="s">""</span>"</span>
+    system_msg = (
+        <span <span class="k">class</span>="s">"你是一个严格的质量审查员。请审查以下回答，"</span>
+        <span <span class="k">class</span>="s">"指出问题和改进建议。返回严格的 JSON 格式：\n"</span>
+        <span <span class="k">class</span>='s'>'{<span <span class="k">class</span>="s">"score"</span>: <span class="n">1</span>-<span class="n">10</span>, <span <span class="k">class</span>="s">"issues"</span>: [<span <span class="k">class</span>="s">"问题1"</span>, <span <span class="k">class</span>="s">"问题2"</span>], '</span>
+        <span <span class="k">class</span>='s'>'<span <span class="k">class</span>="s">"improved_answer"</span>: <span <span class="k">class</span>="s">"改进后的回答"</span>}'</span>
+    )
+    prompt = (
+        f<span <span class="k">class</span>="s">"原始回答：\n{original_answer}\n\n"</span>
+        f<span <span class="k">class</span>="s">"评估标准：{criteria}\n\n"</span>
+        f<span <span class="k">class</span>="s">"请评估并改进。"</span>
+    )
+    <span class="k">return</span> call_llm_with_json(prompt, system_msg)</pre></div></details></div><div class="lecture"><h2>2.2 记忆系统 (Memory) —— Agent 的「大脑存储」</h2>
 <p>&nbsp;</p>
 <p>记忆系统是 Agent 能力的核心差异点。</p>
 <p>&nbsp;</p>
@@ -231,44 +273,94 @@ body {
 <li>摘要压缩：用 LLM 将长对话总结为摘要</li>
 <li>滑动窗口：只保留最近 N 轮对话</li>
 <li>向量检索：将历史存入向量库，按相关性检索</li>
-<li>混合策略：短期用滑动窗口，长期用向量检索 + 摘要</li>
-<p>&nbsp;</p>
-<p>Agent 记忆系统 —— 模拟三种记忆类型。</p>
-<p>&nbsp;</p>
-<pre>这是一个简化版实现，帮助理解每种记忆的本质。
-实际项目中用 LangChain 的 Memory 模块或向量数据库。</pre>
-<p>&nbsp;</p>
-<p>Args:</p>
-<pre>        max_short_term: 短期记忆最多保留的对话轮数。</pre>
-<p>&nbsp;</p>
-<p>添加一轮对话到短期记忆。</p>
-<p>&nbsp;</p>
-<pre>    Args:
-        user_msg: 用户消息。
-        assistant_msg: Agent 回复。</pre>
-<p>&nbsp;</p>
-<p>写入工作记忆。</p>
-<p>&nbsp;</p>
-<pre>    Args:
-        key: 键名。
-        value: 值。</pre>
-<p>&nbsp;</p>
-<p>读取工作记忆。</p>
-<p>&nbsp;</p>
-<pre>    Args:
-        key: 键名。</pre>
-<p>&nbsp;</p>
-<pre>    Returns:
-        对应的值，不存在则返回空字符串。</pre>
-<p>&nbsp;</p>
-<p>组装发给 LLM 的完整上下文。</p>
-<p>&nbsp;</p>
-<pre>    包含：长期记忆摘要 + 工作记忆 + 最近对话。</pre>
-<p>&nbsp;</p>
-<pre>    Returns:
-        格式化的上下文字符串。</pre>
-<p>&nbsp;</p>
-<h2>2.3 工具设计 (Tool Design) —— Agent 的「武器库」</h2>
+<li>混合策略：短期用滑动窗口，长期用向量检索 + 摘要</li></div><div class="code-section"><details><summary>💻 代码 (88 行)</summary><div class="code-block"><pre><span class="k">class</span> AgentMemory:
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Agent 记忆系统 —— 模拟三种记忆类型。
+
+    这是一个简化版实现，帮助理解每种记忆的本质。
+    实际项目中用 LangChain 的 Memory 模块或向量数据库。
+    <span <span class="k">class</span>="s">""</span>"</span>
+
+    <span class="k">def</span> __init__(self, max_short_term: int = <span class="n">10</span>):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+        Args:
+            max_short_term: 短期记忆最多保留的对话轮数。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.short_term = []          <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 短期：最近对话 [(user, assistant), ...]</span>
+        self.working = {}             <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 工作记忆：任务中间状态 {key: value}</span>
+        self.long_term = []           <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 长期记忆（简化版）：重要信息列表</span>
+        self.max_short_term = max_short_term
+        self.summary = <span <span class="k">class</span>="s">""</span>             <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 早期对话的摘要</span>
+
+    <span class="k">def</span> add_conversation(self, user_msg: str, assistant_msg: str):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"添加一轮对话到短期记忆。
+
+        Args:
+            user_msg: 用户消息。
+            assistant_msg: Agent 回复。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.short_term.append((user_msg, assistant_msg))
+
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 超出限制时，压缩最早的对话为摘要</span>
+        <span class="k">if</span> len(self.short_term) &gt; self.max_short_term:
+            self._compress()
+
+    <span class="k">def</span> _compress(self):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"将最早的对话压缩为摘要，存入长期记忆。"</span><span <span class="k">class</span>="s">""</span></span>
+        old_pair = self.short_term.pop(<span class="n">0</span>)
+        combined = f<span <span class="k">class</span>="s">"[用户]: {old_pair[<span class="n">0</span>]}\n[助手]: {old_pair[<span class="n">1</span>]}"</span>
+        self.long_term.append(combined)
+        <span class="k">if</span> <span class="k">not</span> self.summary:
+            self.summary = f<span <span class="k">class</span>="s">"早期对话摘要：\n{combined}"</span>
+        <span class="k">else</span>:
+            self.summary += f<span <span class="k">class</span>="s">"\n...\n{combined}"</span>
+
+    <span class="k">def</span> set_working(self, key: str, value: str):
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"写入工作记忆。
+
+        Args:
+            key: 键名。
+            value: 值。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        self.working[key] = value
+
+    <span class="k">def</span> get_working(self, key: str) -&gt; str:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"读取工作记忆。
+
+        Args:
+            key: 键名。
+
+        Returns:
+            对应的值，不存在则返回空字符串。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        <span class="k">return</span> self.working.get(key, <span <span class="k">class</span>="s">""</span>)
+
+    <span class="k">def</span> get_context_for_llm(self) -&gt; str:
+        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"组装发给 LLM 的完整上下文。
+
+        包含：长期记忆摘要 + 工作记忆 + 最近对话。
+
+        Returns:
+            格式化的上下文字符串。
+        <span <span class="k">class</span>="s">""</span>"</span>
+        parts = []
+
+        <span class="k">if</span> self.summary:
+            parts.append(f<span <span class="k">class</span>="s">"<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">## 历史摘要\n{self.summary}\n"</span>)</span>
+
+        <span class="k">if</span> self.working:
+            wk_items = <span <span class="k">class</span>="s">"\n"</span>.join(
+                f<span <span class="k">class</span>="s">"  {k}: {v}"</span> <span class="k">for</span> k, v <span class="k">in</span> self.working.items()
+            )
+            parts.append(f<span <span class="k">class</span>="s">"<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">## 当前任务状态\n{wk_items}\n"</span>)</span>
+
+        <span class="k">if</span> self.short_term:
+            recent = <span <span class="k">class</span>="s">"\n"</span>.join(
+                f<span <span class="k">class</span>="s">"用户: {u}\n助手: {a}"</span>
+                <span class="k">for</span> u, a <span class="k">in</span> self.short_term[-<span class="n">5</span>:]
+            )
+            parts.append(f<span <span class="k">class</span>="s">"<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">## 最近对话\n{recent}"</span>)</span>
+
+        <span class="k">return</span> <span <span class="k">class</span>="s">"\n"</span>.join(parts)</pre></div></details></div><div class="lecture"><h2>2.3 工具设计 (Tool Design) —— Agent 的「武器库」</h2>
 <p>&nbsp;</p>
 <p>工具是 Agent 与外部世界交互的唯一方式。</p>
 <p>工具设计的好坏直接影响 Agent 的可用性。</p>
@@ -294,17 +386,125 @@ body {
 <p>答：</p>
 <li>描述 LLM 什么时候该用这个工具（不是怎么实现）</li>
 <li>说明工具不擅长什么（边界条件）</li>
-<li>举例说明典型调用场景</li>
-<p>&nbsp;</p>
-<h2>2.4 综合演示：三大组件协同工作</h2>
+<li>举例说明典型调用场景</li></div><div class="code-section"><details><summary>💻 代码 (56 行)</summary><div class="code-block"><pre><span class="k">def</span> demonstrate_tool_design():
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示高质量工具定义 vs 低质量工具定义。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"  工具设计对比：好 vs 坏"</span>)
+    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+
+    bad_tool = {
+        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"function"</span>,
+        <span <span class="k">class</span>="s">"function"</span>: {
+            <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"do_stuff"</span>,
+            <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"处理数据。"</span>,
+            <span <span class="k">class</span>="s">"parameters"</span>: {
+                <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"object"</span>,
+                <span <span class="k">class</span>="s">"properties"</span>: {
+                    <span <span class="k">class</span>="s">"data"</span>: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>}
+                },
+            },
+        },
+    }
+
+    good_tool = {
+        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"function"</span>,
+        <span <span class="k">class</span>="s">"function"</span>: {
+            <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"send_email"</span>,
+            <span <span class="k">class</span>="s">"description"</span>: (
+                <span <span class="k">class</span>="s">"向指定邮箱发送邮件。适用于发送通知、报告、提醒等场景。"</span>
+                <span <span class="k">class</span>="s">"不支持发送带附件的邮件。收件人地址必须包含 @。"</span>
+                <span <span class="k">class</span>="s">"示例：send_email(to=<span <span class="k">class</span>='s'>'user<span class="d">@example</span>.com'</span>, "</span>
+                <span <span class="k">class</span>="s">"subject=<span <span class="k">class</span>='s'>'日报'</span>, body=<span <span class="k">class</span>='s'>'今日数据...'</span>)"</span>
+            ),
+            <span <span class="k">class</span>="s">"parameters"</span>: {
+                <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"object"</span>,
+                <span <span class="k">class</span>="s">"properties"</span>: {
+                    <span <span class="k">class</span>="s">"to"</span>: {
+                        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>,
+                        <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"收件人邮箱地址，如 user<span class="d">@example</span>.com"</span>,
+                    },
+                    <span <span class="k">class</span>="s">"subject"</span>: {
+                        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>,
+                        <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"邮件主题，不超过 <span class="n">100</span> 字"</span>,
+                    },
+                    <span <span class="k">class</span>="s">"body"</span>: {
+                        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>,
+                        <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"邮件正文，纯文本格式"</span>,
+                    },
+                },
+                <span <span class="k">class</span>="s">"required"</span>: [<span <span class="k">class</span>="s">"to"</span>, <span <span class="k">class</span>="s">"subject"</span>, <span <span class="k">class</span>="s">"body"</span>],
+            },
+        },
+    }
+
+    print(<span <span class="k">class</span>="s">"\n❌ 低质量工具定义："</span>)
+    print(json.dumps(bad_tool, indent=<span class="n">2</span>, ensure_ascii=<span class="k">False</span>))
+
+    print(<span <span class="k">class</span>="s">"\n✅ 高质量工具定义："</span>)
+    print(json.dumps(good_tool, indent=<span class="n">2</span>, ensure_ascii=<span class="k">False</span>))</pre></div></details></div><div class="lecture"><h2>2.4 综合演示：三大组件协同工作</h2>
 <p>&nbsp;</p>
 <p>下面演示一个完整流程：</p>
 <li>规划器制定计划</li>
 <li>记忆系统记录状态</li>
 <li>执行器中调用工具</li>
-<li>反思器自我审查</li>
-<p>&nbsp;</p>
-<h2>2.5 本章总结</h2>
+<li>反思器自我审查</li></div><div class="code-section"><details><summary>💻 代码 (58 行)</summary><div class="code-block"><pre><span class="k">def</span> run_full_demo():
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"运行综合演示：组件协同工作。"</span><span <span class="k">class</span>="s">""</span></span>
+    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"█"</span> * <span class="n">60</span>)
+    print(<span <span class="k">class</span>="s">"█  综合演示：Agent 三大组件协同工作"</span>)
+    print(<span <span class="k">class</span>="s">"█"</span> * <span class="n">60</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 初始化组件</span>
+    memory = AgentMemory(max_short_term=<span class="n">6</span>)
+
+    task = <span <span class="k">class</span>="s">"调查北京和上海的天气，写一份简短对比报告"</span>
+
+    print(f<span <span class="k">class</span>="s">"\n📋 任务: {task}"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 阶段 <span class="n">1</span>：规划</span>
+    print(<span <span class="k">class</span>="s">"\n--- 阶段 <span class="n">1</span>: 规划器制定计划 ---"</span>)
+    plan = plan_execute(task)
+    print(f<span <span class="k">class</span>="s">"计划 {len(plan[<span <span class="k">class</span>='s'>'plan'</span>])} 个步骤："</span>)
+    <span class="k">for</span> step <span class="k">in</span> plan[<span <span class="k">class</span>="s">"plan"</span>]:
+        deps = f<span <span class="k">class</span>="s">" (依赖步骤 {step[<span <span class="k">class</span>='s'>'depends_on'</span>]})"</span> <span class="k">if</span> step.get(<span <span class="k">class</span>="s">"depends_on"</span>) <span class="k">else</span> <span <span class="k">class</span>="s">""</span>
+        print(f<span <span class="k">class</span>="s">"  步骤 {step[<span <span class="k">class</span>='s'>'step'</span>]}: {step[<span <span class="k">class</span>='s'>'description'</span>]}{deps}"</span>)
+        memory.set_working(f<span <span class="k">class</span>="s">"step_{step[<span <span class="k">class</span>='s'>'step'</span>]}"</span>, step[<span <span class="k">class</span>="s">"description"</span>])
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 阶段 <span class="n">2</span>：工具调用（模拟）</span>
+    print(<span <span class="k">class</span>="s">"\n--- 阶段 <span class="n">2</span>: 工具调用（模拟）---"</span>)
+    weather_data = {
+        <span <span class="k">class</span>="s">"北京"</span>: <span <span class="k">class</span>="s">"晴天 <span class="n">25</span>°C 湿度40%"</span>,
+        <span <span class="k">class</span>="s">"上海"</span>: <span <span class="k">class</span>="s">"多云 <span class="n">28</span>°C 湿度65%"</span>,
+    }
+    <span class="k">for</span> city <span class="k">in</span> [<span <span class="k">class</span>="s">"北京"</span>, <span <span class="k">class</span>="s">"上海"</span>]:
+        result = weather_data[city]
+        memory.set_working(f<span <span class="k">class</span>="s">"weather_{city}"</span>, result)
+        print(f<span <span class="k">class</span>="s">"  get_weather({city}) → {result}"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 阶段 <span class="n">3</span>：生成回答</span>
+    print(<span <span class="k">class</span>="s">"\n--- 阶段 <span class="n">3</span>: 生成对比报告（模拟）---"</span>)
+    beijing = memory.get_working(<span <span class="k">class</span>="s">"weather_北京"</span>)
+    shanghai = memory.get_working(<span <span class="k">class</span>="s">"weather_上海"</span>)
+    answer = f<span <span class="k">class</span>="s">"北京天气：{beijing}\n上海天气：{shanghai}\n建议：上海温度更高且湿度大，"</span>
+    answer += <span <span class="k">class</span>="s">"北京更适合户外活动。"</span>
+    print(f<span <span class="k">class</span>="s">"  初版回答:\n{answer}"</span>)
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 阶段 <span class="n">4</span>：反思</span>
+    print(<span <span class="k">class</span>="s">"\n--- 阶段 <span class="n">4</span>: 反思器自我审查 ---"</span>)
+    review = reflexion_review(
+        answer,
+        <span <span class="k">class</span>="s">"应包含数值对比（温度差、湿度差）和明确的活动建议"</span>
+    )
+    print(f<span <span class="k">class</span>="s">"  评分: {review[<span <span class="k">class</span>='s'>'score'</span>]}/<span class="n">10</span>"</span>)
+    print(f<span <span class="k">class</span>="s">"  问题: {review[<span <span class="k">class</span>='s'>'issues'</span>]}"</span>)
+    print(f<span <span class="k">class</span>="s">"\n  改进后回答:\n{review[<span <span class="k">class</span>='s'>'improved_answer'</span>]}"</span>)
+
+    memory.add_conversation(task, review[<span <span class="k">class</span>='s'>'improved_answer'</span>])
+
+    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 展示记忆状态</span>
+    print(<span <span class="k">class</span>="s">"\n--- 记忆系统状态 ---"</span>)
+    print(memory.get_context_for_llm())
+
+    print(<span <span class="k">class</span>="s">"\n✅ 综合演示完成！"</span>)</pre></div></details></div><div class="lecture"><h2>2.5 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
@@ -330,7 +530,25 @@ body {
 <p>"请描述 Agent 的核心架构"</p>
 <p>→ Agent = LLM + Planner + Memory + Tools</p>
 <p>→ 通过 ReAct 循环协调各组件工作</p>
-<p>→ 记忆系统解决上下文限制，工具系统扩展能力边界</p></div><div class="code-section"><details open><summary>💻 源代码 (487 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
+<p>→ 记忆系统解决上下文限制，工具系统扩展能力边界</p></div><div class="code-section"><details><summary>💻 代码 (19 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
+    print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    print(<span <span class="k">class</span>="s">"║       第2章：Agent 核心组件深度解析                    ║"</span>)
+    print(<span <span class="k">class</span>="s">"║       规划器 · 记忆系统 · 工具设计                    ║"</span>)
+    print(<span <span class="k">class</span>="s">"╚══════════════════════════════════════════════════════╝"</span>)
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">2.1</span>-<span class="n">2.2</span>: 规划器示例（Plan-Execute）"</span>)
+    plan = plan_execute(<span <span class="k">class</span>="s">"分析特斯拉股票是否值得投资"</span>)
+    print(json.dumps(plan, indent=<span class="n">2</span>, ensure_ascii=<span class="k">False</span>))
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">2.3</span>: 工具设计对比演示"</span>)
+    demonstrate_tool_design()
+
+    print(<span <span class="k">class</span>="s">"\n▶ <span class="n">2.4</span>: 综合演示（需要 API 调用）"</span>)
+    <span class="k">try</span>:
+        run_full_demo()
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        print(f<span <span class="k">class</span>="s">"\n⚠️ 综合演示需要 API Key，错误信息: {e}"</span>)
+        print(<span <span class="k">class</span>="s">"请确保 .env 文件配置正确后重试。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (488 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
 第2章：Agent 核心组件深度解析
 =====================================
 
