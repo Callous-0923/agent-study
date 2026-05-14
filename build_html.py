@@ -48,6 +48,14 @@ CHAPTERS = {
     26: ("chapter_26_model_routing", "26_model_routing.html",            "模型路由策略 — Threshold·Cascade·Semantic·Cost-Aware"),
     27: ("chapter_27_prompt_eng",    "27_prompt_engineering.html",       "Agent Prompt 工程 — System Prompt 模板·工具描述"),
     28: ("chapter_28_cache",         "28_cache.html",                    "语义缓存与 Token 优化 — 三级缓存·预算管理"),
+    29: ("chapter_29_multimodal",     "29_multimodal.html",              "Multi-Modal Agent — 视觉+文本联合推理"),
+    30: ("chapter_30_reliability",    "30_reliability.html",             "Agent 可靠性工程 — 熔断器·退避重试·幂等"),
+    31: ("chapter_31_benchmarks",     "31_benchmarks.html",              "Agent 评测体系深度 — GAIA·AgentBench·WebArena"),
+    32: ("chapter_32_self_improving", "32_self_improving.html",          "Self-Improving Agent — Bad Case 驱动的自动优化"),
+    33: ("chapter_33_prompt_cache",   "33_prompt_cache.html",            "Prompt Caching & 推理优化 — Anthropic Cache·推测解码"),
+    34: ("chapter_34_finetune",       "34_finetune.html",                "模型微调 for Function Calling — LoRA·成本收益对比"),
+    35: ("chapter_35_data_flywheel",  "35_data_flywheel.html",           "数据飞轮 — 从日志采集到自动改进的闭环"),
+    36: ("chapter_36_defense",        "36_defense.html",                 "Agent 纵深安全 — Canary Token·分层隔离·行为沙箱"),
 }
 
 

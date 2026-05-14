@@ -2,13 +2,13 @@
   <h1 align="center">🤖 AI Agent 全栈学习课程</h1>
   <p align="center">
     从零到一，系统掌握 AI Agent 核心理论与工程实践<br>
-    28 章节 · 18000+ 行代码 · 50+ 可运行示例 · 面试全覆盖
+    36 章节 · 22000+ 行代码 · 60+ 可运行示例 · 面试全覆盖
   </p>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/章节-28-green" alt="Chapters">
+  <img src="https://img.shields.io/badge/章节-36-green" alt="Chapters">
   <img src="https://img.shields.io/badge/许可-MIT-yellow" alt="License">
   <img src="https://img.shields.io/badge/更新-2026.05-brightgreen" alt="Update">
 </p>
@@ -17,20 +17,20 @@
 
 ## 📖 项目简介
 
-这是一套**面向求职**的 AI Agent 全栈学习课程，从 Agent 基础理论到 Claude Code 逆向工程、从 RAG 到 MCP/A2A 协议、从 DSPy 到生产可观测性，覆盖 **28 个主题、6 个层次**。每个章节都是 **可独立运行的 `.py` 文件**，既是完整讲义，又是可执行代码。
+这是一套**面向求职**的 AI Agent 全栈学习课程，从 Agent 基础理论到 Claude Code 逆向工程、从 RAG 到 MCP/A2A 协议、从 DSPy 到生产可观测性，覆盖 **28 个主题、7 个层次**。每个章节都是 **可独立运行的 `.py` 文件**，既是完整讲义，又是可执行代码。
 
 > **适合人群**：应届毕业生、转行工程师、任何想系统学习 AI Agent 的开发者。
 
 ---
 
-## 🗺️ 课程路线图（28 章 · 6 层递进）
+## 🗺️ 课程路线图（36 章 · 7 层递进）
 
 ```
 第1层：理论基础 ── 第2层：工程实践 ── 第3层：深度技术 ── 第4层：工程化与前沿
    Ch1-3               Ch4-7              Ch8-12              Ch13-18
 
-第5层：高级架构 ── 第6层：基础补强
-  Ch19-24            Ch25-28
+第5层：高级架构 ── 第6层：基础补强 ── 第7层：专家级进阶
+  Ch19-24            Ch25-28            Ch29-36
 ```
 
 ### 第1层：Agent 理论基础
@@ -91,6 +91,19 @@
 | **[Ch26](https://callous-0923.github.io/agent-study/chapter_26_model_routing/26_model_routing.html)** | 模型路由策略 | Threshold / Cascade / Semantic / Cost-Aware 四种路由 |
 | **[Ch27](https://callous-0923.github.io/agent-study/chapter_27_prompt_eng/27_prompt_engineering.html)** | Agent Prompt 工程 | System Prompt 6 模块模板、工具描述评分卡 |
 | **[Ch28](https://callous-0923.github.io/agent-study/chapter_28_cache/28_cache.html)** | 语义缓存与 Token 优化 | Exact→Semantic→LLM 三级缓存、Token 预算管理 |
+
+### 第7层：专家级进阶
+
+| 章节 | 内容 | 关键技术 |
+|------|------|----------|
+| **[Ch29](https://callous-0923.github.io/agent-study/chapter_29_multimodal/29_multimodal.html)** | Multi-Modal Agent | 视觉+文本联合推理、多模态 Tool Calling |
+| **[Ch30](https://callous-0923.github.io/agent-study/chapter_30_reliability/30_reliability.html)** | Agent 可靠性工程 | 熔断器、指数退避重试、幂等性、降级策略 |
+| **[Ch31](https://callous-0923.github.io/agent-study/chapter_31_benchmarks/31_benchmarks.html)** | Agent 评测体系深度 | GAIA / AgentBench / WebArena / tau-bench 五大评测 |
+| **[Ch32](https://callous-0923.github.io/agent-study/chapter_32_self_improving/32_self_improving.html)** | Self-Improving Agent | Bad Case 收集→自动改 Prompt→评测验证 |
+| **[Ch33](https://callous-0923.github.io/agent-study/chapter_33_prompt_cache/33_prompt_cache.html)** | Prompt Caching & 推理优化 | Anthropic Cache、KV共享、推测解码 |
+| **[Ch34](https://callous-0923.github.io/agent-study/chapter_34_finetune/34_finetune.html)** | 模型微调 for Function Calling | LoRA、微调数据准备、成本收益对比 |
+| **[Ch35](https://callous-0923.github.io/agent-study/chapter_35_data_flywheel/35_data_flywheel.html)** | 数据飞轮 | 交互采集→Bad Case识别→自动触发改进 |
+| **[Ch36](https://callous-0923.github.io/agent-study/chapter_36_defense/36_defense.html)** | Agent 纵深安全 | Canary Token、分层隔离、行为沙箱 |
 
 ---
 
@@ -241,7 +254,15 @@ agent-study/
 ├── chapter_25_vectordb/              🗄️ 向量数据库选型
 ├── chapter_26_model_routing/         🔀 模型路由与成本优化
 ├── chapter_27_prompt_eng/            ✍️ Agent Prompt 工程
-└── chapter_28_cache/                 ⚡ 语义缓存与 Token 优化
+├── chapter_28_cache/                 ⚡ 语义缓存与 Token 优化
+├── chapter_29_multimodal/            👁️ Multi-Modal Agent
+├── chapter_30_reliability/           🛡️ Agent 可靠性工程
+├── chapter_31_benchmarks/            📊 Agent 评测体系深度
+├── chapter_32_self_improving/        🔄 Self-Improving Agent
+├── chapter_33_prompt_cache/          💾 Prompt Caching & 推理优化
+├── chapter_34_finetune/              🎯 模型微调 for Function Calling
+├── chapter_35_data_flywheel/         🔁 数据飞轮
+└── chapter_36_defense/               🏰 Agent 纵深安全
 ```
 
 ---
@@ -283,5 +304,5 @@ MIT License — 自由使用、修改、分发。
 
 <p align="center">
   <b>如果这个项目对你有帮助，请给一个 ⭐ Star！</b><br>
-  <sub>28 章 · 6 层递进 · 持续更新中 · 欢迎提交 Issue 和 PR</sub>
+  <sub>36 章 · 7 层递进 · 持续更新中 · 欢迎提交 Issue 和 PR</sub>
 </p>

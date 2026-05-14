@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第32章：Self-Improving Agent —— 从错误中进化的 Agent — AI Agent 全栈课程</title>
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* 标题 */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
+}
+.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero .subtitle { opacity: 0.9; font-size: 1.05em; }
+
+/* 讲义内容 */
+.lecture { background: white; border-radius: 10px; padding: 36px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
+.lecture h2 {
+  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
+}
+.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture p { margin: 10px 0; }
+.lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
+.lecture li { margin: 4px 0; }
+.lecture pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 18px 22px; overflow-x: auto; font-size: .88em;
+  line-height: 1.55; margin: 14px 0;
+}
+.lecture code { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; }
+.lecture p code, .lecture li code {
+  background: #eee8ff; padding: 1px 6px; border-radius: 4px;
+  font-size: .92em; color: #6c3cc0;
+}
+.lecture strong { color: #333; }
+.lecture em { color: #555; }
+.lecture blockquote {
+  border-left: 4px solid #667eea; padding: 8px 16px;
+  margin: 14px 0; background: #f4f4ff; border-radius: 0 8px 8px 0;
+  color: #555;
+}
+.lecture table {
+  border-collapse: collapse; width: 100%; margin: 14px 0;
+  font-size: .92em;
+}
+.lecture th, .lecture td {
+  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+}
+.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 目标/考点标签 */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: .85em; font-weight: 500;
+}
+.tag-goal { background: #e8f5e9; color: #2e7d32; }
+.tag-interview { background: #fff3e0; color: #e65100; }
+
+/* 代码块区域 */
+.code-section { margin-top: 24px; }
+.code-section summary {
+  font-size: 1.1em; font-weight: 600; cursor: pointer;
+  padding: 10px 16px; background: #1e1e2e; color: #cdd6f4;
+  border-radius: 8px 8px 0 0; user-select: none;
+}
+.code-section pre {
+  margin: 0; border-radius: 0 0 8px 8px; max-height: 70vh;
+  overflow-y: auto;
+}
+.code-block {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 0 0 8px 8px;
+  padding: 20px 24px; overflow-x: auto; font-size: .85em;
+  line-height: 1.6; max-height: 70vh; overflow-y: auto;
+}
+
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
+/* 移动端 */
+@media (max-width: 640px) {
+  .container { padding: 16px 12px 60px; }
+  .hero { padding: 28px 18px; }
+  .hero h1 { font-size: 1.4em; }
+  .lecture { padding: 20px 16px; }
+}
+
+/* 打印 */
+@media print {
+  body { background: white; }
+  .lecture { box-shadow: none; }
+  .code-block { background: #f5f5f5; color: #222; }
+}
+
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第32章 Self-Improving Agent — Bad Case 驱动的自动优化</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_31_benchmarks/31_benchmarks.html" title="Agent 评测体系深度 — GAIA·AgentBench·WebArena">← 第31章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_33_prompt_cache/33_prompt_cache.html" title="Prompt Caching & 推理优化 — Anthropic Cache·推测解码">第33章 →</a>
+</div><div class="hero"><h1>第32章 Self-Improving Agent —— 从错误中进化的 Agent</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 Self-Improving Agent 的闭环架构</span><span class="tag tag-goal">2. 掌握 Bad Case 收集 → 自动改 Prompt → 评测验证的流程</span><span class="tag tag-goal">3. 实现简单的 Self-Improvement 循环</span><span class="tag tag-goal">4. 了解 Reflection 和 Self-Improve 的区别</span><span class="tag tag-interview">🎤 「Agent 怎么从错误中学习？」</span><span class="tag tag-interview">🎤 「Self-Improving 和 Fine-tuning 的区别？」</span><span class="tag tag-interview">🎤 「你怎么保证改进不会引入新问题？」</span></div><p>第32章：Self-Improving Agent —— 从错误中进化的 Agent</p>
+<p>======================================================</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>参考：Reflexion (Shinn et al. 2023) + DSPy Optimizer 实践</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>32.1 什么是 Self-Improving Agent？</h2>
+<p>&nbsp;</p>
+<p>传统 Agent：固定 Prompt → 固定逻辑 → 无法改进</p>
+<p>Self-Improving：执行 → 出错 → 分析原因 → 自动修改 Prompt → 验证改进</p>
+<p>&nbsp;</p>
+<p>类比：</p>
+<p>传统 Agent = 一个永远不学习的实习生</p>
+<p>Self-Improving Agent = 会记笔记、总结教训、改进方法的实习生</p>
+<p>&nbsp;</p>
+<p>核心循环：</p>
+<pre>  ┌─────────────────────────────────────────┐
+  │                                           │
+  │  执行任务 → 收集结果 → 评测打分            │
+  │      ↑                      ↓             │
+  │      │              低分案例（Bad Case）    │
+  │      │                      ↓             │
+  │      └──── 改进 Prompt ← 分析原因          │
+  │                                           │
+  └─────────────────────────────────────────┘</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>32.2 Self-Improving vs Reflection vs Fine-tuning</h2>
+<p>&nbsp;</p>
+<pre>┌────────────────┬────────────────────┬─────────────────────┐
+│ 方式             │       机制          │        成本          │
+├────────────────┼────────────────────┼─────────────────────┤
+│ Reflection     │ 单次任务内自我审查    │ 低（多一次 LLM 调用）  │
+│ Self-Improving │ 跨任务的持续改进       │ 中（定期跑优化流程）    │
+│ Fine-tuning    │ 重新训练模型权重       │ 高（GPU + 数据标注）   │
+└────────────────┴────────────────────┴─────────────────────┘</pre>
+<p>&nbsp;</p>
+<p>Reflection（Ch3/Ch19）：一次任务内的自我批评</p>
+<p>Self-Improving（本章）：横跨多次任务的持续改进</p></div><div class="code-section"><details open><summary>💻 代码 (164 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+
+
+<span class="k">class</span> <span class="f">SelfImprovingAgent</span>:
+    <span class="s">"""自改进 Agent —— Bad Case 驱动的 Prompt 优化。"""</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, base_prompt: <span class="b">str</span> = <span class="s">""</span>,
+                 metric_func=<span class="k">None</span>):
+        <span class="k">self</span>.base_prompt = base_prompt
+        <span class="k">self</span>.improved_prompt = base_prompt
+        <span class="k">self</span>.metric = metric_func <span class="k">or</span> (<span class="k">lambda</span> p, e: <span class="n">1.0</span> <span class="k">if</span> p == e <span class="k">else</span> <span class="n">0.0</span>)
+        <span class="k">self</span>.bad_cases = []
+        <span class="k">self</span>.improvement_log = []
+        <span class="k">self</span>.version = <span class="n">1</span>
+
+    <span class="k">def</span> <span class="f">execute</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""执行任务（模拟 LLM 调用）。"""</span>
+        <span class="k">return</span> f<span class="s">"[v{self.version}] 对 '{task[:30]}...' 的回答"</span>
+
+    <span class="k">def</span> <span class="f">collect_result</span>(<span class="k">self</span>, task: <span class="b">str</span>, expected: <span class="b">str</span>):
+        <span class="s">"""收集一次执行结果，记录 Bad Case。
+
+        Args:
+            task: 任务输入。
+            expected: 期望输出。
+        """</span>
+        actual = <span class="k">self</span>.execute(task)
+        score = <span class="k">self</span>.metric(actual, expected)
+
+        <span class="k">if</span> score &lt; <span class="n">0.7</span>:
+            <span class="k">self</span>.bad_cases.append({
+                <span class="s">"task"</span>: task,
+                <span class="s">"expected"</span>: expected,
+                <span class="s">"actual"</span>: actual,
+                <span class="s">"score"</span>: score,
+                <span class="s">"timestamp"</span>: time.time(),
+            })
+
+        <span class="k">return</span> score
+
+    <span class="k">def</span> <span class="f">improve</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""基于 Bad Case 自动改进 Prompt。
+
+        Returns:
+            改进报告。
+        """</span>
+        <span class="k">if</span> <span class="b">len</span>(<span class="k">self</span>.bad_cases) &lt; <span class="n">3</span>:
+            <span class="k">return</span> {<span class="s">"improved"</span>: <span class="k">False</span>,
+                    <span class="s">"reason"</span>: f<span class="s">"Bad Case 不足 ({len(self.bad_cases)} &lt; 3)"</span>}
+
+        <span class="h"># 分析 Bad Case 模式</span>
+        patterns = <span class="k">self</span>._analyze_bad_cases()
+
+        <span class="h"># 生成改进后的 Prompt</span>
+        new_prompt = <span class="k">self</span>._generate_improved_prompt(patterns)
+
+        improvement = {
+            <span class="s">"version"</span>: <span class="k">self</span>.version,
+            <span class="s">"patterns_found"</span>: patterns,
+            <span class="s">"old_prompt_len"</span>: <span class="b">len</span>(<span class="k">self</span>.improved_prompt),
+            <span class="s">"new_prompt_len"</span>: <span class="b">len</span>(new_prompt),
+            <span class="s">"bad_case_count"</span>: <span class="b">len</span>(<span class="k">self</span>.bad_cases),
+        }
+
+        <span class="h"># 应用改进</span>
+        <span class="k">self</span>.improved_prompt = new_prompt
+        <span class="k">self</span>.version += <span class="n">1</span>
+        <span class="k">self</span>.bad_cases = []
+        <span class="k">self</span>.improvement_log.append(improvement)
+
+        <span class="k">return</span> {<span class="s">"improved"</span>: <span class="k">True</span>, **improvement}
+
+    <span class="k">def</span> <span class="f">_analyze_bad_cases</span>(<span class="k">self</span>) -&gt; <span class="b">list</span>[<span class="b">str</span>]:
+        <span class="s">"""分析 Bad Case 的共性模式。"""</span>
+        patterns = []
+        tasks = [bc[<span class="s">"task"</span>] <span class="k">for</span> bc <span class="k">in</span> <span class="k">self</span>.bad_cases]
+
+        <span class="h"># 模式1：如果多个 Bad Case 包含相同关键词</span>
+        common_words = <span class="b">set</span>(tasks[<span class="n">0</span>].split())
+        <span class="k">for</span> t <span class="k">in</span> tasks[<span class="n">1</span>:]:
+            common_words &amp;= <span class="b">set</span>(t.split())
+
+        <span class="k">if</span> common_words:
+            patterns.append(f<span class="s">"共同关键词: {', '.join(list(common_words)[:5])}"</span>)
+
+        <span class="h"># 模式2：评分分布</span>
+        avg_score = <span class="b">sum</span>(bc[<span class="s">"score"</span>] <span class="k">for</span> bc <span class="k">in</span> <span class="k">self</span>.bad_cases) / <span class="b">len</span>(<span class="k">self</span>.bad_cases)
+        patterns.append(f<span class="s">"平均评分: {avg_score:.2f}"</span>)
+
+        <span class="k">return</span> patterns
+
+    <span class="k">def</span> <span class="f">_generate_improved_prompt</span>(<span class="k">self</span>, patterns: <span class="b">list</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""生成改进后的 Prompt（模拟 LLM 自动优化）。
+
+        真实实现中调用 LLM：
+          "以下是我的 Bad Case 模式: {patterns}
+           当前 Prompt: {current_prompt}
+           请生成改进后的 Prompt，要求更精确、容错性更好"
+        """</span>
+        additions = [
+            f<span class="s">"\n\n[自改进 v{self.version}] 基于 {len(self.bad_cases)} 个 Bad Case:"</span>,
+            <span class="s">"- "</span> + <span class="s">"\n- "</span>.join(patterns),
+            <span class="s">"- 请特别注意以上模式，给出更精确的回答。"</span>,
+        ]
+        <span class="k">return</span> <span class="k">self</span>.improved_prompt + <span class="s">"\n"</span>.join(additions)
+
+
+<span class="k">def</span> <span class="f">demo_self_improving</span>():
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Self-Improving Agent 演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    <span class="k">def</span> <span class="f">exact_metric</span>(pred: <span class="b">str</span>, exp: <span class="b">str</span>) -&gt; <span class="b">float</span>:
+        <span class="h"># 简化版：包含期望关键词即得分</span>
+        <span class="k">return</span> <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> w <span class="k">in</span> exp.split() <span class="k">if</span> w <span class="k">in</span> pred) / <span class="b">max</span>(<span class="b">len</span>(exp.split()), <span class="n">1</span>)
+
+    agent = SelfImprovingAgent(
+        base_prompt=<span class="s">"你是一个 AI 助手，请回答问题。"</span>,
+        metric_func=exact_metric,
+    )
+
+    <span class="h"># 模拟多次交互</span>
+    test_cases = [
+        (<span class="s">"北京天气"</span>, <span class="s">"晴天 25°C 湿度 40%"</span>),
+        (<span class="s">"上海天气"</span>, <span class="s">"多云 28°C 湿度 65%"</span>),
+        (<span class="s">"深圳天气"</span>, <span class="s">"阵雨 30°C 湿度 80%"</span>),
+        (<span class="s">"成都天气"</span>, <span class="s">"阴天 22°C 湿度 55%"</span>),
+        (<span class="s">"杭州天气"</span>, <span class="s">"小雨 20°C 湿度 70%"</span>),
+    ]
+
+    <span class="b">print</span>(f<span class="s">"\n  📝 初始 Prompt({len(agent.improved_prompt)}字符): "</span>
+          f<span class="s">"{agent.improved_prompt[:50]}..."</span>)
+
+    <span class="k">for</span> task, expected <span class="k">in</span> test_cases:
+        score = agent.collect_result(task, expected)
+        <span class="b">print</span>(f<span class="s">"    「{task}」→ 评分: {score:.2f}"</span>)
+
+    <span class="b">print</span>(f<span class="s">"\n  📊 Bad Case 数: {len(agent.bad_cases)}"</span>)
+
+    result = agent.improve()
+    <span class="k">if</span> result[<span class="s">"improved"</span>]:
+        <span class="b">print</span>(f<span class="s">"  ✅ 第 {result['version']} 次改进完成!"</span>)
+        <span class="b">print</span>(f<span class="s">"  发现的模式: {result['patterns_found']}"</span>)
+        <span class="b">print</span>(f<span class="s">"  Prompt 长度: {result['old_prompt_len']} → {result['new_prompt_len']}"</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第32章：Self-Improving Agent                           ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  Bad Case 收集 · 自动改 Prompt · 评测验证             ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_self_improving()
+    <span class="b">print</span>(<span class="s">"\n▶ Self-Improving vs Reflection vs FT"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> name, desc <span class="k">in</span> [
+        (<span class="s">"Reflection"</span>, <span class="s">"单次任务内的自我审查"</span>),
+        (<span class="s">"Self-Improving"</span>, <span class="s">"跨任务持续改进 Prompt"</span>),
+        (<span class="s">"Fine-tuning"</span>, <span class="s">"GPU训练 + 标注数据"</span>),
+    ]:
+        <span class="b">print</span>(f<span class="s">"  {name:18s} → {desc}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第32章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (222 行)</summary><div class="code-block"><pre><span class="s">"""
+第32章：Self-Improving Agent —— 从错误中进化的 Agent
+======================================================
+
+📌 本章目标：
+  1. 理解 Self-Improving Agent 的闭环架构
+  2. 掌握 Bad Case 收集 → 自动改 Prompt → 评测验证的流程
+  3. 实现简单的 Self-Improvement 循环
+  4. 了解 Reflection 和 Self-Improve 的区别
+
+📌 面试高频点：
+  - 「Agent 怎么从错误中学习？」
+  - 「Self-Improving 和 Fine-tuning 的区别？」
+  - 「你怎么保证改进不会引入新问题？」
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+参考：Reflexion (Shinn et al. 2023) + DSPy Optimizer 实践
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+32.1 什么是 Self-Improving Agent？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+传统 Agent：固定 Prompt → 固定逻辑 → 无法改进
+Self-Improving：执行 → 出错 → 分析原因 → 自动修改 Prompt → 验证改进
+
+类比：
+  传统 Agent = 一个永远不学习的实习生
+  Self-Improving Agent = 会记笔记、总结教训、改进方法的实习生
+
+核心循环：
+  ┌─────────────────────────────────────────┐
+  │                                           │
+  │  执行任务 → 收集结果 → 评测打分            │
+  │      ↑                      ↓             │
+  │      │              低分案例（Bad Case）    │
+  │      │                      ↓             │
+  │      └──── 改进 Prompt ← 分析原因          │
+  │                                           │
+  └─────────────────────────────────────────┘
+
+
+32.2 Self-Improving vs Reflection vs Fine-tuning
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌────────────────┬────────────────────┬─────────────────────┐
+│ 方式             │       机制          │        成本          │
+├────────────────┼────────────────────┼─────────────────────┤
+│ Reflection     │ 单次任务内自我审查    │ 低（多一次 LLM 调用）  │
+│ Self-Improving │ 跨任务的持续改进       │ 中（定期跑优化流程）    │
+│ Fine-tuning    │ 重新训练模型权重       │ 高（GPU + 数据标注）   │
+└────────────────┴────────────────────┴─────────────────────┘
+
+Reflection（Ch3/Ch19）：一次任务内的自我批评
+Self-Improving（本章）：横跨多次任务的持续改进
+"""</span>
+
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+
+
+<span class="k">class</span> <span class="f">SelfImprovingAgent</span>:
+    <span class="s">"""自改进 Agent —— Bad Case 驱动的 Prompt 优化。"""</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, base_prompt: <span class="b">str</span> = <span class="s">""</span>,
+                 metric_func=<span class="k">None</span>):
+        <span class="k">self</span>.base_prompt = base_prompt
+        <span class="k">self</span>.improved_prompt = base_prompt
+        <span class="k">self</span>.metric = metric_func <span class="k">or</span> (<span class="k">lambda</span> p, e: <span class="n">1.0</span> <span class="k">if</span> p == e <span class="k">else</span> <span class="n">0.0</span>)
+        <span class="k">self</span>.bad_cases = []
+        <span class="k">self</span>.improvement_log = []
+        <span class="k">self</span>.version = <span class="n">1</span>
+
+    <span class="k">def</span> <span class="f">execute</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""执行任务（模拟 LLM 调用）。"""</span>
+        <span class="k">return</span> f<span class="s">"[v{self.version}] 对 '{task[:30]}...' 的回答"</span>
+
+    <span class="k">def</span> <span class="f">collect_result</span>(<span class="k">self</span>, task: <span class="b">str</span>, expected: <span class="b">str</span>):
+        <span class="s">"""收集一次执行结果，记录 Bad Case。
+
+        Args:
+            task: 任务输入。
+            expected: 期望输出。
+        """</span>
+        actual = <span class="k">self</span>.execute(task)
+        score = <span class="k">self</span>.metric(actual, expected)
+
+        <span class="k">if</span> score &lt; <span class="n">0.7</span>:
+            <span class="k">self</span>.bad_cases.append({
+                <span class="s">"task"</span>: task,
+                <span class="s">"expected"</span>: expected,
+                <span class="s">"actual"</span>: actual,
+                <span class="s">"score"</span>: score,
+                <span class="s">"timestamp"</span>: time.time(),
+            })
+
+        <span class="k">return</span> score
+
+    <span class="k">def</span> <span class="f">improve</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""基于 Bad Case 自动改进 Prompt。
+
+        Returns:
+            改进报告。
+        """</span>
+        <span class="k">if</span> <span class="b">len</span>(<span class="k">self</span>.bad_cases) &lt; <span class="n">3</span>:
+            <span class="k">return</span> {<span class="s">"improved"</span>: <span class="k">False</span>,
+                    <span class="s">"reason"</span>: f<span class="s">"Bad Case 不足 ({len(self.bad_cases)} &lt; 3)"</span>}
+
+        <span class="h"># 分析 Bad Case 模式</span>
+        patterns = <span class="k">self</span>._analyze_bad_cases()
+
+        <span class="h"># 生成改进后的 Prompt</span>
+        new_prompt = <span class="k">self</span>._generate_improved_prompt(patterns)
+
+        improvement = {
+            <span class="s">"version"</span>: <span class="k">self</span>.version,
+            <span class="s">"patterns_found"</span>: patterns,
+            <span class="s">"old_prompt_len"</span>: <span class="b">len</span>(<span class="k">self</span>.improved_prompt),
+            <span class="s">"new_prompt_len"</span>: <span class="b">len</span>(new_prompt),
+            <span class="s">"bad_case_count"</span>: <span class="b">len</span>(<span class="k">self</span>.bad_cases),
+        }
+
+        <span class="h"># 应用改进</span>
+        <span class="k">self</span>.improved_prompt = new_prompt
+        <span class="k">self</span>.version += <span class="n">1</span>
+        <span class="k">self</span>.bad_cases = []
+        <span class="k">self</span>.improvement_log.append(improvement)
+
+        <span class="k">return</span> {<span class="s">"improved"</span>: <span class="k">True</span>, **improvement}
+
+    <span class="k">def</span> <span class="f">_analyze_bad_cases</span>(<span class="k">self</span>) -&gt; <span class="b">list</span>[<span class="b">str</span>]:
+        <span class="s">"""分析 Bad Case 的共性模式。"""</span>
+        patterns = []
+        tasks = [bc[<span class="s">"task"</span>] <span class="k">for</span> bc <span class="k">in</span> <span class="k">self</span>.bad_cases]
+
+        <span class="h"># 模式1：如果多个 Bad Case 包含相同关键词</span>
+        common_words = <span class="b">set</span>(tasks[<span class="n">0</span>].split())
+        <span class="k">for</span> t <span class="k">in</span> tasks[<span class="n">1</span>:]:
+            common_words &amp;= <span class="b">set</span>(t.split())
+
+        <span class="k">if</span> common_words:
+            patterns.append(f<span class="s">"共同关键词: {', '.join(list(common_words)[:5])}"</span>)
+
+        <span class="h"># 模式2：评分分布</span>
+        avg_score = <span class="b">sum</span>(bc[<span class="s">"score"</span>] <span class="k">for</span> bc <span class="k">in</span> <span class="k">self</span>.bad_cases) / <span class="b">len</span>(<span class="k">self</span>.bad_cases)
+        patterns.append(f<span class="s">"平均评分: {avg_score:.2f}"</span>)
+
+        <span class="k">return</span> patterns
+
+    <span class="k">def</span> <span class="f">_generate_improved_prompt</span>(<span class="k">self</span>, patterns: <span class="b">list</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""生成改进后的 Prompt（模拟 LLM 自动优化）。
+
+        真实实现中调用 LLM：
+          "以下是我的 Bad Case 模式: {patterns}
+           当前 Prompt: {current_prompt}
+           请生成改进后的 Prompt，要求更精确、容错性更好"
+        """</span>
+        additions = [
+            f<span class="s">"\n\n[自改进 v{self.version}] 基于 {len(self.bad_cases)} 个 Bad Case:"</span>,
+            <span class="s">"- "</span> + <span class="s">"\n- "</span>.join(patterns),
+            <span class="s">"- 请特别注意以上模式，给出更精确的回答。"</span>,
+        ]
+        <span class="k">return</span> <span class="k">self</span>.improved_prompt + <span class="s">"\n"</span>.join(additions)
+
+
+<span class="k">def</span> <span class="f">demo_self_improving</span>():
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Self-Improving Agent 演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    <span class="k">def</span> <span class="f">exact_metric</span>(pred: <span class="b">str</span>, exp: <span class="b">str</span>) -&gt; <span class="b">float</span>:
+        <span class="h"># 简化版：包含期望关键词即得分</span>
+        <span class="k">return</span> <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> w <span class="k">in</span> exp.split() <span class="k">if</span> w <span class="k">in</span> pred) / <span class="b">max</span>(<span class="b">len</span>(exp.split()), <span class="n">1</span>)
+
+    agent = SelfImprovingAgent(
+        base_prompt=<span class="s">"你是一个 AI 助手，请回答问题。"</span>,
+        metric_func=exact_metric,
+    )
+
+    <span class="h"># 模拟多次交互</span>
+    test_cases = [
+        (<span class="s">"北京天气"</span>, <span class="s">"晴天 25°C 湿度 40%"</span>),
+        (<span class="s">"上海天气"</span>, <span class="s">"多云 28°C 湿度 65%"</span>),
+        (<span class="s">"深圳天气"</span>, <span class="s">"阵雨 30°C 湿度 80%"</span>),
+        (<span class="s">"成都天气"</span>, <span class="s">"阴天 22°C 湿度 55%"</span>),
+        (<span class="s">"杭州天气"</span>, <span class="s">"小雨 20°C 湿度 70%"</span>),
+    ]
+
+    <span class="b">print</span>(f<span class="s">"\n  📝 初始 Prompt({len(agent.improved_prompt)}字符): "</span>
+          f<span class="s">"{agent.improved_prompt[:50]}..."</span>)
+
+    <span class="k">for</span> task, expected <span class="k">in</span> test_cases:
+        score = agent.collect_result(task, expected)
+        <span class="b">print</span>(f<span class="s">"    「{task}」→ 评分: {score:.2f}"</span>)
+
+    <span class="b">print</span>(f<span class="s">"\n  📊 Bad Case 数: {len(agent.bad_cases)}"</span>)
+
+    result = agent.improve()
+    <span class="k">if</span> result[<span class="s">"improved"</span>]:
+        <span class="b">print</span>(f<span class="s">"  ✅ 第 {result['version']} 次改进完成!"</span>)
+        <span class="b">print</span>(f<span class="s">"  发现的模式: {result['patterns_found']}"</span>)
+        <span class="b">print</span>(f<span class="s">"  Prompt 长度: {result['old_prompt_len']} → {result['new_prompt_len']}"</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第32章：Self-Improving Agent                           ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  Bad Case 收集 · 自动改 Prompt · 评测验证             ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_self_improving()
+    <span class="b">print</span>(<span class="s">"\n▶ Self-Improving vs Reflection vs FT"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> name, desc <span class="k">in</span> [
+        (<span class="s">"Reflection"</span>, <span class="s">"单次任务内的自我审查"</span>),
+        (<span class="s">"Self-Improving"</span>, <span class="s">"跨任务持续改进 Prompt"</span>),
+        (<span class="s">"Fine-tuning"</span>, <span class="s">"GPU训练 + 标注数据"</span>),
+    ]:
+        <span class="b">print</span>(f<span class="s">"  {name:18s} → {desc}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第32章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_31_benchmarks/31_benchmarks.html" title="Agent 评测体系深度 — GAIA·AgentBench·WebArena">← 第31章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_33_prompt_cache/33_prompt_cache.html" title="Prompt Caching & 推理优化 — Anthropic Cache·推测解码">第33章 →</a>
+</div></div></body></html>

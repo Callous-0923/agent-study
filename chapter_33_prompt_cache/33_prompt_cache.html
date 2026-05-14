@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第33章：Prompt Caching & 推理优化 —— 省钱的工程手段 — AI Agent 全栈课程</title>
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* 标题 */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
+}
+.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero .subtitle { opacity: 0.9; font-size: 1.05em; }
+
+/* 讲义内容 */
+.lecture { background: white; border-radius: 10px; padding: 36px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
+.lecture h2 {
+  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
+}
+.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture p { margin: 10px 0; }
+.lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
+.lecture li { margin: 4px 0; }
+.lecture pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 18px 22px; overflow-x: auto; font-size: .88em;
+  line-height: 1.55; margin: 14px 0;
+}
+.lecture code { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; }
+.lecture p code, .lecture li code {
+  background: #eee8ff; padding: 1px 6px; border-radius: 4px;
+  font-size: .92em; color: #6c3cc0;
+}
+.lecture strong { color: #333; }
+.lecture em { color: #555; }
+.lecture blockquote {
+  border-left: 4px solid #667eea; padding: 8px 16px;
+  margin: 14px 0; background: #f4f4ff; border-radius: 0 8px 8px 0;
+  color: #555;
+}
+.lecture table {
+  border-collapse: collapse; width: 100%; margin: 14px 0;
+  font-size: .92em;
+}
+.lecture th, .lecture td {
+  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+}
+.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 目标/考点标签 */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: .85em; font-weight: 500;
+}
+.tag-goal { background: #e8f5e9; color: #2e7d32; }
+.tag-interview { background: #fff3e0; color: #e65100; }
+
+/* 代码块区域 */
+.code-section { margin-top: 24px; }
+.code-section summary {
+  font-size: 1.1em; font-weight: 600; cursor: pointer;
+  padding: 10px 16px; background: #1e1e2e; color: #cdd6f4;
+  border-radius: 8px 8px 0 0; user-select: none;
+}
+.code-section pre {
+  margin: 0; border-radius: 0 0 8px 8px; max-height: 70vh;
+  overflow-y: auto;
+}
+.code-block {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 0 0 8px 8px;
+  padding: 20px 24px; overflow-x: auto; font-size: .85em;
+  line-height: 1.6; max-height: 70vh; overflow-y: auto;
+}
+
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
+/* 移动端 */
+@media (max-width: 640px) {
+  .container { padding: 16px 12px 60px; }
+  .hero { padding: 28px 18px; }
+  .hero h1 { font-size: 1.4em; }
+  .lecture { padding: 20px 16px; }
+}
+
+/* 打印 */
+@media print {
+  body { background: white; }
+  .lecture { box-shadow: none; }
+  .code-block { background: #f5f5f5; color: #222; }
+}
+
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第33章 Prompt Caching & 推理优化 — Anthropic Cache·推测解码</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_32_self_improving/32_self_improving.html" title="Self-Improving Agent — Bad Case 驱动的自动优化">← 第32章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_34_finetune/34_finetune.html" title="模型微调 for Function Calling — LoRA·成本收益对比">第34章 →</a>
+</div><div class="hero"><h1>第33章 Prompt Caching & 推理优化 —— 省钱的工程手段</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 Anthropic Prompt Caching 的原理和使用方式</span><span class="tag tag-goal">2. 掌握类比：Prompt Caching vs CDN vs 语义缓存</span><span class="tag tag-goal">3. 学会 KV-Cache 共享和推测解码的概念</span><span class="tag tag-goal">4. 量化各种缓存策略的收益</span><span class="tag tag-interview">🎤 「Anthropic 的 Prompt Caching 是怎么工作的？」</span><span class="tag tag-interview">🎤 「Prompt Caching 和语义缓存有什么区别？」</span><span class="tag tag-interview">🎤 「推测解码是什么？对 Agent 有什么价值？」</span></div><p>第33章：Prompt Caching & 推理优化 —— 省钱的工程手段</p>
+<p>=====================================================</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>综合 Anthropic Prompt Caching API + 推理优化论文</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>33.1 缓存的三层体系</h2>
+<p>&nbsp;</p>
+<pre>┌──────────────────┬──────────────┬──────────┬──────────┐
+│ 层                │     原理      │  命中率   │ 节省幅度  │
+├──────────────────┼──────────────┼──────────┼──────────┤
+│ L1: 语义缓存      │ 相似查询匹配   │ 30-50%   │ 100%     │
+│ L2: Prompt Caching│ 相同前缀重用   │ 60-90%   │ 90%      │
+│ L3: KV-Cache 共享 │ 跨请求共享状态  │ 取决于场景 │ 50-80%   │
+└──────────────────┴──────────────┴──────────┴──────────┘</pre>
+<p>&nbsp;</p>
+<h2>33.2 Anthropic Prompt Caching</h2>
+<p>&nbsp;</p>
+<p>本质：对 System Prompt 和长上下文做缓存。</p>
+<p>&nbsp;</p>
+<p>工作原理：</p>
+<li>标记需要缓存的 content block（加上 cache_control）</li>
+<li>相同前缀的请求，Claude 跳过重复的编码计算</li>
+<li>输入 Token 费用降低 90%</li>
+<p>&nbsp;</p>
+<p>使用示例：</p>
+<p>response = client.beta.prompt_caching.messages.create(</p>
+<pre>  model="claude-sonnet-4-20250514",
+  system=[{
+      "type": "text",
+      "text": system_prompt,
+      "cache_control": {"type": "ephemeral"},  ← 标记缓存
+  }],
+  messages=[...],</pre>
+<p>)</p>
+<p>&nbsp;</p>
+<p>缓存 min_token 要求：</p>
+<li>最少 1024 tokens 才能被缓存</li>
+<li>缓存 TTL: 5 分钟（无活跃使用则失效）</li>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>33.3 什么时候用 Prompt Caching？</h2>
+<p>&nbsp;</p>
+<p>最适用的场景：</p>
+<p>✓ Agent 的多轮对话（System Prompt 不变）</p>
+<p>✓ 大量 Tool Definitions（每次调用都带同样的工具列表）</p>
+<p>✓ 长文档 QA（同一文档多次提问）</p>
+<p>&nbsp;</p>
+<p>不太适合的场景：</p>
+<p>✗ 每次请求都是完全不同的上下文</p>
+<p>✗ 短对话（System Prompt < 1024 tokens）</p></div><div class="code-section"><details open><summary>💻 代码 (54 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<span class="k">import</span> hashlib
+
+
+<span class="k">class</span> <span class="f">PromptCacheSimulator</span>:
+    <span class="s">"""模拟 Prompt Caching 的工作原理。"""</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>.cache = {}  <span class="h"># {prefix_hash: cached_tokens}</span>
+        <span class="k">self</span>.hits = <span class="n">0</span>
+        <span class="k">self</span>.misses = <span class="n">0</span>
+
+    <span class="k">def</span> <span class="f">call_llm</span>(<span class="k">self</span>, system_prompt: <span class="b">str</span>,
+                 user_message: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""模拟带缓存的 LLM 调用。
+
+        Returns:
+            含成本信息的字典。
+        """</span>
+        prefix_hash = hashlib.md5(
+            system_prompt.encode()
+        ).hexdigest()
+
+        prefix_tokens = <span class="b">len</span>(system_prompt) // <span class="n">4</span>
+        user_tokens = <span class="b">len</span>(user_message) // <span class="n">4</span>
+        total_tokens = prefix_tokens + user_tokens
+
+        <span class="k">if</span> prefix_hash <span class="k">in</span> <span class="k">self</span>.cache:
+            <span class="k">self</span>.hits += <span class="n">1</span>
+            cost = user_tokens * <span class="n">0.00001</span>  <span class="h"># 仅计费新 token</span>
+            <span class="k">return</span> {
+                <span class="s">"cached"</span>: <span class="k">True</span>,
+                <span class="s">"tokens_charged"</span>: user_tokens,
+                <span class="s">"total_tokens"</span>: total_tokens,
+                <span class="s">"est_cost"</span>: <span class="b">round</span>(cost, <span class="n">6</span>),
+            }
+
+        <span class="k">self</span>.misses += <span class="n">1</span>
+        <span class="k">self</span>.cache[prefix_hash] = <span class="k">True</span>
+        cost = total_tokens * <span class="n">0.00001</span>
+        <span class="k">return</span> {
+            <span class="s">"cached"</span>: <span class="k">False</span>,
+            <span class="s">"tokens_charged"</span>: total_tokens,
+            <span class="s">"total_tokens"</span>: total_tokens,
+            <span class="s">"est_cost"</span>: <span class="b">round</span>(cost, <span class="n">6</span>),
+        }
+
+    <span class="k">def</span> <span class="f">stats</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        total = <span class="k">self</span>.hits + <span class="k">self</span>.misses
+        <span class="k">return</span> {
+            <span class="s">"hit_rate"</span>: f<span class="s">"{self.hits / max(total, 1):.0%}"</span>,
+            <span class="s">"total_calls"</span>: total,
+            <span class="s">"cache_size"</span>: <span class="b">len</span>(<span class="k">self</span>.cache),
+        }</pre></div></details></div><div class="lecture"><h2>33.4 推测解码 (Speculative Decoding)</h2>
+<p>&nbsp;</p>
+<p>原理：用小模型「猜测」大模型的输出，大模型验证。</p>
+<p>&nbsp;</p>
+<p>流程：</p>
+<li>小模型快速生成 N 个候选 token</li>
+<li>大模型一次性验证这 N 个 token</li>
+<li>通过率 > 80% → 速度快 2-3x</li>
+<p>&nbsp;</p>
+<p>对 Agent 的价值：</p>
+<p>简单步骤（如「继续执行下一步」）→ 小模型足以预测</p>
+<p>复杂决策（如「该用什么工具」）→ 仍需要大模型</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>33.5 成本优化的组合策略</h2>
+<p>&nbsp;</p>
+<pre>  ┌─────────────────────────────────────────────┐
+  │                                             │
+  │  Ch26 模型路由  → 80% 请求用小模型           │
+  │  Ch28 语义缓存  → 30-50% 免调 LLM            │
+  │  Ch33 Prompt Caching → 90% 节省前缀 Token    │
+  │                                             │
+  │  三者叠加 → 综合成本降低 60-85%               │
+  │                                             │
+  └─────────────────────────────────────────────┘</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>33.6 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>Prompt Caching: 缓存 System Prompt，输入 Token 费降 90%</li>
+<li>KV-Cache 共享: 跨请求复用 LLM 内部状态</li>
+<li>推测解码: 小模型猜 + 大模型验证，快 2-3x</li>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>「Prompt Caching 怎么工作？」</p>
+<p>→ 标记相同前缀 → Anthropic 跳过编码 → 输入 Token 费降 90%</p>
+<p>→ 最少 1024 tokens 才能缓存 → TTL 5 分钟</p></div><div class="code-section"><details open><summary>💻 代码 (44 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<span class="k">import</span> hashlib
+
+<span class="k">def</span> <span class="f">demo_cache_simulator</span>():
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Prompt Caching 模拟"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    sim = PromptCacheSimulator()
+
+    system = <span class="s">"你是一个专业的 AI 助手，需要详细回答用户的问题。请保持礼貌和专业。"</span> * <span class="n">10</span>
+    queries = [
+        <span class="s">"今天天气怎么样？"</span>,
+        <span class="s">"帮我写一段 Python 代码"</span>,
+        <span class="s">"推荐几本 AI 书籍"</span>,
+        <span class="s">"今天天气怎么样？"</span>,  <span class="h"># 重复查询，但 System Prompt 不变</span>
+    ]
+
+    <span class="k">for</span> q <span class="k">in</span> queries:
+        result = sim.call_llm(system, q)
+        icon = <span class="s">"🎯 缓存命中"</span> <span class="k">if</span> result[<span class="s">"cached"</span>] <span class="k">else</span> <span class="s">"🆕 首次调用"</span>
+        <span class="b">print</span>(f<span class="s">"  {icon} | 计费: {result['tokens_charged']} tokens "</span>
+              f<span class="s">"| 成本: ${result['est_cost']:.6f}"</span>)
+
+    s = sim.stats()
+    <span class="b">print</span>(f<span class="s">"\n  📊 缓存统计: 命中率 {s['hit_rate']}, "</span>
+          f<span class="s">"总调用 {s['total_calls']} 次"</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第33章：Prompt Caching &amp; 推理优化                     ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  Anthropic Cache · KV共享 · 推测解码                  ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_cache_simulator()
+    <span class="b">print</span>(<span class="s">"\n▶ 三层缓存体系"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> name, benefit <span class="k">in</span> [
+        (<span class="s">"L1 语义缓存"</span>, <span class="s">"相似查询匹配，100% 节省"</span>),
+        (<span class="s">"L2 Prompt Caching"</span>, <span class="s">"相同前缀重用，90% 节省"</span>),
+        (<span class="s">"L3 KV-Cache 共享"</span>, <span class="s">"跨请求状态共享，50-80% 节省"</span>),
+    ]:
+        <span class="b">print</span>(f<span class="s">"  {name:18s} → {benefit}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第33章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (214 行)</summary><div class="code-block"><pre><span class="s">"""
+第33章：Prompt Caching &amp; 推理优化 —— 省钱的工程手段
+=====================================================
+
+📌 本章目标：
+  1. 理解 Anthropic Prompt Caching 的原理和使用方式
+  2. 掌握类比：Prompt Caching vs CDN vs 语义缓存
+  3. 学会 KV-Cache 共享和推测解码的概念
+  4. 量化各种缓存策略的收益
+
+📌 面试高频点：
+  - 「Anthropic 的 Prompt Caching 是怎么工作的？」
+  - 「Prompt Caching 和语义缓存有什么区别？」
+  - 「推测解码是什么？对 Agent 有什么价值？」
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+综合 Anthropic Prompt Caching API + 推理优化论文
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+33.1 缓存的三层体系
+━━━━━━━━━━━━━━━━━━
+
+┌──────────────────┬──────────────┬──────────┬──────────┐
+│ 层                │     原理      │  命中率   │ 节省幅度  │
+├──────────────────┼──────────────┼──────────┼──────────┤
+│ L1: 语义缓存      │ 相似查询匹配   │ 30-50%   │ 100%     │
+│ L2: Prompt Caching│ 相同前缀重用   │ 60-90%   │ 90%      │
+│ L3: KV-Cache 共享 │ 跨请求共享状态  │ 取决于场景 │ 50-80%   │
+└──────────────────┴──────────────┴──────────┴──────────┘
+
+33.2 Anthropic Prompt Caching
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+本质：对 System Prompt 和长上下文做缓存。
+
+工作原理：
+  1. 标记需要缓存的 content block（加上 cache_control）
+  2. 相同前缀的请求，Claude 跳过重复的编码计算
+  3. 输入 Token 费用降低 90%
+
+使用示例：
+  response = client.beta.prompt_caching.messages.create(
+      model="claude-sonnet-4-20250514",
+      system=[{
+          "type": "text",
+          "text": system_prompt,
+          "cache_control": {"type": "ephemeral"},  ← 标记缓存
+      }],
+      messages=[...],
+  )
+
+缓存 min_token 要求：
+  - 最少 1024 tokens 才能被缓存
+  - 缓存 TTL: 5 分钟（无活跃使用则失效）
+
+
+33.3 什么时候用 Prompt Caching？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+最适用的场景：
+  ✓ Agent 的多轮对话（System Prompt 不变）
+  ✓ 大量 Tool Definitions（每次调用都带同样的工具列表）
+  ✓ 长文档 QA（同一文档多次提问）
+
+不太适合的场景：
+  ✗ 每次请求都是完全不同的上下文
+  ✗ 短对话（System Prompt &lt; 1024 tokens）
+"""</span>
+
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
+
+
+<span class="k">class</span> <span class="f">PromptCacheSimulator</span>:
+    <span class="s">"""模拟 Prompt Caching 的工作原理。"""</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>.cache = {}  <span class="h"># {prefix_hash: cached_tokens}</span>
+        <span class="k">self</span>.hits = <span class="n">0</span>
+        <span class="k">self</span>.misses = <span class="n">0</span>
+
+    <span class="k">def</span> <span class="f">call_llm</span>(<span class="k">self</span>, system_prompt: <span class="b">str</span>,
+                 user_message: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""模拟带缓存的 LLM 调用。
+
+        Returns:
+            含成本信息的字典。
+        """</span>
+        prefix_hash = hashlib.md5(
+            system_prompt.encode()
+        ).hexdigest()
+
+        prefix_tokens = <span class="b">len</span>(system_prompt) // <span class="n">4</span>
+        user_tokens = <span class="b">len</span>(user_message) // <span class="n">4</span>
+        total_tokens = prefix_tokens + user_tokens
+
+        <span class="k">if</span> prefix_hash <span class="k">in</span> <span class="k">self</span>.cache:
+            <span class="k">self</span>.hits += <span class="n">1</span>
+            cost = user_tokens * <span class="n">0.00001</span>  <span class="h"># 仅计费新 token</span>
+            <span class="k">return</span> {
+                <span class="s">"cached"</span>: <span class="k">True</span>,
+                <span class="s">"tokens_charged"</span>: user_tokens,
+                <span class="s">"total_tokens"</span>: total_tokens,
+                <span class="s">"est_cost"</span>: <span class="b">round</span>(cost, <span class="n">6</span>),
+            }
+
+        <span class="k">self</span>.misses += <span class="n">1</span>
+        <span class="k">self</span>.cache[prefix_hash] = <span class="k">True</span>
+        cost = total_tokens * <span class="n">0.00001</span>
+        <span class="k">return</span> {
+            <span class="s">"cached"</span>: <span class="k">False</span>,
+            <span class="s">"tokens_charged"</span>: total_tokens,
+            <span class="s">"total_tokens"</span>: total_tokens,
+            <span class="s">"est_cost"</span>: <span class="b">round</span>(cost, <span class="n">6</span>),
+        }
+
+    <span class="k">def</span> <span class="f">stats</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        total = <span class="k">self</span>.hits + <span class="k">self</span>.misses
+        <span class="k">return</span> {
+            <span class="s">"hit_rate"</span>: f<span class="s">"{self.hits / max(total, 1):.0%}"</span>,
+            <span class="s">"total_calls"</span>: total,
+            <span class="s">"cache_size"</span>: <span class="b">len</span>(<span class="k">self</span>.cache),
+        }
+
+
+<span class="s">"""
+33.4 推测解码 (Speculative Decoding)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+原理：用小模型「猜测」大模型的输出，大模型验证。
+
+流程：
+  1. 小模型快速生成 N 个候选 token
+  2. 大模型一次性验证这 N 个 token
+  3. 通过率 &gt; 80% → 速度快 2-3x
+
+对 Agent 的价值：
+  简单步骤（如「继续执行下一步」）→ 小模型足以预测
+  复杂决策（如「该用什么工具」）→ 仍需要大模型
+
+
+33.5 成本优化的组合策略
+━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌─────────────────────────────────────────────┐
+  │                                             │
+  │  Ch26 模型路由  → 80% 请求用小模型           │
+  │  Ch28 语义缓存  → 30-50% 免调 LLM            │
+  │  Ch33 Prompt Caching → 90% 节省前缀 Token    │
+  │                                             │
+  │  三者叠加 → 综合成本降低 60-85%               │
+  │                                             │
+  └─────────────────────────────────────────────┘
+
+
+33.6 本章总结
+━━━━━━━━━━━━
+
+核心要点回顾：
+
+1. Prompt Caching: 缓存 System Prompt，输入 Token 费降 90%
+2. KV-Cache 共享: 跨请求复用 LLM 内部状态
+3. 推测解码: 小模型猜 + 大模型验证，快 2-3x
+
+面试速记：
+  「Prompt Caching 怎么工作？」
+  → 标记相同前缀 → Anthropic 跳过编码 → 输入 Token 费降 90%
+  → 最少 1024 tokens 才能缓存 → TTL 5 分钟
+"""</span>
+
+
+<span class="k">def</span> <span class="f">demo_cache_simulator</span>():
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Prompt Caching 模拟"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    sim = PromptCacheSimulator()
+
+    system = <span class="s">"你是一个专业的 AI 助手，需要详细回答用户的问题。请保持礼貌和专业。"</span> * <span class="n">10</span>
+    queries = [
+        <span class="s">"今天天气怎么样？"</span>,
+        <span class="s">"帮我写一段 Python 代码"</span>,
+        <span class="s">"推荐几本 AI 书籍"</span>,
+        <span class="s">"今天天气怎么样？"</span>,  <span class="h"># 重复查询，但 System Prompt 不变</span>
+    ]
+
+    <span class="k">for</span> q <span class="k">in</span> queries:
+        result = sim.call_llm(system, q)
+        icon = <span class="s">"🎯 缓存命中"</span> <span class="k">if</span> result[<span class="s">"cached"</span>] <span class="k">else</span> <span class="s">"🆕 首次调用"</span>
+        <span class="b">print</span>(f<span class="s">"  {icon} | 计费: {result['tokens_charged']} tokens "</span>
+              f<span class="s">"| 成本: ${result['est_cost']:.6f}"</span>)
+
+    s = sim.stats()
+    <span class="b">print</span>(f<span class="s">"\n  📊 缓存统计: 命中率 {s['hit_rate']}, "</span>
+          f<span class="s">"总调用 {s['total_calls']} 次"</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第33章：Prompt Caching &amp; 推理优化                     ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  Anthropic Cache · KV共享 · 推测解码                  ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_cache_simulator()
+    <span class="b">print</span>(<span class="s">"\n▶ 三层缓存体系"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> name, benefit <span class="k">in</span> [
+        (<span class="s">"L1 语义缓存"</span>, <span class="s">"相似查询匹配，100% 节省"</span>),
+        (<span class="s">"L2 Prompt Caching"</span>, <span class="s">"相同前缀重用，90% 节省"</span>),
+        (<span class="s">"L3 KV-Cache 共享"</span>, <span class="s">"跨请求状态共享，50-80% 节省"</span>),
+    ]:
+        <span class="b">print</span>(f<span class="s">"  {name:18s} → {benefit}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第33章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_32_self_improving/32_self_improving.html" title="Self-Improving Agent — Bad Case 驱动的自动优化">← 第32章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_34_finetune/34_finetune.html" title="模型微调 for Function Calling — LoRA·成本收益对比">第34章 →</a>
+</div></div></body></html>

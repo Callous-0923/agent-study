@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第30章：Agent 可靠性工程 —— 在生产环境中活下来 — AI Agent 全栈课程</title>
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* 标题 */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
+}
+.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero .subtitle { opacity: 0.9; font-size: 1.05em; }
+
+/* 讲义内容 */
+.lecture { background: white; border-radius: 10px; padding: 36px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
+.lecture h2 {
+  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
+}
+.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture p { margin: 10px 0; }
+.lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
+.lecture li { margin: 4px 0; }
+.lecture pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 18px 22px; overflow-x: auto; font-size: .88em;
+  line-height: 1.55; margin: 14px 0;
+}
+.lecture code { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; }
+.lecture p code, .lecture li code {
+  background: #eee8ff; padding: 1px 6px; border-radius: 4px;
+  font-size: .92em; color: #6c3cc0;
+}
+.lecture strong { color: #333; }
+.lecture em { color: #555; }
+.lecture blockquote {
+  border-left: 4px solid #667eea; padding: 8px 16px;
+  margin: 14px 0; background: #f4f4ff; border-radius: 0 8px 8px 0;
+  color: #555;
+}
+.lecture table {
+  border-collapse: collapse; width: 100%; margin: 14px 0;
+  font-size: .92em;
+}
+.lecture th, .lecture td {
+  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+}
+.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 目标/考点标签 */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: .85em; font-weight: 500;
+}
+.tag-goal { background: #e8f5e9; color: #2e7d32; }
+.tag-interview { background: #fff3e0; color: #e65100; }
+
+/* 代码块区域 */
+.code-section { margin-top: 24px; }
+.code-section summary {
+  font-size: 1.1em; font-weight: 600; cursor: pointer;
+  padding: 10px 16px; background: #1e1e2e; color: #cdd6f4;
+  border-radius: 8px 8px 0 0; user-select: none;
+}
+.code-section pre {
+  margin: 0; border-radius: 0 0 8px 8px; max-height: 70vh;
+  overflow-y: auto;
+}
+.code-block {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 0 0 8px 8px;
+  padding: 20px 24px; overflow-x: auto; font-size: .85em;
+  line-height: 1.6; max-height: 70vh; overflow-y: auto;
+}
+
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
+/* 移动端 */
+@media (max-width: 640px) {
+  .container { padding: 16px 12px 60px; }
+  .hero { padding: 28px 18px; }
+  .hero h1 { font-size: 1.4em; }
+  .lecture { padding: 20px 16px; }
+}
+
+/* 打印 */
+@media print {
+  body { background: white; }
+  .lecture { box-shadow: none; }
+  .code-block { background: #f5f5f5; color: #222; }
+}
+
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第30章 Agent 可靠性工程 — 熔断器·退避重试·幂等</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_29_multimodal/29_multimodal.html" title="Multi-Modal Agent — 视觉+文本联合推理">← 第29章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_31_benchmarks/31_benchmarks.html" title="Agent 评测体系深度 — GAIA·AgentBench·WebArena">第31章 →</a>
+</div><div class="hero"><h1>第30章 Agent 可靠性工程 —— 在生产环境中活下来</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 掌握 Agent 专用的可靠性模式（熔断/舱壁/重试/幂等/Saga）</span><span class="tag tag-goal">2. 理解 Agent 系统特有的故障模式</span><span class="tag tag-goal">3. 实现 Exponential Backoff 重试和熔断器</span><span class="tag tag-goal">4. 学会设计 Agent 的降级策略</span><span class="tag tag-interview">🎤 「Agent 在生产中出错了怎么办？」</span><span class="tag tag-interview">🎤 「什么是熔断器？怎么给 Agent 加熔断？」</span><span class="tag tag-interview">🎤 「幂等性在 Agent 工具调用中怎么保证？」</span></div><p>第30章：Agent 可靠性工程 —— 在生产环境中活下来</p>
+<p>===============================================</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>参考：Netflix Hystrix / Resilience4j / 分布式系统可靠性</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>30.1 Agent 为什么需要专门的可靠性？</h2>
+<p>&nbsp;</p>
+<p>传统 API 的故障模式：</p>
+<li>超时 → 重试</li>
+<li>500 → 降级</li>
+<p>&nbsp;</p>
+<p>Agent 特有的故障模式：</p>
+<li>LLM 返回幻觉参数 → 工具执行报错</li>
+<li>Agent 陷入死循环 → 无限消耗 Token</li>
+<li>工具调用雪崩 → 一个失败导致后续全部失败</li>
+<li>上下文爆炸 → 对话历史过长 → LLM 行为异常</li>
+<p>&nbsp;</p>
+<p>可靠性 = 系统在故障下仍能提供「可接受」的服务。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>30.2 熔断器 (Circuit Breaker)</h2>
+<p>&nbsp;</p>
+<p>原理：当某个工具的失败次数超过阈值，直接跳过它</p>
+<pre>  而不是继续浪费时间调用。</pre>
+<p>&nbsp;</p>
+<p>三态模型：</p>
+<p>CLOSED → 正常调用</p>
+<p>OPEN   → 直接拒绝（熔断中），避免雪崩</p>
+<p>HALF_OPEN → 放行一个请求试探 → 成功则 CLOSED，失败则 OPEN</p>
+<p>&nbsp;</p>
+<p>类比：保险丝</p>
+<p>电流过大 → 熔断 → 保护电路</p>
+<p>冷却后 → 恢复</p></div><div class="code-section"><details open><summary>💻 代码 (79 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<span class="k">import</span> json
+<span class="k">import</span> random
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
+<span class="k">from</span> enum <span class="k">import</span> Enum
+
+
+<span class="k">class</span> <span class="f">CircuitState</span>(Enum):
+    CLOSED = <span class="s">"closed"</span>
+    OPEN = <span class="s">"open"</span>
+    HALF_OPEN = <span class="s">"half_open"</span>
+
+
+<span class="k">class</span> <span class="f">CircuitBreaker</span>:
+    <span class="s">"""熔断器 —— 防止对故障工具的重复调用。
+
+    三态：
+      CLOSED: 正常放行
+      OPEN: 直接拒绝
+      HALF_OPEN: 试探性放行一个请求
+    """</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, name: <span class="b">str</span>, failure_threshold: <span class="b">int</span> = <span class="n">3</span>,
+                 recovery_timeout: <span class="b">float</span> = <span class="n">30.0</span>):
+        <span class="k">self</span>.name = name
+        <span class="k">self</span>.failure_threshold = failure_threshold
+        <span class="k">self</span>.recovery_timeout = recovery_timeout
+        <span class="k">self</span>.state = CircuitState.CLOSED
+        <span class="k">self</span>.failure_count = <span class="n">0</span>
+        <span class="k">self</span>.last_failure_time = <span class="n">0</span>
+        <span class="k">self</span>.success_count = <span class="n">0</span>
+        <span class="k">self</span>.total_calls = <span class="n">0</span>
+
+    <span class="k">def</span> <span class="f">call</span>(<span class="k">self</span>, func, *args, **kwargs) -&gt; <span class="b">dict</span>:
+        <span class="s">"""通过熔断器调用函数。
+
+        Returns:
+            含结果或熔断信息的字典。
+        """</span>
+        <span class="k">self</span>.total_calls += <span class="n">1</span>
+
+        <span class="k">if</span> <span class="k">self</span>.state == CircuitState.OPEN:
+            <span class="k">if</span> time.time() - <span class="k">self</span>.last_failure_time &gt; <span class="k">self</span>.recovery_timeout:
+                <span class="k">self</span>.state = CircuitState.HALF_OPEN
+            <span class="k">else</span>:
+                <span class="k">return</span> {
+                    <span class="s">"success"</span>: <span class="k">False</span>,
+                    <span class="s">"error"</span>: f<span class="s">"熔断器 {self.name} 已断开，请求被拒绝"</span>,
+                    <span class="s">"state"</span>: <span class="k">self</span>.state.value,
+                }
+
+        <span class="k">try</span>:
+            result = func(*args, **kwargs)
+            <span class="k">self</span>._on_success()
+            <span class="k">return</span> {<span class="s">"success"</span>: <span class="k">True</span>, <span class="s">"result"</span>: result}
+        <span class="k">except</span> Exception <span class="k">as</span> e:
+            <span class="k">self</span>._on_failure()
+            <span class="k">return</span> {<span class="s">"success"</span>: <span class="k">False</span>, <span class="s">"error"</span>: <span class="b">str</span>(e)}
+
+    <span class="k">def</span> <span class="f">_on_success</span>(<span class="k">self</span>):
+        <span class="k">self</span>.failure_count = <span class="n">0</span>
+        <span class="k">self</span>.success_count += <span class="n">1</span>
+        <span class="k">if</span> <span class="k">self</span>.state == CircuitState.HALF_OPEN:
+            <span class="k">self</span>.state = CircuitState.CLOSED
+
+    <span class="k">def</span> <span class="f">_on_failure</span>(<span class="k">self</span>):
+        <span class="k">self</span>.failure_count += <span class="n">1</span>
+        <span class="k">self</span>.last_failure_time = time.time()
+        <span class="k">if</span> <span class="k">self</span>.failure_count &gt;= <span class="k">self</span>.failure_threshold:
+            <span class="k">self</span>.state = CircuitState.OPEN
+
+    <span class="k">def</span> <span class="f">stats</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="k">return</span> {
+            <span class="s">"name"</span>: <span class="k">self</span>.name,
+            <span class="s">"state"</span>: <span class="k">self</span>.state.value,
+            <span class="s">"failure_count"</span>: <span class="k">self</span>.failure_count,
+            <span class="s">"success_count"</span>: <span class="k">self</span>.success_count,
+            <span class="s">"total_calls"</span>: <span class="k">self</span>.total_calls,
+        }</pre></div></details></div><div class="lecture"><h2>30.3 指数退避重试 (Exponential Backoff)</h2>
+<p>&nbsp;</p>
+<p>为什么不能用固定间隔重试？</p>
+<p>如果工具故障是因为过载 → 所有 Agent 同时重试 → 加重过载</p>
+<p>&nbsp;</p>
+<p>指数退避：</p>
+<p>第1次重试：等待 1 秒</p>
+<p>第2次重试：等待 2 秒</p>
+<p>第3次重试：等待 4 秒</p>
+<p>...</p>
+<p>+ 随机抖动（jitter）防止多个 Agent 同步重试</p></div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<span class="k">import</span> json
+<span class="k">import</span> random
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
+<span class="k">from</span> enum <span class="k">import</span> Enum
+
+<span class="k">def</span> <span class="f">retry_with_backoff</span>(func, max_retries: <span class="b">int</span> = <span class="n">3</span>,
+                       base_delay: <span class="b">float</span> = <span class="n">1.0</span>,
+                       max_delay: <span class="b">float</span> = <span class="n">30.0</span>) -&gt; <span class="b">dict</span>:
+    <span class="s">"""指数退避重试装饰器。
+
+    Args:
+        func: 要重试的函数。
+        max_retries: 最大重试次数。
+        base_delay: 基础延迟（秒）。
+        max_delay: 最大延迟上限。
+
+    Returns:
+        执行结果字典。
+    """</span>
+    last_error = <span class="k">None</span>
+    <span class="k">for</span> attempt <span class="k">in</span> <span class="b">range</span>(max_retries + <span class="n">1</span>):
+        <span class="k">try</span>:
+            result = func()
+            <span class="k">return</span> {<span class="s">"success"</span>: <span class="k">True</span>, <span class="s">"result"</span>: result,
+                    <span class="s">"attempts"</span>: attempt + <span class="n">1</span>}
+        <span class="k">except</span> Exception <span class="k">as</span> e:
+            last_error = <span class="b">str</span>(e)
+            <span class="k">if</span> attempt &lt; max_retries:
+                delay = <span class="b">min</span>(base_delay * (<span class="n">2</span> ** attempt), max_delay)
+                jitter = random.uniform(<span class="n">0</span>, delay * <span class="n">0.1</span>)
+                time.sleep(delay + jitter)
+
+    <span class="k">return</span> {<span class="s">"success"</span>: <span class="k">False</span>, <span class="s">"error"</span>: last_error,
+            <span class="s">"attempts"</span>: max_retries + <span class="n">1</span>}</pre></div></details></div><div class="lecture"><h2>30.4 幂等性保证</h2>
+<p>&nbsp;</p>
+<p>问题：Agent 重试工具调用时，可能重复执行已有副作用的操作。</p>
+<pre>  例如：send_email 重试 → 用户收到 2 封邮件。</pre>
+<p>&nbsp;</p>
+<p>方案：幂等键 (Idempotency Key)</p>
+<p>&nbsp;</p>
+<p>def send_email_idempotent(to, subject, body, idempotency_key):</p>
+<pre>  if already_sent(idempotency_key):
+      return cached_result
+  result = send_email(to, subject, body)
+  cache(idempotency_key, result)
+  return result</pre>
+<p>&nbsp;</p>
+<p>每个工具调用携带唯一键，服务端检查去重。</p></div><div class="code-section"><details open><summary>💻 代码 (32 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<span class="k">import</span> json
+<span class="k">import</span> random
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
+<span class="k">from</span> enum <span class="k">import</span> Enum
+
+<span class="k">class</span> <span class="f">IdempotencyGuard</span>:
+    <span class="s">"""幂等性保护器。"""</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>._cache = {}
+
+    <span class="k">def</span> <span class="f">execute</span>(<span class="k">self</span>, key: <span class="b">str</span>, func, *args, **kwargs) -&gt; <span class="b">dict</span>:
+        <span class="s">"""幂等执行：相同 key 只执行一次。
+
+        Args:
+            key: 幂等键。
+            func: 要执行的函数。
+
+        Returns:
+            执行结果。
+        """</span>
+        <span class="k">if</span> key <span class="k">in</span> <span class="k">self</span>._cache:
+            <span class="k">return</span> {<span class="s">"cached"</span>: <span class="k">True</span>, **<span class="k">self</span>._cache[key]}
+
+        <span class="k">try</span>:
+            result = func(*args, **kwargs)
+            <span class="k">self</span>._cache[key] = {<span class="s">"success"</span>: <span class="k">True</span>, <span class="s">"result"</span>: result}
+            <span class="k">return</span> {<span class="s">"cached"</span>: <span class="k">False</span>, <span class="s">"success"</span>: <span class="k">True</span>, <span class="s">"result"</span>: result}
+        <span class="k">except</span> Exception <span class="k">as</span> e:
+            <span class="k">self</span>._cache[key] = {<span class="s">"success"</span>: <span class="k">False</span>, <span class="s">"error"</span>: <span class="b">str</span>(e)}
+            <span class="k">return</span> {<span class="s">"cached"</span>: <span class="k">False</span>, <span class="s">"success"</span>: <span class="k">False</span>, <span class="s">"error"</span>: <span class="b">str</span>(e)}</pre></div></details></div><div class="lecture"><h2>30.5 降级策略 (Graceful Degradation)</h2>
+<p>&nbsp;</p>
+<p>当核心能力不可用时，提供降级方案：</p>
+<p>&nbsp;</p>
+<pre>┌──────────────────┬──────────────────────────┐
+│ 故障               │          降级             │
+├──────────────────┼──────────────────────────┤
+│ LLM 不可用         │ 返回预置的 FAQ 回答        │
+│ 搜索工具熔断       │ 用本地缓存结果代替         │
+│ 支付工具超时       │ 排队异步处理 + 通知用户      │
+│ 上下文过大         │ 触发压缩 + 移除旧对话        │
+└──────────────────┴──────────────────────────┘</pre></div><div class="lecture"><h2>30.6 可靠性 Checklist</h2>
+<p>&nbsp;</p>
+<p>✅ 熔断器</p>
+<p>☐ 每个外部工具都有熔断器保护</p>
+<p>☐ 熔断阈值可配置（默认 3 次失败 / 30s 恢复）</p>
+<p>&nbsp;</p>
+<p>✅ 重试</p>
+<p>☐ 指数退避 + 随机抖动</p>
+<p>☐ 最大重试次数限制（默认 3 次）</p>
+<p>☐ 只重试「可重试」的错误（429/503，不重试 400/401）</p>
+<p>&nbsp;</p>
+<p>✅ 幂等</p>
+<p>☐ 写操作使用幂等键</p>
+<p>☐ 读操作天然幂等（不需要额外保护）</p>
+<p>&nbsp;</p>
+<p>✅ 降级</p>
+<p>☐ LLM 不可用时的兜底回答</p>
+<p>☐ 关键工具不可用时的替代方案</p>
+<p>&nbsp;</p>
+<p>✅ 超时</p>
+<p>☐ 每次 LLM 调用设置超时（默认 60s）</p>
+<p>☐ 每次工具调用设置超时（默认 30s）</p>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>「Agent 怎么保证可靠性？」</p>
+<p>→ 熔断器防雪崩 + 退避重试 + 写入幂等 + 降级兜底 + 超时控制</p></div><div class="code-section"><details open><summary>💻 代码 (73 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<span class="k">import</span> json
+<span class="k">import</span> random
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
+<span class="k">from</span> enum <span class="k">import</span> Enum
+
+<span class="k">def</span> <span class="f">demo_reliability</span>():
+    <span class="s">"""演示可靠性机制。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Agent 可靠性工程演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    <span class="h"># 1. 熔断器</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 熔断器 ──"</span>)
+    cb = CircuitBreaker(<span class="s">"search_tool"</span>, failure_threshold=<span class="n">2</span>)
+
+    <span class="k">def</span> <span class="f">failing_search</span>():
+        <span class="k">raise</span> ConnectionError(<span class="s">"服务不可用"</span>)
+
+    <span class="k">def</span> <span class="f">working_search</span>():
+        <span class="k">return</span> <span class="s">"搜索结果: ..."</span>
+
+    <span class="k">for</span> i <span class="k">in</span> <span class="b">range</span>(<span class="n">5</span>):
+        result = cb.call(failing_search <span class="k">if</span> i &lt; <span class="n">3</span> <span class="k">else</span> working_search)
+        status = <span class="s">"✅"</span> <span class="k">if</span> result[<span class="s">"success"</span>] <span class="k">else</span> <span class="s">"❌"</span>
+        <span class="b">print</span>(f<span class="s">"    调用{i+1} {status} 状态={cb.state.value}"</span>
+              f<span class="s">" 失败={cb.failure_count}"</span>)
+
+    <span class="h"># 2. 重试</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 指数退避重试 ──"</span>)
+    call_count = [<span class="n">0</span>]
+
+    <span class="k">def</span> <span class="f">flaky_api</span>():
+        call_count[<span class="n">0</span>] += <span class="n">1</span>
+        <span class="k">if</span> call_count[<span class="n">0</span>] &lt; <span class="n">3</span>:
+            <span class="k">raise</span> RuntimeError(<span class="s">"临时故障"</span>)
+        <span class="k">return</span> <span class="s">"成功!"</span>
+
+    result = retry_with_backoff(flaky_api, max_retries=<span class="n">3</span>)
+    <span class="b">print</span>(f<span class="s">"    结果: {result['success']} | 尝试次数: {result['attempts']}"</span>)
+
+    <span class="h"># 3. 幂等</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 幂等性 ──"</span>)
+    guard = IdempotencyGuard()
+    key = <span class="s">"send_email_abc123"</span>
+
+    <span class="k">def</span> <span class="f">send</span>():
+        <span class="b">print</span>(<span class="s">"    → 实际发送邮件...（仅执行一次）"</span>)
+        <span class="k">return</span> <span class="s">"邮件已发送"</span>
+
+    r1 = guard.execute(key, send)
+    <span class="b">print</span>(f<span class="s">"    第1次: cached={r1['cached']} success={r1['success']}"</span>)
+    r2 = guard.execute(key, send)
+    <span class="b">print</span>(f<span class="s">"    第2次: cached={r2['cached']} (已缓存，未重复执行)"</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第30章：Agent 可靠性工程                               ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  熔断器 · 退避重试 · 幂等 · 降级 · 超时                ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_reliability()
+    <span class="b">print</span>(<span class="s">"\n▶ 可靠性 Checklist"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> item <span class="k">in</span> [
+        <span class="s">"熔断器: 每个外部工具 → 3次失败/30s 恢复"</span>,
+        <span class="s">"重试: 指数退避 + 随机抖动 + 最大3次"</span>,
+        <span class="s">"幂等: 写操作携带 idempotency_key"</span>,
+        <span class="s">"降级: LLM不可用 → 兜底回答"</span>,
+        <span class="s">"超时: LLM 60s / Tool 30s"</span>,
+    ]:
+        <span class="b">print</span>(f<span class="s">"  ✅ {item}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第30章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (344 行)</summary><div class="code-block"><pre><span class="s">"""
+第30章：Agent 可靠性工程 —— 在生产环境中活下来
+===============================================
+
+📌 本章目标：
+  1. 掌握 Agent 专用的可靠性模式（熔断/舱壁/重试/幂等/Saga）
+  2. 理解 Agent 系统特有的故障模式
+  3. 实现 Exponential Backoff 重试和熔断器
+  4. 学会设计 Agent 的降级策略
+
+📌 面试高频点：
+  - 「Agent 在生产中出错了怎么办？」
+  - 「什么是熔断器？怎么给 Agent 加熔断？」
+  - 「幂等性在 Agent 工具调用中怎么保证？」
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+参考：Netflix Hystrix / Resilience4j / 分布式系统可靠性
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+30.1 Agent 为什么需要专门的可靠性？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+传统 API 的故障模式：
+  - 超时 → 重试
+  - 500 → 降级
+
+Agent 特有的故障模式：
+  - LLM 返回幻觉参数 → 工具执行报错
+  - Agent 陷入死循环 → 无限消耗 Token
+  - 工具调用雪崩 → 一个失败导致后续全部失败
+  - 上下文爆炸 → 对话历史过长 → LLM 行为异常
+
+可靠性 = 系统在故障下仍能提供「可接受」的服务。
+
+
+30.2 熔断器 (Circuit Breaker)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+原理：当某个工具的失败次数超过阈值，直接跳过它
+      而不是继续浪费时间调用。
+
+三态模型：
+  CLOSED → 正常调用
+  OPEN   → 直接拒绝（熔断中），避免雪崩
+  HALF_OPEN → 放行一个请求试探 → 成功则 CLOSED，失败则 OPEN
+
+类比：保险丝
+  电流过大 → 熔断 → 保护电路
+  冷却后 → 恢复
+"""</span>
+
+<span class="k">import</span> time
+<span class="k">import</span> json
+<span class="k">import</span> random
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
+<span class="k">from</span> enum <span class="k">import</span> Enum
+
+
+<span class="k">class</span> <span class="f">CircuitState</span>(Enum):
+    CLOSED = <span class="s">"closed"</span>
+    OPEN = <span class="s">"open"</span>
+    HALF_OPEN = <span class="s">"half_open"</span>
+
+
+<span class="k">class</span> <span class="f">CircuitBreaker</span>:
+    <span class="s">"""熔断器 —— 防止对故障工具的重复调用。
+
+    三态：
+      CLOSED: 正常放行
+      OPEN: 直接拒绝
+      HALF_OPEN: 试探性放行一个请求
+    """</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, name: <span class="b">str</span>, failure_threshold: <span class="b">int</span> = <span class="n">3</span>,
+                 recovery_timeout: <span class="b">float</span> = <span class="n">30.0</span>):
+        <span class="k">self</span>.name = name
+        <span class="k">self</span>.failure_threshold = failure_threshold
+        <span class="k">self</span>.recovery_timeout = recovery_timeout
+        <span class="k">self</span>.state = CircuitState.CLOSED
+        <span class="k">self</span>.failure_count = <span class="n">0</span>
+        <span class="k">self</span>.last_failure_time = <span class="n">0</span>
+        <span class="k">self</span>.success_count = <span class="n">0</span>
+        <span class="k">self</span>.total_calls = <span class="n">0</span>
+
+    <span class="k">def</span> <span class="f">call</span>(<span class="k">self</span>, func, *args, **kwargs) -&gt; <span class="b">dict</span>:
+        <span class="s">"""通过熔断器调用函数。
+
+        Returns:
+            含结果或熔断信息的字典。
+        """</span>
+        <span class="k">self</span>.total_calls += <span class="n">1</span>
+
+        <span class="k">if</span> <span class="k">self</span>.state == CircuitState.OPEN:
+            <span class="k">if</span> time.time() - <span class="k">self</span>.last_failure_time &gt; <span class="k">self</span>.recovery_timeout:
+                <span class="k">self</span>.state = CircuitState.HALF_OPEN
+            <span class="k">else</span>:
+                <span class="k">return</span> {
+                    <span class="s">"success"</span>: <span class="k">False</span>,
+                    <span class="s">"error"</span>: f<span class="s">"熔断器 {self.name} 已断开，请求被拒绝"</span>,
+                    <span class="s">"state"</span>: <span class="k">self</span>.state.value,
+                }
+
+        <span class="k">try</span>:
+            result = func(*args, **kwargs)
+            <span class="k">self</span>._on_success()
+            <span class="k">return</span> {<span class="s">"success"</span>: <span class="k">True</span>, <span class="s">"result"</span>: result}
+        <span class="k">except</span> Exception <span class="k">as</span> e:
+            <span class="k">self</span>._on_failure()
+            <span class="k">return</span> {<span class="s">"success"</span>: <span class="k">False</span>, <span class="s">"error"</span>: <span class="b">str</span>(e)}
+
+    <span class="k">def</span> <span class="f">_on_success</span>(<span class="k">self</span>):
+        <span class="k">self</span>.failure_count = <span class="n">0</span>
+        <span class="k">self</span>.success_count += <span class="n">1</span>
+        <span class="k">if</span> <span class="k">self</span>.state == CircuitState.HALF_OPEN:
+            <span class="k">self</span>.state = CircuitState.CLOSED
+
+    <span class="k">def</span> <span class="f">_on_failure</span>(<span class="k">self</span>):
+        <span class="k">self</span>.failure_count += <span class="n">1</span>
+        <span class="k">self</span>.last_failure_time = time.time()
+        <span class="k">if</span> <span class="k">self</span>.failure_count &gt;= <span class="k">self</span>.failure_threshold:
+            <span class="k">self</span>.state = CircuitState.OPEN
+
+    <span class="k">def</span> <span class="f">stats</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="k">return</span> {
+            <span class="s">"name"</span>: <span class="k">self</span>.name,
+            <span class="s">"state"</span>: <span class="k">self</span>.state.value,
+            <span class="s">"failure_count"</span>: <span class="k">self</span>.failure_count,
+            <span class="s">"success_count"</span>: <span class="k">self</span>.success_count,
+            <span class="s">"total_calls"</span>: <span class="k">self</span>.total_calls,
+        }
+
+
+<span class="s">"""
+30.3 指数退避重试 (Exponential Backoff)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+为什么不能用固定间隔重试？
+  如果工具故障是因为过载 → 所有 Agent 同时重试 → 加重过载
+
+指数退避：
+  第1次重试：等待 1 秒
+  第2次重试：等待 2 秒
+  第3次重试：等待 4 秒
+  ...
+  + 随机抖动（jitter）防止多个 Agent 同步重试
+"""</span>
+
+
+<span class="k">def</span> <span class="f">retry_with_backoff</span>(func, max_retries: <span class="b">int</span> = <span class="n">3</span>,
+                       base_delay: <span class="b">float</span> = <span class="n">1.0</span>,
+                       max_delay: <span class="b">float</span> = <span class="n">30.0</span>) -&gt; <span class="b">dict</span>:
+    <span class="s">"""指数退避重试装饰器。
+
+    Args:
+        func: 要重试的函数。
+        max_retries: 最大重试次数。
+        base_delay: 基础延迟（秒）。
+        max_delay: 最大延迟上限。
+
+    Returns:
+        执行结果字典。
+    """</span>
+    last_error = <span class="k">None</span>
+    <span class="k">for</span> attempt <span class="k">in</span> <span class="b">range</span>(max_retries + <span class="n">1</span>):
+        <span class="k">try</span>:
+            result = func()
+            <span class="k">return</span> {<span class="s">"success"</span>: <span class="k">True</span>, <span class="s">"result"</span>: result,
+                    <span class="s">"attempts"</span>: attempt + <span class="n">1</span>}
+        <span class="k">except</span> Exception <span class="k">as</span> e:
+            last_error = <span class="b">str</span>(e)
+            <span class="k">if</span> attempt &lt; max_retries:
+                delay = <span class="b">min</span>(base_delay * (<span class="n">2</span> ** attempt), max_delay)
+                jitter = random.uniform(<span class="n">0</span>, delay * <span class="n">0.1</span>)
+                time.sleep(delay + jitter)
+
+    <span class="k">return</span> {<span class="s">"success"</span>: <span class="k">False</span>, <span class="s">"error"</span>: last_error,
+            <span class="s">"attempts"</span>: max_retries + <span class="n">1</span>}
+
+
+<span class="s">"""
+30.4 幂等性保证
+━━━━━━━━━━━━━━━━━
+
+问题：Agent 重试工具调用时，可能重复执行已有副作用的操作。
+      例如：send_email 重试 → 用户收到 2 封邮件。
+
+方案：幂等键 (Idempotency Key)
+
+  def send_email_idempotent(to, subject, body, idempotency_key):
+      if already_sent(idempotency_key):
+          return cached_result
+      result = send_email(to, subject, body)
+      cache(idempotency_key, result)
+      return result
+
+每个工具调用携带唯一键，服务端检查去重。
+"""</span>
+
+
+<span class="k">class</span> <span class="f">IdempotencyGuard</span>:
+    <span class="s">"""幂等性保护器。"""</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>._cache = {}
+
+    <span class="k">def</span> <span class="f">execute</span>(<span class="k">self</span>, key: <span class="b">str</span>, func, *args, **kwargs) -&gt; <span class="b">dict</span>:
+        <span class="s">"""幂等执行：相同 key 只执行一次。
+
+        Args:
+            key: 幂等键。
+            func: 要执行的函数。
+
+        Returns:
+            执行结果。
+        """</span>
+        <span class="k">if</span> key <span class="k">in</span> <span class="k">self</span>._cache:
+            <span class="k">return</span> {<span class="s">"cached"</span>: <span class="k">True</span>, **<span class="k">self</span>._cache[key]}
+
+        <span class="k">try</span>:
+            result = func(*args, **kwargs)
+            <span class="k">self</span>._cache[key] = {<span class="s">"success"</span>: <span class="k">True</span>, <span class="s">"result"</span>: result}
+            <span class="k">return</span> {<span class="s">"cached"</span>: <span class="k">False</span>, <span class="s">"success"</span>: <span class="k">True</span>, <span class="s">"result"</span>: result}
+        <span class="k">except</span> Exception <span class="k">as</span> e:
+            <span class="k">self</span>._cache[key] = {<span class="s">"success"</span>: <span class="k">False</span>, <span class="s">"error"</span>: <span class="b">str</span>(e)}
+            <span class="k">return</span> {<span class="s">"cached"</span>: <span class="k">False</span>, <span class="s">"success"</span>: <span class="k">False</span>, <span class="s">"error"</span>: <span class="b">str</span>(e)}
+
+
+<span class="s">"""
+30.5 降级策略 (Graceful Degradation)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+当核心能力不可用时，提供降级方案：
+
+┌──────────────────┬──────────────────────────┐
+│ 故障               │          降级             │
+├──────────────────┼──────────────────────────┤
+│ LLM 不可用         │ 返回预置的 FAQ 回答        │
+│ 搜索工具熔断       │ 用本地缓存结果代替         │
+│ 支付工具超时       │ 排队异步处理 + 通知用户      │
+│ 上下文过大         │ 触发压缩 + 移除旧对话        │
+└──────────────────┴──────────────────────────┘
+"""</span>
+
+
+<span class="s">"""
+30.6 可靠性 Checklist
+━━━━━━━━━━━━━━━━━━━━
+
+✅ 熔断器
+  ☐ 每个外部工具都有熔断器保护
+  ☐ 熔断阈值可配置（默认 3 次失败 / 30s 恢复）
+
+✅ 重试
+  ☐ 指数退避 + 随机抖动
+  ☐ 最大重试次数限制（默认 3 次）
+  ☐ 只重试「可重试」的错误（429/503，不重试 400/401）
+
+✅ 幂等
+  ☐ 写操作使用幂等键
+  ☐ 读操作天然幂等（不需要额外保护）
+
+✅ 降级
+  ☐ LLM 不可用时的兜底回答
+  ☐ 关键工具不可用时的替代方案
+
+✅ 超时
+  ☐ 每次 LLM 调用设置超时（默认 60s）
+  ☐ 每次工具调用设置超时（默认 30s）
+
+面试速记：
+  「Agent 怎么保证可靠性？」
+  → 熔断器防雪崩 + 退避重试 + 写入幂等 + 降级兜底 + 超时控制
+"""</span>
+
+
+<span class="k">def</span> <span class="f">demo_reliability</span>():
+    <span class="s">"""演示可靠性机制。"""</span>
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Agent 可靠性工程演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    <span class="h"># 1. 熔断器</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 熔断器 ──"</span>)
+    cb = CircuitBreaker(<span class="s">"search_tool"</span>, failure_threshold=<span class="n">2</span>)
+
+    <span class="k">def</span> <span class="f">failing_search</span>():
+        <span class="k">raise</span> ConnectionError(<span class="s">"服务不可用"</span>)
+
+    <span class="k">def</span> <span class="f">working_search</span>():
+        <span class="k">return</span> <span class="s">"搜索结果: ..."</span>
+
+    <span class="k">for</span> i <span class="k">in</span> <span class="b">range</span>(<span class="n">5</span>):
+        result = cb.call(failing_search <span class="k">if</span> i &lt; <span class="n">3</span> <span class="k">else</span> working_search)
+        status = <span class="s">"✅"</span> <span class="k">if</span> result[<span class="s">"success"</span>] <span class="k">else</span> <span class="s">"❌"</span>
+        <span class="b">print</span>(f<span class="s">"    调用{i+1} {status} 状态={cb.state.value}"</span>
+              f<span class="s">" 失败={cb.failure_count}"</span>)
+
+    <span class="h"># 2. 重试</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 指数退避重试 ──"</span>)
+    call_count = [<span class="n">0</span>]
+
+    <span class="k">def</span> <span class="f">flaky_api</span>():
+        call_count[<span class="n">0</span>] += <span class="n">1</span>
+        <span class="k">if</span> call_count[<span class="n">0</span>] &lt; <span class="n">3</span>:
+            <span class="k">raise</span> RuntimeError(<span class="s">"临时故障"</span>)
+        <span class="k">return</span> <span class="s">"成功!"</span>
+
+    result = retry_with_backoff(flaky_api, max_retries=<span class="n">3</span>)
+    <span class="b">print</span>(f<span class="s">"    结果: {result['success']} | 尝试次数: {result['attempts']}"</span>)
+
+    <span class="h"># 3. 幂等</span>
+    <span class="b">print</span>(<span class="s">"\n  ── 幂等性 ──"</span>)
+    guard = IdempotencyGuard()
+    key = <span class="s">"send_email_abc123"</span>
+
+    <span class="k">def</span> <span class="f">send</span>():
+        <span class="b">print</span>(<span class="s">"    → 实际发送邮件...（仅执行一次）"</span>)
+        <span class="k">return</span> <span class="s">"邮件已发送"</span>
+
+    r1 = guard.execute(key, send)
+    <span class="b">print</span>(f<span class="s">"    第1次: cached={r1['cached']} success={r1['success']}"</span>)
+    r2 = guard.execute(key, send)
+    <span class="b">print</span>(f<span class="s">"    第2次: cached={r2['cached']} (已缓存，未重复执行)"</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第30章：Agent 可靠性工程                               ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  熔断器 · 退避重试 · 幂等 · 降级 · 超时                ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_reliability()
+    <span class="b">print</span>(<span class="s">"\n▶ 可靠性 Checklist"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> item <span class="k">in</span> [
+        <span class="s">"熔断器: 每个外部工具 → 3次失败/30s 恢复"</span>,
+        <span class="s">"重试: 指数退避 + 随机抖动 + 最大3次"</span>,
+        <span class="s">"幂等: 写操作携带 idempotency_key"</span>,
+        <span class="s">"降级: LLM不可用 → 兜底回答"</span>,
+        <span class="s">"超时: LLM 60s / Tool 30s"</span>,
+    ]:
+        <span class="b">print</span>(f<span class="s">"  ✅ {item}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第30章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_29_multimodal/29_multimodal.html" title="Multi-Modal Agent — 视觉+文本联合推理">← 第29章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_31_benchmarks/31_benchmarks.html" title="Agent 评测体系深度 — GAIA·AgentBench·WebArena">第31章 →</a>
+</div></div></body></html>

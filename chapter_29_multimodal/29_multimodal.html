@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第29章：Multi-Modal Agent —— 让 Agent 看懂世界 — AI Agent 全栈课程</title>
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* 标题 */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
+}
+.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero .subtitle { opacity: 0.9; font-size: 1.05em; }
+
+/* 讲义内容 */
+.lecture { background: white; border-radius: 10px; padding: 36px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
+.lecture h2 {
+  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
+}
+.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture p { margin: 10px 0; }
+.lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
+.lecture li { margin: 4px 0; }
+.lecture pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 18px 22px; overflow-x: auto; font-size: .88em;
+  line-height: 1.55; margin: 14px 0;
+}
+.lecture code { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; }
+.lecture p code, .lecture li code {
+  background: #eee8ff; padding: 1px 6px; border-radius: 4px;
+  font-size: .92em; color: #6c3cc0;
+}
+.lecture strong { color: #333; }
+.lecture em { color: #555; }
+.lecture blockquote {
+  border-left: 4px solid #667eea; padding: 8px 16px;
+  margin: 14px 0; background: #f4f4ff; border-radius: 0 8px 8px 0;
+  color: #555;
+}
+.lecture table {
+  border-collapse: collapse; width: 100%; margin: 14px 0;
+  font-size: .92em;
+}
+.lecture th, .lecture td {
+  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+}
+.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 目标/考点标签 */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: .85em; font-weight: 500;
+}
+.tag-goal { background: #e8f5e9; color: #2e7d32; }
+.tag-interview { background: #fff3e0; color: #e65100; }
+
+/* 代码块区域 */
+.code-section { margin-top: 24px; }
+.code-section summary {
+  font-size: 1.1em; font-weight: 600; cursor: pointer;
+  padding: 10px 16px; background: #1e1e2e; color: #cdd6f4;
+  border-radius: 8px 8px 0 0; user-select: none;
+}
+.code-section pre {
+  margin: 0; border-radius: 0 0 8px 8px; max-height: 70vh;
+  overflow-y: auto;
+}
+.code-block {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 0 0 8px 8px;
+  padding: 20px 24px; overflow-x: auto; font-size: .85em;
+  line-height: 1.6; max-height: 70vh; overflow-y: auto;
+}
+
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
+/* 移动端 */
+@media (max-width: 640px) {
+  .container { padding: 16px 12px 60px; }
+  .hero { padding: 28px 18px; }
+  .hero h1 { font-size: 1.4em; }
+  .lecture { padding: 20px 16px; }
+}
+
+/* 打印 */
+@media print {
+  body { background: white; }
+  .lecture { box-shadow: none; }
+  .code-block { background: #f5f5f5; color: #222; }
+}
+
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第29章 Multi-Modal Agent — 视觉+文本联合推理</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_28_cache/28_cache.html" title="语义缓存与 Token 优化 — 三级缓存·预算管理">← 第28章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_30_reliability/30_reliability.html" title="Agent 可靠性工程 — 熔断器·退避重试·幂等">第30章 →</a>
+</div><div class="hero"><h1>第29章 Multi-Modal Agent —— 让 Agent 看懂世界</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解多模态 Agent 的核心架构（视觉+文本联合推理）</span><span class="tag tag-goal">2. 掌握 GPT-4o / Claude 3.5 / Gemini 2.5 的多模态 API</span><span class="tag tag-goal">3. 实现图片分析 Agent 和视频帧提取 Agent</span><span class="tag tag-goal">4. 理解视觉上下文对 Agent 决策的影响</span><span class="tag tag-interview">🎤 「你的 Agent 能处理图片吗？怎么架构的？」</span><span class="tag tag-interview">🎤 「多模态和纯文本 Agent 的区别在哪？」</span><span class="tag tag-interview">🎤 「视觉 Token 的成本怎么算？」</span></div><p>第29章：Multi-Modal Agent —— 让 Agent 看懂世界</p>
+<p>================================================</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>2025 全系多模态：GPT-4o / Claude 3.5 / Gemini 2.5 Flash</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>29.1 多模态 Agent 的架构本质</h2>
+<p>&nbsp;</p>
+<p>纯文本 Agent：</p>
+<p>user → LLM(text) → tools → LLM(text) → response</p>
+<p>&nbsp;</p>
+<p>多模态 Agent：</p>
+<p>user + image/audio/video → LLM(vision+text) → tools → response</p>
+<p>&nbsp;</p>
+<p>关键区别：</p>
+<li>输入不只是文本，还有 base64 编码的图片/音频</li>
+<li>视觉信息作为额外的「上下文通道」</li>
+<li>LLM 内部做视觉编码 → 和文本 token 融合</li>
+<li>视觉 Token 消耗远大于文本（一张图的成本 ≈ 500-1500 字）</li>
+<p>&nbsp;</p>
+<p>多模态 Agent 的三种模式：</p>
+<p>&nbsp;</p>
+<pre>┌──────────────────┬──────────────────────────────────────┐
+│ 模式               │              说明                    │
+├──────────────────┼──────────────────────────────────────┤
+│ 直接视觉推理       │ 图片→LLM 直接理解内容                  │
+│ 视觉+工具联动      │ 先从图片提取信息→调用工具→结合结果      │
+│ 视频流分析         │ 逐帧提取→聚合分析→时间序列推理         │
+└──────────────────┴──────────────────────────────────────┘</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>29.2 OpenAI 多模态 API 速览</h2>
+<p>&nbsp;</p>
+<p>发送图片给 GPT-4o：</p>
+<p>&nbsp;</p>
+<p>response = client.chat.completions.create(</p>
+<pre>  model="gpt-4o",
+  messages=[{
+      "role": "user",
+      "content": [
+          {"type": "text", "text": "这张图片里有什么？"},
+          {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_str}"}},
+      ],
+  }],</pre>
+<p>)</p>
+<p>&nbsp;</p>
+<p>Tool Calling + 多模态：</p>
+<p>Agent 可以先「看」一张截图，然后决定调用哪个工具。</p>
+<p>这就是 Computer Use 的基础（Ch17 讲过截图-动作循环）。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>29.3 图片分析 Agent 实现</h2></div><div class="code-section"><details open><summary>💻 代码 (83 行)</summary><div class="code-block"><pre><span class="k">import</span> base64
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> os
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass
+<span class="k">from</span> typing <span class="k">import</span> Optional
+
+
+<span class="k">class</span> <span class="f">ImageAnalysisAgent</span>:
+    <span class="s">"""多模态 Agent —— 模拟图片分析 + 工具调用。
+
+    真实实现接入 GPT-4o Vision 或 Claude 3.5 Sonnet。
+    这里用规则模拟来展示多模态 Agent 的决策流程。
+    """</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>.tool_log = []
+
+    <span class="k">def</span> <span class="f">analyze</span>(<span class="k">self</span>, image_description: <span class="b">str</span>,
+                question: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""分析图片并回答问题。
+
+        Args:
+            image_description: 图片内容描述（模拟视觉分析结果）。
+            question: 用户提问。
+
+        Returns:
+            包含分析结果的字典。
+        """</span>
+        <span class="h"># 第1步：视觉理解</span>
+        objects = <span class="k">self</span>._detect_objects(image_description)
+        text_in_image = <span class="k">self</span>._extract_text(image_description)
+
+        <span class="h"># 第2步：工具决策</span>
+        tools_needed = []
+        <span class="k">if</span> <span class="s">"表格"</span> <span class="k">in</span> image_description <span class="k">or</span> <span class="s">"数据"</span> <span class="k">in</span> image_description:
+            tools_needed.append(<span class="s">"extract_table_data"</span>)
+        <span class="k">if</span> <span class="b">any</span>(w <span class="k">in</span> question <span class="k">for</span> w <span class="k">in</span> [<span class="s">"翻译"</span>, <span class="s">"translate"</span>]):
+            tools_needed.append(<span class="s">"translate"</span>)
+
+        <span class="h"># 第3步：生成回答</span>
+        answer = <span class="k">self</span>._generate_answer(objects, text_in_image,
+                                       question, tools_needed)
+
+        <span class="k">self</span>.tool_log.append({
+            <span class="s">"image_desc"</span>: image_description[:<span class="n">80</span>],
+            <span class="s">"question"</span>: question,
+            <span class="s">"objects"</span>: objects,
+            <span class="s">"tools"</span>: tools_needed,
+        })
+
+        <span class="k">return</span> {
+            <span class="s">"objects_found"</span>: <span class="b">len</span>(objects),
+            <span class="s">"text_detected"</span>: text_in_image[:<span class="n">100</span>],
+            <span class="s">"tools_invoked"</span>: tools_needed,
+            <span class="s">"answer"</span>: answer,
+        }
+
+    <span class="k">def</span> <span class="f">_detect_objects</span>(<span class="k">self</span>, desc: <span class="b">str</span>) -&gt; <span class="b">list</span>[<span class="b">str</span>]:
+        objects = []
+        obj_keywords = [<span class="s">"人"</span>, <span class="s">"车"</span>, <span class="s">"猫"</span>, <span class="s">"狗"</span>, <span class="s">"电脑"</span>, <span class="s">"手机"</span>,
+                        <span class="s">"书"</span>, <span class="s">"杯子"</span>, <span class="s">"建筑"</span>, <span class="s">"道路"</span>, <span class="s">"屏幕"</span>,
+                        <span class="s">"图表"</span>, <span class="s">"按钮"</span>, <span class="s">"文字"</span>, <span class="s">"二维码"</span>]
+        <span class="k">for</span> obj <span class="k">in</span> obj_keywords:
+            <span class="k">if</span> obj <span class="k">in</span> desc:
+                objects.append(obj)
+        <span class="k">return</span> objects <span class="k">or</span> [<span class="s">"未知物体"</span>]
+
+    <span class="k">def</span> <span class="f">_extract_text</span>(<span class="k">self</span>, desc: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="h"># 模拟 OCR</span>
+        <span class="k">if</span> <span class="s">"文字"</span> <span class="k">in</span> desc <span class="k">or</span> <span class="s">"文本"</span> <span class="k">in</span> desc:
+            <span class="k">return</span> <span class="s">"[OCR结果] 检测到文字内容"</span>
+        <span class="k">return</span> <span class="s">"[未检测到文字]"</span>
+
+    <span class="k">def</span> <span class="f">_generate_answer</span>(<span class="k">self</span>, objects: <span class="b">list</span>, text: <span class="b">str</span>,
+                         question: <span class="b">str</span>, tools: <span class="b">list</span>) -&gt; <span class="b">str</span>:
+        obj_list = <span class="s">"、"</span>.join(objects)
+        base = f<span class="s">"图片中包含: {obj_list}。{text}。"</span>
+        <span class="k">if</span> tools:
+            base += f<span class="s">" 已调用工具: {', '.join(tools)}。"</span>
+        base += f<span class="s">" 针对您的问题「{question}」，我的回答是："</span>
+        base += <span class="s">"根据图片内容分析，这是一个模拟的多模态 Agent 回答。"</span>
+        <span class="k">return</span> base</pre></div></details></div><div class="lecture"><h2>29.4 多模态 Agent 的设计原则</h2>
+<p>&nbsp;</p>
+<li>Token 预算管理</li>
+<p>一张 1080p 图片 ≈ 1500-5000 tokens（取决于压缩）</p>
+<p>一次 GPT-4o 视觉调用可能花费 $0.01-0.05</p>
+<p>→ 控制图片数量和质量</p>
+<p>&nbsp;</p>
+<li>视觉信息优先级</li>
+<p>先看缩略图（低成本） → 再看高清细节（高成本）</p>
+<p>→ 分层视觉分析</p>
+<p>&nbsp;</p>
+<li>视频处理策略</li>
+<p>不要逐帧分析（成本爆炸）</p>
+<p>关键帧提取（每秒1帧） + 聚合推理</p>
+<p>&nbsp;</p>
+<li>错误处理</li>
+<p>视觉模型可能误读 → 二次确认机制</p>
+<p>模糊图片 → 请求用户提供更清晰的图片</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>29.5 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>多模态 Agent = 文本推理 + 视觉理解 + 工具联动</li>
+<li>视觉 Token 成本远高于文本，需要预算管理</li>
+<li>Computer Use 是多模态 Agent 的终极形态</li>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>「多模态 Agent 怎么做的？」</p>
+<p>→ 图片转 base64 → 嵌入 messages → LLM 视觉+文本联合推理</p>
+<p>→ 分析结果驱动工具调用</p>
+<p>→ 注意 Token 成本（图片 ≈ 500-5000 tokens）</p></div><div class="code-section"><details open><summary>💻 代码 (47 行)</summary><div class="code-block"><pre><span class="k">import</span> base64
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> os
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass
+<span class="k">from</span> typing <span class="k">import</span> Optional
+
+<span class="k">def</span> <span class="f">demo_multimodal</span>():
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  多模态 Agent 演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    agent = ImageAnalysisAgent()
+
+    scenarios = [
+        (<span class="s">"屏幕截图显示了一个错误对话框，文字提示'数据库连接失败'"</span>,
+         <span class="s">"该怎么解决这个错误？"</span>),
+        (<span class="s">"图片中有一张表格，包含销售额数据，文字包括'Q1: 100万, Q2: 150万'"</span>,
+         <span class="s">"Q3的目标应该设为多少？"</span>),
+        (<span class="s">"照片里有一本英文书籍封面，文本是'Designing Data-Intensive Applications'"</span>,
+         <span class="s">"请翻译这本书的书名"</span>),
+    ]
+
+    <span class="k">for</span> desc, question <span class="k">in</span> scenarios:
+        result = agent.analyze(desc, question)
+        <span class="b">print</span>(f<span class="s">"\n  📷 图片: {desc[:50]}..."</span>)
+        <span class="b">print</span>(f<span class="s">"  ❓ 问题: {question}"</span>)
+        <span class="b">print</span>(f<span class="s">"  🔍 检测到 {result['objects_found']} 个物体"</span>)
+        <span class="b">print</span>(f<span class="s">"  🔧 使用工具: {result['tools_invoked'] or '无需工具'}"</span>)
+        <span class="b">print</span>(f<span class="s">"  💬 回答: {result['answer'][:80]}..."</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第29章：Multi-Modal Agent                             ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  视觉+文本联合推理 · Token 预算 · 视频帧分析           ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_multimodal()
+    <span class="b">print</span>(<span class="s">"\n▶ 多模态三模式"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> mode, desc <span class="k">in</span> [
+        (<span class="s">"直接视觉推理"</span>, <span class="s">"图片→LLM 直接理解"</span>),
+        (<span class="s">"视觉+工具联动"</span>, <span class="s">"提取信息→调工具→结合"</span>),
+        (<span class="s">"视频流分析"</span>, <span class="s">"逐帧提取→聚合推理"</span>),
+    ]:
+        <span class="b">print</span>(f<span class="s">"  {mode:16s} → {desc}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第29章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (236 行)</summary><div class="code-block"><pre><span class="s">"""
+第29章：Multi-Modal Agent —— 让 Agent 看懂世界
+================================================
+
+📌 本章目标：
+  1. 理解多模态 Agent 的核心架构（视觉+文本联合推理）
+  2. 掌握 GPT-4o / Claude 3.5 / Gemini 2.5 的多模态 API
+  3. 实现图片分析 Agent 和视频帧提取 Agent
+  4. 理解视觉上下文对 Agent 决策的影响
+
+📌 面试高频点：
+  - 「你的 Agent 能处理图片吗？怎么架构的？」
+  - 「多模态和纯文本 Agent 的区别在哪？」
+  - 「视觉 Token 的成本怎么算？」
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2025 全系多模态：GPT-4o / Claude 3.5 / Gemini 2.5 Flash
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+29.1 多模态 Agent 的架构本质
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+纯文本 Agent：
+  user → LLM(text) → tools → LLM(text) → response
+
+多模态 Agent：
+  user + image/audio/video → LLM(vision+text) → tools → response
+
+关键区别：
+  1. 输入不只是文本，还有 base64 编码的图片/音频
+  2. 视觉信息作为额外的「上下文通道」
+  3. LLM 内部做视觉编码 → 和文本 token 融合
+  4. 视觉 Token 消耗远大于文本（一张图的成本 ≈ 500-1500 字）
+
+多模态 Agent 的三种模式：
+
+┌──────────────────┬──────────────────────────────────────┐
+│ 模式               │              说明                    │
+├──────────────────┼──────────────────────────────────────┤
+│ 直接视觉推理       │ 图片→LLM 直接理解内容                  │
+│ 视觉+工具联动      │ 先从图片提取信息→调用工具→结合结果      │
+│ 视频流分析         │ 逐帧提取→聚合分析→时间序列推理         │
+└──────────────────┴──────────────────────────────────────┘
+
+
+29.2 OpenAI 多模态 API 速览
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+发送图片给 GPT-4o：
+
+  response = client.chat.completions.create(
+      model="gpt-4o",
+      messages=[{
+          "role": "user",
+          "content": [
+              {"type": "text", "text": "这张图片里有什么？"},
+              {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_str}"}},
+          ],
+      }],
+  )
+
+Tool Calling + 多模态：
+  Agent 可以先「看」一张截图，然后决定调用哪个工具。
+  这就是 Computer Use 的基础（Ch17 讲过截图-动作循环）。
+
+
+29.3 图片分析 Agent 实现
+━━━━━━━━━━━━━━━━━━━━━━━━
+"""</span>
+
+<span class="k">import</span> base64
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> os
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass
+<span class="k">from</span> typing <span class="k">import</span> Optional
+
+
+<span class="k">class</span> <span class="f">ImageAnalysisAgent</span>:
+    <span class="s">"""多模态 Agent —— 模拟图片分析 + 工具调用。
+
+    真实实现接入 GPT-4o Vision 或 Claude 3.5 Sonnet。
+    这里用规则模拟来展示多模态 Agent 的决策流程。
+    """</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>.tool_log = []
+
+    <span class="k">def</span> <span class="f">analyze</span>(<span class="k">self</span>, image_description: <span class="b">str</span>,
+                question: <span class="b">str</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""分析图片并回答问题。
+
+        Args:
+            image_description: 图片内容描述（模拟视觉分析结果）。
+            question: 用户提问。
+
+        Returns:
+            包含分析结果的字典。
+        """</span>
+        <span class="h"># 第1步：视觉理解</span>
+        objects = <span class="k">self</span>._detect_objects(image_description)
+        text_in_image = <span class="k">self</span>._extract_text(image_description)
+
+        <span class="h"># 第2步：工具决策</span>
+        tools_needed = []
+        <span class="k">if</span> <span class="s">"表格"</span> <span class="k">in</span> image_description <span class="k">or</span> <span class="s">"数据"</span> <span class="k">in</span> image_description:
+            tools_needed.append(<span class="s">"extract_table_data"</span>)
+        <span class="k">if</span> <span class="b">any</span>(w <span class="k">in</span> question <span class="k">for</span> w <span class="k">in</span> [<span class="s">"翻译"</span>, <span class="s">"translate"</span>]):
+            tools_needed.append(<span class="s">"translate"</span>)
+
+        <span class="h"># 第3步：生成回答</span>
+        answer = <span class="k">self</span>._generate_answer(objects, text_in_image,
+                                       question, tools_needed)
+
+        <span class="k">self</span>.tool_log.append({
+            <span class="s">"image_desc"</span>: image_description[:<span class="n">80</span>],
+            <span class="s">"question"</span>: question,
+            <span class="s">"objects"</span>: objects,
+            <span class="s">"tools"</span>: tools_needed,
+        })
+
+        <span class="k">return</span> {
+            <span class="s">"objects_found"</span>: <span class="b">len</span>(objects),
+            <span class="s">"text_detected"</span>: text_in_image[:<span class="n">100</span>],
+            <span class="s">"tools_invoked"</span>: tools_needed,
+            <span class="s">"answer"</span>: answer,
+        }
+
+    <span class="k">def</span> <span class="f">_detect_objects</span>(<span class="k">self</span>, desc: <span class="b">str</span>) -&gt; <span class="b">list</span>[<span class="b">str</span>]:
+        objects = []
+        obj_keywords = [<span class="s">"人"</span>, <span class="s">"车"</span>, <span class="s">"猫"</span>, <span class="s">"狗"</span>, <span class="s">"电脑"</span>, <span class="s">"手机"</span>,
+                        <span class="s">"书"</span>, <span class="s">"杯子"</span>, <span class="s">"建筑"</span>, <span class="s">"道路"</span>, <span class="s">"屏幕"</span>,
+                        <span class="s">"图表"</span>, <span class="s">"按钮"</span>, <span class="s">"文字"</span>, <span class="s">"二维码"</span>]
+        <span class="k">for</span> obj <span class="k">in</span> obj_keywords:
+            <span class="k">if</span> obj <span class="k">in</span> desc:
+                objects.append(obj)
+        <span class="k">return</span> objects <span class="k">or</span> [<span class="s">"未知物体"</span>]
+
+    <span class="k">def</span> <span class="f">_extract_text</span>(<span class="k">self</span>, desc: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+        <span class="h"># 模拟 OCR</span>
+        <span class="k">if</span> <span class="s">"文字"</span> <span class="k">in</span> desc <span class="k">or</span> <span class="s">"文本"</span> <span class="k">in</span> desc:
+            <span class="k">return</span> <span class="s">"[OCR结果] 检测到文字内容"</span>
+        <span class="k">return</span> <span class="s">"[未检测到文字]"</span>
+
+    <span class="k">def</span> <span class="f">_generate_answer</span>(<span class="k">self</span>, objects: <span class="b">list</span>, text: <span class="b">str</span>,
+                         question: <span class="b">str</span>, tools: <span class="b">list</span>) -&gt; <span class="b">str</span>:
+        obj_list = <span class="s">"、"</span>.join(objects)
+        base = f<span class="s">"图片中包含: {obj_list}。{text}。"</span>
+        <span class="k">if</span> tools:
+            base += f<span class="s">" 已调用工具: {', '.join(tools)}。"</span>
+        base += f<span class="s">" 针对您的问题「{question}」，我的回答是："</span>
+        base += <span class="s">"根据图片内容分析，这是一个模拟的多模态 Agent 回答。"</span>
+        <span class="k">return</span> base
+
+
+<span class="s">"""
+29.4 多模态 Agent 的设计原则
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Token 预算管理
+   一张 1080p 图片 ≈ 1500-5000 tokens（取决于压缩）
+   一次 GPT-4o 视觉调用可能花费 $0.01-0.05
+   → 控制图片数量和质量
+
+2. 视觉信息优先级
+   先看缩略图（低成本） → 再看高清细节（高成本）
+   → 分层视觉分析
+
+3. 视频处理策略
+   不要逐帧分析（成本爆炸）
+   关键帧提取（每秒1帧） + 聚合推理
+
+4. 错误处理
+   视觉模型可能误读 → 二次确认机制
+   模糊图片 → 请求用户提供更清晰的图片
+
+
+29.5 本章总结
+━━━━━━━━━━━━
+
+核心要点回顾：
+
+1. 多模态 Agent = 文本推理 + 视觉理解 + 工具联动
+2. 视觉 Token 成本远高于文本，需要预算管理
+3. Computer Use 是多模态 Agent 的终极形态
+
+面试速记：
+  「多模态 Agent 怎么做的？」
+  → 图片转 base64 → 嵌入 messages → LLM 视觉+文本联合推理
+  → 分析结果驱动工具调用
+  → 注意 Token 成本（图片 ≈ 500-5000 tokens）
+"""</span>
+
+
+<span class="k">def</span> <span class="f">demo_multimodal</span>():
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  多模态 Agent 演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    agent = ImageAnalysisAgent()
+
+    scenarios = [
+        (<span class="s">"屏幕截图显示了一个错误对话框，文字提示'数据库连接失败'"</span>,
+         <span class="s">"该怎么解决这个错误？"</span>),
+        (<span class="s">"图片中有一张表格，包含销售额数据，文字包括'Q1: 100万, Q2: 150万'"</span>,
+         <span class="s">"Q3的目标应该设为多少？"</span>),
+        (<span class="s">"照片里有一本英文书籍封面，文本是'Designing Data-Intensive Applications'"</span>,
+         <span class="s">"请翻译这本书的书名"</span>),
+    ]
+
+    <span class="k">for</span> desc, question <span class="k">in</span> scenarios:
+        result = agent.analyze(desc, question)
+        <span class="b">print</span>(f<span class="s">"\n  📷 图片: {desc[:50]}..."</span>)
+        <span class="b">print</span>(f<span class="s">"  ❓ 问题: {question}"</span>)
+        <span class="b">print</span>(f<span class="s">"  🔍 检测到 {result['objects_found']} 个物体"</span>)
+        <span class="b">print</span>(f<span class="s">"  🔧 使用工具: {result['tools_invoked'] or '无需工具'}"</span>)
+        <span class="b">print</span>(f<span class="s">"  💬 回答: {result['answer'][:80]}..."</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第29章：Multi-Modal Agent                             ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  视觉+文本联合推理 · Token 预算 · 视频帧分析           ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_multimodal()
+    <span class="b">print</span>(<span class="s">"\n▶ 多模态三模式"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> mode, desc <span class="k">in</span> [
+        (<span class="s">"直接视觉推理"</span>, <span class="s">"图片→LLM 直接理解"</span>),
+        (<span class="s">"视觉+工具联动"</span>, <span class="s">"提取信息→调工具→结合"</span>),
+        (<span class="s">"视频流分析"</span>, <span class="s">"逐帧提取→聚合推理"</span>),
+    ]:
+        <span class="b">print</span>(f<span class="s">"  {mode:16s} → {desc}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第29章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_28_cache/28_cache.html" title="语义缓存与 Token 优化 — 三级缓存·预算管理">← 第28章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_30_reliability/30_reliability.html" title="Agent 可靠性工程 — 熔断器·退避重试·幂等">第30章 →</a>
+</div></div></body></html>

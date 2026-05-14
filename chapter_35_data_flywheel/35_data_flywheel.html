@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第35章：数据飞轮 —— 让 Agent 越用越好 — AI Agent 全栈课程</title>
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* 标题 */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
+}
+.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero .subtitle { opacity: 0.9; font-size: 1.05em; }
+
+/* 讲义内容 */
+.lecture { background: white; border-radius: 10px; padding: 36px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
+.lecture h2 {
+  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
+}
+.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture p { margin: 10px 0; }
+.lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
+.lecture li { margin: 4px 0; }
+.lecture pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 18px 22px; overflow-x: auto; font-size: .88em;
+  line-height: 1.55; margin: 14px 0;
+}
+.lecture code { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; }
+.lecture p code, .lecture li code {
+  background: #eee8ff; padding: 1px 6px; border-radius: 4px;
+  font-size: .92em; color: #6c3cc0;
+}
+.lecture strong { color: #333; }
+.lecture em { color: #555; }
+.lecture blockquote {
+  border-left: 4px solid #667eea; padding: 8px 16px;
+  margin: 14px 0; background: #f4f4ff; border-radius: 0 8px 8px 0;
+  color: #555;
+}
+.lecture table {
+  border-collapse: collapse; width: 100%; margin: 14px 0;
+  font-size: .92em;
+}
+.lecture th, .lecture td {
+  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+}
+.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 目标/考点标签 */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: .85em; font-weight: 500;
+}
+.tag-goal { background: #e8f5e9; color: #2e7d32; }
+.tag-interview { background: #fff3e0; color: #e65100; }
+
+/* 代码块区域 */
+.code-section { margin-top: 24px; }
+.code-section summary {
+  font-size: 1.1em; font-weight: 600; cursor: pointer;
+  padding: 10px 16px; background: #1e1e2e; color: #cdd6f4;
+  border-radius: 8px 8px 0 0; user-select: none;
+}
+.code-section pre {
+  margin: 0; border-radius: 0 0 8px 8px; max-height: 70vh;
+  overflow-y: auto;
+}
+.code-block {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 0 0 8px 8px;
+  padding: 20px 24px; overflow-x: auto; font-size: .85em;
+  line-height: 1.6; max-height: 70vh; overflow-y: auto;
+}
+
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
+/* 移动端 */
+@media (max-width: 640px) {
+  .container { padding: 16px 12px 60px; }
+  .hero { padding: 28px 18px; }
+  .hero h1 { font-size: 1.4em; }
+  .lecture { padding: 20px 16px; }
+}
+
+/* 打印 */
+@media print {
+  body { background: white; }
+  .lecture { box-shadow: none; }
+  .code-block { background: #f5f5f5; color: #222; }
+}
+
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第35章 数据飞轮 — 从日志采集到自动改进的闭环</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_34_finetune/34_finetune.html" title="模型微调 for Function Calling — LoRA·成本收益对比">← 第34章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_36_defense/36_defense.html" title="Agent 纵深安全 — Canary Token·分层隔离·行为沙箱">第36章 →</a>
+</div><div class="hero"><h1>第35章 数据飞轮 —— 让 Agent 越用越好</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解数据飞轮在 Agent 系统中的核心价值</span><span class="tag tag-goal">2. 掌握从交互日志中提取训练数据的 Pipeline</span><span class="tag tag-goal">3. 学会设计「收集→标注→改进→验证」闭环</span><span class="tag tag-goal">4. 了解持续改进的工程实践</span><span class="tag tag-interview">🎤 「你怎么让 Agent 越用越好？」</span><span class="tag tag-interview">🎤 「数据飞轮的具体流程是什么？」</span><span class="tag tag-interview">🎤 「怎么区分好的反馈和噪声？」</span></div><p>第35章：数据飞轮 —— 让 Agent 越用越好</p>
+<p>======================================</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>数据飞轮 = 今天的数据 → 明天的改进 → 后天更好的数据</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>35.1 什么是数据飞轮？</h2>
+<p>&nbsp;</p>
+<p>传统开发：发布 → 等待反馈 → 人工分析 → 手动改进 → 再发布</p>
+<p>周期：周/月级别</p>
+<p>&nbsp;</p>
+<p>数据飞轮：发布 → 自动采集 → 自动分析 → 自动改进 → 自动验证</p>
+<p>周期：天/小时级别</p>
+<p>&nbsp;</p>
+<p>飞轮的核心组件：</p>
+<p>&nbsp;</p>
+<pre>  ┌──────────────────────────────────────────────┐
+  │                                                │
+  │  用户交互 → 日志采集 → Bad Case 识别            │
+  │      ↑                        ↓                │
+  │      │                LLM 自动标注               │
+  │      │                        ↓                │
+  │      └──── 评测验证 ← 改进注入                  │
+  │                                                │
+  └──────────────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 代码 (141 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+<span class="k">from</span> typing <span class="k">import</span> Optional
+
+
+<span class="k">class</span> <span class="f">DataFlywheel</span>:
+    <span class="s">"""数据飞轮 —— 从日志到改进的自动化 Pipeline。"""</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, improvement_threshold: <span class="b">int</span> = <span class="n">10</span>):
+        <span class="k">self</span>.logs = []
+        <span class="k">self</span>.improvements = []
+        <span class="k">self</span>.threshold = improvement_threshold
+
+    <span class="k">def</span> <span class="f">log_interaction</span>(<span class="k">self</span>, user_input: <span class="b">str</span>, agent_output: <span class="b">str</span>,
+                        user_feedback: <span class="b">str</span> = <span class="k">None</span>,
+                        rating: <span class="b">int</span> = <span class="k">None</span>):
+        <span class="s">"""记录一次用户交互。
+
+        Args:
+            user_input: 用户输入。
+            agent_output: Agent 输出。
+            user_feedback: 用户文本反馈（可选）。
+            rating: 用户评分 1-5（可选）。
+        """</span>
+        entry = {
+            <span class="s">"id"</span>: hashlib.md5(
+                f<span class="s">"{user_input}-{time.time()}"</span>.encode()
+            ).hexdigest()[:<span class="n">12</span>],
+            <span class="s">"user_input"</span>: user_input,
+            <span class="s">"agent_output"</span>: agent_output,
+            <span class="s">"user_feedback"</span>: user_feedback,
+            <span class="s">"rating"</span>: rating,
+            <span class="s">"timestamp"</span>: time.time(),
+        }
+        <span class="k">self</span>.logs.append(entry)
+
+        <span class="h"># 检测是否需要触发改进</span>
+        <span class="k">if</span> rating <span class="k">is</span> <span class="k">not</span> <span class="k">None</span> <span class="k">and</span> rating &lt;= <span class="n">2</span>:
+            <span class="k">self</span>._check_improvement()
+
+    <span class="k">def</span> <span class="f">_check_improvement</span>(<span class="k">self</span>):
+        <span class="s">"""检查是否达到改进阈值。"""</span>
+        bad_count = <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> log <span class="k">in</span> <span class="k">self</span>.logs[-<span class="n">50</span>:]
+                       <span class="k">if</span> log.get(<span class="s">"rating"</span>, <span class="n">5</span>) &lt;= <span class="n">2</span>)
+        <span class="k">if</span> bad_count &gt;= <span class="k">self</span>.threshold:
+            <span class="k">self</span>._trigger_improvement(
+                <span class="s">"低分率超标"</span>,
+                f<span class="s">"最近 50 次交互中 {bad_count} 次低分(≤2)"</span>,
+            )
+
+    <span class="k">def</span> <span class="f">_trigger_improvement</span>(<span class="k">self</span>, reason: <span class="b">str</span>, detail: <span class="b">str</span>):
+        <span class="s">"""触发一次自动改进。"""</span>
+        improvement = {
+            <span class="s">"timestamp"</span>: time.time(),
+            <span class="s">"reason"</span>: reason,
+            <span class="s">"detail"</span>: detail,
+            <span class="s">"total_interactions"</span>: <span class="b">len</span>(<span class="k">self</span>.logs),
+            <span class="s">"action"</span>: <span class="s">"建议重新评测 + 优化对应场景的 Prompt"</span>,
+        }
+        <span class="k">self</span>.improvements.append(improvement)
+
+    <span class="k">def</span> <span class="f">get_stats</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""获取飞轮统计。"""</span>
+        <span class="k">if</span> <span class="k">not</span> <span class="k">self</span>.logs:
+            <span class="k">return</span> {<span class="s">"total"</span>: <span class="n">0</span>}
+
+        ratings = [l[<span class="s">"rating"</span>] <span class="k">for</span> l <span class="k">in</span> <span class="k">self</span>.logs
+                   <span class="k">if</span> l.get(<span class="s">"rating"</span>) <span class="k">is</span> <span class="k">not</span> <span class="k">None</span>]
+        avg_rating = <span class="b">sum</span>(ratings) / <span class="b">len</span>(ratings) <span class="k">if</span> ratings <span class="k">else</span> <span class="n">0</span>
+
+        <span class="k">return</span> {
+            <span class="s">"total_interactions"</span>: <span class="b">len</span>(<span class="k">self</span>.logs),
+            <span class="s">"avg_rating"</span>: <span class="b">round</span>(avg_rating, <span class="n">1</span>),
+            <span class="s">"low_rated"</span>: <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> r <span class="k">in</span> ratings <span class="k">if</span> r &lt;= <span class="n">2</span>),
+            <span class="s">"improvements_triggered"</span>: <span class="b">len</span>(<span class="k">self</span>.improvements),
+            <span class="s">"latest_improvement"</span>: (
+                <span class="k">self</span>.improvements[-<span class="n">1</span>][<span class="s">"reason"</span>]
+                <span class="k">if</span> <span class="k">self</span>.improvements <span class="k">else</span> <span class="s">"暂无"</span>
+            ),
+        }
+
+    <span class="k">def</span> <span class="f">export_bad_cases</span>(<span class="k">self</span>, limit: <span class="b">int</span> = <span class="n">10</span>) -&gt; <span class="b">list</span>:
+        <span class="s">"""导出 Bad Case 用于分析。"""</span>
+        bad = [l <span class="k">for</span> l <span class="k">in</span> <span class="k">self</span>.logs <span class="k">if</span> l.get(<span class="s">"rating"</span>, <span class="n">5</span>) &lt;= <span class="n">2</span>]
+        bad.sort(key=<span class="k">lambda</span> x: x.get(<span class="s">"rating"</span>, <span class="n">5</span>))
+        <span class="k">return</span> bad[:limit]
+
+
+<span class="k">def</span> <span class="f">demo_flywheel</span>():
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  数据飞轮演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    fw = DataFlywheel(improvement_threshold=<span class="n">3</span>)
+
+    <span class="h"># 模拟用户交互</span>
+    interactions = [
+        (<span class="s">"天气查询"</span>, <span class="s">"晴天25°C"</span>, <span class="k">None</span>, <span class="n">5</span>),
+        (<span class="s">"订单查询"</span>, <span class="s">"已发货"</span>, <span class="k">None</span>, <span class="n">4</span>),
+        (<span class="s">"天气查询"</span>, <span class="s">"没有找到"</span>, <span class="s">"回答错误"</span>, <span class="n">1</span>),
+        (<span class="s">"退货咨询"</span>, <span class="s">"7个工作日"</span>, <span class="k">None</span>, <span class="n">5</span>),
+        (<span class="s">"订单查询"</span>, <span class="s">"查不到"</span>, <span class="s">"订单号错了"</span>, <span class="n">2</span>),
+        (<span class="s">"物流查询"</span>, <span class="s">"超时"</span>, <span class="s">"太慢了"</span>, <span class="n">1</span>),
+        (<span class="s">"天气查询"</span>, <span class="s">"错误"</span>, <span class="s">"不对"</span>, <span class="n">1</span>),
+    ]
+
+    <span class="k">for</span> user, output, fb, rating <span class="k">in</span> interactions:
+        fw.log_interaction(user, output, fb, rating)
+        icon = <span class="s">"⭐"</span> * rating <span class="k">if</span> rating <span class="k">else</span> <span class="s">"—"</span>
+        <span class="b">print</span>(f<span class="s">"  [{icon}] {user} → {output[:20]}... "</span>
+              + (f<span class="s">"反馈: {fb}"</span> <span class="k">if</span> fb <span class="k">else</span> <span class="s">""</span>))
+
+    stats = fw.stats()
+    <span class="b">print</span>(f<span class="s">"\n  📊 飞轮统计:"</span>)
+    <span class="k">for</span> k, v <span class="k">in</span> stats.items():
+        <span class="b">print</span>(f<span class="s">"    {k}: {v}"</span>)
+
+    <span class="b">print</span>(f<span class="s">"\n  🐛 Bad Case ({len(fw.export_bad_cases())} 条):"</span>)
+    <span class="k">for</span> case <span class="k">in</span> fw.export_bad_cases():
+        <span class="b">print</span>(f<span class="s">"    [{case['rating']}★] {case['user_input']} "</span>
+              f<span class="s">"→ {case['agent_output'][:30]}..."</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第35章：数据飞轮                                      ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  交互采集 · Bad Case 识别 · 自动触发改进              ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_flywheel()
+    <span class="b">print</span>(<span class="s">"\n▶ 飞轮四阶段"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> stage, desc <span class="k">in</span> [
+        (<span class="s">"1. 采集"</span>, <span class="s">"记录所有交互 + 用户反馈"</span>),
+        (<span class="s">"2. 标注"</span>, <span class="s">"LLM 自动标注 Bad Case"</span>),
+        (<span class="s">"3. 改进"</span>, <span class="s">"触发 Prompt 优化 or 路由调整"</span>),
+        (<span class="s">"4. 验证"</span>, <span class="s">"回归评测 → 确认改进 → 发布"</span>),
+    ]:
+        <span class="b">print</span>(f<span class="s">"  {stage:8s} → {desc}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第35章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (184 行)</summary><div class="code-block"><pre><span class="s">"""
+第35章：数据飞轮 —— 让 Agent 越用越好
+======================================
+
+📌 本章目标：
+  1. 理解数据飞轮在 Agent 系统中的核心价值
+  2. 掌握从交互日志中提取训练数据的 Pipeline
+  3. 学会设计「收集→标注→改进→验证」闭环
+  4. 了解持续改进的工程实践
+
+📌 面试高频点：
+  - 「你怎么让 Agent 越用越好？」
+  - 「数据飞轮的具体流程是什么？」
+  - 「怎么区分好的反馈和噪声？」
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+数据飞轮 = 今天的数据 → 明天的改进 → 后天更好的数据
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+35.1 什么是数据飞轮？
+━━━━━━━━━━━━━━━━━━━
+
+传统开发：发布 → 等待反馈 → 人工分析 → 手动改进 → 再发布
+  周期：周/月级别
+
+数据飞轮：发布 → 自动采集 → 自动分析 → 自动改进 → 自动验证
+  周期：天/小时级别
+
+飞轮的核心组件：
+
+  ┌──────────────────────────────────────────────┐
+  │                                                │
+  │  用户交互 → 日志采集 → Bad Case 识别            │
+  │      ↑                        ↓                │
+  │      │                LLM 自动标注               │
+  │      │                        ↓                │
+  │      └──── 评测验证 ← 改进注入                  │
+  │                                                │
+  └──────────────────────────────────────────────┘
+"""</span>
+
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">import</span> hashlib
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+<span class="k">from</span> typing <span class="k">import</span> Optional
+
+
+<span class="k">class</span> <span class="f">DataFlywheel</span>:
+    <span class="s">"""数据飞轮 —— 从日志到改进的自动化 Pipeline。"""</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, improvement_threshold: <span class="b">int</span> = <span class="n">10</span>):
+        <span class="k">self</span>.logs = []
+        <span class="k">self</span>.improvements = []
+        <span class="k">self</span>.threshold = improvement_threshold
+
+    <span class="k">def</span> <span class="f">log_interaction</span>(<span class="k">self</span>, user_input: <span class="b">str</span>, agent_output: <span class="b">str</span>,
+                        user_feedback: <span class="b">str</span> = <span class="k">None</span>,
+                        rating: <span class="b">int</span> = <span class="k">None</span>):
+        <span class="s">"""记录一次用户交互。
+
+        Args:
+            user_input: 用户输入。
+            agent_output: Agent 输出。
+            user_feedback: 用户文本反馈（可选）。
+            rating: 用户评分 1-5（可选）。
+        """</span>
+        entry = {
+            <span class="s">"id"</span>: hashlib.md5(
+                f<span class="s">"{user_input}-{time.time()}"</span>.encode()
+            ).hexdigest()[:<span class="n">12</span>],
+            <span class="s">"user_input"</span>: user_input,
+            <span class="s">"agent_output"</span>: agent_output,
+            <span class="s">"user_feedback"</span>: user_feedback,
+            <span class="s">"rating"</span>: rating,
+            <span class="s">"timestamp"</span>: time.time(),
+        }
+        <span class="k">self</span>.logs.append(entry)
+
+        <span class="h"># 检测是否需要触发改进</span>
+        <span class="k">if</span> rating <span class="k">is</span> <span class="k">not</span> <span class="k">None</span> <span class="k">and</span> rating &lt;= <span class="n">2</span>:
+            <span class="k">self</span>._check_improvement()
+
+    <span class="k">def</span> <span class="f">_check_improvement</span>(<span class="k">self</span>):
+        <span class="s">"""检查是否达到改进阈值。"""</span>
+        bad_count = <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> log <span class="k">in</span> <span class="k">self</span>.logs[-<span class="n">50</span>:]
+                       <span class="k">if</span> log.get(<span class="s">"rating"</span>, <span class="n">5</span>) &lt;= <span class="n">2</span>)
+        <span class="k">if</span> bad_count &gt;= <span class="k">self</span>.threshold:
+            <span class="k">self</span>._trigger_improvement(
+                <span class="s">"低分率超标"</span>,
+                f<span class="s">"最近 50 次交互中 {bad_count} 次低分(≤2)"</span>,
+            )
+
+    <span class="k">def</span> <span class="f">_trigger_improvement</span>(<span class="k">self</span>, reason: <span class="b">str</span>, detail: <span class="b">str</span>):
+        <span class="s">"""触发一次自动改进。"""</span>
+        improvement = {
+            <span class="s">"timestamp"</span>: time.time(),
+            <span class="s">"reason"</span>: reason,
+            <span class="s">"detail"</span>: detail,
+            <span class="s">"total_interactions"</span>: <span class="b">len</span>(<span class="k">self</span>.logs),
+            <span class="s">"action"</span>: <span class="s">"建议重新评测 + 优化对应场景的 Prompt"</span>,
+        }
+        <span class="k">self</span>.improvements.append(improvement)
+
+    <span class="k">def</span> <span class="f">get_stats</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        <span class="s">"""获取飞轮统计。"""</span>
+        <span class="k">if</span> <span class="k">not</span> <span class="k">self</span>.logs:
+            <span class="k">return</span> {<span class="s">"total"</span>: <span class="n">0</span>}
+
+        ratings = [l[<span class="s">"rating"</span>] <span class="k">for</span> l <span class="k">in</span> <span class="k">self</span>.logs
+                   <span class="k">if</span> l.get(<span class="s">"rating"</span>) <span class="k">is</span> <span class="k">not</span> <span class="k">None</span>]
+        avg_rating = <span class="b">sum</span>(ratings) / <span class="b">len</span>(ratings) <span class="k">if</span> ratings <span class="k">else</span> <span class="n">0</span>
+
+        <span class="k">return</span> {
+            <span class="s">"total_interactions"</span>: <span class="b">len</span>(<span class="k">self</span>.logs),
+            <span class="s">"avg_rating"</span>: <span class="b">round</span>(avg_rating, <span class="n">1</span>),
+            <span class="s">"low_rated"</span>: <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> r <span class="k">in</span> ratings <span class="k">if</span> r &lt;= <span class="n">2</span>),
+            <span class="s">"improvements_triggered"</span>: <span class="b">len</span>(<span class="k">self</span>.improvements),
+            <span class="s">"latest_improvement"</span>: (
+                <span class="k">self</span>.improvements[-<span class="n">1</span>][<span class="s">"reason"</span>]
+                <span class="k">if</span> <span class="k">self</span>.improvements <span class="k">else</span> <span class="s">"暂无"</span>
+            ),
+        }
+
+    <span class="k">def</span> <span class="f">export_bad_cases</span>(<span class="k">self</span>, limit: <span class="b">int</span> = <span class="n">10</span>) -&gt; <span class="b">list</span>:
+        <span class="s">"""导出 Bad Case 用于分析。"""</span>
+        bad = [l <span class="k">for</span> l <span class="k">in</span> <span class="k">self</span>.logs <span class="k">if</span> l.get(<span class="s">"rating"</span>, <span class="n">5</span>) &lt;= <span class="n">2</span>]
+        bad.sort(key=<span class="k">lambda</span> x: x.get(<span class="s">"rating"</span>, <span class="n">5</span>))
+        <span class="k">return</span> bad[:limit]
+
+
+<span class="k">def</span> <span class="f">demo_flywheel</span>():
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  数据飞轮演示"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    fw = DataFlywheel(improvement_threshold=<span class="n">3</span>)
+
+    <span class="h"># 模拟用户交互</span>
+    interactions = [
+        (<span class="s">"天气查询"</span>, <span class="s">"晴天25°C"</span>, <span class="k">None</span>, <span class="n">5</span>),
+        (<span class="s">"订单查询"</span>, <span class="s">"已发货"</span>, <span class="k">None</span>, <span class="n">4</span>),
+        (<span class="s">"天气查询"</span>, <span class="s">"没有找到"</span>, <span class="s">"回答错误"</span>, <span class="n">1</span>),
+        (<span class="s">"退货咨询"</span>, <span class="s">"7个工作日"</span>, <span class="k">None</span>, <span class="n">5</span>),
+        (<span class="s">"订单查询"</span>, <span class="s">"查不到"</span>, <span class="s">"订单号错了"</span>, <span class="n">2</span>),
+        (<span class="s">"物流查询"</span>, <span class="s">"超时"</span>, <span class="s">"太慢了"</span>, <span class="n">1</span>),
+        (<span class="s">"天气查询"</span>, <span class="s">"错误"</span>, <span class="s">"不对"</span>, <span class="n">1</span>),
+    ]
+
+    <span class="k">for</span> user, output, fb, rating <span class="k">in</span> interactions:
+        fw.log_interaction(user, output, fb, rating)
+        icon = <span class="s">"⭐"</span> * rating <span class="k">if</span> rating <span class="k">else</span> <span class="s">"—"</span>
+        <span class="b">print</span>(f<span class="s">"  [{icon}] {user} → {output[:20]}... "</span>
+              + (f<span class="s">"反馈: {fb}"</span> <span class="k">if</span> fb <span class="k">else</span> <span class="s">""</span>))
+
+    stats = fw.stats()
+    <span class="b">print</span>(f<span class="s">"\n  📊 飞轮统计:"</span>)
+    <span class="k">for</span> k, v <span class="k">in</span> stats.items():
+        <span class="b">print</span>(f<span class="s">"    {k}: {v}"</span>)
+
+    <span class="b">print</span>(f<span class="s">"\n  🐛 Bad Case ({len(fw.export_bad_cases())} 条):"</span>)
+    <span class="k">for</span> case <span class="k">in</span> fw.export_bad_cases():
+        <span class="b">print</span>(f<span class="s">"    [{case['rating']}★] {case['user_input']} "</span>
+              f<span class="s">"→ {case['agent_output'][:30]}..."</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第35章：数据飞轮                                      ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  交互采集 · Bad Case 识别 · 自动触发改进              ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_flywheel()
+    <span class="b">print</span>(<span class="s">"\n▶ 飞轮四阶段"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> stage, desc <span class="k">in</span> [
+        (<span class="s">"1. 采集"</span>, <span class="s">"记录所有交互 + 用户反馈"</span>),
+        (<span class="s">"2. 标注"</span>, <span class="s">"LLM 自动标注 Bad Case"</span>),
+        (<span class="s">"3. 改进"</span>, <span class="s">"触发 Prompt 优化 or 路由调整"</span>),
+        (<span class="s">"4. 验证"</span>, <span class="s">"回归评测 → 确认改进 → 发布"</span>),
+    ]:
+        <span class="b">print</span>(f<span class="s">"  {stage:8s} → {desc}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第35章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_34_finetune/34_finetune.html" title="模型微调 for Function Calling — LoRA·成本收益对比">← 第34章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_36_defense/36_defense.html" title="Agent 纵深安全 — Canary Token·分层隔离·行为沙箱">第36章 →</a>
+</div></div></body></html>

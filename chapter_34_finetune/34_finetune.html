@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第34章：模型微调 for Function Calling —— 用小模型做 Agent — AI Agent 全栈课程</title>
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* 标题 */
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
+}
+.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero .subtitle { opacity: 0.9; font-size: 1.05em; }
+
+/* 讲义内容 */
+.lecture { background: white; border-radius: 10px; padding: 36px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
+.lecture h2 {
+  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
+}
+.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture p { margin: 10px 0; }
+.lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
+.lecture li { margin: 4px 0; }
+.lecture pre {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+  padding: 18px 22px; overflow-x: auto; font-size: .88em;
+  line-height: 1.55; margin: 14px 0;
+}
+.lecture code { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; }
+.lecture p code, .lecture li code {
+  background: #eee8ff; padding: 1px 6px; border-radius: 4px;
+  font-size: .92em; color: #6c3cc0;
+}
+.lecture strong { color: #333; }
+.lecture em { color: #555; }
+.lecture blockquote {
+  border-left: 4px solid #667eea; padding: 8px 16px;
+  margin: 14px 0; background: #f4f4ff; border-radius: 0 8px 8px 0;
+  color: #555;
+}
+.lecture table {
+  border-collapse: collapse; width: 100%; margin: 14px 0;
+  font-size: .92em;
+}
+.lecture th, .lecture td {
+  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+}
+.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 目标/考点标签 */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.tag {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: .85em; font-weight: 500;
+}
+.tag-goal { background: #e8f5e9; color: #2e7d32; }
+.tag-interview { background: #fff3e0; color: #e65100; }
+
+/* 代码块区域 */
+.code-section { margin-top: 24px; }
+.code-section summary {
+  font-size: 1.1em; font-weight: 600; cursor: pointer;
+  padding: 10px 16px; background: #1e1e2e; color: #cdd6f4;
+  border-radius: 8px 8px 0 0; user-select: none;
+}
+.code-section pre {
+  margin: 0; border-radius: 0 0 8px 8px; max-height: 70vh;
+  overflow-y: auto;
+}
+.code-block {
+  background: #1e1e2e; color: #cdd6f4; border-radius: 0 0 8px 8px;
+  padding: 20px 24px; overflow-x: auto; font-size: .85em;
+  line-height: 1.6; max-height: 70vh; overflow-y: auto;
+}
+
+/* IDE 风格语法高亮颜色 */
+.code-block .k { color: #c586c0; }     /* 关键字 def/class/import */
+.code-block .s { color: #ce9178; }     /* 字符串 */
+.code-block .h { color: #6a9955; }     /* 注释 */
+.code-block .d { color: #dcdcaa; }     /* 装饰器 */
+.code-block .n { color: #b5cea8; }     /* 数字 */
+.code-block .f { color: #4ec9b0; }     /* 函数名 */
+.code-block .b { color: #569cd6; }     /* 内置函数 */
+
+/* 移动端 */
+@media (max-width: 640px) {
+  .container { padding: 16px 12px 60px; }
+  .hero { padding: 28px 18px; }
+  .hero h1 { font-size: 1.4em; }
+  .lecture { padding: 20px 16px; }
+}
+
+/* 打印 */
+@media print {
+  body { background: white; }
+  .lecture { box-shadow: none; }
+  .code-block { background: #f5f5f5; color: #222; }
+}
+
+/* 上/下章导航 */
+.nav-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 32px 0; gap: 16px;
+}
+.nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 22px; border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: .95em; transition: all .2s;
+}
+.nav-prev { background: #f0f0ff; color: #667eea; }
+.nav-prev:hover { background: #e0e0ff; }
+.nav-next { background: #667eea; color: white; }
+.nav-next:hover { background: #5560d8; }
+.nav-disabled { background: #eee; color: #999; cursor: not-allowed; pointer-events: none; }
+.nav-home { background: #f5f5f5; color: #555; }
+.nav-home:hover { background: #e0e0e0; }
+
+/* 面包屑 */
+.breadcrumb {
+  font-size: .88em; color: #888; margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第34章 模型微调 for Function Calling — LoRA·成本收益对比</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_33_prompt_cache/33_prompt_cache.html" title="Prompt Caching & 推理优化 — Anthropic Cache·推测解码">← 第33章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_35_data_flywheel/35_data_flywheel.html" title="数据飞轮 — 从日志采集到自动改进的闭环">第35章 →</a>
+</div><div class="hero"><h1>第34章 模型微调 for Function Calling —— 用小模型做 Agent</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解什么时候值得微调一个 Agent 专用模型</span><span class="tag tag-goal">2. 掌握 LoRA 微调的基本概念和流程</span><span class="tag tag-goal">3. 了解 Function Calling 微调的数据准备方法</span><span class="tag tag-goal">4. 对比微调 vs 路由的成本收益</span><span class="tag tag-interview">🎤 「为什么不直接用大模型，还要微调？」</span><span class="tag tag-interview">🎤 「LoRA 是什么？怎么用在 Agent 上？」</span><span class="tag tag-interview">🎤 「微调后的小模型能替代 GPT-4o 吗？」</span></div><p>第34章：模型微调 for Function Calling —— 用小模型做 Agent</p>
+<p>=============================================================</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>综合 LoRA 论文 + OpenAI Fine-Tuning API + 业界实践</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>34.1 为什么微调 Agent？</h2>
+<p>&nbsp;</p>
+<p>场景：客服 Agent，每天 100 万次简单查询。</p>
+<p>全用 GPT-4o → $2500/天</p>
+<p>全用微调的 Llama-3B → $50/天</p>
+<p>→ 微调小模型做分类+简单问答，大模型兜底复杂问题</p>
+<p>&nbsp;</p>
+<p>微调的价值：</p>
+<p>✓ 成本降低 50-100x（小模型 vs 大模型）</p>
+<p>✓ 延迟降低 10-50x（本地推理 vs API 调用）</p>
+<p>✓ 专用场景准确率可能超过通用大模型</p>
+<p>&nbsp;</p>
+<p>微调的成本：</p>
+<p>✗ 需要标注数据（100-1000 条）</p>
+<p>✗ 需要 GPU（但可以用 LoRA + Colab Free Tier）</p>
+<p>✗ 需要维护模型版本</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>34.2 Function Calling 微调数据格式</h2>
+<p>&nbsp;</p>
+<p>每条训练数据是一个 (user_message, tool_call_or_answer) 对：</p>
+<p>&nbsp;</p>
+<p>{</p>
+<pre>"messages": [
+  {"role": "system", "content": "你是客服 Agent..."},
+  {"role": "user",   "content": "帮我查订单 #12345"},
+  {"role": "assistant", "content": null,
+   "tool_calls": [{
+     "function": {"name": "query_order", "arguments": "{\"order_id\":\"12345\"}"}
+   }]}
+]</pre>
+<p>}</p>
+<p>&nbsp;</p>
+<p>数据量建议：</p>
+<li>最少 50-100 条（少量微调）</li>
+<li>理想 500-2000 条（完整微调）</li>
+<li>超过 5000 条（可能过拟合）</li>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>34.3 LoRA 微调概述</h2>
+<p>&nbsp;</p>
+<p>LoRA = Low-Rank Adaptation</p>
+<p>&nbsp;</p>
+<p>原理：</p>
+<p>不修改原模型权重，训练时插入低秩矩阵。</p>
+<p>原模型参数: 1B</p>
+<p>LoRA 参数:   1M (约 0.1%)</p>
+<p>→ 训练成本降低 1000x</p>
+<p>&nbsp;</p>
+<p>适合 Agent 的场景：</p>
+<p>✓ 工具选择（classification 任务）</p>
+<p>✓ 参数提取（从自然语言到 JSON）</p>
+<p>✓ 意图识别（routing 的入口）</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>34.4 微调 vs 路由 vs 全用大模型</h2>
+<p>&nbsp;</p>
+<pre>┌──────────────┬──────────┬──────────┬──────────┐
+│                │ 成本/次   │  延迟     │  准确率   │
+├──────────────┼──────────┼──────────┼──────────┤
+│ 全用 GPT-4o    │ $0.01    │ 2s       │ 95%      │
+│ 微调 Llama-3B  │ $0.0002  │ 0.1s     │ 90%      │
+│ 路由(90%小模型)  │ $0.0012  │ 0.4s     │ 94%      │
+└──────────────┴──────────┴──────────┴──────────┘</pre>
+<p>&nbsp;</p>
+<p>最佳实践：路由为主 + 微调为辅</p>
+<li>80-90% 查询 → 微调小模型</li>
+<li>10-20% 查询 → GPT-4o</li>
+<li>综合成本降低 85%，准确率损失 < 2%</li></div><div class="code-section"><details open><summary>💻 代码 (112 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+
+
+<span class="k">class</span> <span class="f">FineTuneDataGenerator</span>:
+    <span class="s">"""Function Calling 微调数据生成器。"""</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>.samples = []
+
+    <span class="k">def</span> <span class="f">add_sample</span>(<span class="k">self</span>, system_prompt: <span class="b">str</span>, user_msg: <span class="b">str</span>,
+                   tool_name: <span class="b">str</span> = <span class="k">None</span>,
+                   tool_args: <span class="b">dict</span> = <span class="k">None</span>,
+                   direct_answer: <span class="b">str</span> = <span class="k">None</span>):
+        <span class="s">"""添加一条微调数据。
+
+        既可以是 tool_call 样本，也可以是 direct_answer 样本。
+        """</span>
+        sample = {
+            <span class="s">"messages"</span>: [
+                {<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system_prompt},
+                {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_msg},
+            ],
+        }
+
+        <span class="k">if</span> tool_name <span class="k">and</span> tool_args:
+            sample[<span class="s">"messages"</span>].append({
+                <span class="s">"role"</span>: <span class="s">"assistant"</span>,
+                <span class="s">"content"</span>: <span class="k">None</span>,
+                <span class="s">"tool_calls"</span>: [{
+                    <span class="s">"function"</span>: {
+                        <span class="s">"name"</span>: tool_name,
+                        <span class="s">"arguments"</span>: json.dumps(tool_args, ensure_ascii=<span class="k">False</span>),
+                    }
+                }],
+            })
+        <span class="k">elif</span> direct_answer:
+            sample[<span class="s">"messages"</span>].append({
+                <span class="s">"role"</span>: <span class="s">"assistant"</span>,
+                <span class="s">"content"</span>: direct_answer,
+            })
+
+        <span class="k">self</span>.samples.append(sample)
+
+    <span class="k">def</span> <span class="f">export_jsonl</span>(<span class="k">self</span>, filepath: <span class="b">str</span> = <span class="k">None</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""导出为 JSONL 格式。
+
+        Returns:
+            JSONL 字符串。
+        """</span>
+        lines = [json.dumps(s, ensure_ascii=<span class="k">False</span>) <span class="k">for</span> s <span class="k">in</span> <span class="k">self</span>.samples]
+        <span class="k">return</span> <span class="s">"\n"</span>.join(lines)
+
+    <span class="k">def</span> <span class="f">stats</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        cnt = <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> s <span class="k">in</span> <span class="k">self</span>.samples
+                  <span class="k">if</span> <span class="s">"tool_calls"</span> <span class="k">in</span> s[<span class="s">"messages"</span>][-<span class="n">1</span>])
+        <span class="k">return</span> {
+            <span class="s">"total"</span>: <span class="b">len</span>(<span class="k">self</span>.samples),
+            <span class="s">"tool_call_samples"</span>: cnt,
+            <span class="s">"direct_answer_samples"</span>: <span class="b">len</span>(<span class="k">self</span>.samples) - cnt,
+        }
+
+
+<span class="k">def</span> <span class="f">demo_finetune</span>():
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Function Calling 微调数据准备"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    gen = FineTuneDataGenerator()
+    system = <span class="s">"你是客服 Agent，负责查询订单和物流。"</span>
+
+    <span class="h"># Tool call 样本</span>
+    gen.add_sample(system, <span class="s">"帮我查订单 ORD-001 的状态"</span>,
+                   <span class="s">"query_order"</span>, {<span class="s">"order_id"</span>: <span class="s">"ORD-001"</span>})
+    gen.add_sample(system, <span class="s">"查物流：SF1234567890"</span>,
+                   <span class="s">"query_logistics"</span>, {<span class="s">"tracking_no"</span>: <span class="s">"SF1234567890"</span>})
+    gen.add_sample(system, <span class="s">"订单 A-999 到哪了？"</span>,
+                   <span class="s">"query_order"</span>, {<span class="s">"order_id"</span>: <span class="s">"A-999"</span>})
+
+    <span class="h"># Direct answer 样本</span>
+    gen.add_sample(system, <span class="s">"你们几点上班？"</span>,
+                   direct_answer=<span class="s">"我们的客服时间是 9:00-18:00。"</span>)
+    gen.add_sample(system, <span class="s">"退货要几天？"</span>,
+                   direct_answer=<span class="s">"退款在 7 个工作日内到账。"</span>)
+
+    stats = gen.stats()
+    <span class="b">print</span>(f<span class="s">"  总样本: {stats['total']}"</span>)
+    <span class="b">print</span>(f<span class="s">"  Tool Call 样本: {stats['tool_call_samples']}"</span>)
+    <span class="b">print</span>(f<span class="s">"  直接回答样本: {stats['direct_answer_samples']}"</span>)
+
+    jsonl = gen.export_jsonl()
+    <span class="b">print</span>(f<span class="s">"\n  JSONL 预览 (头 2 条):"</span>)
+    <span class="k">for</span> i, line <span class="k">in</span> <span class="b">enumerate</span>(jsonl.split(<span class="s">"\n"</span>)[:<span class="n">2</span>]):
+        <span class="b">print</span>(f<span class="s">"  [{i}] {line[:120]}..."</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第34章：模型微调 for Function Calling                 ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  LoRA · 微调数据准备 · 成本收益对比                    ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_finetune()
+    <span class="b">print</span>(<span class="s">"\n▶ 微调 vs 路由 vs 全用大模型"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> name, cost, lat, acc <span class="k">in</span> [
+        (<span class="s">"全用 GPT-4o"</span>, <span class="s">"$0.01/次"</span>, <span class="s">"2s"</span>, <span class="s">"95%"</span>),
+        (<span class="s">"微调 Llama-3B"</span>, <span class="s">"$0.0002/次"</span>, <span class="s">"0.1s"</span>, <span class="s">"90%"</span>),
+        (<span class="s">"路由(90%小模型)"</span>, <span class="s">"$0.0012/次"</span>, <span class="s">"0.4s"</span>, <span class="s">"94%"</span>),
+    ]:
+        <span class="b">print</span>(f<span class="s">"  {name:18s} | {cost:12s} | {lat:6s} | {acc}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第34章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (208 行)</summary><div class="code-block"><pre><span class="s">"""
+第34章：模型微调 for Function Calling —— 用小模型做 Agent
+=============================================================
+
+📌 本章目标：
+  1. 理解什么时候值得微调一个 Agent 专用模型
+  2. 掌握 LoRA 微调的基本概念和流程
+  3. 了解 Function Calling 微调的数据准备方法
+  4. 对比微调 vs 路由的成本收益
+
+📌 面试高频点：
+  - 「为什么不直接用大模型，还要微调？」
+  - 「LoRA 是什么？怎么用在 Agent 上？」
+  - 「微调后的小模型能替代 GPT-4o 吗？」
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+综合 LoRA 论文 + OpenAI Fine-Tuning API + 业界实践
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+34.1 为什么微调 Agent？
+━━━━━━━━━━━━━━━━━━━━☆
+
+场景：客服 Agent，每天 100 万次简单查询。
+  全用 GPT-4o → $2500/天
+  全用微调的 Llama-3B → $50/天
+  → 微调小模型做分类+简单问答，大模型兜底复杂问题
+
+微调的价值：
+  ✓ 成本降低 50-100x（小模型 vs 大模型）
+  ✓ 延迟降低 10-50x（本地推理 vs API 调用）
+  ✓ 专用场景准确率可能超过通用大模型
+
+微调的成本：
+  ✗ 需要标注数据（100-1000 条）
+  ✗ 需要 GPU（但可以用 LoRA + Colab Free Tier）
+  ✗ 需要维护模型版本
+
+
+34.2 Function Calling 微调数据格式
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+每条训练数据是一个 (user_message, tool_call_or_answer) 对：
+
+  {
+    "messages": [
+      {"role": "system", "content": "你是客服 Agent..."},
+      {"role": "user",   "content": "帮我查订单 #12345"},
+      {"role": "assistant", "content": null,
+       "tool_calls": [{
+         "function": {"name": "query_order", "arguments": "{\"order_id\":\"12345\"}"}
+       }]}
+    ]
+  }
+
+数据量建议：
+  - 最少 50-100 条（少量微调）
+  - 理想 500-2000 条（完整微调）
+  - 超过 5000 条（可能过拟合）
+
+
+34.3 LoRA 微调概述
+━━━━━━━━━━━━━━━━━━
+
+LoRA = Low-Rank Adaptation
+
+原理：
+  不修改原模型权重，训练时插入低秩矩阵。
+  原模型参数: 1B
+  LoRA 参数:   1M (约 0.1%)
+  → 训练成本降低 1000x
+
+适合 Agent 的场景：
+  ✓ 工具选择（classification 任务）
+  ✓ 参数提取（从自然语言到 JSON）
+  ✓ 意图识别（routing 的入口）
+
+
+34.4 微调 vs 路由 vs 全用大模型
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌──────────────┬──────────┬──────────┬──────────┐
+│                │ 成本/次   │  延迟     │  准确率   │
+├──────────────┼──────────┼──────────┼──────────┤
+│ 全用 GPT-4o    │ $0.01    │ 2s       │ 95%      │
+│ 微调 Llama-3B  │ $0.0002  │ 0.1s     │ 90%      │
+│ 路由(90%小模型)  │ $0.0012  │ 0.4s     │ 94%      │
+└──────────────┴──────────┴──────────┴──────────┘
+
+最佳实践：路由为主 + 微调为辅
+  - 80-90% 查询 → 微调小模型
+  - 10-20% 查询 → GPT-4o
+  - 综合成本降低 85%，准确率损失 &lt; 2%
+"""</span>
+
+<span class="k">import</span> json
+<span class="k">import</span> time
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+
+
+<span class="k">class</span> <span class="f">FineTuneDataGenerator</span>:
+    <span class="s">"""Function Calling 微调数据生成器。"""</span>
+
+    <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>):
+        <span class="k">self</span>.samples = []
+
+    <span class="k">def</span> <span class="f">add_sample</span>(<span class="k">self</span>, system_prompt: <span class="b">str</span>, user_msg: <span class="b">str</span>,
+                   tool_name: <span class="b">str</span> = <span class="k">None</span>,
+                   tool_args: <span class="b">dict</span> = <span class="k">None</span>,
+                   direct_answer: <span class="b">str</span> = <span class="k">None</span>):
+        <span class="s">"""添加一条微调数据。
+
+        既可以是 tool_call 样本，也可以是 direct_answer 样本。
+        """</span>
+        sample = {
+            <span class="s">"messages"</span>: [
+                {<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system_prompt},
+                {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_msg},
+            ],
+        }
+
+        <span class="k">if</span> tool_name <span class="k">and</span> tool_args:
+            sample[<span class="s">"messages"</span>].append({
+                <span class="s">"role"</span>: <span class="s">"assistant"</span>,
+                <span class="s">"content"</span>: <span class="k">None</span>,
+                <span class="s">"tool_calls"</span>: [{
+                    <span class="s">"function"</span>: {
+                        <span class="s">"name"</span>: tool_name,
+                        <span class="s">"arguments"</span>: json.dumps(tool_args, ensure_ascii=<span class="k">False</span>),
+                    }
+                }],
+            })
+        <span class="k">elif</span> direct_answer:
+            sample[<span class="s">"messages"</span>].append({
+                <span class="s">"role"</span>: <span class="s">"assistant"</span>,
+                <span class="s">"content"</span>: direct_answer,
+            })
+
+        <span class="k">self</span>.samples.append(sample)
+
+    <span class="k">def</span> <span class="f">export_jsonl</span>(<span class="k">self</span>, filepath: <span class="b">str</span> = <span class="k">None</span>) -&gt; <span class="b">str</span>:
+        <span class="s">"""导出为 JSONL 格式。
+
+        Returns:
+            JSONL 字符串。
+        """</span>
+        lines = [json.dumps(s, ensure_ascii=<span class="k">False</span>) <span class="k">for</span> s <span class="k">in</span> <span class="k">self</span>.samples]
+        <span class="k">return</span> <span class="s">"\n"</span>.join(lines)
+
+    <span class="k">def</span> <span class="f">stats</span>(<span class="k">self</span>) -&gt; <span class="b">dict</span>:
+        cnt = <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> s <span class="k">in</span> <span class="k">self</span>.samples
+                  <span class="k">if</span> <span class="s">"tool_calls"</span> <span class="k">in</span> s[<span class="s">"messages"</span>][-<span class="n">1</span>])
+        <span class="k">return</span> {
+            <span class="s">"total"</span>: <span class="b">len</span>(<span class="k">self</span>.samples),
+            <span class="s">"tool_call_samples"</span>: cnt,
+            <span class="s">"direct_answer_samples"</span>: <span class="b">len</span>(<span class="k">self</span>.samples) - cnt,
+        }
+
+
+<span class="k">def</span> <span class="f">demo_finetune</span>():
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+    <span class="b">print</span>(<span class="s">"  Function Calling 微调数据准备"</span>)
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
+
+    gen = FineTuneDataGenerator()
+    system = <span class="s">"你是客服 Agent，负责查询订单和物流。"</span>
+
+    <span class="h"># Tool call 样本</span>
+    gen.add_sample(system, <span class="s">"帮我查订单 ORD-001 的状态"</span>,
+                   <span class="s">"query_order"</span>, {<span class="s">"order_id"</span>: <span class="s">"ORD-001"</span>})
+    gen.add_sample(system, <span class="s">"查物流：SF1234567890"</span>,
+                   <span class="s">"query_logistics"</span>, {<span class="s">"tracking_no"</span>: <span class="s">"SF1234567890"</span>})
+    gen.add_sample(system, <span class="s">"订单 A-999 到哪了？"</span>,
+                   <span class="s">"query_order"</span>, {<span class="s">"order_id"</span>: <span class="s">"A-999"</span>})
+
+    <span class="h"># Direct answer 样本</span>
+    gen.add_sample(system, <span class="s">"你们几点上班？"</span>,
+                   direct_answer=<span class="s">"我们的客服时间是 9:00-18:00。"</span>)
+    gen.add_sample(system, <span class="s">"退货要几天？"</span>,
+                   direct_answer=<span class="s">"退款在 7 个工作日内到账。"</span>)
+
+    stats = gen.stats()
+    <span class="b">print</span>(f<span class="s">"  总样本: {stats['total']}"</span>)
+    <span class="b">print</span>(f<span class="s">"  Tool Call 样本: {stats['tool_call_samples']}"</span>)
+    <span class="b">print</span>(f<span class="s">"  直接回答样本: {stats['direct_answer_samples']}"</span>)
+
+    jsonl = gen.export_jsonl()
+    <span class="b">print</span>(f<span class="s">"\n  JSONL 预览 (头 2 条):"</span>)
+    <span class="k">for</span> i, line <span class="k">in</span> <span class="b">enumerate</span>(jsonl.split(<span class="s">"\n"</span>)[:<span class="n">2</span>]):
+        <span class="b">print</span>(f<span class="s">"  [{i}] {line[:120]}..."</span>)
+
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
+    <span class="b">print</span>(<span class="s">"║  第34章：模型微调 for Function Calling                 ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  LoRA · 微调数据准备 · 成本收益对比                    ║"</span>)
+    <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
+    demo_finetune()
+    <span class="b">print</span>(<span class="s">"\n▶ 微调 vs 路由 vs 全用大模型"</span>)
+    <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
+    <span class="k">for</span> name, cost, lat, acc <span class="k">in</span> [
+        (<span class="s">"全用 GPT-4o"</span>, <span class="s">"$0.01/次"</span>, <span class="s">"2s"</span>, <span class="s">"95%"</span>),
+        (<span class="s">"微调 Llama-3B"</span>, <span class="s">"$0.0002/次"</span>, <span class="s">"0.1s"</span>, <span class="s">"90%"</span>),
+        (<span class="s">"路由(90%小模型)"</span>, <span class="s">"$0.0012/次"</span>, <span class="s">"0.4s"</span>, <span class="s">"94%"</span>),
+    ]:
+        <span class="b">print</span>(f<span class="s">"  {name:18s} | {cost:12s} | {lat:6s} | {acc}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第34章完成！"</span>)
+</pre></div></details></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_33_prompt_cache/33_prompt_cache.html" title="Prompt Caching & 推理优化 — Anthropic Cache·推测解码">← 第33章</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_35_data_flywheel/35_data_flywheel.html" title="数据飞轮 — 从日志采集到自动改进的闭环">第35章 →</a>
+</div></div></body></html>
