@@ -222,7 +222,10 @@ def _make_nav(ch_num: int) -> str:
 
 
 def extract_docstring_and_code(filepath: str) -> tuple[str, str, str]:
-    """提取模块 docstring（讲义内容）和代码部分。
+    """提取所有 docstring（讲义内容，含代码间穿插的）和纯代码。
+
+    章节文件结构：开头模块 docstring + 代码 + 穿插 docstring + 代码...
+    需要把所有的 docstring 拼成完整讲义，代码部分合并。
 
     Returns:
         (title, lecture_text, code_text)
@@ -230,28 +233,52 @@ def extract_docstring_and_code(filepath: str) -> tuple[str, str, str]:
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
 
-    # 匹配模块级 docstring
-    match = re.match(r'^"""\n(.*?)\n"""', content, re.DOTALL)
-    if not match:
-        match = re.match(r'^"""(.*?)"""', content, re.DOTALL)
+    docstrings = []
+    code_parts = []
+    pos = 0
 
-    if match:
-        docstring = match.group(1).strip()
-        code = content[match.end():].strip()
-    else:
-        docstring = "(此文件没有模块级 docstring)"
-        code = content
+    while True:
+        # 找下一个 """ 开头
+        start = content.find('"""', pos)
+        if start == -1:
+            # 剩余全是代码
+            code_parts.append(content[pos:])
+            break
 
-    # 提取标题（第一行）
-    lines = docstring.split("\n")
-    title = lines[0].strip() if lines else "未命名章节"
-    # 去掉分隔线
-    title = re.sub(r'^第\d+[章节]：?', '', title)
-    title = title.strip()
+        # start 之前的全是代码
+        code_parts.append(content[pos:start])
+
+        # 找配对的 """
+        inner_start = start + 3
+        end = content.find('"""', inner_start)
+        if end == -1:
+            code_parts.append(content[start:])
+            break
+
+        doc = content[inner_start:end].strip()
+        if doc:
+            docstrings.append(doc)
+
+        pos = end + 3
+
+    # 合并代码（去空行、去头尾空白）
+    full_code = "\n".join(
+        p.strip() for p in code_parts if p.strip()
+    )
+
+    # 合并讲义
+    full_lecture = "\n\n".join(docstrings)
+
+    # 提取标题（第一个 docstring 的第一行）
+    title = "未命名章节"
+    if docstrings:
+        first_line = docstrings[0].split("\n")[0].strip()
+        title = re.sub(r'^第\d+[章节]：?', '', first_line)
+        title = title.strip()
     if not title:
         title = os.path.basename(filepath).replace(".py", "")
 
-    return title, docstring, code
+    return title, full_lecture, full_code
 
 
 def parse_lecture(docstring: str) -> str:

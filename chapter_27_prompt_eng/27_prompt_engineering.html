@@ -182,52 +182,128 @@ body {
 <output_format>
   输出格式要求...
 </output_format></pre>
-<p></system></p></div><div class="code-section"><details open><summary>💻 源代码 (314 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<p></system></p>
+<p>&nbsp;</p>
+<p>Agent Prompt 构建器 —— 按模块组装，而非手写字符串。</p>
+<p>&nbsp;</p>
+<p>添加工具能力声明。</p>
+<p>&nbsp;</p>
+<p>添加工具选择指引（什么时候用哪个工具）。</p>
+<p>&nbsp;</p>
+<p>添加工作流程。</p>
+<p>&nbsp;</p>
+<p>添加安全约束。</p>
+<p>&nbsp;</p>
+<p>添加输出格式。</p>
+<p>&nbsp;</p>
+<p>构建完整的 Agent System Prompt。</p>
+<p>&nbsp;</p>
+<p>估算 Prompt 的 token 数。</p>
+<p>&nbsp;</p>
+<h2>27.3 工具描述 = Prompt 工程 —— 本章核心！</h2>
+<p>&nbsp;</p>
+<p>工具描述不是给开发者看的文档，是给 LLM 看的「使用说明」。</p>
+<p>&nbsp;</p>
+<p>好工具描述的三个要素：</p>
+<li>做什么：准确描述工具的功能</li>
+<li>什么时候用：描述适用的场景</li>
+<li>什么时候不用：描述边界条件</li>
+<p>&nbsp;</p>
+<p>对比（面试金句！）：</p>
+<p>&nbsp;</p>
+<p>✗ 差： "查询天气"</p>
+<p>✅ 好： "查询指定城市当天的实时天气，包括气温、湿度、风力。</p>
+<pre>      适用于用户询问天气相关问题时。不支持未来天气预报。
+      示例调用：get_weather(city='北京')"</pre>
+<p>&nbsp;</p>
+<p>工具描述评分卡：</p>
+<pre>  ┌────────────────────────┬──────────┐
+  │ 描述要素                  │ 加分      │
+  ├────────────────────────┼──────────┤
+  │ 有功能描述                │ +1       │
+  │ 有使用场景                │ +2       │
+  │ 有边界条件                │ +2       │
+  │ 有调用示例                │ +1       │
+  │ 参数有 enum 限制          │ +2       │
+  │ 参数有详细描述            │ +1       │
+  └────────────────────────┴──────────┘</pre>
+<p>&nbsp;</p>
+<p>工具描述优化器 —— 系统化提升工具调用准确率。</p>
+<p>&nbsp;</p>
+<p>评估工具描述的质量。</p>
+<p>&nbsp;</p>
+<pre>    Returns:
+        评分详情。</pre>
+<p>&nbsp;</p>
+<h2>27.4 对话模板优化 —— 平衡信息密度</h2>
+<p>&nbsp;</p>
+<p>Prompt 不是越长越好，需要权衡：</p>
+<p>&nbsp;</p>
+<p>太短 → 信息不足，LLM 靠猜测</p>
+<p>太长 → 信息过载，LLM 抓不住重点</p>
+<p>&nbsp;</p>
+<p>Golden Zone：</p>
+<p>System Prompt: 200-800 tokens</p>
+<p>工具描述: 每个工具 50-200 tokens</p>
+<p>总上下文: 不超过窗口的 70%（留空间给对话历史和生成）</p>
+<p>&nbsp;</p>
+<p>面试金句：</p>
+<p>"好 Prompt 的标准不是'全'，是'精'。</p>
+<p>每条信息都要有明确的 token 价值 vs 成本评估。"</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>27.5 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>Agent Prompt 需要结构化 6 个模块</li>
+<li>工具描述是 Agent Prompt 工程的核心</li>
+<li>好工具描述 = 做什么 + 什么时候用 + 什么时候不用 + 示例</li>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>「Agent 的 System Prompt 怎么设计？」</p>
+<p>→ 6 模块模板：role/capabilities/tool_guidance/workflow/constraints/output</p>
+<p>→ 核心：工具描述 = Prompt 工程（告诉 LLM 何时用、何时不用）</p>
+<p>→ 用 enum 限制参数 → 减少幻觉</p>
+<p>&nbsp;</p>
+<p>演示 Agent Prompt 工程。</p></div><div class="code-section"><details open><summary>💻 源代码 (225 行)</summary><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass
 
 
 <span class="k">class</span> AgentPromptBuilder:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Agent Prompt 构建器 —— 按模块组装，而非手写字符串。"</span><span <span class="k">class</span>="s">""</span></span>
-
-    <span class="k">def</span> __init__(self, role: str = <span <span class="k">class</span>="s">"AI 助手"</span>):
+<span class="k">def</span> __init__(self, role: str = <span <span class="k">class</span>="s">"AI 助手"</span>):
         self.role = role
         self.sections = {}
 
     <span class="k">def</span> add_capabilities(self, tools: list[dict]):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"添加工具能力声明。"</span><span <span class="k">class</span>="s">""</span></span>
-        tool_lines = []
+tool_lines = []
         <span class="k">for</span> t <span class="k">in</span> tools:
             tool_lines.append(f<span <span class="k">class</span>="s">"- {t[<span <span class="k">class</span>='s'>'name'</span>]}: {t.get(<span <span class="k">class</span>='s'>'description'</span>, <span <span class="k">class</span>='s'>''</span>)}"</span>)
         self.sections[<span <span class="k">class</span>="s">"capabilities"</span>] = <span <span class="k">class</span>="s">"\n"</span>.join(tool_lines)
 
     <span class="k">def</span> add_tool_guidance(self, guidance: dict[str, str]):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"添加工具选择指引（什么时候用哪个工具）。"</span><span <span class="k">class</span>="s">""</span></span>
-        lines = []
+lines = []
         <span class="k">for</span> tool_name, guide <span class="k">in</span> guidance.items():
             lines.append(f<span <span class="k">class</span>="s">"<span <span class="k">class</span>="</span>h<span <span class="k">class</span>="s">">### {tool_name}\n{guide}"</span>)</span>
         self.sections[<span <span class="k">class</span>="s">"tool_guidance"</span>] = <span <span class="k">class</span>="s">"\n\n"</span>.join(lines)
 
     <span class="k">def</span> add_workflow(self, steps: list[str]):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"添加工作流程。"</span><span <span class="k">class</span>="s">""</span></span>
-        self.sections[<span <span class="k">class</span>="s">"workflow"</span>] = <span <span class="k">class</span>="s">"\n"</span>.join(
+self.sections[<span <span class="k">class</span>="s">"workflow"</span>] = <span <span class="k">class</span>="s">"\n"</span>.join(
             f<span <span class="k">class</span>="s">"{i+<span class="n">1</span>}. {step}"</span> <span class="k">for</span> i, step <span class="k">in</span> enumerate(steps)
         )
 
     <span class="k">def</span> add_constraints(self, constraints: list[str]):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"添加安全约束。"</span><span <span class="k">class</span>="s">""</span></span>
-        self.sections[<span <span class="k">class</span>="s">"constraints"</span>] = <span <span class="k">class</span>="s">"\n"</span>.join(
+self.sections[<span <span class="k">class</span>="s">"constraints"</span>] = <span <span class="k">class</span>="s">"\n"</span>.join(
             f<span <span class="k">class</span>="s">"- {c}"</span> <span class="k">for</span> c <span class="k">in</span> constraints
         )
 
     <span class="k">def</span> add_output_format(self, fmt_desc: str):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"添加输出格式。"</span><span <span class="k">class</span>="s">""</span></span>
-        self.sections[<span <span class="k">class</span>="s">"output_format"</span>] = fmt_desc
+self.sections[<span <span class="k">class</span>="s">"output_format"</span>] = fmt_desc
 
     <span class="k">def</span> build(self) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"构建完整的 Agent System Prompt。"</span><span <span class="k">class</span>="s">""</span></span>
-        parts = [<span <span class="k">class</span>="s">"&lt;system&gt;"</span>]
+parts = [<span <span class="k">class</span>="s">"&lt;system&gt;"</span>]
         parts.append(f<span <span class="k">class</span>="s">"  &lt;role&gt;{self.role}&lt;/role&gt;"</span>)
 
         <span class="k">for</span> key <span class="k">in</span> [<span <span class="k">class</span>="s">"capabilities"</span>, <span <span class="k">class</span>="s">"tool_guidance"</span>, <span <span class="k">class</span>="s">"workflow"</span>,
@@ -244,46 +320,9 @@ body {
         <span class="k">return</span> <span <span class="k">class</span>="s">"\n"</span>.join(parts)
 
     <span class="k">def</span> estimate_tokens(self) -&gt; int:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"估算 Prompt 的 token 数。"</span><span <span class="k">class</span>="s">""</span></span>
-        <span class="k">return</span> len(self.build()) // <span class="n">4</span>
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">27.3</span> 工具描述 = Prompt 工程 —— 本章核心！
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-工具描述不是给开发者看的文档，是给 LLM 看的「使用说明」。
-
-好工具描述的三个要素：
-  <span class="n">1</span>. 做什么：准确描述工具的功能
-  <span class="n">2</span>. 什么时候用：描述适用的场景
-  <span class="n">3</span>. 什么时候不用：描述边界条件
-
-对比（面试金句！）：
-
-  ✗ 差： <span <span class="k">class</span>="s">"查询天气"</span>
-  ✅ 好： "查询指定城市当天的实时天气，包括气温、湿度、风力。
-          适用于用户询问天气相关问题时。不支持未来天气预报。
-          示例调用：get_weather(city=<span <span class="k">class</span>='s'>'北京'</span>)"
-
-工具描述评分卡：
-  ┌────────────────────────┬──────────┐
-  │ 描述要素                  │ 加分      │
-  ├────────────────────────┼──────────┤
-  │ 有功能描述                │ +<span class="n">1</span>       │
-  │ 有使用场景                │ +<span class="n">2</span>       │
-  │ 有边界条件                │ +<span class="n">2</span>       │
-  │ 有调用示例                │ +<span class="n">1</span>       │
-  │ 参数有 enum 限制          │ +<span class="n">2</span>       │
-  │ 参数有详细描述            │ +<span class="n">1</span>       │
-  └────────────────────────┴──────────┘
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
+<span class="k">return</span> len(self.build()) // <span class="n">4</span>
 <span class="k">class</span> ToolDescriptionOptimizer:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"工具描述优化器 —— 系统化提升工具调用准确率。"</span><span <span class="k">class</span>="s">""</span></span>
-
-    BAD_EXAMPLES = [
+BAD_EXAMPLES = [
         {
             <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"do_stuff"</span>,
             <span <span class="k">class</span>="s">"description"</span>: <span <span class="k">class</span>="s">"处理数据"</span>,
@@ -352,12 +391,7 @@ body {
 
     <span class="d">@classmethod</span>
     <span class="k">def</span> score_tool_description(cls, tool: dict) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"评估工具描述的质量。
-
-        Returns:
-            评分详情。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        desc = tool.get(<span <span class="k">class</span>="s">"description"</span>, <span <span class="k">class</span>="s">""</span>)
+desc = tool.get(<span <span class="k">class</span>="s">"description"</span>, <span <span class="k">class</span>="s">""</span>)
         params = tool.get(<span <span class="k">class</span>="s">"parameters"</span>, {}).get(<span <span class="k">class</span>="s">"properties"</span>, {})
         scores = {
             <span <span class="k">class</span>="s">"has_description"</span>: len(desc) &gt; <span class="n">10</span>,
@@ -388,47 +422,8 @@ body {
         <span class="k">if</span> pct &gt;= <span class="n">0.3</span>:
             <span class="k">return</span> <span <span class="k">class</span>="s">"C (需改进)"</span>
         <span class="k">return</span> <span <span class="k">class</span>="s">"D (不可用)"</span>
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">27.4</span> 对话模板优化 —— 平衡信息密度
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Prompt 不是越长越好，需要权衡：
-
-  太短 → 信息不足，LLM 靠猜测
-  太长 → 信息过载，LLM 抓不住重点
-
-Golden Zone：
-  System Prompt: <span class="n">200</span>-<span class="n">800</span> tokens
-  工具描述: 每个工具 <span class="n">50</span>-<span class="n">200</span> tokens
-  总上下文: 不超过窗口的 <span class="n">70</span>%（留空间给对话历史和生成）
-
-面试金句：
-  "好 Prompt 的标准不是<span <span class="k">class</span>='s'>'全'</span>，是<span <span class="k">class</span>='s'>'精'</span>。
-   每条信息都要有明确的 token 价值 vs 成本评估。"
-
-
-<span class="n">27.5</span> 本章总结
-━━━━━━━━━━━━
-
-核心要点回顾：
-
-<span class="n">1</span>. Agent Prompt 需要结构化 <span class="n">6</span> 个模块
-<span class="n">2</span>. 工具描述是 Agent Prompt 工程的核心
-<span class="n">3</span>. 好工具描述 = 做什么 + 什么时候用 + 什么时候不用 + 示例
-
-面试速记：
-  「Agent 的 System Prompt 怎么设计？」
-  → <span class="n">6</span> 模块模板：role/capabilities/tool_guidance/workflow/constraints/output
-  → 核心：工具描述 = Prompt 工程（告诉 LLM 何时用、何时不用）
-  → 用 enum 限制参数 → 减少幻觉
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">def</span> demo_prompt_engineering():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Agent Prompt 工程。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Agent Prompt 构建演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 

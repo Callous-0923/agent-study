@@ -353,10 +353,88 @@ skill/code-review     → 代码审查</pre>
 <pre>                        ▼
                   ┌──────────┐
                   │ 告警系统  │ ← PagerDuty / Slack
-                  └──────────┘</pre></div><div class="code-section"><details open><summary>💻 源代码 (188 行)</summary><div class="code-block"><pre><span class="k">class</span> AgentProductionChecklist:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Agent 生产化就绪度检查清单。"</span><span <span class="k">class</span>="s">""</span></span>
-
-    CHECKLIST = [
+                  └──────────┘</pre>
+<p>&nbsp;</p>
+<p>Agent 生产化就绪度检查清单。</p>
+<p>&nbsp;</p>
+<p>返回检查清单及每项的完成状态（这里标注为待检查）。</p>
+<p>&nbsp;</p>
+<pre>    Returns:
+        (类别, 检查项, 是否完成) 的列表。</pre>
+<p>&nbsp;</p>
+<p>打印检查清单。</p>
+<p>&nbsp;</p>
+<h2>12.6 全课程体系梳理 —— 回顾与展望</h2>
+<p>&nbsp;</p>
+<p>现在你学完了全部 12 章：</p>
+<p>&nbsp;</p>
+<p>Ch0   → 课程概览，理解 Agent 是什么</p>
+<p>Ch1-3 → Agent 的基础理论（循环、组件、类型）</p>
+<p>Ch4-5 → Agent 的工程实践（框架、Multi-Agent）</p>
+<p>Ch6-7 → Agent 的评估与求职（评测、面试）</p>
+<p>Ch8   → Claude Code 架构（nO/h2A/Compaction/SubAgent）</p>
+<p>Ch9   → RAG 深度（Naive→Advanced→GraphRAG→Agentic RAG）</p>
+<p>Ch10  → MCP 协议（JSON-RPC/原语/能力协商/传输层）</p>
+<p>Ch11  → Tool Calling 底层（OpenAI vs Anthropic/Streaming/Strict）</p>
+<p>Ch12  → 生产基础设施（OpenClaw/Harness/评测/可观测性）← 你在这里</p>
+<p>&nbsp;</p>
+<p>面试时你可以自信地讨论：</p>
+<p>✓ Agent 的核心循环和组件</p>
+<p>✓ Function Calling 的底层原理</p>
+<p>✓ MCP 协议的架构和调用流程</p>
+<p>✓ RAG 的技术演进和 GraphRAG</p>
+<p>✓ Claude Code 的设计哲学</p>
+<p>✓ Multi-Agent 系统的架构模式</p>
+<p>✓ Agent 的生产化 Checklist</p>
+<p>&nbsp;</p>
+<p>核心能力矩阵：</p>
+<pre>┌──────────────────┬──────────────────────────┬─────────┐
+│      能力         │         覆盖章节          │  深度    │
+├──────────────────┼──────────────────────────┼─────────┤
+│ Agent 基础理论    │ Ch1, Ch2, Ch3            │  ⭐⭐⭐  │
+│ 框架上手          │ Ch4, Ch5                 │  ⭐⭐⭐  │
+│ RAG 技术栈        │ Ch9                      │  ⭐⭐⭐⭐ │
+│ MCP 协议          │ Ch10                     │  ⭐⭐⭐⭐ │
+│ Tool Calling     │ Ch11                     │  ⭐⭐⭐⭐⭐│
+│ Claude Code 架构  │ Ch8                      │  ⭐⭐⭐⭐⭐│
+│ 生产基础设施      │ Ch6, Ch12                │  ⭐⭐⭐  │
+│ 面试准备          │ Ch7                      │  ⭐⭐⭐⭐ │
+└──────────────────┴──────────────────────────┴─────────┘</pre>
+<p>&nbsp;</p>
+<h2>12.7 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>OpenClaw</li>
+<li>Gateway 中心化架构（Node.js 控制平面）</li>
+<li>多 Channel 接入（WhatsApp/Telegram/Discord）</li>
+<li>AgentSkills + ClawHub 插件生态</li>
+<li>定位：「是 Agent，不是框架」</li>
+<p>&nbsp;</p>
+<li>Harness (OpenHarness)</li>
+<li>CLI + SDK 双模式</li>
+<li>支持任意 LLM + 本地模型</li>
+<li>/team 命令实现并行 Multi-Agent</li>
+<li>Alpha 阶段，但增长速度惊人</li>
+<p>&nbsp;</p>
+<li>Agent 评测基础设施</li>
+<li>MultiAgentEval：企业级评测框架</li>
+<li>核心概念：Scenario → Task → Sandbox → Metrics</li>
+<li>8 种内置评测指标</li>
+<p>&nbsp;</p>
+<li>生产 Checklist（面试最爱问！）</li>
+<li>可观测性（Tracing + Dashboard + Alerting）</li>
+<li>评测体系（离线评测 + A/B测试 + 回归评测）</li>
+<li>安全防护（Prompt Injection + 权限分级 + 审计）</li>
+<li>成本控制（模型分层 + 缓存 + 预算）</li>
+<li>可靠性（重试 + 超时 + 熔断 + 降级）</li>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>"Agent 怎么上生产？"</p>
+<p>→ 可观测性 + 评测体系 + 安全防护 + 成本控制 + 可靠性</p>
+<p>→ 每个环节都可以展开讲具体方案</p>
+<p>→ 关键在于「工程化思维」而非「Demo 思维」</p></div><div class="code-section"><details open><summary>💻 源代码 (99 行)</summary><div class="code-block"><pre><span class="k">class</span> AgentProductionChecklist:
+CHECKLIST = [
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 可观测性</span>
         (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"每次 LLM 调用记录 input/output tokens + latency"</span>),
         (<span <span class="k">class</span>="s">"可观测性"</span>, <span <span class="k">class</span>="s">"每次 Tool Call 记录工具名 + 参数 + 结果 + 耗时"</span>),
@@ -384,99 +462,12 @@ skill/code-review     → 代码审查</pre>
 
     <span class="d">@classmethod</span>
     <span class="k">def</span> check(cls) -&gt; list[tuple[str, str, bool]]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"返回检查清单及每项的完成状态（这里标注为待检查）。
-
-        Returns:
-            (类别, 检查项, 是否完成) 的列表。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">return</span> [(cat, item, <span class="k">False</span>) <span class="k">for</span> cat, item <span class="k">in</span> cls.CHECKLIST]
+<span class="k">return</span> [(cat, item, <span class="k">False</span>) <span class="k">for</span> cat, item <span class="k">in</span> cls.CHECKLIST]
 
     <span class="d">@classmethod</span>
     <span class="k">def</span> print_checklist(cls):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"打印检查清单。"</span><span <span class="k">class</span>="s">""</span></span>
-        <span class="k">for</span> cat, item <span class="k">in</span> cls.CHECKLIST:
+<span class="k">for</span> cat, item <span class="k">in</span> cls.CHECKLIST:
             print(f<span <span class="k">class</span>="s">"  [{cat:8s}] ☐ {item}"</span>)
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">12.6</span> 全课程体系梳理 —— 回顾与展望
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-现在你学完了全部 <span class="n">12</span> 章：
-
-  Ch0   → 课程概览，理解 Agent 是什么
-  Ch1-<span class="n">3</span> → Agent 的基础理论（循环、组件、类型）
-  Ch4-<span class="n">5</span> → Agent 的工程实践（框架、Multi-Agent）
-  Ch6-<span class="n">7</span> → Agent 的评估与求职（评测、面试）
-  Ch8   → Claude Code 架构（nO/h2A/Compaction/SubAgent）
-  Ch9   → RAG 深度（Naive→Advanced→GraphRAG→Agentic RAG）
-  Ch10  → MCP 协议（JSON-RPC/原语/能力协商/传输层）
-  Ch11  → Tool Calling 底层（OpenAI vs Anthropic/Streaming/Strict）
-  Ch12  → 生产基础设施（OpenClaw/Harness/评测/可观测性）← 你在这里
-
-面试时你可以自信地讨论：
-  ✓ Agent 的核心循环和组件
-  ✓ Function Calling 的底层原理
-  ✓ MCP 协议的架构和调用流程
-  ✓ RAG 的技术演进和 GraphRAG
-  ✓ Claude Code 的设计哲学
-  ✓ Multi-Agent 系统的架构模式
-  ✓ Agent 的生产化 Checklist
-
-核心能力矩阵：
-┌──────────────────┬──────────────────────────┬─────────┐
-│      能力         │         覆盖章节          │  深度    │
-├──────────────────┼──────────────────────────┼─────────┤
-│ Agent 基础理论    │ Ch1, Ch2, Ch3            │  ⭐⭐⭐  │
-│ 框架上手          │ Ch4, Ch5                 │  ⭐⭐⭐  │
-│ RAG 技术栈        │ Ch9                      │  ⭐⭐⭐⭐ │
-│ MCP 协议          │ Ch10                     │  ⭐⭐⭐⭐ │
-│ Tool Calling     │ Ch11                     │  ⭐⭐⭐⭐⭐│
-│ Claude Code 架构  │ Ch8                      │  ⭐⭐⭐⭐⭐│
-│ 生产基础设施      │ Ch6, Ch12                │  ⭐⭐⭐  │
-│ 面试准备          │ Ch7                      │  ⭐⭐⭐⭐ │
-└──────────────────┴──────────────────────────┴─────────┘
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">12.7</span> 本章总结
-━━━━━━━━━━━━━━
-
-核心要点回顾：
-
-<span class="n">1</span>. OpenClaw
-   - Gateway 中心化架构（Node.js 控制平面）
-   - 多 Channel 接入（WhatsApp/Telegram/Discord）
-   - AgentSkills + ClawHub 插件生态
-   - 定位：「是 Agent，不是框架」
-
-<span class="n">2</span>. Harness (OpenHarness)
-   - CLI + SDK 双模式
-   - 支持任意 LLM + 本地模型
-   - /team 命令实现并行 Multi-Agent
-   - Alpha 阶段，但增长速度惊人
-
-<span class="n">3</span>. Agent 评测基础设施
-   - MultiAgentEval：企业级评测框架
-   - 核心概念：Scenario → Task → Sandbox → Metrics
-   - <span class="n">8</span> 种内置评测指标
-
-<span class="n">4</span>. 生产 Checklist（面试最爱问！）
-   - 可观测性（Tracing + Dashboard + Alerting）
-   - 评测体系（离线评测 + A/B测试 + 回归评测）
-   - 安全防护（Prompt Injection + 权限分级 + 审计）
-   - 成本控制（模型分层 + 缓存 + 预算）
-   - 可靠性（重试 + 超时 + 熔断 + 降级）
-
-面试速记：
-  <span <span class="k">class</span>="s">"Agent 怎么上生产？"</span>
-  → 可观测性 + 评测体系 + 安全防护 + 成本控制 + 可靠性
-  → 每个环节都可以展开讲具体方案
-  → 关键在于「工程化思维」而非「Demo 思维」
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第12章：OpenClaw / Harness 与 Agent 生产基础设施      ║"</span>)

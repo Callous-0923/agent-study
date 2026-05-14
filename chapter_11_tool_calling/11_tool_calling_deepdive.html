@@ -265,7 +265,196 @@ body {
 <p>&nbsp;</p>
 <p>关键差异：</p>
 <li>OpenAI: arguments 是 JSON 字符串（需要 json.loads）</li>
-<li>Anthropic: input 直接是 JSON 对象</li></div><div class="code-section"><details open><summary>💻 源代码 (423 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 两个平台的工具定义格式对比</span>
+<li>Anthropic: input 直接是 JSON 对象</li>
+<p>&nbsp;</p>
+<h2>11.4 Parallel Tool Calling —— 并行执行</h2>
+<p>&nbsp;</p>
+<p>当 LLM 判断多个工具调用之间没有依赖关系时，</p>
+<p>它可以一次性返回多个 tool_call，由你的代码并行执行。</p>
+<p>&nbsp;</p>
+<p>示例场景：</p>
+<p>用户：「北京和上海的天气分别怎么样？」</p>
+<p>&nbsp;</p>
+<p>LLM 返回 2 个 tool_call（同一个 response）:</p>
+<pre>tool_call_1: get_weather("北京")
+tool_call_2: get_weather("上海")</pre>
+<p>&nbsp;</p>
+<p>你的代码并行执行这两个请求（节省时间！）</p>
+<p>&nbsp;</p>
+<p>但需要注意：</p>
+<li>并行执行的前提：工具之间没有依赖关系</li>
+<li>如果 tool_2 依赖 tool_1 的结果 → 必须串行</li>
+<li>LLM 自己会判断（通过参数推断依赖关系）</li>
+<p>&nbsp;</p>
+<p>控制行为：</p>
+<p>OpenAI: tool_choice 参数</p>
+<li>"auto": LLM 自行决定（默认）</li>
+<li>"required": 必须至少调用一个工具</li>
+<li>"none": 不允许调用工具</li>
+<li>{"type": "function", "function": {"name": "get_weather"}}: 强制调用指定工具</li>
+<p>&nbsp;</p>
+<p>Anthropic: tool_choice 参数</p>
+<li>"auto": LLM 自行决定（默认）</li>
+<li>"any": 必须至少调用一个工具</li>
+<li>"tool": 强制调用指定工具</li>
+<li>不支持 "none"（没有等效设置）</li>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>11.5 Streaming Tool Calls —— 流式工具调用</h2>
+<p>&nbsp;</p>
+<p>在 streaming 模式下，tool_call 是「增量式」到达的：</p>
+<p>&nbsp;</p>
+<p>OpenAI streaming 过程：</p>
+<pre>chunk_1: {"delta": {"tool_calls": [{"index": 0, "id": "call_abc"}]}}
+chunk_2: {"delta": {"tool_calls": [{"index": 0, "function": {"name": "get"}}]}}
+chunk_3: {"delta": {"tool_calls": [{"index": 0, "function": {"name": "_weather"}}]}}
+chunk_4: {"delta": {"tool_calls": [{"index": 0, "function": {"arguments": "{\"cit"}}]}}
+chunk_5: {"delta": {"tool_calls": [{"index": 0, "function": {"arguments": "y\":\"北京\"}} ]}}
+...</pre>
+<p>&nbsp;</p>
+<p>我们需要「组装」这些增量片段为完整的 tool_call。</p>
+<p>&nbsp;</p>
+<p>Anthropic streaming 过程：</p>
+<pre>chunk_1: {"type": "content_block_start", "content_block": {"type": "tool_use", ...}}
+chunk_2: {"type": "content_block_delta", "delta": {"type": "input_json_delta", "partial_json": "{\"city\""}}
+chunk_3: {"type": "content_block_delta", "delta": {"type": "input_json_delta", "partial_json": ":\"北京\"}"}}
+...</pre>
+<p>&nbsp;</p>
+<p>关键挑战：</p>
+<li>需要维护状态机（哪些 tool_call 是同一个？）</li>
+<li>参数是增量到达的，需要累积拼接</li>
+<li>可能同时收到多个 tool_call 的流（用 index 区分）</li>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>11.6 Strict Function Calling —— 严格模式</h2>
+<p>&nbsp;</p>
+<p>OpenAI 在 2024 年推出了 strict 模式：</p>
+<p>设置 strict: true 时，LLM 保证输出的参数 100% 符合 JSON Schema。</p>
+<p>&nbsp;</p>
+<p>如何使用：</p>
+<li>所有参数必须定义为 object 类型</li>
+<li>所有字段必须有明确的 type</li>
+<li>可选字段必须设置 default 或 nullable</li>
+<li>不允许使用 anyOf / oneOf</li>
+<p>&nbsp;</p>
+<p>示例：</p>
+<p>{</p>
+<pre>"type": "function",
+"function": {
+  "name": "get_weather",
+  "strict": true,  // ← 开启严格模式
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "city": {"type": "string"},
+      "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]}
+    },
+    "required": ["city", "unit"],
+    "additionalProperties": false  // ← strict 模式必须设置
+  }
+}</pre>
+<p>}</p>
+<p>&nbsp;</p>
+<p>为什么需要 strict 模式？</p>
+<li>生产环境要求：参数格式错误会导致工具执行失败</li>
+<li>减少重试：不需要「尝试解析 → 失败 → 重新请求 LLM」</li>
+<li>安全考虑：防止 LLM 输出未定义的字段</li>
+<p>&nbsp;</p>
+<p>Anthropic 目前没有单独的 strict 参数，</p>
+<p>但可以通过 prompt 工程实现类似效果：</p>
+<p>"You MUST output exactly the parameters specified in the input_schema.</p>
+<p>Do not include any additional fields."</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>11.7 Tool Calling 的进阶技巧</h2>
+<p>&nbsp;</p>
+<li>工具描述即 Prompt 工程</li>
+<li>description 不只是给开发者看的，是给 LLM 看的！</li>
+<li>描述要回答三个问题：</li>
+<pre> a. 这个工具「做什么」？
+ b. 「什么时候」该用？
+ c. 「什么时候」不该用？</pre>
+<p>&nbsp;</p>
+<li>参数设计原则</li>
+<li>用 enum 限制选项（减少幻觉）</li>
+<li>提供清晰的参数描述</li>
+<li>必填 vs 可选要明确</li>
+<li>给出典型调用示例（在 description 中）</li>
+<p>&nbsp;</p>
+<li>错误处理 —— 工具结果应「帮助 LLM 纠正」</li>
+<p>✗ return "Error 404"</p>
+<p>✓ return "未找到城市'培京'的天气数据。城市名是否拼写有误？可用城市：北京、上海。"</p>
+<p>&nbsp;</p>
+<li>工具数量控制 —— 别给 LLM 太多选择</li>
+<li>超过 10 个工具时，LLM 的选择准确率显著下降</li>
+<li>采用「动态工具集」：根据当前上下文过滤可用工具</li>
+<li>分层的工具注册：先给概览，用户指定后再给详细工具</li>
+<p>&nbsp;</p>
+<li>工具调用确认（Human-in-the-Loop）</li>
+<li>读操作：自动执行（get_weather, search）</li>
+<li>写操作：需要确认（send_email, delete_file）</li>
+<li>危险操作：需要二次确认（execute_sql, run_command）</li>
+<p>&nbsp;</p>
+<p>模拟两个平台的 Tool Call 处理流程。</p>
+<p>&nbsp;</p>
+<pre>展示从 LLM 返回 → 解析 → 执行 → 返回结果的完整链路。</pre>
+<p>&nbsp;</p>
+<p>处理 OpenAI 风格的 tool_calls。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        llm_response: 模拟的 OpenAI LLM 响应。</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        执行结果描述。</pre>
+<p>&nbsp;</p>
+<p>处理 Anthropic 风格的 tool_use blocks。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        llm_response: 模拟的 Anthropic LLM 响应。</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        执行结果描述。</pre>
+<p>&nbsp;</p>
+<p>演示完整的 Tool Calling 流程。</p>
+<p>&nbsp;</p>
+<p>模拟 Streaming Tool Call 的组装过程。</p>
+<p>&nbsp;</p>
+<h2>11.8 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>Function Calling 的本质</li>
+<li>LLM 输出结构化 JSON，不是真的「调用」函数</li>
+<li>工具定义会计入 prompt token（成本）</li>
+<li>工具描述是 LLM 选择工具的唯一依据（Prompt 工程）</li>
+<p>&nbsp;</p>
+<li>OpenAI vs Anthropic</li>
+<li>arguments: JSON 字符串 vs 直接对象</li>
+<li>strict mode: OpenAI 有，Anthropic 靠 prompt</li>
+<li>底层原理相同，API 形式不同</li>
+<p>&nbsp;</p>
+<li>Parallel Tool Calling</li>
+<li>无依赖的工具可以并行执行</li>
+<li>LLM 自己判断依赖关系</li>
+<li>用 tool_choice 参数控制行为</li>
+<p>&nbsp;</p>
+<li>Streaming Tool Calls</li>
+<li>增量式到达，需要组装</li>
+<li>用 index 区分多个 tool_call</li>
+<li>需要维护状态机</li>
+<p>&nbsp;</p>
+<li>生产建议</li>
+<li>严格模式（当可用时）</li>
+<li>错误信息帮助 LLM 自我纠正</li>
+<li>工具分读写权限，写入需确认</li>
+<li>动态工具选择（减少 token 浪费）</li>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>"Function Calling 的原理是什么？"</p>
+<p>→ LLM 根据 tools 定义判断是否需要调用工具</p>
+<p>→ 输出结构化 JSON（包含工具名和参数）</p>
+<p>→ 开发者的代码执行真正的函数</p>
+<p>→ 将执行结果返回给 LLM</p></div><div class="code-section"><details open><summary>💻 源代码 (220 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 两个平台的工具定义格式对比</span>
 OPENAI_TOOL = {
     <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"function"</span>,
     <span <span class="k">class</span>="s">"function"</span>: {
@@ -295,150 +484,8 @@ ANTHROPIC_TOOL = {
         <span <span class="k">class</span>="s">"required"</span>: [<span <span class="k">class</span>="s">"city"</span>],
     },
 }
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">11.4</span> Parallel Tool Calling —— 并行执行
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-当 LLM 判断多个工具调用之间没有依赖关系时，
-它可以一次性返回多个 tool_call，由你的代码并行执行。
-
-示例场景：
-  用户：「北京和上海的天气分别怎么样？」
-
-  LLM 返回 <span class="n">2</span> 个 tool_call（同一个 response）:
-    tool_call_1: get_weather(<span <span class="k">class</span>="s">"北京"</span>)
-    tool_call_2: get_weather(<span <span class="k">class</span>="s">"上海"</span>)
-
-  你的代码并行执行这两个请求（节省时间！）
-
-但需要注意：
-  <span class="n">1</span>. 并行执行的前提：工具之间没有依赖关系
-  <span class="n">2</span>. 如果 tool_2 依赖 tool_1 的结果 → 必须串行
-  <span class="n">3</span>. LLM 自己会判断（通过参数推断依赖关系）
-
-控制行为：
-  OpenAI: tool_choice 参数
-    - <span <span class="k">class</span>="s">"auto"</span>: LLM 自行决定（默认）
-    - <span <span class="k">class</span>="s">"required"</span>: 必须至少调用一个工具
-    - <span <span class="k">class</span>="s">"none"</span>: 不允许调用工具
-    - {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"function"</span>, <span <span class="k">class</span>="s">"function"</span>: {<span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"get_weather"</span>}}: 强制调用指定工具
-
-  Anthropic: tool_choice 参数
-    - <span <span class="k">class</span>="s">"auto"</span>: LLM 自行决定（默认）
-    - <span <span class="k">class</span>="s">"any"</span>: 必须至少调用一个工具
-    - <span <span class="k">class</span>="s">"tool"</span>: 强制调用指定工具
-    - 不支持 <span <span class="k">class</span>="s">"none"</span>（没有等效设置）
-
-
-<span class="n">11.5</span> Streaming Tool Calls —— 流式工具调用
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-在 streaming 模式下，tool_call 是「增量式」到达的：
-
-  OpenAI streaming 过程：
-    chunk_1: {<span <span class="k">class</span>="s">"delta"</span>: {<span <span class="k">class</span>="s">"tool_calls"</span>: [{<span <span class="k">class</span>="s">"index"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"id"</span>: <span <span class="k">class</span>="s">"call_abc"</span>}]}}
-    chunk_2: {<span <span class="k">class</span>="s">"delta"</span>: {<span <span class="k">class</span>="s">"tool_calls"</span>: [{<span <span class="k">class</span>="s">"index"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"function"</span>: {<span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"get"</span>}}]}}
-    chunk_3: {<span <span class="k">class</span>="s">"delta"</span>: {<span <span class="k">class</span>="s">"tool_calls"</span>: [{<span <span class="k">class</span>="s">"index"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"function"</span>: {<span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"_weather"</span>}}]}}
-    chunk_4: {<span <span class="k">class</span>="s">"delta"</span>: {<span <span class="k">class</span>="s">"tool_calls"</span>: [{<span <span class="k">class</span>="s">"index"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"function"</span>: {<span <span class="k">class</span>="s">"arguments"</span>: <span <span class="k">class</span>="s">"{\"cit"</span>}}]}}
-    chunk_5: {<span <span class="k">class</span>="s">"delta"</span>: {<span <span class="k">class</span>="s">"tool_calls"</span>: [{<span <span class="k">class</span>="s">"index"</span>: <span class="n">0</span>, <span <span class="k">class</span>="s">"function"</span>: {<span <span class="k">class</span>="s">"arguments"</span>: "y\":\"北京\"}} ]}}
-    ...
-
-  我们需要「组装」这些增量片段为完整的 tool_call。
-
-  Anthropic streaming 过程：
-    chunk_1: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"content_block_start"</span>, <span <span class="k">class</span>="s">"content_block"</span>: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"tool_use"</span>, ...}}
-    chunk_2: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"content_block_delta"</span>, <span <span class="k">class</span>="s">"delta"</span>: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"input_json_delta"</span>, <span <span class="k">class</span>="s">"partial_json"</span>: <span <span class="k">class</span>="s">"{\"city\""</span>}}
-    chunk_3: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"content_block_delta"</span>, <span <span class="k">class</span>="s">"delta"</span>: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"input_json_delta"</span>, <span <span class="k">class</span>="s">"partial_json"</span>: <span <span class="k">class</span>="s">":\"北京\"}"</span>}}
-    ...
-
-关键挑战：
-  <span class="n">1</span>. 需要维护状态机（哪些 tool_call 是同一个？）
-  <span class="n">2</span>. 参数是增量到达的，需要累积拼接
-  <span class="n">3</span>. 可能同时收到多个 tool_call 的流（用 index 区分）
-
-
-<span class="n">11.6</span> Strict Function Calling —— 严格模式
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-OpenAI 在 <span class="n">2024</span> 年推出了 strict 模式：
-  设置 strict: true 时，LLM 保证输出的参数 <span class="n">100</span>% 符合 JSON Schema。
-
-如何使用：
-  - 所有参数必须定义为 object 类型
-  - 所有字段必须有明确的 type
-  - 可选字段必须设置 default 或 nullable
-  - 不允许使用 anyOf / oneOf
-
-示例：
-  {
-    <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"function"</span>,
-    <span <span class="k">class</span>="s">"function"</span>: {
-      <span <span class="k">class</span>="s">"name"</span>: <span <span class="k">class</span>="s">"get_weather"</span>,
-      <span <span class="k">class</span>="s">"strict"</span>: true,  // ← 开启严格模式
-      <span <span class="k">class</span>="s">"parameters"</span>: {
-        <span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"object"</span>,
-        <span <span class="k">class</span>="s">"properties"</span>: {
-          <span <span class="k">class</span>="s">"city"</span>: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>},
-          <span <span class="k">class</span>="s">"unit"</span>: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"string"</span>, <span <span class="k">class</span>="s">"enum"</span>: [<span <span class="k">class</span>="s">"celsius"</span>, <span <span class="k">class</span>="s">"fahrenheit"</span>]}
-        },
-        <span <span class="k">class</span>="s">"required"</span>: [<span <span class="k">class</span>="s">"city"</span>, <span <span class="k">class</span>="s">"unit"</span>],
-        <span <span class="k">class</span>="s">"additionalProperties"</span>: false  // ← strict 模式必须设置
-      }
-    }
-  }
-
-为什么需要 strict 模式？
-  <span class="n">1</span>. 生产环境要求：参数格式错误会导致工具执行失败
-  <span class="n">2</span>. 减少重试：不需要「尝试解析 → 失败 → 重新请求 LLM」
-  <span class="n">3</span>. 安全考虑：防止 LLM 输出未定义的字段
-
-Anthropic 目前没有单独的 strict 参数，
-但可以通过 prompt 工程实现类似效果：
-  "You MUST output exactly the parameters specified <span class="k">in</span> the input_schema.
-   Do <span class="k">not</span> include any additional fields."
-
-
-<span class="n">11.7</span> Tool Calling 的进阶技巧
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-<span class="n">1</span>. 工具描述即 Prompt 工程
-   - description 不只是给开发者看的，是给 LLM 看的！
-   - 描述要回答三个问题：
-     a. 这个工具「做什么」？
-     b. 「什么时候」该用？
-     c. 「什么时候」不该用？
-
-<span class="n">2</span>. 参数设计原则
-   - 用 enum 限制选项（减少幻觉）
-   - 提供清晰的参数描述
-   - 必填 vs 可选要明确
-   - 给出典型调用示例（在 description 中）
-
-<span class="n">3</span>. 错误处理 —— 工具结果应「帮助 LLM 纠正」
-   ✗ <span class="k">return</span> <span <span class="k">class</span>="s">"Error <span class="n">404</span>"</span>
-   ✓ <span class="k">return</span> <span <span class="k">class</span>="s">"未找到城市<span <span class="k">class</span>='s'>'培京'</span>的天气数据。城市名是否拼写有误？可用城市：北京、上海。"</span>
-
-<span class="n">4</span>. 工具数量控制 —— 别给 LLM 太多选择
-   - 超过 <span class="n">10</span> 个工具时，LLM 的选择准确率显著下降
-   - 采用「动态工具集」：根据当前上下文过滤可用工具
-   - 分层的工具注册：先给概览，用户指定后再给详细工具
-
-<span class="n">5</span>. 工具调用确认（Human-<span class="k">in</span>-the-Loop）
-   - 读操作：自动执行（get_weather, search）
-   - 写操作：需要确认（send_email, delete_file）
-   - 危险操作：需要二次确认（execute_sql, run_command）
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">class</span> ToolCallSimulator:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟两个平台的 Tool Call 处理流程。
-
-    展示从 LLM 返回 → 解析 → 执行 → 返回结果的完整链路。
-    <span <span class="k">class</span>="s">""</span>"</span>
-
-    <span class="k">def</span> __init__(self):
+<span class="k">def</span> __init__(self):
         self.tools = {
             <span <span class="k">class</span>="s">"get_weather"</span>: <span class="k">lambda</span> args: f<span <span class="k">class</span>="s">"天气: {args.get(<span <span class="k">class</span>='s'>'city'</span>, <span <span class="k">class</span>='s'>'未知'</span>)} 晴 <span class="n">25</span>°C"</span>,
             <span <span class="k">class</span>="s">"search"</span>: <span class="k">lambda</span> args: f<span <span class="k">class</span>="s">"搜索结果(关于<span <span class="k">class</span>='s'>'{args.get('</span>query<span <span class="k">class</span>='s'>', '</span><span <span class="k">class</span>='s'>')}'</span>): ..."</span>,
@@ -446,15 +493,7 @@ Anthropic 目前没有单独的 strict 参数，
         }
 
     <span class="k">def</span> process_openai_style(self, llm_response: dict) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"处理 OpenAI 风格的 tool_calls。
-
-        Args:
-            llm_response: 模拟的 OpenAI LLM 响应。
-
-        Returns:
-            执行结果描述。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        tool_calls = llm_response.get(<span <span class="k">class</span>="s">"tool_calls"</span>, [])
+tool_calls = llm_response.get(<span <span class="k">class</span>="s">"tool_calls"</span>, [])
         <span class="k">if</span> <span class="k">not</span> tool_calls:
             <span class="k">return</span> <span <span class="k">class</span>="s">"LLM 直接回答: "</span> + llm_response.get(<span <span class="k">class</span>="s">"content"</span>, <span <span class="k">class</span>="s">""</span>)
 
@@ -486,15 +525,7 @@ Anthropic 目前没有单独的 strict 参数，
         <span class="k">return</span> str(results)
 
     <span class="k">def</span> process_anthropic_style(self, llm_response: dict) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"处理 Anthropic 风格的 tool_use blocks。
-
-        Args:
-            llm_response: 模拟的 Anthropic LLM 响应。
-
-        Returns:
-            执行结果描述。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        content_blocks = llm_response.get(<span <span class="k">class</span>="s">"content"</span>, [])
+content_blocks = llm_response.get(<span <span class="k">class</span>="s">"content"</span>, [])
         tool_uses = [b <span class="k">for</span> b <span class="k">in</span> content_blocks <span class="k">if</span> b.get(<span <span class="k">class</span>="s">"type"</span>) == <span <span class="k">class</span>="s">"tool_use"</span>]
 
         <span class="k">if</span> <span class="k">not</span> tool_uses:
@@ -527,8 +558,7 @@ Anthropic 目前没有单独的 strict 参数，
 
 
 <span class="k">def</span> demo_tool_calling_flow():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示完整的 Tool Calling 流程。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Tool Calling 完整流程演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -576,8 +606,7 @@ Anthropic 目前没有单独的 strict 参数，
 
 
 <span class="k">def</span> demo_streaming_assembly():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"模拟 Streaming Tool Call 的组装过程。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Streaming Tool Call 组装演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -612,49 +641,6 @@ Anthropic 目前没有单独的 strict 参数，
     print(<span <span class="k">class</span>="s">"\n  组装后的完整 tool_call:"</span>)
     <span class="k">for</span> idx, tc <span class="k">in</span> tool_calls_state.items():
         print(f<span <span class="k">class</span>="s">"  tool_call[{idx}]: {tc[<span <span class="k">class</span>='s'>'name'</span>]}({tc[<span <span class="k">class</span>='s'>'arguments'</span>]})"</span>)
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">11.8</span> 本章总结
-━━━━━━━━━━━━━━
-
-核心要点回顾：
-
-<span class="n">1</span>. Function Calling 的本质
-   - LLM 输出结构化 JSON，不是真的「调用」函数
-   - 工具定义会计入 prompt token（成本）
-   - 工具描述是 LLM 选择工具的唯一依据（Prompt 工程）
-
-<span class="n">2</span>. OpenAI vs Anthropic
-   - arguments: JSON 字符串 vs 直接对象
-   - strict mode: OpenAI 有，Anthropic 靠 prompt
-   - 底层原理相同，API 形式不同
-
-<span class="n">3</span>. Parallel Tool Calling
-   - 无依赖的工具可以并行执行
-   - LLM 自己判断依赖关系
-   - 用 tool_choice 参数控制行为
-
-<span class="n">4</span>. Streaming Tool Calls
-   - 增量式到达，需要组装
-   - 用 index 区分多个 tool_call
-   - 需要维护状态机
-
-<span class="n">5</span>. 生产建议
-   - 严格模式（当可用时）
-   - 错误信息帮助 LLM 自我纠正
-   - 工具分读写权限，写入需确认
-   - 动态工具选择（减少 token 浪费）
-
-面试速记：
-  <span <span class="k">class</span>="s">"Function Calling 的原理是什么？"</span>
-  → LLM 根据 tools 定义判断是否需要调用工具
-  → 输出结构化 JSON（包含工具名和参数）
-  → 开发者的代码执行真正的函数
-  → 将执行结果返回给 LLM
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第11章：Tool Calling 底层机制深度剖析                 ║"</span>)

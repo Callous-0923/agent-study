@@ -176,7 +176,188 @@ body {
 ├──────────────┼───────────────────────────────────────┤
 │ 竞争式        │ 多个 Agent 各自生成方案，择优选用         │
 │ (Competitive)│ 典型：辩论式 Agent / Self-Play          │
-└──────────────┴───────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 源代码 (476 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+└──────────────┴───────────────────────────────────────┘</pre>
+<p>&nbsp;</p>
+<h2>5.2 用 LangGraph 构建双 Agent 协作系统</h2>
+<p>&nbsp;</p>
+<p>场景：内容创作流水线</p>
+<li>Writer Agent: 负责创作内容</li>
+<li>Reviewer Agent: 负责审核和改进</li>
+<p>&nbsp;</p>
+<p>流程：</p>
+<p>输入需求 → Writer 创作 → Reviewer 审核 →</p>
+<p>如果不合格 → Writer 修改 → Reviewer 再审 →</p>
+<p>如果合格 → 输出终稿</p>
+<p>&nbsp;</p>
+<p>内容创作团队的状态。</p>
+<p>&nbsp;</p>
+<pre>所有 Agent 节点共享此状态，通过读写状态来协作。
+这是 LangGraph 多 Agent 系统的核心：
+状态是 Agent 之间的「共享白板」。</pre>
+<p>&nbsp;</p>
+<p>你是一位专业的内容创作者。</p>
+<p>风格要求：</p>
+<li>语言简洁有力</li>
+<li>逻辑清晰，论据充分</li>
+<li>面向技术读者的科普风格</li>
+<li>字数在 300-500 字之间</li>
+<p>&nbsp;</p>
+<p>你是一位严格的内容审核编辑。</p>
+<p>审查标准：</p>
+<li>准确性：内容是否有事实性错误？</li>
+<li>逻辑性：论述是否严密？</li>
+<li>可读性：是否通俗易懂？</li>
+<li>完整性：是否覆盖了任务要求的所有方面？</li>
+<p>&nbsp;</p>
+<p>返回格式：</p>
+<p>{"score": 1-10, "issues": ["问题1", "问题2"],</p>
+<p>"approved": true/false, "suggestions": "改进建议"}</p>
+<p>&nbsp;</p>
+<p>构建内容创作双 Agent 团队。</p>
+<p>&nbsp;</p>
+<pre>Args:
+    llm: LangChain ChatOpenAI 实例。</pre>
+<p>&nbsp;</p>
+<pre>Returns:
+    编译后的 LangGraph 应用。</pre>
+<p>&nbsp;</p>
+<p>Writer Agent：创作内容或根据审核意见修改。</p>
+<p>&nbsp;</p>
+<p>Reviewer Agent：审核草稿质量。</p>
+<p>&nbsp;</p>
+<p>决定是否继续迭代。</p>
+<p>&nbsp;</p>
+<pre>    Returns:
+        'writer': 需要 Writer 修改
+        'end': 审核通过或达到最大迭代次数</pre>
+<p>&nbsp;</p>
+<p>图结构示意：</p>
+<p>&nbsp;</p>
+<pre> [START]
+    │
+    ▼</pre>
+<pre>   ┌─────────┐
+   │  Writer  │ ←──────────┐
+   └────┬────┘             │
+        │ (草稿)            │
+        ▼                   │
+   ┌──────────┐   不合格     │
+   │ Reviewer  │────────────┘
+   └────┬─────┘
+        │ (合格)</pre>
+<pre>    ▼
+ [END]</pre>
+<p>&nbsp;</p>
+<p>这是协作式 + 分层式的混合架构：</p>
+<li>Writer 和 Reviewer 是协作关系（双方一起产出内容）</li>
+<li>Reviewer 对 Writer 有审查-修改的上下级关系</li>
+<p>&nbsp;</p>
+<p>演示双 Agent 内容创作团队。</p>
+<p>&nbsp;</p>
+<h2>5.3 crewAI 风格的角色-Crew 模型</h2>
+<p>&nbsp;</p>
+<p>crewAI 采用「Crew = Agents + Tasks」模型：</p>
+<li>定义一系列 Agent（角色）</li>
+<li>定义一系列 Task（任务）</li>
+<li>将任务分配给 Agent 组成 Crew</li>
+<li>Crew 自动协调执行</li>
+<p>&nbsp;</p>
+<p>虽然我们不直接安装 crewAI（避免依赖过重），</p>
+<p>但可以用 LangChain 模拟其核心概念来理解其设计思想。</p>
+<p>&nbsp;</p>
+<p>模拟 crewAI 风格的角色 Agent。</p>
+<p>&nbsp;</p>
+<pre>crewAI 的核心设计理念：
+  1. 每个 Agent 有明确的角色(role)、目标(goal)、背景(backstory)
+  2. Agent 之间通过任务(task)来协作
+  3. 可以设置 allow_delegation 允许 Agent 把任务委派给其他 Agent</pre>
+<p>&nbsp;</p>
+<p>初始化角色 Agent。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        name: Agent 名称。
+        role: 角色描述（如 "数据分析师"）。
+        goal: 目标描述。
+        backstory: 背景故事（帮助 LLM 理解角色定位）。
+        llm: LangChain LLM 实例。</pre>
+<p>&nbsp;</p>
+<p>执行分配给此 Agent 的任务。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        task: 任务描述。</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        执行结果。</pre>
+<p>&nbsp;</p>
+<p>演示 crewAI 风格的多 Agent 协作。</p>
+<p>&nbsp;</p>
+<pre>场景：市场分析报告
+  - 数据分析师：收集和处理数据
+  - 策略规划师：基于数据制定策略
+  - 报告撰写师：汇总形成最终报告</pre>
+<p>&nbsp;</p>
+<h2>5.4 Multi-Agent 设计原则（面试高频！）</h2>
+<p>&nbsp;</p>
+<li>职责单一原则</li>
+<li>每个 Agent 只做一件事，做到极致</li>
+<li>不要给一个 Agent 塞太多职责</li>
+<p>&nbsp;</p>
+<li>通信标准化</li>
+<li>Agent 之间用结构化格式通信（JSON/XML）</li>
+<li>避免自然语言的模糊性</li>
+<p>&nbsp;</p>
+<li>错误隔离</li>
+<li>一个 Agent 失败不应导致整个系统崩溃</li>
+<li>设置重试机制和降级策略</li>
+<p>&nbsp;</p>
+<li>可观测性</li>
+<li>记录每个 Agent 的输入/输出/耗时</li>
+<li>便于调试和优化</li>
+<p>&nbsp;</p>
+<li>成本控制</li>
+<li>Multi-Agent 会成倍增加 API 调用量</li>
+<li>用缓存、batching、模型分层来降低成本</li>
+<p>&nbsp;</p>
+<p>面试常问：</p>
+<p>"Multi-Agent 比单 Agent 好在哪里？什么时候不该用？"</p>
+<p>&nbsp;</p>
+<p>好处：</p>
+<li>分工专业化，输出质量更高</li>
+<li>复杂任务可以并行处理</li>
+<li>系统更模块化、易维护</li>
+<p>&nbsp;</p>
+<p>不适用场景：</p>
+<li>简单任务（杀鸡用牛刀）</li>
+<li>成本敏感场景（多倍 API 调用）</li>
+<li>Agent 间协调开销 > 收益的场景</li>
+<p>&nbsp;</p>
+<h2>5.5 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>Multi-Agent = 多角色协作</li>
+<li>协作式：平等对话，共同决策</li>
+<li>分层式：上级委派，下级执行</li>
+<li>竞争式：多方生成，择优选用</li>
+<p>&nbsp;</p>
+<li>通信机制</li>
+<li>共享状态（LangGraph 的方式）</li>
+<li>消息传递（AutoGen 的方式）</li>
+<li>任务委派（crewAI 的方式）</li>
+<p>&nbsp;</p>
+<li>实践框架</li>
+<li>LangGraph：灵活构建自定义 Multi-Agent 图</li>
+<li>crewAI：开箱即用的角色-任务模型</li>
+<li>AutoGen：对话驱动的 Multi-Agent</li>
+<p>&nbsp;</p>
+<li>设计原则</li>
+<li>职责单一、通信标准化、错误隔离、可观测、控成本</li>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>"你们项目用了 Multi-Agent 吗？为什么？"</p>
+<p>→ 描述场景复杂度（需要多角色协作）</p>
+<p>→ 说明架构设计（用什么模式、为什么）</p>
+<p>→ 展示效果提升（效率/质量提升多少）</p></div><div class="code-section"><details open><summary>💻 源代码 (266 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -191,32 +372,8 @@ load_dotenv()
     LANGGRAPH_AVAILABLE = <span class="k">True</span>
 <span class="k">except</span> ImportError:
     LANGGRAPH_AVAILABLE = <span class="k">False</span>
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">5.2</span> 用 LangGraph 构建双 Agent 协作系统
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-场景：内容创作流水线
-  - Writer Agent: 负责创作内容
-  - Reviewer Agent: 负责审核和改进
-
-流程：
-  输入需求 → Writer 创作 → Reviewer 审核 → 
-  如果不合格 → Writer 修改 → Reviewer 再审 →
-  如果合格 → 输出终稿
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">class</span> ContentTeamState(TypedDict):
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"内容创作团队的状态。
-
-    所有 Agent 节点共享此状态，通过读写状态来协作。
-    这是 LangGraph 多 Agent 系统的核心：
-    状态是 Agent 之间的「共享白板」。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    messages: Annotated[list, add_messages]
+messages: Annotated[list, add_messages]
     task: str                      <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 原始任务</span>
     draft: str                     <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Writer 的草稿</span>
     review: str                    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Reviewer 的审核意见</span>
@@ -225,38 +382,11 @@ load_dotenv()
     max_iterations: int            <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 最大迭代次数</span>
 
 
-WRITER_SYSTEM_PROMPT = <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"你是一位专业的内容创作者。
-风格要求：
-- 语言简洁有力
-- 逻辑清晰，论据充分
-- 面向技术读者的科普风格
-- 字数在 <span class="n">300</span>-<span class="n">500</span> 字之间<span <span class="k">class</span>="s">""</span>"</span>
-
-REVIEWER_SYSTEM_PROMPT = <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"你是一位严格的内容审核编辑。
-审查标准：
-- 准确性：内容是否有事实性错误？
-- 逻辑性：论述是否严密？
-- 可读性：是否通俗易懂？
-- 完整性：是否覆盖了任务要求的所有方面？
-
-返回格式：
-{<span <span class="k">class</span>="s">"score"</span>: <span class="n">1</span>-<span class="n">10</span>, <span <span class="k">class</span>="s">"issues"</span>: [<span <span class="k">class</span>="s">"问题1"</span>, <span <span class="k">class</span>="s">"问题2"</span>], 
- <span <span class="k">class</span>="s">"approved"</span>: true/false, <span <span class="k">class</span>="s">"suggestions"</span>: <span <span class="k">class</span>="s">"改进建议"</span>}<span <span class="k">class</span>="s">""</span>"</span>
-
-
+WRITER_SYSTEM_PROMPT =
+REVIEWER_SYSTEM_PROMPT =
 <span class="k">def</span> build_content_team(llm):
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"构建内容创作双 Agent 团队。
-
-    Args:
-        llm: LangChain ChatOpenAI 实例。
-
-    Returns:
-        编译后的 LangGraph 应用。
-    <span <span class="k">class</span>="s">""</span>"</span>
-
-    <span class="k">def</span> writer_node(state: ContentTeamState) -&gt; ContentTeamState:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Writer Agent：创作内容或根据审核意见修改。"</span><span <span class="k">class</span>="s">""</span></span>
-        iteration = state.get(<span <span class="k">class</span>="s">"iteration"</span>, <span class="n">0</span>)
+<span class="k">def</span> writer_node(state: ContentTeamState) -&gt; ContentTeamState:
+iteration = state.get(<span <span class="k">class</span>="s">"iteration"</span>, <span class="n">0</span>)
         review = state.get(<span <span class="k">class</span>="s">"review"</span>, <span <span class="k">class</span>="s">""</span>)
 
         <span class="k">if</span> review <span class="k">and</span> iteration &gt; <span class="n">0</span>:
@@ -279,8 +409,7 @@ REVIEWER_SYSTEM_PROMPT = <span <span class="k">class</span>=<span <span class="k
         <span class="k">return</span> state
 
     <span class="k">def</span> reviewer_node(state: ContentTeamState) -&gt; ContentTeamState:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Reviewer Agent：审核草稿质量。"</span><span <span class="k">class</span>="s">""</span></span>
-        print(f<span <span class="k">class</span>="s">"  🔍 [Reviewer] 正在审核..."</span>)
+print(f<span <span class="k">class</span>="s">"  🔍 [Reviewer] 正在审核..."</span>)
 
         prompt = (
             f<span <span class="k">class</span>="s">"任务要求: {state[<span <span class="k">class</span>='s'>'task'</span>]}\n\n"</span>
@@ -306,13 +435,7 @@ REVIEWER_SYSTEM_PROMPT = <span <span class="k">class</span>=<span <span class="k
         <span class="k">return</span> state
 
     <span class="k">def</span> should_continue(state: ContentTeamState) -&gt; Literal[<span <span class="k">class</span>="s">"writer"</span>, <span <span class="k">class</span>="s">"end"</span>]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"决定是否继续迭代。
-
-        Returns:
-            <span <span class="k">class</span>='s'>'writer'</span>: 需要 Writer 修改
-            <span <span class="k">class</span>='s'>'end'</span>: 审核通过或达到最大迭代次数
-        <span <span class="k">class</span>="s">""</span>"</span>
-        iteration = state.get(<span <span class="k">class</span>="s">"iteration"</span>, <span class="n">0</span>)
+iteration = state.get(<span <span class="k">class</span>="s">"iteration"</span>, <span class="n">0</span>)
         max_iter = state.get(<span <span class="k">class</span>="s">"max_iterations"</span>, <span class="n">3</span>)
         approved = state.get(<span <span class="k">class</span>="s">"approved"</span>, <span class="k">False</span>)
 
@@ -342,35 +465,8 @@ REVIEWER_SYSTEM_PROMPT = <span <span class="k">class</span>=<span <span class="k
     )
 
     <span class="k">return</span> workflow.compile()
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-图结构示意：
-
-     [START]
-        │
-        ▼
-   ┌─────────┐
-   │  Writer  │ ←──────────┐
-   └────┬────┘             │
-        │ (草稿)            │
-        ▼                   │
-   ┌──────────┐   不合格     │
-   │ Reviewer  │────────────┘
-   └────┬─────┘
-        │ (合格)
-        ▼
-     [END]
-
-这是协作式 + 分层式的混合架构：
-  - Writer 和 Reviewer 是协作关系（双方一起产出内容）
-  - Reviewer 对 Writer 有审查-修改的上下级关系
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">def</span> demo_content_team():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示双 Agent 内容创作团队。"</span><span <span class="k">class</span>="s">""</span></span>
-    <span class="k">if</span> <span class="k">not</span> LANGGRAPH_AVAILABLE:
+<span class="k">if</span> <span class="k">not</span> LANGGRAPH_AVAILABLE:
         print(<span <span class="k">class</span>="s">"需要安装 langgraph 才能运行此演示。"</span>)
         <span class="k">return</span>
 
@@ -409,60 +505,17 @@ REVIEWER_SYSTEM_PROMPT = <span <span class="k">class</span>=<span <span class="k
         print(final_state[<span <span class="k">class</span>="s">"draft"</span>])
     <span class="k">except</span> Exception <span class="k">as</span> e:
         print(f<span <span class="k">class</span>="s">"  ⚠️ 运行出错: {e}"</span>)
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">5.3</span> crewAI 风格的角色-Crew 模型
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-crewAI 采用「Crew = Agents + Tasks」模型：
-  - 定义一系列 Agent（角色）
-  - 定义一系列 Task（任务）
-  - 将任务分配给 Agent 组成 Crew
-  - Crew 自动协调执行
-
-虽然我们不直接安装 crewAI（避免依赖过重），
-但可以用 LangChain 模拟其核心概念来理解其设计思想。
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">class</span> RoleBasedAgent:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 crewAI 风格的角色 Agent。
-
-    crewAI 的核心设计理念：
-      <span class="n">1</span>. 每个 Agent 有明确的角色(role)、目标(goal)、背景(backstory)
-      <span class="n">2</span>. Agent 之间通过任务(task)来协作
-      <span class="n">3</span>. 可以设置 allow_delegation 允许 Agent 把任务委派给其他 Agent
-    <span <span class="k">class</span>="s">""</span>"</span>
-
-    <span class="k">def</span> __init__(self, name: str, role: str, goal: str, backstory: str,
+<span class="k">def</span> __init__(self, name: str, role: str, goal: str, backstory: str,
                  llm=<span class="k">None</span>):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"初始化角色 Agent。
-
-        Args:
-            name: Agent 名称。
-            role: 角色描述（如 <span <span class="k">class</span>="s">"数据分析师"</span>）。
-            goal: 目标描述。
-            backstory: 背景故事（帮助 LLM 理解角色定位）。
-            llm: LangChain LLM 实例。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        self.name = name
+self.name = name
         self.role = role
         self.goal = goal
         self.backstory = backstory
         self.llm = llm
 
     <span class="k">def</span> execute(self, task: str) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"执行分配给此 Agent 的任务。
-
-        Args:
-            task: 任务描述。
-
-        Returns:
-            执行结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        system_prompt = (
+system_prompt = (
             f<span <span class="k">class</span>="s">"你是 {self.name}，一名 {self.role}。\n"</span>
             f<span <span class="k">class</span>="s">"你的目标: {self.goal}\n"</span>
             f<span <span class="k">class</span>="s">"你的背景: {self.backstory}"</span>
@@ -477,14 +530,7 @@ crewAI 采用「Crew = Agents + Tasks」模型：
 
 
 <span class="k">def</span> demo_crew_style():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"演示 crewAI 风格的多 Agent 协作。
-
-    场景：市场分析报告
-      - 数据分析师：收集和处理数据
-      - 策略规划师：基于数据制定策略
-      - 报告撰写师：汇总形成最终报告
-    <span <span class="k">class</span>="s">""</span>"</span>
-    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  crewAI 风格: 市场分析团队演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -548,81 +594,6 @@ crewAI 采用「Crew = Agents + Tasks」模型：
 
     print(<span <span class="k">class</span>="s">"\n📄 ===== 最终报告摘要 ====="</span>)
     print(report <span class="k">if</span> len(report) &lt; <span class="n">500</span> <span class="k">else</span> report[:<span class="n">500</span>] + <span <span class="k">class</span>="s">"..."</span>)
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">5.4</span> Multi-Agent 设计原则（面试高频！）
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-<span class="n">1</span>. 职责单一原则
-   - 每个 Agent 只做一件事，做到极致
-   - 不要给一个 Agent 塞太多职责
-
-<span class="n">2</span>. 通信标准化
-   - Agent 之间用结构化格式通信（JSON/XML）
-   - 避免自然语言的模糊性
-
-<span class="n">3</span>. 错误隔离
-   - 一个 Agent 失败不应导致整个系统崩溃
-   - 设置重试机制和降级策略
-
-<span class="n">4</span>. 可观测性
-   - 记录每个 Agent 的输入/输出/耗时
-   - 便于调试和优化
-
-<span class="n">5</span>. 成本控制
-   - Multi-Agent 会成倍增加 API 调用量
-   - 用缓存、batching、模型分层来降低成本
-
-面试常问：
-  <span <span class="k">class</span>="s">"Multi-Agent 比单 Agent 好在哪里？什么时候不该用？"</span>
-
-  好处：
-    - 分工专业化，输出质量更高
-    - 复杂任务可以并行处理
-    - 系统更模块化、易维护
-
-  不适用场景：
-    - 简单任务（杀鸡用牛刀）
-    - 成本敏感场景（多倍 API 调用）
-    - Agent 间协调开销 &gt; 收益的场景
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">5.5</span> 本章总结
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-核心要点回顾：
-
-<span class="n">1</span>. Multi-Agent = 多角色协作
-   - 协作式：平等对话，共同决策
-   - 分层式：上级委派，下级执行
-   - 竞争式：多方生成，择优选用
-
-<span class="n">2</span>. 通信机制
-   - 共享状态（LangGraph 的方式）
-   - 消息传递（AutoGen 的方式）
-   - 任务委派（crewAI 的方式）
-
-<span class="n">3</span>. 实践框架
-   - LangGraph：灵活构建自定义 Multi-Agent 图
-   - crewAI：开箱即用的角色-任务模型
-   - AutoGen：对话驱动的 Multi-Agent
-
-<span class="n">4</span>. 设计原则
-   - 职责单一、通信标准化、错误隔离、可观测、控成本
-
-面试速记：
-  <span <span class="k">class</span>="s">"你们项目用了 Multi-Agent 吗？为什么？"</span>
-  → 描述场景复杂度（需要多角色协作）
-  → 说明架构设计（用什么模式、为什么）
-  → 展示效果提升（效率/质量提升多少）
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║       第5章：多智能体系统 (Multi-Agent)               ║"</span>)

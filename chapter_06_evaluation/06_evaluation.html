@@ -173,57 +173,148 @@ body {
 <li>SWE-bench: 软件工程任务评测</li>
 <li>WebArena: Web 操作评测</li>
 <li>GAIA: 通用 AI 助手评测</li>
-<li>τ-Bench: 工具使用评测</li></div><div class="code-section"><details open><summary>💻 源代码 (335 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<li>τ-Bench: 工具使用评测</li>
+<p>&nbsp;</p>
+<h2>6.2 Agent 评测框架（可运行）</h2>
+<p>&nbsp;</p>
+<p>Agent 评测器 —— 系统化评估 Agent 的表现。</p>
+<p>&nbsp;</p>
+<pre>设计思路：
+  1. 准备一组测试用例（输入 + 期望输出 + 评估标准）
+  2. 对每个用例运行 Agent
+  3. 用 LLM 作为评判员（LLM-as-Judge）来打分
+  4. 汇总统计并生成报告</pre>
+<p>&nbsp;</p>
+<pre>LLM-as-Judge 是目前业界评估 Agent 的主流方法：
+  因为 Agent 的输出是自然语言，传统指标（BLEU/ROUGE）
+  无法准确评估语义层面的质量。</pre>
+<p>&nbsp;</p>
+<p>初始化评测器。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        llm: 用于评分的 LLM 函数（可选的 LLM-as-Judge）。</pre>
+<p>&nbsp;</p>
+<p>运行评测。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        agent_func: Agent 执行函数，签名为 (input: str) -> str。
+        test_cases: 测试用例列表，每个用例包含:
+            - input: 输入文本
+            - expected_keywords: 回答应包含的关键词（可选）
+            - expected_tool: 预期调用的工具名（可选）
+            - weight: 权重（默认 1.0）</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        评测结果列表。</pre>
+<p>&nbsp;</p>
+<p>检查输出是否包含期望关键词。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        output: Agent 输出。
+        keywords: 期望出现的关键词列表。</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        匹配比例（0~1）。</pre>
+<p>&nbsp;</p>
+<p>生成评测汇总报告。</p>
+<p>&nbsp;</p>
+<pre>    Returns:
+        格式化的评测报告。</pre>
+<p>&nbsp;</p>
+<p>演示 Agent 评测体系。</p>
+<p>&nbsp;</p>
+<p>模拟 Agent —— 用于演示评测流程。</p>
+<p>&nbsp;</p>
+<h2>6.3 Agent 测试策略</h2>
+<p>&nbsp;</p>
+<p>测试金字塔（从底层到顶层）：</p>
+<p>&nbsp;</p>
+<p>Layer 1: 工具单元测试</p>
+<li>测试每个 Tool 函数的输入/输出</li>
+<li>确保工具在 LLM 调用前已经正确</li>
+<p>&nbsp;</p>
+<p>Layer 2: Agent 行为测试</p>
+<li>给定输入，验证是否调用了正确的工具</li>
+<li>验证 tool_calls 的参数是否正确</li>
+<li>Mock LLM 的返回，测试 Agent 循环逻辑</li>
+<p>&nbsp;</p>
+<p>Layer 3: 端到端测试</p>
+<li>完整运行 Agent，验证最终输出</li>
+<li>使用 LLM-as-Judge 评分</li>
+<li>覆盖典型场景和边界情况</li>
+<p>&nbsp;</p>
+<p>Layer 4: 回归测试</p>
+<li>收集线上的 bad case</li>
+<li>每次改动后验证这些 case 是否退化</li>
+<li>持续积累评测集</li>
+<p>&nbsp;</p>
+<p>面试常见问题：</p>
+<p>"你怎么测试 Agent 代码？"</p>
+<p>→ 分层测试：工具用单测，Agent 循环用 mock，</p>
+<pre> 端到端用 LLM-as-Judge，线上用回归评测集</pre>
+<p>&nbsp;</p>
+<h2>6.4 生产环境最佳实践</h2>
+<p>&nbsp;</p>
+<li>错误处理</li>
+<li>每个工具调用都要 try-catch</li>
+<li>给 LLM 返回「能帮助它修正」的错误信息</li>
+<li>设置全局超时和最大重试次数</li>
+<p>&nbsp;</p>
+<li>可观测性</li>
+<li>记录每次 LLM 调用的输入/输出/token/耗时</li>
+<li>记录每个 tool_call 的参数和结果</li>
+<li>使用 LangSmith / LangFuse 等工具做 Tracing</li>
+<p>&nbsp;</p>
+<li>成本控制</li>
+<li>用更小更便宜的模型做简单任务（模型分层）</li>
+<li>缓存相同/相似的 LLM 调用</li>
+<li>设置 max_tokens 限制每次调用的成本上限</li>
+<li>用语义缓存减少重复查询</li>
+<p>&nbsp;</p>
+<li>安全防护</li>
+<li>Prompt Injection 防护（输入过滤）</li>
+<li>工具权限最小化（sudo 问题）</li>
+<li>人工确认（Human-in-the-Loop）对关键操作</li>
+<p>&nbsp;</p>
+<li>性能优化</li>
+<li>并行执行独立的工具调用</li>
+<li>流式输出（streaming）提升用户体验</li>
+<li>预加载和预计算</li>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>"生产环境 Agent 和 Demo 的区别？"</p>
+<p>→ Demo 追求「能跑」；生产追求「稳定、安全、可观测、低成本」</p>
+<p>→ 需要监控、告警、降级、熔断等基础设施</p>
+<p>→ 错误处理从"打印日志"升级到"自动恢复 + 通知"</p>
+<p>&nbsp;</p>
+<h2>6.5 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>Agent 评估</li>
+<li>多维度：任务完成率、工具准确率、效率、鲁棒性</li>
+<li>主流方法：LLM-as-Judge</li>
+<li>业界 Benchmark：AgentBench、SWE-bench、GAIA</li>
+<p>&nbsp;</p>
+<li>Agent 测试</li>
+<li>分层测试：工具单测 → 行为测试 → 端到端测试 → 回归测试</li>
+<li>LLM-as-Judge 是端到端测试的核心方法</li>
+<p>&nbsp;</p>
+<li>生产最佳实践</li>
+<li>错误处理：try-catch + 可读错误信息</li>
+<li>可观测性：Tracing + Logging</li>
+<li>成本控制：模型分层 + 缓存 + 限制</li>
+<li>安全：Prompt Injection 防护 + 权限最小化</li></div><div class="code-section"><details open><summary>💻 源代码 (181 行)</summary><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Callable
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">6.2</span> Agent 评测框架（可运行）
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">class</span> AgentEvaluator:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Agent 评测器 —— 系统化评估 Agent 的表现。
-
-    设计思路：
-      <span class="n">1</span>. 准备一组测试用例（输入 + 期望输出 + 评估标准）
-      <span class="n">2</span>. 对每个用例运行 Agent
-      <span class="n">3</span>. 用 LLM 作为评判员（LLM-<span class="k">as</span>-Judge）来打分
-      <span class="n">4</span>. 汇总统计并生成报告
-
-    LLM-<span class="k">as</span>-Judge 是目前业界评估 Agent 的主流方法：
-      因为 Agent 的输出是自然语言，传统指标（BLEU/ROUGE）
-      无法准确评估语义层面的质量。
-    <span <span class="k">class</span>="s">""</span>"</span>
-
-    <span class="k">def</span> __init__(self, llm: Callable = <span class="k">None</span>):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"初始化评测器。
-
-        Args:
-            llm: 用于评分的 LLM 函数（可选的 LLM-<span class="k">as</span>-Judge）。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        self.llm = llm
+<span class="k">def</span> __init__(self, llm: Callable = <span class="k">None</span>):
+self.llm = llm
         self.results = []
 
     <span class="k">def</span> evaluate(self, agent_func: Callable,
                  test_cases: list[dict]) -&gt; list[dict]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"运行评测。
-
-        Args:
-            agent_func: Agent 执行函数，签名为 (input: str) -&gt; str。
-            test_cases: 测试用例列表，每个用例包含:
-                - input: 输入文本
-                - expected_keywords: 回答应包含的关键词（可选）
-                - expected_tool: 预期调用的工具名（可选）
-                - weight: 权重（默认 <span class="n">1.0</span>）
-
-        Returns:
-            评测结果列表。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        self.results = []
+self.results = []
         <span class="k">for</span> i, case <span class="k">in</span> enumerate(test_cases):
             print(f<span <span class="k">class</span>="s">"\n  📝 评测用例 {i+<span class="n">1</span>}/{len(test_cases)}: {case[<span <span class="k">class</span>='s'>'input'</span>][:<span class="n">50</span>]}..."</span>)
 
@@ -276,27 +367,13 @@ body {
         <span class="k">return</span> self.results
 
     <span class="k">def</span> _check_keywords(self, output: str, keywords: list[str]) -&gt; float:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"检查输出是否包含期望关键词。
-
-        Args:
-            output: Agent 输出。
-            keywords: 期望出现的关键词列表。
-
-        Returns:
-            匹配比例（<span class="n">0</span>~<span class="n">1</span>）。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">if</span> <span class="k">not</span> keywords:
+<span class="k">if</span> <span class="k">not</span> keywords:
             <span class="k">return</span> <span class="n">1.0</span>
         matched = sum(<span class="n">1</span> <span class="k">for</span> kw <span class="k">in</span> keywords <span class="k">if</span> kw.lower() <span class="k">in</span> output.lower())
         <span class="k">return</span> matched / len(keywords)
 
     <span class="k">def</span> summary(self) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"生成评测汇总报告。
-
-        Returns:
-            格式化的评测报告。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">if</span> <span class="k">not</span> self.results:
+<span class="k">if</span> <span class="k">not</span> self.results:
             <span class="k">return</span> <span <span class="k">class</span>="s">"无评测结果。"</span>
 
         total_weight = sum(r[<span <span class="k">class</span>="s">"weight"</span>] <span class="k">for</span> r <span class="k">in</span> self.results)
@@ -334,15 +411,13 @@ body {
 
 
 <span class="k">def</span> demo_evaluation():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Agent 评测体系。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+print(<span <span class="k">class</span>="s">"\n"</span> + <span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Agent 评测体系演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
     <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟一个「简单 Agent」</span>
     <span class="k">def</span> mock_agent(user_input: str) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"模拟 Agent —— 用于演示评测流程。"</span><span <span class="k">class</span>="s">""</span></span>
-        <span class="k">if</span> <span <span class="k">class</span>="s">"天气"</span> <span class="k">in</span> user_input:
+<span class="k">if</span> <span <span class="k">class</span>="s">"天气"</span> <span class="k">in</span> user_input:
             <span class="k">return</span> <span <span class="k">class</span>="s">"当前天气晴好，气温25°C，湿度适中，适合户外活动。"</span>
         <span class="k">if</span> <span <span class="k">class</span>="s">"计算"</span> <span class="k">in</span> user_input:
             <span class="k">try</span>:
@@ -381,104 +456,6 @@ body {
     evaluator = AgentEvaluator()
     evaluator.evaluate(mock_agent, test_cases)
     print(<span <span class="k">class</span>="s">"\n"</span> + evaluator.summary())
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">6.3</span> Agent 测试策略
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-测试金字塔（从底层到顶层）：
-
-  Layer <span class="n">1</span>: 工具单元测试
-    - 测试每个 Tool 函数的输入/输出
-    - 确保工具在 LLM 调用前已经正确
-
-  Layer <span class="n">2</span>: Agent 行为测试
-    - 给定输入，验证是否调用了正确的工具
-    - 验证 tool_calls 的参数是否正确
-    - Mock LLM 的返回，测试 Agent 循环逻辑
-
-  Layer <span class="n">3</span>: 端到端测试
-    - 完整运行 Agent，验证最终输出
-    - 使用 LLM-<span class="k">as</span>-Judge 评分
-    - 覆盖典型场景和边界情况
-
-  Layer <span class="n">4</span>: 回归测试
-    - 收集线上的 bad case
-    - 每次改动后验证这些 case 是否退化
-    - 持续积累评测集
-
-面试常见问题：
-  <span <span class="k">class</span>="s">"你怎么测试 Agent 代码？"</span>
-  → 分层测试：工具用单测，Agent 循环用 mock，
-     端到端用 LLM-<span class="k">as</span>-Judge，线上用回归评测集
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">6.4</span> 生产环境最佳实践
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-<span class="n">1</span>. 错误处理
-   - 每个工具调用都要 <span class="k">try</span>-catch
-   - 给 LLM 返回「能帮助它修正」的错误信息
-   - 设置全局超时和最大重试次数
-
-<span class="n">2</span>. 可观测性
-   - 记录每次 LLM 调用的输入/输出/token/耗时
-   - 记录每个 tool_call 的参数和结果
-   - 使用 LangSmith / LangFuse 等工具做 Tracing
-
-<span class="n">3</span>. 成本控制
-   - 用更小更便宜的模型做简单任务（模型分层）
-   - 缓存相同/相似的 LLM 调用
-   - 设置 max_tokens 限制每次调用的成本上限
-   - 用语义缓存减少重复查询
-
-<span class="n">4</span>. 安全防护
-   - Prompt Injection 防护（输入过滤）
-   - 工具权限最小化（sudo 问题）
-   - 人工确认（Human-<span class="k">in</span>-the-Loop）对关键操作
-
-<span class="n">5</span>. 性能优化
-   - 并行执行独立的工具调用
-   - 流式输出（streaming）提升用户体验
-   - 预加载和预计算
-
-面试速记：
-  <span <span class="k">class</span>="s">"生产环境 Agent 和 Demo 的区别？"</span>
-  → Demo 追求「能跑」；生产追求「稳定、安全、可观测、低成本」
-  → 需要监控、告警、降级、熔断等基础设施
-  → 错误处理从<span <span class="k">class</span>="s">"打印日志"</span>升级到<span <span class="k">class</span>="s">"自动恢复 + 通知"</span>
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">6.5</span> 本章总结
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-核心要点回顾：
-
-<span class="n">1</span>. Agent 评估
-   - 多维度：任务完成率、工具准确率、效率、鲁棒性
-   - 主流方法：LLM-<span class="k">as</span>-Judge
-   - 业界 Benchmark：AgentBench、SWE-bench、GAIA
-
-<span class="n">2</span>. Agent 测试
-   - 分层测试：工具单测 → 行为测试 → 端到端测试 → 回归测试
-   - LLM-<span class="k">as</span>-Judge 是端到端测试的核心方法
-
-<span class="n">3</span>. 生产最佳实践
-   - 错误处理：<span class="k">try</span>-catch + 可读错误信息
-   - 可观测性：Tracing + Logging
-   - 成本控制：模型分层 + 缓存 + 限制
-   - 安全：Prompt Injection 防护 + 权限最小化
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║       第6章：Agent 评估与最佳实践                      ║"</span>)

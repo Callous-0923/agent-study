@@ -174,15 +174,101 @@ body {
 <li>大厂：字节跳动(Coze)、阿里(Tongyi Agent)、腾讯</li>
 <li>Agent 创业公司：Dify、扣子、澜码科技</li>
 <li>AI 平台公司：智谱AI、百川智能、月之暗面</li>
-<li>传统企业 AI 部门：金融、电商、教育等行业</li></div><div class="code-section"><details open><summary>💻 源代码 (546 行)</summary><div class="code-block"><pre><span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">7.2</span> 面试高频问题 TOP <span class="n">20</span>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-每道题都附「回答框架」和「得分点」。
-<span <span class="k">class</span>="s">""</span>"</span>
-
-AGENT_INTERVIEW_QUESTIONS = [
+<li>传统企业 AI 部门：金融、电商、教育等行业</li>
+<p>&nbsp;</p>
+<h2>7.2 面试高频问题 TOP 20</h2>
+<p>&nbsp;</p>
+<p>每道题都附「回答框架」和「得分点」。</p>
+<p>&nbsp;</p>
+<p>打印所有高频面试题的分类摘要。</p>
+<p>&nbsp;</p>
+<h2>7.3 项目准备指南</h2>
+<p>&nbsp;</p>
+<p>面试中最有说服力的永远是你的项目经验。</p>
+<p>以下是推荐的 Agent 项目组合：</p>
+<p>&nbsp;</p>
+<p>必做项目（基础)：</p>
+<li>智能助手 Agent</li>
+<li>功能：搜索 + 计算 + 天气 + 新闻</li>
+<li>技术：LangChain + ReAct Agent</li>
+<li>亮点：展示对 Agent 基本架构的理解</li>
+<p>&nbsp;</p>
+<li>文档分析 Agent</li>
+<li>功能：上传文档 → 提取关键信息 → 生成摘要 → 回答提问</li>
+<li>技术：RAG + Agent + 向量数据库</li>
+<li>亮点：展示记忆系统和工具调用的整合</li>
+<p>&nbsp;</p>
+<p>进阶项目（加分项）:</p>
+<li>代码审查 Agent</li>
+<li>功能：Read PR → Static Analysis → Code Review → 生成 Review 报告</li>
+<li>技术：LangGraph + Git API + 代码分析工具</li>
+<li>亮点：展示复杂工作流编排能力</li>
+<p>&nbsp;</p>
+<li>数据分析 Agent</li>
+<li>功能：自然语言提问 → 生成 SQL → 执行查询 → 可视化</li>
+<li>技术：Text-to-SQL + Pandas + Plotly</li>
+<li>亮点：展示多工具协作 + 结构化输出</li>
+<p>&nbsp;</p>
+<li>Multi-Agent 内容工厂</li>
+<li>功能：策划 → 调研 → 写作 → 编辑 → 配图 → 发布</li>
+<li>技术：crewAI / LangGraph Multi-Agent</li>
+<li>亮点：展示多 Agent 架构设计能力</li>
+<p>&nbsp;</p>
+<p>项目展示技巧：</p>
+<li>准备一个 3 分钟的「Elevator Pitch」</li>
+<li>提前画好架构图（面试时分享屏幕/画白板）</li>
+<li>准备 1-2 个「技术难点 + 解决方案」的故事</li>
+<li>有性能/成本的量化数据最好（延迟降到 Xms、成本降低 Y%）</li>
+<p>&nbsp;</p>
+<h2>7.4 面试流程与时间线</h2>
+<p>&nbsp;</p>
+<p>典型 Agent 工程师面试流程（大厂）:</p>
+<p>&nbsp;</p>
+<p>第 1 轮：技术电话面试 (45 分钟)</p>
+<li>基础概念考核（本章 7.2 的 Q1-Q5）</li>
+<li>一道简单的手写代码（如工具定义、API 调用）</li>
+<p>&nbsp;</p>
+<p>第 2 轮：在线编码 (60 分钟)</p>
+<li>实现一个简易 Agent 循环</li>
+<li>设计工具和评估方案</li>
+<p>&nbsp;</p>
+<p>第 3 轮：系统设计 (60 分钟)</p>
+<li>设计一个特定场景的 Agent 系统</li>
+<li>考量架构合理性、扩展性、安全性</li>
+<p>&nbsp;</p>
+<p>第 4 轮：项目深挖 (45 分钟)</p>
+<li>详细介绍一个你做过的 Agent 项目</li>
+<li>追问细节：为什么这么做？遇到什么问题？</li>
+<p>&nbsp;</p>
+<p>第 5 轮：行为面试 (45 分钟)</p>
+<li>团队协作、学习能力、职业规划</li>
+<li>STAR 法则回答（Situation-Task-Action-Result）</li>
+<p>&nbsp;</p>
+<p>准备时间线：</p>
+<li>面试前 2 周：回顾第 1-3 章（基础概念）</li>
+<li>面试前 1 周：复习第 4-5 章（框架实战）+ 准备项目故事</li>
+<li>面试前 3 天：过一遍 7.2 的所有问题</li>
+<li>面试前 1 天：Mock Interview + 休息</li>
+<p>&nbsp;</p>
+<h2>7.5 课程总结</h2>
+<p>&nbsp;</p>
+<p>回顾整个学习路线：</p>
+<p>&nbsp;</p>
+<p>Ch0 概览        → 理解 Agent 是什么，搭建环境</p>
+<p>Ch1 基础        → 手写第一个 Agent，理解 ReAct 循环</p>
+<p>Ch2 组件        → 深入规划器、记忆系统、工具设计</p>
+<p>Ch3 类型        → ReAct / Plan-Execute / Reflexion 对比</p>
+<p>Ch4 框架        → LangChain Agent + LangGraph 实战</p>
+<p>Ch5 多智能体    → Multi-Agent 架构与协作模式</p>
+<p>Ch6 评估        → 评测体系、测试策略、生产实践</p>
+<p>Ch7 求职        → 面试问题、项目准备、行业趋势 ← 你在这里</p>
+<p>&nbsp;</p>
+<p>下一步行动建议：</p>
+<li>动手做一个完整的 Agent 项目（从本章 7.3 选题）</li>
+<li>把项目部署上线（Streamlit / Gradio / FastAPI）</li>
+<li>写一篇技术博客分享你的项目（展示技术影响力）</li>
+<li>参加 Agent 相关的 Hackathon</li>
+<li>关注 arXiv 上最新的 Agent 论文</li></div><div class="code-section"><details open><summary>💻 源代码 (432 行)</summary><div class="code-block"><pre>AGENT_INTERVIEW_QUESTIONS = [
     <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 基础概念篇（必考 <span class="n">5</span> 题）=====</span>
     {
         <span <span class="k">class</span>="s">"id"</span>: <span class="n">1</span>,
@@ -546,8 +632,7 @@ AGENT_INTERVIEW_QUESTIONS = [
 
 
 <span class="k">def</span> print_interview_questions():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"打印所有高频面试题的分类摘要。"</span><span <span class="k">class</span>="s">""</span></span>
-    categories = {}
+categories = {}
     <span class="k">for</span> q <span class="k">in</span> AGENT_INTERVIEW_QUESTIONS:
         cat = q[<span <span class="k">class</span>="s">"category"</span>]
         <span class="k">if</span> cat <span class="k">not</span> <span class="k">in</span> categories:
@@ -562,111 +647,6 @@ AGENT_INTERVIEW_QUESTIONS = [
             print(f<span <span class="k">class</span>="s">"\n  Q{q[<span <span class="k">class</span>='s'>'id'</span>]}: {q[<span <span class="k">class</span>='s'>'question'</span>]}"</span>)
             print(f<span <span class="k">class</span>="s">"  回答框架: {q[<span <span class="k">class</span>='s'>'framework'</span>][:<span class="n">120</span>]}..."</span>)
             print(f<span <span class="k">class</span>="s">"  得分点: {<span <span class="k">class</span>='s'>', '</span>.join(q[<span <span class="k">class</span>='s'>'scoring_points'</span>][:<span class="n">2</span>])}..."</span>)
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">7.3</span> 项目准备指南
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-面试中最有说服力的永远是你的项目经验。
-以下是推荐的 Agent 项目组合：
-
-必做项目（基础)：
-  <span class="n">1</span>. 智能助手 Agent
-     - 功能：搜索 + 计算 + 天气 + 新闻
-     - 技术：LangChain + ReAct Agent
-     - 亮点：展示对 Agent 基本架构的理解
-
-  <span class="n">2</span>. 文档分析 Agent
-     - 功能：上传文档 → 提取关键信息 → 生成摘要 → 回答提问
-     - 技术：RAG + Agent + 向量数据库
-     - 亮点：展示记忆系统和工具调用的整合
-
-进阶项目（加分项）:
-  <span class="n">3</span>. 代码审查 Agent
-     - 功能：Read PR → Static Analysis → Code Review → 生成 Review 报告
-     - 技术：LangGraph + Git API + 代码分析工具
-     - 亮点：展示复杂工作流编排能力
-
-  <span class="n">4</span>. 数据分析 Agent
-     - 功能：自然语言提问 → 生成 SQL → 执行查询 → 可视化
-     - 技术：Text-to-SQL + Pandas + Plotly
-     - 亮点：展示多工具协作 + 结构化输出
-
-  <span class="n">5</span>. Multi-Agent 内容工厂
-     - 功能：策划 → 调研 → 写作 → 编辑 → 配图 → 发布
-     - 技术：crewAI / LangGraph Multi-Agent
-     - 亮点：展示多 Agent 架构设计能力
-
-项目展示技巧：
-  <span class="n">1</span>. 准备一个 <span class="n">3</span> 分钟的「Elevator Pitch」
-  <span class="n">2</span>. 提前画好架构图（面试时分享屏幕/画白板）
-  <span class="n">3</span>. 准备 <span class="n">1</span>-<span class="n">2</span> 个「技术难点 + 解决方案」的故事
-  <span class="n">4</span>. 有性能/成本的量化数据最好（延迟降到 Xms、成本降低 Y%）
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">7.4</span> 面试流程与时间线
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-典型 Agent 工程师面试流程（大厂）:
-
-  第 <span class="n">1</span> 轮：技术电话面试 (<span class="n">45</span> 分钟)
-    - 基础概念考核（本章 <span class="n">7.2</span> 的 Q1-Q5）
-    - 一道简单的手写代码（如工具定义、API 调用）
-
-  第 <span class="n">2</span> 轮：在线编码 (<span class="n">60</span> 分钟)
-    - 实现一个简易 Agent 循环
-    - 设计工具和评估方案
-
-  第 <span class="n">3</span> 轮：系统设计 (<span class="n">60</span> 分钟)
-    - 设计一个特定场景的 Agent 系统
-    - 考量架构合理性、扩展性、安全性
-
-  第 <span class="n">4</span> 轮：项目深挖 (<span class="n">45</span> 分钟)
-    - 详细介绍一个你做过的 Agent 项目
-    - 追问细节：为什么这么做？遇到什么问题？
-
-  第 <span class="n">5</span> 轮：行为面试 (<span class="n">45</span> 分钟)
-    - 团队协作、学习能力、职业规划
-    - STAR 法则回答（Situation-Task-Action-Result）
-
-准备时间线：
-  - 面试前 <span class="n">2</span> 周：回顾第 <span class="n">1</span>-<span class="n">3</span> 章（基础概念）
-  - 面试前 <span class="n">1</span> 周：复习第 <span class="n">4</span>-<span class="n">5</span> 章（框架实战）+ 准备项目故事
-  - 面试前 <span class="n">3</span> 天：过一遍 <span class="n">7.2</span> 的所有问题
-  - 面试前 <span class="n">1</span> 天：Mock Interview + 休息
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">7.5</span> 课程总结
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-回顾整个学习路线：
-
-  Ch0 概览        → 理解 Agent 是什么，搭建环境
-  Ch1 基础        → 手写第一个 Agent，理解 ReAct 循环
-  Ch2 组件        → 深入规划器、记忆系统、工具设计
-  Ch3 类型        → ReAct / Plan-Execute / Reflexion 对比
-  Ch4 框架        → LangChain Agent + LangGraph 实战
-  Ch5 多智能体    → Multi-Agent 架构与协作模式
-  Ch6 评估        → 评测体系、测试策略、生产实践
-  Ch7 求职        → 面试问题、项目准备、行业趋势 ← 你在这里
-
-下一步行动建议：
-  <span class="n">1</span>. 动手做一个完整的 Agent 项目（从本章 <span class="n">7.3</span> 选题）
-  <span class="n">2</span>. 把项目部署上线（Streamlit / Gradio / FastAPI）
-  <span class="n">3</span>. 写一篇技术博客分享你的项目（展示技术影响力）
-  <span class="n">4</span>. 参加 Agent 相关的 Hackathon
-  <span class="n">5</span>. 关注 arXiv 上最新的 Agent 论文
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║    第7章：Agent 求职面试准备与行业实践                 ║"</span>)

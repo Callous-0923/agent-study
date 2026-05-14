@@ -165,33 +165,193 @@ body {
 └──────────────────────────────────────┴────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>下面我们重点学习 LangChain Agent 和 LangGraph。</p>
-<p>这两个是目前市场上使用最广泛的框架。</p></div><div class="code-section"><details open><summary>💻 源代码 (437 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>这两个是目前市场上使用最广泛的框架。</p>
+<p>&nbsp;</p>
+<h2>4.1 LangChain Agent</h2>
+<p>&nbsp;</p>
+<p>LangChain 是最流行的 LLM 应用框架，它将第1-3章我们</p>
+<p>手写的概念（Agent、Tool、Memory）都抽象为了标准组件。</p>
+<p>&nbsp;</p>
+<p>核心组件映射：</p>
+<p>手写版          →  LangChain 版</p>
+<p>─────────────    ─────────────────</p>
+<p>TOOLS 列表       →  @tool 装饰器</p>
+<p>TOOL_MAP 字典    →  Tool 对象</p>
+<p>Agent 循环       →  create_react_agent()</p>
+<p>对话历史         →  MemorySaver / ChatMessageHistory</p>
+<p>&nbsp;</p>
+<p>安装依赖:</p>
+<p>pip install langchain langchain-openai langgraph</p>
+<p>&nbsp;</p>
+<p>查询股票实时价格。</p>
+<p>&nbsp;</p>
+<pre>Args:
+    symbol: 股票代码，如 AAPL（苹果）、TSLA（特斯拉）、BABA（阿里巴巴）。</pre>
+<p>&nbsp;</p>
+<pre>Returns:
+    该股票的最新价格信息。</pre>
+<p>&nbsp;</p>
+<p>搜索最新的新闻资讯。</p>
+<p>&nbsp;</p>
+<pre>适用于获取实时新闻、事件报道、行业动态等。</pre>
+<p>&nbsp;</p>
+<pre>Args:
+    query: 搜索关键词，如 "AI 行业动态"。</pre>
+<p>&nbsp;</p>
+<pre>Returns:
+    相关新闻摘要。</pre>
+<p>&nbsp;</p>
+<p>执行数学计算。</p>
+<p>&nbsp;</p>
+<pre>Args:
+    expression: 数学表达式，如 '100 * 1.15' 或 'sqrt(144)'。</pre>
+<p>&nbsp;</p>
+<pre>Returns:
+    计算结果。</pre>
+<p>&nbsp;</p>
+<p>演示 LangChain Agent 的基本用法。</p>
+<p>&nbsp;</p>
+<pre>对比第1章的裸写 Agent，可以看到：
+  1. 工具定义用 @tool 装饰器，更简洁
+  2. Agent 执行器一行代码创建
+  3. 对话历史自动管理（MemorySaver）
+  4. 线程级别的对话隔离</pre>
+<p>&nbsp;</p>
+<p>LangChain Agent 的核心抽象：</p>
+<li>LLM: ChatOpenAI —— 大脑</li>
+<li>Tools: @tool 列表 —— 技能</li>
+<li>Agent: create_react_agent —— 执行器</li>
+<li>Checkpointer: MemorySaver —— 记忆</li>
+<p>&nbsp;</p>
+<pre>对比第1章裸写的优势：
+  1. 不需要手动管理 messages 列表
+  2. 不需要手动处理 tool_calls 循环
+  3. 对话历史自动持久化
+  4. 支持多线程（通过 thread_id 隔离对话）</pre>
+<p>&nbsp;</p>
+<h2>4.2 LangGraph —— 状态机 Agent</h2>
+<p>&nbsp;</p>
+<p>LangGraph 是 LangChain 生态中的 Agent 编排框架。</p>
+<p>它的核心思想是用「有向图」来定义 Agent 的执行流程。</p>
+<p>&nbsp;</p>
+<p>核心概念：</p>
+<li>State: 贯穿整个流程的共享状态（TypedDict）</li>
+<li>Node: 图中的一个执行节点（Python 函数）</li>
+<li>Edge: 节点之间的连线（普通边 / 条件边）</li>
+<p>&nbsp;</p>
+<p>什么时候用 LangGraph 而不是 LangChain Agent？</p>
+<li>需要自定义执行流程（不是简单的 ReAct 循环）</li>
+<li>需要在步骤间传递复杂状态</li>
+<li>需要并行执行、条件分支、循环等复杂控制流</li>
+<li>多 Agent 协作场景（第5章会用到）</li>
+<p>&nbsp;</p>
+<p>安装依赖：</p>
+<p>pip install langgraph</p>
+<p>&nbsp;</p>
+<p>LangGraph Agent 的状态定义。</p>
+<p>&nbsp;</p>
+<pre>这是 LangGraph 最核心的概念。所有节点共享这个状态，
+节点通过读取/修改状态来协作完成任务。</pre>
+<p>&nbsp;</p>
+<pre>Annotated[list, add_messages] 表示消息列表使用
+追加模式（新消息添加到末尾，不会覆盖）。</pre>
+<p>&nbsp;</p>
+<p>演示 LangGraph 状态机 Agent。</p>
+<p>&nbsp;</p>
+<pre>实现一个简单的分析流程：
+  输入问题 → LLM 分析 → 判断是否需要工具 → 输出结论</pre>
+<p>&nbsp;</p>
+<pre>LangGraph 让我们可以自定义 Agent 的执行图结构，
+而不是拘泥于固定的 ReAct 循环。</pre>
+<p>&nbsp;</p>
+<p>分析节点：让 LLM 理解用户输入。</p>
+<p>&nbsp;</p>
+<p>条件判断：是否需要进一步处理？</p>
+<p>&nbsp;</p>
+<p>扩展节点：补充详细分析。</p>
+<p>&nbsp;</p>
+<p>图结构示意：</p>
+<p>&nbsp;</p>
+<pre>  [START]
+     │
+     ▼
+┌──────────┐     条件判断      ┌───────────┐
+│  analyze  ├──────────────────→│ elaborate  │
+└─────┬─────┘  (太短)          └─────┬─────┘
+      │ (足够)                       │
+      ▼                              ▼
+   [END]                          [END]</pre>
+<p>&nbsp;</p>
+<pre>这就是 LangGraph 的核心优势：
+用代码定义复杂的执行流程，而非硬编码在循环中。</pre>
+<p>&nbsp;</p>
+<h2>4.3 框架选择策略（面试高频！）</h2>
+<p>&nbsp;</p>
+<p>面试官：「你用过哪些 Agent 框架？怎么选型？」</p>
+<p>&nbsp;</p>
+<p>回答框架：</p>
+<p>&nbsp;</p>
+<li>学习阶段：从裸写开始（第1章）</li>
+<li>理解底层原理</li>
+<li>不被框架黑盒限制</li>
+<p>&nbsp;</p>
+<li>原型验证：用 LangChain Agent</li>
+<li>快速搭建、生态丰富</li>
+<li>适合 MVP 和 demo</li>
+<p>&nbsp;</p>
+<li>生产环境：用 LangGraph</li>
+<li>状态管理可控</li>
+<li>支持复杂工作流</li>
+<li>可观测性好（便于调试和监控）</li>
+<p>&nbsp;</p>
+<li>多 Agent 场景：</li>
+<li>crewAI（简单协作）</li>
+<li>AutoGen（需要人在回路）</li>
+<li>自建 LangGraph 图（完全定制）</li>
+<p>&nbsp;</p>
+<p>选型核心考虑因素：</p>
+<pre>  ┌──────────────┬────────────────────────────────────┐
+  │    因素       │               说明                  │
+  ├──────────────┼────────────────────────────────────┤
+  │ 复杂度        │ 简单用 LangChain，复杂用 LangGraph  │
+  │ 可控性        │ 生产环境优先 LangGraph              │
+  │ 团队能力      │ 新手用 LangChain，熟手自建           │
+  │ 成本          │ 裸写 < LangChain < LangGraph       │
+  │ 生态          │ LangChain 生态最丰富                │
+  └──────────────┴────────────────────────────────────┘</pre>
+<p>&nbsp;</p>
+<h2>4.4 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>LangChain Agent</li>
+<li>create_react_agent() 一行创建 Agent</li>
+<li>@tool 装饰器定义工具</li>
+<li>MemorySaver 自动管理对话历史</li>
+<li>适合快速原型和中等复杂度场景</li>
+<p>&nbsp;</p>
+<li>LangGraph</li>
+<li>状态机模型：State + Node + Edge</li>
+<li>完全自定义执行流程</li>
+<li>支持条件分支、循环、并行</li>
+<li>生产环境首选</li>
+<p>&nbsp;</p>
+<li>选型策略</li>
+<li>学习原理 → 裸写</li>
+<li>快速验证 → LangChain</li>
+<li>生产落地 → LangGraph</li>
+<li>多Agent → crewAI / AutoGen / 自建</li>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>"LangGraph 和 LangChain Agent 的区别？"</p>
+<p>→ LangChain Agent 是预定义的 ReAct 循环</p>
+<p>→ LangGraph 可以自定义任意执行图</p>
+<p>→ LangGraph 适合复杂工作流，LangChain Agent 适合简单任务</p></div><div class="code-section"><details open><summary>💻 源代码 (230 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Any
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
 load_dotenv()
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">4.1</span> LangChain Agent
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
-手写的概念（Agent、Tool、Memory）都抽象为了标准组件。
-
-核心组件映射：
-  手写版          →  LangChain 版
-  ─────────────    ─────────────────
-  TOOLS 列表       →  <span class="d">@tool</span> 装饰器
-  TOOL_MAP 字典    →  Tool 对象
-  Agent 循环       →  create_react_agent()
-  对话历史         →  MemorySaver / ChatMessageHistory
-
-安装依赖:
-  pip install langchain langchain-openai langgraph
-<span <span class="k">class</span>="s">""</span>"</span>
-
 <span class="k">try</span>:
     <span class="k">from</span> langchain_openai <span class="k">import</span> ChatOpenAI
     <span class="k">from</span> langchain_core.tools <span class="k">import</span> tool
@@ -205,15 +365,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
 
 <span class="d">@tool</span>
 <span class="k">def</span> get_stock_price(symbol: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"查询股票实时价格。
-
-    Args:
-        symbol: 股票代码，如 AAPL（苹果）、TSLA（特斯拉）、BABA（阿里巴巴）。
-
-    Returns:
-        该股票的最新价格信息。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    mock_prices = {
+mock_prices = {
         <span <span class="k">class</span>="s">"AAPL"</span>: <span <span class="k">class</span>="s">"<span class="n">185.50</span> USD"</span>,
         <span <span class="k">class</span>="s">"TSLA"</span>: <span <span class="k">class</span>="s">"<span class="n">245.30</span> USD"</span>,
         <span <span class="k">class</span>="s">"GOOGL"</span>: <span <span class="k">class</span>="s">"<span class="n">175.20</span> USD"</span>,
@@ -226,17 +378,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
 
 <span class="d">@tool</span>
 <span class="k">def</span> search_news(query: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"搜索最新的新闻资讯。
-
-    适用于获取实时新闻、事件报道、行业动态等。
-
-    Args:
-        query: 搜索关键词，如 <span <span class="k">class</span>="s">"AI 行业动态"</span>。
-
-    Returns:
-        相关新闻摘要。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    mock_news = {
+mock_news = {
         <span <span class="k">class</span>="s">"AI"</span>: <span <span class="k">class</span>="s">"2025年 AI Agent 成为业界焦点，各大科技公司纷纷布局 Agent 技术。"</span>,
         <span <span class="k">class</span>="s">"股票"</span>: <span <span class="k">class</span>="s">"今日股市震荡，科技板块表现强劲。"</span>,
         <span <span class="k">class</span>="s">"特斯拉"</span>: <span <span class="k">class</span>="s">"特斯拉发布新一代自动驾驶技术，股价上涨 <span class="n">3</span>%。"</span>,
@@ -249,15 +391,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
 
 <span class="d">@tool</span>
 <span class="k">def</span> calculate_math(expression: str) -&gt; str:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"执行数学计算。
-
-    Args:
-        expression: 数学表达式，如 <span <span class="k">class</span>='s'>'<span class="n">100</span> * <span class="n">1.15</span>'</span> 或 <span <span class="k">class</span>='s'>'sqrt(<span class="n">144</span>)'</span>。
-
-    Returns:
-        计算结果。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span class="k">try</span>:
+<span class="k">try</span>:
         allowed = set(<span <span class="k">class</span>="s">"<span class="n">0123456789</span>+-*/().%^ "</span>)
         <span class="k">if</span> <span class="k">not</span> all(c <span class="k">in</span> allowed <span class="k">for</span> c <span class="k">in</span> expression):
             <span class="k">return</span> <span <span class="k">class</span>="s">"错误：表达式包含不允许的字符"</span>
@@ -267,15 +401,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
 
 
 <span class="k">def</span> demo_langchain_agent():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"演示 LangChain Agent 的基本用法。
-
-    对比第1章的裸写 Agent，可以看到：
-      <span class="n">1</span>. 工具定义用 <span class="d">@tool</span> 装饰器，更简洁
-      <span class="n">2</span>. Agent 执行器一行代码创建
-      <span class="n">3</span>. 对话历史自动管理（MemorySaver）
-      <span class="n">4</span>. 线程级别的对话隔离
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span class="k">if</span> <span class="k">not</span> LANGCHAIN_AVAILABLE:
+<span class="k">if</span> <span class="k">not</span> LANGCHAIN_AVAILABLE:
         print(<span <span class="k">class</span>="s">"需要安装 LangChain 才能运行此演示。"</span>)
         <span class="k">return</span>
 
@@ -301,22 +427,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
         tools=tools,
         checkpointer=memory,
     )
-
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-    LangChain Agent 的核心抽象：
-      - LLM: ChatOpenAI —— 大脑
-      - Tools: <span class="d">@tool</span> 列表 —— 技能
-      - Agent: create_react_agent —— 执行器
-      - Checkpointer: MemorySaver —— 记忆
-
-    对比第1章裸写的优势：
-      <span class="n">1</span>. 不需要手动管理 messages 列表
-      <span class="n">2</span>. 不需要手动处理 tool_calls 循环
-      <span class="n">3</span>. 对话历史自动持久化
-      <span class="n">4</span>. 支持多线程（通过 thread_id 隔离对话）
-    <span <span class="k">class</span>="s">""</span>"</span>
-
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 步骤 <span class="n">4</span>：运行对话</span>
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 步骤 <span class="n">4</span>：运行对话</span>
     test_queries = [
         <span <span class="k">class</span>="s">"帮我查一下苹果(AAPL)和特斯拉(TSLA)的股价"</span>,
         <span <span class="k">class</span>="s">"特斯拉最近有什么新闻吗？"</span>,
@@ -335,31 +446,6 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 最后一条消息是 Agent 的回复</span>
         final_msg = result[<span <span class="k">class</span>="s">"messages"</span>][-<span class="n">1</span>]
         print(f<span <span class="k">class</span>="s">"🤖 Agent: {final_msg.content}"</span>)
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">4.2</span> LangGraph —— 状态机 Agent
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-LangGraph 是 LangChain 生态中的 Agent 编排框架。
-它的核心思想是用「有向图」来定义 Agent 的执行流程。
-
-核心概念：
-  - State: 贯穿整个流程的共享状态（TypedDict）
-  - Node: 图中的一个执行节点（Python 函数）
-  - Edge: 节点之间的连线（普通边 / 条件边）
-
-什么时候用 LangGraph 而不是 LangChain Agent？
-  - 需要自定义执行流程（不是简单的 ReAct 循环）
-  - 需要在步骤间传递复杂状态
-  - 需要并行执行、条件分支、循环等复杂控制流
-  - 多 Agent 协作场景（第5章会用到）
-
-安装依赖：
-  pip install langgraph
-<span <span class="k">class</span>="s">""</span>"</span>
-
 <span class="k">try</span>:
     <span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict
     <span class="k">from</span> langgraph.graph <span class="k">import</span> StateGraph, END
@@ -373,29 +459,13 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
 
 <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 定义状态类型</span>
 <span class="k">class</span> AgentState(TypedDict):
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"LangGraph Agent 的状态定义。
-
-    这是 LangGraph 最核心的概念。所有节点共享这个状态，
-    节点通过读取/修改状态来协作完成任务。
-
-    Annotated[list, add_messages] 表示消息列表使用
-    追加模式（新消息添加到末尾，不会覆盖）。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    messages: Annotated[list, add_messages]
+messages: Annotated[list, add_messages]
     task_result: str
     step_count: int
 
 
 <span class="k">def</span> demo_langgraph_agent():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"演示 LangGraph 状态机 Agent。
-
-    实现一个简单的分析流程：
-      输入问题 → LLM 分析 → 判断是否需要工具 → 输出结论
-
-    LangGraph 让我们可以自定义 Agent 的执行图结构，
-    而不是拘泥于固定的 ReAct 循环。
-    <span <span class="k">class</span>="s">""</span>"</span>
-    <span class="k">if</span> <span class="k">not</span> LANGGRAPH_AVAILABLE <span class="k">or</span> <span class="k">not</span> LANGCHAIN_AVAILABLE:
+<span class="k">if</span> <span class="k">not</span> LANGGRAPH_AVAILABLE <span class="k">or</span> <span class="k">not</span> LANGCHAIN_AVAILABLE:
         print(<span <span class="k">class</span>="s">"需要安装 langgraph 和 langchain 才能运行此演示。"</span>)
         <span class="k">return</span>
 
@@ -412,8 +482,7 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
 
     <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># ===== 定义节点函数 =====</span>
     <span class="k">def</span> analyze_node(state: AgentState) -&gt; AgentState:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"分析节点：让 LLM 理解用户输入。"</span><span <span class="k">class</span>="s">""</span></span>
-        print(<span <span class="k">class</span>="s">"  [Node: analyze] 正在分析用户输入..."</span>)
+print(<span <span class="k">class</span>="s">"  [Node: analyze] 正在分析用户输入..."</span>)
         response = llm.invoke([
             (<span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"分析用户问题，提取关键信息。简洁回答。"</span>),
             (<span <span class="k">class</span>="s">"user"</span>, state[<span <span class="k">class</span>="s">"messages"</span>][-<span class="n">1</span>].content),
@@ -424,8 +493,7 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
         <span class="k">return</span> state
 
     <span class="k">def</span> should_continue(state: AgentState) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"条件判断：是否需要进一步处理？"</span><span <span class="k">class</span>="s">""</span></span>
-        result = state[<span <span class="k">class</span>="s">"task_result"</span>]
+result = state[<span <span class="k">class</span>="s">"task_result"</span>]
         <span class="k">if</span> len(result) &lt; <span class="n">50</span>:
             print(<span <span class="k">class</span>="s">"  [Edge] 回答太短，需要补充详细分析"</span>)
             <span class="k">return</span> <span <span class="k">class</span>="s">"elaborate"</span>
@@ -433,8 +501,7 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
         <span class="k">return</span> <span <span class="k">class</span>="s">"end"</span>
 
     <span class="k">def</span> elaborate_node(state: AgentState) -&gt; AgentState:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"扩展节点：补充详细分析。"</span><span <span class="k">class</span>="s">""</span></span>
-        print(<span <span class="k">class</span>="s">"  [Node: elaborate] 正在补充详细分析..."</span>)
+print(<span <span class="k">class</span>="s">"  [Node: elaborate] 正在补充详细分析..."</span>)
         response = llm.invoke([
             (<span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"请更详细地展开分析，提供更多上下文和细节。"</span>),
             (<span <span class="k">class</span>="s">"user"</span>, state[<span <span class="k">class</span>="s">"task_result"</span>]),
@@ -469,25 +536,7 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
 
     <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 编译图</span>
     app = workflow.compile()
-
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-    图结构示意：
-
-      [START]
-         │
-         ▼
-    ┌──────────┐     条件判断      ┌───────────┐
-    │  analyze  ├──────────────────→│ elaborate  │
-    └─────┬─────┘  (太短)          └─────┬─────┘
-          │ (足够)                       │
-          ▼                              ▼
-       [END]                          [END]
-
-    这就是 LangGraph 的核心优势：
-    用代码定义复杂的执行流程，而非硬编码在循环中。
-    <span <span class="k">class</span>="s">""</span>"</span>
-
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 运行</span>
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 运行</span>
     test_input = <span <span class="k">class</span>="s">"LangGraph 是什么？请简短说明。"</span>
     print(f<span <span class="k">class</span>="s">"\n👤 用户: {test_input}"</span>)
 
@@ -500,81 +549,6 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
     final_state = app.invoke(initial_state)
     print(f<span <span class="k">class</span>="s">"\n🤖 Agent: {final_state[<span <span class="k">class</span>='s'>'task_result'</span>]}"</span>)
     print(f<span <span class="k">class</span>="s">"   总步骤数: {final_state[<span <span class="k">class</span>='s'>'step_count'</span>]}"</span>)
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">4.3</span> 框架选择策略（面试高频！）
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-面试官：「你用过哪些 Agent 框架？怎么选型？」
-
-回答框架：
-
-<span class="n">1</span>. 学习阶段：从裸写开始（第1章）
-   - 理解底层原理
-   - 不被框架黑盒限制
-
-<span class="n">2</span>. 原型验证：用 LangChain Agent
-   - 快速搭建、生态丰富
-   - 适合 MVP 和 demo
-
-<span class="n">3</span>. 生产环境：用 LangGraph
-   - 状态管理可控
-   - 支持复杂工作流
-   - 可观测性好（便于调试和监控）
-
-<span class="n">4</span>. 多 Agent 场景：
-   - crewAI（简单协作）
-   - AutoGen（需要人在回路）
-   - 自建 LangGraph 图（完全定制）
-
-选型核心考虑因素：
-  ┌──────────────┬────────────────────────────────────┐
-  │    因素       │               说明                  │
-  ├──────────────┼────────────────────────────────────┤
-  │ 复杂度        │ 简单用 LangChain，复杂用 LangGraph  │
-  │ 可控性        │ 生产环境优先 LangGraph              │
-  │ 团队能力      │ 新手用 LangChain，熟手自建           │
-  │ 成本          │ 裸写 &lt; LangChain &lt; LangGraph       │
-  │ 生态          │ LangChain 生态最丰富                │
-  └──────────────┴────────────────────────────────────┘
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span class="n">4.4</span> 本章总结
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-核心要点回顾：
-
-<span class="n">1</span>. LangChain Agent
-   - create_react_agent() 一行创建 Agent
-   - <span class="d">@tool</span> 装饰器定义工具
-   - MemorySaver 自动管理对话历史
-   - 适合快速原型和中等复杂度场景
-
-<span class="n">2</span>. LangGraph
-   - 状态机模型：State + Node + Edge
-   - 完全自定义执行流程
-   - 支持条件分支、循环、并行
-   - 生产环境首选
-
-<span class="n">3</span>. 选型策略
-   - 学习原理 → 裸写
-   - 快速验证 → LangChain
-   - 生产落地 → LangGraph
-   - 多Agent → crewAI / AutoGen / 自建
-
-面试速记：
-  <span <span class="k">class</span>="s">"LangGraph 和 LangChain Agent 的区别？"</span>
-  → LangChain Agent 是预定义的 ReAct 循环
-  → LangGraph 可以自定义任意执行图
-  → LangGraph 适合复杂工作流，LangChain Agent 适合简单任务
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║       第4章：主流 Agent 框架实战                       ║"</span>)

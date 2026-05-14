@@ -249,15 +249,141 @@ body {
 <p>✓ 角色校验（检测角色扮演注入）</p>
 <p>✓ 指令检测（检测 ignore/forget/override 等词）</p>
 <p>✓ 特殊字符过滤（Unicode 同形异义字攻击）</p>
-<p>✓ URL/邮箱提取（检测数据外泄尝试）</p></div><div class="code-section"><details open><summary>💻 源代码 (420 行)</summary><div class="code-block"><pre><span class="k">import</span> re
+<p>✓ URL/邮箱提取（检测数据外泄尝试）</p>
+<p>&nbsp;</p>
+<p>输入消毒结果。</p>
+<p>&nbsp;</p>
+<p>Agent 输入消毒器。</p>
+<p>&nbsp;</p>
+<pre>多层次检测策略：
+  1. 长度限制
+  2. 注入关键词检测
+  3. 角色扮演检测
+  4. 数据外泄检测</pre>
+<p>&nbsp;</p>
+<p>消毒用户输入。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        text: 原始输入。</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        消毒结果。</pre>
+<p>&nbsp;</p>
+<h2>18.5 审计日志 ——Agent 的「黑匣子」</h2>
+<p>&nbsp;</p>
+<p>审计日志必须记录：</p>
+<p>✓ 谁（user_id）什么时间（timestamp）做了什么操作（action）</p>
+<p>✓ 输入参数（input）</p>
+<p>✓ 输出结果（output）</p>
+<p>✓ 是否成功（success）</p>
+<p>✓ 执行耗时（latency）</p>
+<p>✓ 使用的工具（tool_name）</p>
+<p>&nbsp;</p>
+<p>审计日志的作用：</p>
+<li>事后追溯（出问题了能查到原因）</li>
+<li>异常检测（哪些操作不正常？）</li>
+<li>合规审计（GDPR / SOC2 要求）</li>
+<li>性能分析（哪些工具最慢？）</li>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>18.6 完整的安全 Agent 实现</h2>
+<p>&nbsp;</p>
+<p>带安全防护的 Agent 实现。</p>
+<p>&nbsp;</p>
+<pre>集成：
+  1. 输入消毒
+  2. 权限分级
+  3. 审计日志
+  4. 速率限制
+  5. 人工确认（模拟）</pre>
+<p>&nbsp;</p>
+<p>速率限制检查。</p>
+<p>&nbsp;</p>
+<pre>    Returns:
+        是否允许此次请求。</pre>
+<p>&nbsp;</p>
+<p>写入审计日志。</p>
+<p>&nbsp;</p>
+<p>模拟用户确认（生产环境接真实 UI）。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        level: 权限级别。
+        tool_name: 工具名称。
+        args: 工具参数。</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        是否确认执行。</pre>
+<p>&nbsp;</p>
+<p>安全的 Agent 请求处理流程。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        user_input: 用户输入。
+        execute_tool: 工具执行函数（可选）。</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        处理结果。</pre>
+<p>&nbsp;</p>
+<p>演示 Agent 安全攻防场景。</p>
+<p>&nbsp;</p>
+<h2>18.7 Agent 安全 Checklist（面试时脱口而出！）</h2>
+<p>&nbsp;</p>
+<p>✅ 输入层</p>
+<p>☐ 输入长度限制（防 token 耗尽）</p>
+<p>☐ Prompt Injection 检测与过滤</p>
+<p>☐ 零宽字符/控制字符清理</p>
+<p>☐ URL/IP 白名单过滤</p>
+<p>&nbsp;</p>
+<p>✅ 权限层</p>
+<p>☐ 工具分级：READ / WRITE / DANGEROUS</p>
+<p>☐ 最小权限原则（Agent 只拥有必要的权限）</p>
+<p>☐ 用户确认机制（写入需确认，危险需双重确认）</p>
+<p>☐ 权限审计（记录谁授权了什么）</p>
+<p>&nbsp;</p>
+<p>✅ 执行层</p>
+<p>☐ 工具参数校验（类型 + 范围 + 正则）</p>
+<p>☐ 执行超时限制（防死循环）</p>
+<p>☐ 结果审核（输出是否含敏感信息）</p>
+<p>&nbsp;</p>
+<p>✅ 监控层</p>
+<p>☐ 审计日志（全链路记录）</p>
+<p>☐ 异常告警（注入检测/频率异常）</p>
+<p>☐ 速率限制（防滥用）</p>
+<p>☐ 内容安全审核（输入+输出）</p>
+<p>&nbsp;</p>
+<h2>18.8 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>Agent 安全的特殊性</li>
+<li>LLM 是「不可 100% 预测」的决策者</li>
+<li>控制流由 LLM 决定，不是由代码决定</li>
+<li>安全模型从「白名单」变为「最小权限 + 确认」</li>
+<p>&nbsp;</p>
+<li>Prompt Injection（头号威胁）</li>
+<li>直接注入：用户直接覆盖 system prompt</li>
+<li>间接注入：恶意内容藏在 Agent 读取的数据中</li>
+<li>防御：结构化分离 + 输入消毒 + 最小权限</li>
+<p>&nbsp;</p>
+<li>工具权限分级</li>
+<li>READ（自动）→ WRITE（确认）→ DANGEROUS（双重确认）</li>
+<li>这是阻断注入攻击的「最后一道防线」</li>
+<p>&nbsp;</p>
+<li>安全 Checklist</li>
+<li>输入层 → 权限层 → 执行层 → 监控层</li>
+<li>每个层次都有具体的防御措施</li>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>"Agent 怎么做安全？"</p>
+<p>→ 分层防御：输入消毒 → 权限分级 → 执行审计 → 监控告警</p>
+<p>→ 核心原则：最小权限 + 人在回路</p>
+<p>→ Prompt Injection 是最难防的，靠多层防护降低风险</p></div><div class="code-section"><details open><summary>💻 源代码 (281 行)</summary><div class="code-block"><pre><span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
 
 
 <span class="d">@dataclass</span>
 <span class="k">class</span> SanitizeResult:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"输入消毒结果。"</span><span <span class="k">class</span>="s">""</span></span>
-    safe: bool
+safe: bool
     sanitized: str
     alerts: list[str] = field(default_factory=list)
     original_length: int = <span class="n">0</span>
@@ -265,16 +391,7 @@ body {
 
 
 <span class="k">class</span> InputSanitizer:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Agent 输入消毒器。
-
-    多层次检测策略：
-      <span class="n">1</span>. 长度限制
-      <span class="n">2</span>. 注入关键词检测
-      <span class="n">3</span>. 角色扮演检测
-      <span class="n">4</span>. 数据外泄检测
-    <span <span class="k">class</span>="s">""</span>"</span>
-
-    MAX_INPUT_LENGTH = <span class="n">10000</span>
+MAX_INPUT_LENGTH = <span class="n">10000</span>
     INJECTION_PATTERNS = [
         r<span <span class="k">class</span>="s">"(ignore|forget|override|disregard)\s+(all\s+)?(previous|above|prior)\s+(instructions?|prompts?|rules?)"</span>,
         r<span <span class="k">class</span>="s">"you\s+are\s+now\s+(DAN|jailbreak|unrestricted)"</span>,
@@ -288,15 +405,7 @@ body {
     ]
 
     <span class="k">def</span> sanitize(self, text: str) -&gt; SanitizeResult:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"消毒用户输入。
-
-        Args:
-            text: 原始输入。
-
-        Returns:
-            消毒结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        alerts = []
+alerts = []
         original = text
 
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">1</span>. 长度检查</span>
@@ -328,31 +437,6 @@ body {
             original_length=len(original),
             new_length=len(cleaned),
         )
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">18.5</span> 审计日志 ——Agent 的「黑匣子」
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-审计日志必须记录：
-  ✓ 谁（user_id）什么时间（timestamp）做了什么操作（action）
-  ✓ 输入参数（input）
-  ✓ 输出结果（output）
-  ✓ 是否成功（success）
-  ✓ 执行耗时（latency）
-  ✓ 使用的工具（tool_name）
-
-审计日志的作用：
-  <span class="n">1</span>. 事后追溯（出问题了能查到原因）
-  <span class="n">2</span>. 异常检测（哪些操作不正常？）
-  <span class="n">3</span>. 合规审计（GDPR / SOC2 要求）
-  <span class="n">4</span>. 性能分析（哪些工具最慢？）
-
-
-<span class="n">18.6</span> 完整的安全 Agent 实现
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-<span <span class="k">class</span>="s">""</span>"</span>
-
 <span class="k">import</span> hashlib
 <span class="k">import</span> time
 <span class="k">import</span> json
@@ -361,17 +445,7 @@ body {
 
 
 <span class="k">class</span> SecureAgent:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"带安全防护的 Agent 实现。
-
-    集成：
-      <span class="n">1</span>. 输入消毒
-      <span class="n">2</span>. 权限分级
-      <span class="n">3</span>. 审计日志
-      <span class="n">4</span>. 速率限制
-      <span class="n">5</span>. 人工确认（模拟）
-    <span <span class="k">class</span>="s">""</span>"</span>
-
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 工具权限配置</span>
+<span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 工具权限配置</span>
     TOOL_PERMISSIONS = {
         <span <span class="k">class</span>="s">"search"</span>: <span <span class="k">class</span>="s">"READ"</span>,
         <span <span class="k">class</span>="s">"get_weather"</span>: <span <span class="k">class</span>="s">"READ"</span>,
@@ -394,12 +468,7 @@ body {
         self.MAX_RPM = <span class="n">30</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 每分钟最大请求数</span>
 
     <span class="k">def</span> check_rate_limit(self) -&gt; bool:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"速率限制检查。
-
-        Returns:
-            是否允许此次请求。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        now = time.time()
+now = time.time()
         elapsed = now - self.last_request_time
         <span class="k">if</span> elapsed &gt; <span class="n">60</span>:
             self.request_count = <span class="n">0</span>
@@ -409,8 +478,7 @@ body {
         <span class="k">return</span> self.request_count &lt;= self.MAX_RPM
 
     <span class="k">def</span> _audit(self, action: str, details: dict):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"写入审计日志。"</span><span <span class="k">class</span>="s">""</span></span>
-        entry = {
+entry = {
             <span <span class="k">class</span>="s">"timestamp"</span>: datetime.now().isoformat(),
             <span <span class="k">class</span>="s">"user_id"</span>: self.user_id,
             <span <span class="k">class</span>="s">"action"</span>: action,
@@ -424,17 +492,7 @@ body {
 
     <span class="k">def</span> _ask_confirm(self, level: str, tool_name: str,
                      args: dict) -&gt; bool:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟用户确认（生产环境接真实 UI）。
-
-        Args:
-            level: 权限级别。
-            tool_name: 工具名称。
-            args: 工具参数。
-
-        Returns:
-            是否确认执行。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        print(f<span <span class="k">class</span>="s">"\n  ⚠️  [{level}] 确认执行 {tool_name}{args} ?"</span>)
+print(f<span <span class="k">class</span>="s">"\n  ⚠️  [{level}] 确认执行 {tool_name}{args} ?"</span>)
         <span class="k">if</span> level == <span <span class="k">class</span>="s">"DANGEROUS"</span>:
             print(f<span <span class="k">class</span>="s">"  ⚠️⚠️ 危险操作！需要二次确认。"</span>)
             <span class="k">return</span> <span class="k">False</span>  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟：危险操作默认拒绝（生产环境需真实确认）</span>
@@ -442,16 +500,7 @@ body {
 
     <span class="k">def</span> process(self, user_input: str,
                 execute_tool: Optional[Callable] = <span class="k">None</span>) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"安全的 Agent 请求处理流程。
-
-        Args:
-            user_input: 用户输入。
-            execute_tool: 工具执行函数（可选）。
-
-        Returns:
-            处理结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        result = {<span <span class="k">class</span>="s">"safe"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"response"</span>: <span <span class="k">class</span>="s">""</span>, <span <span class="k">class</span>="s">"alerts"</span>: []}
+result = {<span <span class="k">class</span>="s">"safe"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"response"</span>: <span <span class="k">class</span>="s">""</span>, <span <span class="k">class</span>="s">"alerts"</span>: []}
 
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 第1步：速率限制</span>
         <span class="k">if</span> <span class="k">not</span> self.check_rate_limit():
@@ -510,8 +559,7 @@ body {
 
 
 <span class="k">def</span> demo_security_scenarios():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Agent 安全攻防场景。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Agent 安全攻防演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -578,66 +626,6 @@ body {
     print(f<span <span class="k">class</span>="s">"\n  📋 审计日志（{len(agent.audit_log)} 条）"</span>)
     <span class="k">for</span> entry <span class="k">in</span> agent.audit_log[-<span class="n">5</span>:]:
         print(f<span <span class="k">class</span>="s">"    [{entry[<span <span class="k">class</span>='s'>'timestamp'</span>][:<span class="n">19</span>]}] {entry[<span <span class="k">class</span>='s'>'action'</span>]:20s} {entry[<span <span class="k">class</span>='s'>'details'</span>]}"</span>)
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">18.7</span> Agent 安全 Checklist（面试时脱口而出！）
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✅ 输入层
-  ☐ 输入长度限制（防 token 耗尽）
-  ☐ Prompt Injection 检测与过滤
-  ☐ 零宽字符/控制字符清理
-  ☐ URL/IP 白名单过滤
-
-✅ 权限层
-  ☐ 工具分级：READ / WRITE / DANGEROUS
-  ☐ 最小权限原则（Agent 只拥有必要的权限）
-  ☐ 用户确认机制（写入需确认，危险需双重确认）
-  ☐ 权限审计（记录谁授权了什么）
-
-✅ 执行层
-  ☐ 工具参数校验（类型 + 范围 + 正则）
-  ☐ 执行超时限制（防死循环）
-  ☐ 结果审核（输出是否含敏感信息）
-
-✅ 监控层
-  ☐ 审计日志（全链路记录）
-  ☐ 异常告警（注入检测/频率异常）
-  ☐ 速率限制（防滥用）
-  ☐ 内容安全审核（输入+输出）
-
-<span class="n">18.8</span> 本章总结
-━━━━━━━━━━━━━
-
-核心要点回顾：
-
-<span class="n">1</span>. Agent 安全的特殊性
-   - LLM 是「不可 <span class="n">100</span>% 预测」的决策者
-   - 控制流由 LLM 决定，不是由代码决定
-   - 安全模型从「白名单」变为「最小权限 + 确认」
-
-<span class="n">2</span>. Prompt Injection（头号威胁）
-   - 直接注入：用户直接覆盖 system prompt
-   - 间接注入：恶意内容藏在 Agent 读取的数据中
-   - 防御：结构化分离 + 输入消毒 + 最小权限
-
-<span class="n">3</span>. 工具权限分级
-   - READ（自动）→ WRITE（确认）→ DANGEROUS（双重确认）
-   - 这是阻断注入攻击的「最后一道防线」
-
-<span class="n">4</span>. 安全 Checklist
-   - 输入层 → 权限层 → 执行层 → 监控层
-   - 每个层次都有具体的防御措施
-
-面试速记：
-  <span <span class="k">class</span>="s">"Agent 怎么做安全？"</span>
-  → 分层防御：输入消毒 → 权限分级 → 执行审计 → 监控告警
-  → 核心原则：最小权限 + 人在回路
-  → Prompt Injection 是最难防的，靠多层防护降低风险
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第18章：Agent 安全与护栏（Guardrails）                ║"</span>)

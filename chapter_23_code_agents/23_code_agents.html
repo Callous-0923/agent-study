@@ -318,28 +318,74 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
   │     → 运行测试                               │
   │     → 如果失败 → 回到第 2 步                 │
   │                                             │
-  └──────────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 源代码 (183 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+  └──────────────────────────────────────────┘</pre>
+<p>&nbsp;</p>
+<p>模拟代码 Agent 的通用工作流。</p>
+<p>&nbsp;</p>
+<pre>展示任意代码 Agent 必须经历的 5 个阶段。</pre>
+<p>&nbsp;</p>
+<p>阶段 1：理解任务。</p>
+<p>&nbsp;</p>
+<p>阶段 2：定位问题。</p>
+<p>&nbsp;</p>
+<p>阶段 3：制定方案。</p>
+<p>&nbsp;</p>
+<p>阶段 4：实施修改。</p>
+<p>&nbsp;</p>
+<p>阶段 5：验证。</p>
+<p>&nbsp;</p>
+<p>运行完整的代码修复流程。</p>
+<p>&nbsp;</p>
+<p>演示代码 Agent 的通用工作流。</p>
+<p>&nbsp;</p>
+<h2>23.6 选型指南</h2>
+<p>&nbsp;</p>
+<pre>  ┌───────────────────┬────────────────────────────────────┐
+  │       场景         │              推荐                    │
+  ├───────────────────┼────────────────────────────────────┤
+  │ 个人开发者日常     │ Claude Code / Aider                 │
+  │ 企业级代码审查     │ OpenHands (企业版)                  │
+  │ 安全关键系统       │ Plan-and-Execute (人工审核)         │
+  │ 研究和实验         │ SWE-Agent (ACI 研究)               │
+  │ 定制化 CI/CD      │ 自建 (参考 Agentless 简洁方案)       │
+  │ IDE 深度集成      │ Cursor Agent / GitHub Copilot Agent  │
+  │ 多文件重构         │ Claude Code / OpenHands             │
+  └───────────────────┴────────────────────────────────────┘</pre>
+<p>&nbsp;</p>
+<h2>23.7 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>4 种架构模式</li>
+<p>CodeAct / ACI / Plan-Execute / React-and-Iterate</p>
+<p>&nbsp;</p>
+<li>SWE-bench 是代码 Agent 的标准评测</li>
+<p>Verified 版最可靠，Lite 版适合快速验证</p>
+<p>&nbsp;</p>
+<li>Agentless 的启示</li>
+<p>简单方案常比复杂 Agent 更好</p>
+<p>验证了 Anthropic「做最简单的事」的哲学</p>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>"你了解哪些代码 Agent？"</p>
+<p>→ 4 种架构 + 每个代表 + 选型场景</p>
+<p>→ 提到 SWE-bench 评测体系</p>
+<p>→ Agentless 的「返璞归真」启示</p>
+<p>→ Claude Code 的简单至上哲学</p></div><div class="code-section"><details open><summary>💻 源代码 (129 行)</summary><div class="code-block"><pre><span class="k">import</span> time
 
 
 <span class="k">class</span> CodeAgentSimulator:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟代码 Agent 的通用工作流。
-
-    展示任意代码 Agent 必须经历的 <span class="n">5</span> 个阶段。
-    <span <span class="k">class</span>="s">""</span>"</span>
-
-    <span class="k">def</span> __init__(self, name: str, architecture: str):
+<span class="k">def</span> __init__(self, name: str, architecture: str):
         self.name = name
         self.architecture = architecture
         self.steps_log = []
 
     <span class="k">def</span> understand(self, task: str) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"阶段 <span class="n">1</span>：理解任务。"</span><span <span class="k">class</span>="s">""</span></span>
-        self._log(<span <span class="k">class</span>="s">"understand"</span>, f<span <span class="k">class</span>="s">"分析任务: {task[:<span class="n">60</span>]}..."</span>)
+self._log(<span <span class="k">class</span>="s">"understand"</span>, f<span <span class="k">class</span>="s">"分析任务: {task[:<span class="n">60</span>]}..."</span>)
         <span class="k">return</span> {<span <span class="k">class</span>="s">"task_type"</span>: <span <span class="k">class</span>="s">"bugfix"</span>, <span <span class="k">class</span>="s">"scope"</span>: <span <span class="k">class</span>="s">"medium"</span>}
 
     <span class="k">def</span> localize(self, task: str, understanding: dict) -&gt; list[str]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"阶段 <span class="n">2</span>：定位问题。"</span><span <span class="k">class</span>="s">""</span></span>
-        self._log(<span <span class="k">class</span>="s">"localize"</span>, <span <span class="k">class</span>="s">"搜索相关的文件和代码"</span>)
+self._log(<span <span class="k">class</span>="s">"localize"</span>, <span <span class="k">class</span>="s">"搜索相关的文件和代码"</span>)
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟：基于关键词猜测文件位置</span>
         keywords = task.lower().split()
         files = [f<span <span class="k">class</span>="s">"src/{w}.py"</span> <span class="k">for</span> w <span class="k">in</span> keywords <span class="k">if</span> len(w) &gt; <span class="n">3</span>][:<span class="n">2</span>]
@@ -347,8 +393,7 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
         <span class="k">return</span> files <span class="k">or</span> [<span <span class="k">class</span>="s">"src/main.py"</span>]
 
     <span class="k">def</span> plan(self, task: str, files: list[str]) -&gt; list[dict]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"阶段 <span class="n">3</span>：制定方案。"</span><span <span class="k">class</span>="s">""</span></span>
-        self._log(<span <span class="k">class</span>="s">"plan"</span>, f<span <span class="k">class</span>="s">"针对 {len(files)} 个文件制定修改方案"</span>)
+self._log(<span <span class="k">class</span>="s">"plan"</span>, f<span <span class="k">class</span>="s">"针对 {len(files)} 个文件制定修改方案"</span>)
         <span class="k">return</span> [
             {<span <span class="k">class</span>="s">"file"</span>: f, <span <span class="k">class</span>="s">"action"</span>: <span <span class="k">class</span>="s">"edit"</span>, <span <span class="k">class</span>="s">"lines"</span>: <span <span class="k">class</span>="s">"<span class="n">45</span>-<span class="n">60</span>"</span>,
              <span <span class="k">class</span>="s">"reason"</span>: <span <span class="k">class</span>="s">"函数逻辑需要修改"</span>}
@@ -356,8 +401,7 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
         ]
 
     <span class="k">def</span> implement(self, plan: list[dict]) -&gt; list[str]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"阶段 <span class="n">4</span>：实施修改。"</span><span <span class="k">class</span>="s">""</span></span>
-        patches = []
+patches = []
         <span class="k">for</span> step <span class="k">in</span> plan:
             self._log(<span <span class="k">class</span>="s">"edit"</span>, f<span <span class="k">class</span>="s">"修改 {step[<span <span class="k">class</span>='s'>'file'</span>]} L{step[<span <span class="k">class</span>='s'>'lines'</span>]}"</span>)
             patches.append(f<span <span class="k">class</span>="s">"--- {step[<span <span class="k">class</span>='s'>'file'</span>]}\n+++ {step[<span <span class="k">class</span>='s'>'file'</span>]}\n@@ -<span class="n">50</span>,<span class="n">10</span> +<span class="n">50</span>,<span class="n">10</span> @@"</span>)
@@ -365,8 +409,7 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
 
     <span class="k">def</span> verify(self, patches: list[str],
                task: str = <span <span class="k">class</span>="s">""</span>) -&gt; tuple[bool, str]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"阶段 <span class="n">5</span>：验证。"</span><span <span class="k">class</span>="s">""</span></span>
-        self._log(<span <span class="k">class</span>="s">"test"</span>, <span <span class="k">class</span>="s">"运行测试..."</span>)
+self._log(<span <span class="k">class</span>="s">"test"</span>, <span <span class="k">class</span>="s">"运行测试..."</span>)
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 模拟：<span class="n">70</span>% 概率通过</span>
         passed = hash(task) % <span class="n">10</span> &lt; <span class="n">7</span>
         <span class="k">if</span> passed:
@@ -376,8 +419,7 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
         <span class="k">return</span> passed, <span <span class="k">class</span>="s">"<span class="n">3</span>/<span class="n">3</span> tests passed"</span> <span class="k">if</span> passed <span class="k">else</span> <span <span class="k">class</span>="s">"<span class="n">1</span>/<span class="n">3</span> tests failed"</span>
 
     <span class="k">def</span> run(self, task: str, max_iterations: int = <span class="n">3</span>) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"运行完整的代码修复流程。"</span><span <span class="k">class</span>="s">""</span></span>
-        print(f<span <span class="k">class</span>="s">"\n  🤖 {self.name} ({self.architecture})"</span>)
+print(f<span <span class="k">class</span>="s">"\n  🤖 {self.name} ({self.architecture})"</span>)
         print(f<span <span class="k">class</span>="s">"  📋 任务: {task[:<span class="n">80</span>]}..."</span>)
 
         <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 阶段 <span class="n">1</span>-<span class="n">3</span>：准备</span>
@@ -414,8 +456,7 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
 
 
 <span class="k">def</span> demo_code_agents():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示代码 Agent 的通用工作流。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  代码 Agent 通用工作流演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -432,48 +473,6 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
         result = agent.run(task)
         status = <span <span class="k">class</span>="s">"✅ 成功"</span> <span class="k">if</span> result[<span <span class="k">class</span>="s">"success"</span>] <span class="k">else</span> <span <span class="k">class</span>="s">"❌ 失败"</span>
         print(f<span <span class="k">class</span>="s">"  {status} | 迭代: {result[<span <span class="k">class</span>='s'>'iterations'</span>]} | 步骤: {result[<span <span class="k">class</span>='s'>'steps'</span>]}"</span>)
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">23.6</span> 选型指南
-━━━━━━━━━━━━
-
-  ┌───────────────────┬────────────────────────────────────┐
-  │       场景         │              推荐                    │
-  ├───────────────────┼────────────────────────────────────┤
-  │ 个人开发者日常     │ Claude Code / Aider                 │
-  │ 企业级代码审查     │ OpenHands (企业版)                  │
-  │ 安全关键系统       │ Plan-<span class="k">and</span>-Execute (人工审核)         │
-  │ 研究和实验         │ SWE-Agent (ACI 研究)               │
-  │ 定制化 CI/CD      │ 自建 (参考 Agentless 简洁方案)       │
-  │ IDE 深度集成      │ Cursor Agent / GitHub Copilot Agent  │
-  │ 多文件重构         │ Claude Code / OpenHands             │
-  └───────────────────┴────────────────────────────────────┘
-
-<span class="n">23.7</span> 本章总结
-━━━━━━━━━━━━
-
-核心要点回顾：
-
-<span class="n">1</span>. <span class="n">4</span> 种架构模式
-   CodeAct / ACI / Plan-Execute / React-<span class="k">and</span>-Iterate
-
-<span class="n">2</span>. SWE-bench 是代码 Agent 的标准评测
-   Verified 版最可靠，Lite 版适合快速验证
-
-<span class="n">3</span>. Agentless 的启示
-   简单方案常比复杂 Agent 更好
-   验证了 Anthropic「做最简单的事」的哲学
-
-面试速记：
-  <span <span class="k">class</span>="s">"你了解哪些代码 Agent？"</span>
-  → <span class="n">4</span> 种架构 + 每个代表 + 选型场景
-  → 提到 SWE-bench 评测体系
-  → Agentless 的「返璞归真」启示
-  → Claude Code 的简单至上哲学
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第23章：代码 Agent 架构横评                            ║"</span>)

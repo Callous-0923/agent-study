@@ -300,37 +300,123 @@ body {
 <p>Never run with admin privileges."</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>17.6 模拟 Computer Use Agent</h2></div><div class="code-section"><details open><summary>💻 源代码 (275 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<h2>17.6 模拟 Computer Use Agent</h2>
+<p>&nbsp;</p>
+<p>模拟计算机屏幕 —— 用作 Computer Use 的目标环境。</p>
+<p>&nbsp;</p>
+<p>添加一个 UI 元素（按钮/输入框/文本）。</p>
+<p>&nbsp;</p>
+<p>根据坐标查找被点击的元素。</p>
+<p>&nbsp;</p>
+<p>生成屏幕描述（模拟 LLM 视觉分析的结果）。</p>
+<p>&nbsp;</p>
+<p>Computer Use Agent —— 模拟完整的 Screenshot-Action Loop。</p>
+<p>&nbsp;</p>
+<pre>核心循环：
+  while not done:
+      screenshot → analyze → decide → execute → observe</pre>
+<p>&nbsp;</p>
+<p>模拟 LLM 分析屏幕截图的结果。</p>
+<p>&nbsp;</p>
+<pre>    真实实现中，这一步由 Claude 的视觉能力完成：
+      - 上传截图（base64）到 Claude API
+      - Claude 返回对界面元素的分析和下一步操作的建议</pre>
+<p>&nbsp;</p>
+<pre>    Args:
+        screen: 虚拟屏幕对象。</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        分析结果。</pre>
+<p>&nbsp;</p>
+<p>模拟 LLM 决定的下一步操作。</p>
+<p>&nbsp;</p>
+<pre>    真实实现中，Claude 返回结构化的工具调用：
+      tool: "computer"
+      action: {"type": "left_click", "x": 450, "y": 200}</pre>
+<p>&nbsp;</p>
+<pre>    这里用简化的规则模拟：
+      根据任务关键词匹配屏幕上的元素。</pre>
+<p>&nbsp;</p>
+<pre>    Args:
+        task: 任务描述。
+        screen: 当前屏幕。</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        操作指令字典。</pre>
+<p>&nbsp;</p>
+<p>执行操作并返回结果。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        action: 操作指令。
+        screen: 当前屏幕。</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        执行结果。</pre>
+<p>&nbsp;</p>
+<p>运行完整的 Computer Use 任务。</p>
+<p>&nbsp;</p>
+<pre>    Args:
+        task: 任务描述。
+        screen: 虚拟屏幕环境。</pre>
+<p>&nbsp;</p>
+<pre>    Returns:
+        包含执行记录的结果。</pre>
+<p>&nbsp;</p>
+<p>演示 Computer Use 的完整流程。</p>
+<p>&nbsp;</p>
+<h2>17.7 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>Computer Use = AI 用人类的方式操作电脑</li>
+<li>Screenshot-Action Loop: 截图→分析→决策→执行</li>
+<li>不依赖 API，可以操作任何软件</li>
+<li>核心挑战：像素坐标计算 + 视觉理解</li>
+<p>&nbsp;</p>
+<li>两大阵营</li>
+<li>Anthropic: 控制真实电脑（通用但危险）</li>
+<li>OpenAI CUA: 虚拟浏览器（安全但局限）</li>
+<p>&nbsp;</p>
+<li>当前局限性（面试时坦诚讨论）</li>
+<li>OSWorld 14.9%（人类 75%）—— 还有很长的路</li>
+<li>延迟 3-4秒/步，成本 100倍于 API</li>
+<li>安全风险高</li>
+<p>&nbsp;</p>
+<li>安全第一</li>
+<li>Docker 沙箱 + 非管理员 + 只读挂载</li>
+<li>操作确认 + 审计日志</li>
+<li>「Always sandbox. Never admin.」</li>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>"Computer Use 的原理和挑战？"</p>
+<p>→ 原理：Screenshot-Action Loop（截图→视觉分析→坐标→操作）</p>
+<p>→ 挑战：像素坐标精确度、延迟、安全风险</p>
+<p>→ 定位：不是替代传统自动化，而是覆盖「API无法触及」的长尾</p></div><div class="code-section"><details open><summary>💻 源代码 (181 行)</summary><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
 
 <span class="k">class</span> VirtualScreen:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"模拟计算机屏幕 —— 用作 Computer Use 的目标环境。"</span><span <span class="k">class</span>="s">""</span></span>
-
-    <span class="k">def</span> __init__(self, width: int = <span class="n">1280</span>, height: int = <span class="n">800</span>):
+<span class="k">def</span> __init__(self, width: int = <span class="n">1280</span>, height: int = <span class="n">800</span>):
         self.width = width
         self.height = height
         self.elements = {}  <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 屏幕上的 UI 元素 {name: (x, y, w, h)}</span>
 
     <span class="k">def</span> add_element(self, name: str, x: int, y: int,
                     w: int, h: int, text: str = <span <span class="k">class</span>="s">""</span>):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"添加一个 UI 元素（按钮/输入框/文本）。"</span><span <span class="k">class</span>="s">""</span></span>
-        self.elements[name] = {
+self.elements[name] = {
             <span <span class="k">class</span>="s">"x"</span>: x, <span <span class="k">class</span>="s">"y"</span>: y, <span <span class="k">class</span>="s">"w"</span>: w, <span <span class="k">class</span>="s">"h"</span>: h, <span <span class="k">class</span>="s">"text"</span>: text,
         }
 
     <span class="k">def</span> find_element_at(self, click_x: int, click_y: int) -&gt; Optional[str]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"根据坐标查找被点击的元素。"</span><span <span class="k">class</span>="s">""</span></span>
-        <span class="k">for</span> name, elem <span class="k">in</span> self.elements.items():
+<span class="k">for</span> name, elem <span class="k">in</span> self.elements.items():
             <span class="k">if</span> (elem[<span <span class="k">class</span>="s">"x"</span>] &lt;= click_x &lt;= elem[<span <span class="k">class</span>="s">"x"</span>] + elem[<span <span class="k">class</span>="s">"w"</span>] <span class="k">and</span>
                     elem[<span <span class="k">class</span>="s">"y"</span>] &lt;= click_y &lt;= elem[<span <span class="k">class</span>="s">"y"</span>] + elem[<span <span class="k">class</span>="s">"h"</span>]):
                 <span class="k">return</span> name
         <span class="k">return</span> <span class="k">None</span>
 
     <span class="k">def</span> describe(self) -&gt; str:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"生成屏幕描述（模拟 LLM 视觉分析的结果）。"</span><span <span class="k">class</span>="s">""</span></span>
-        lines = [f<span <span class="k">class</span>="s">"屏幕分辨率: {self.width}x{self.height}"</span>]
+lines = [f<span <span class="k">class</span>="s">"屏幕分辨率: {self.width}x{self.height}"</span>]
         <span class="k">for</span> name, elem <span class="k">in</span> self.elements.items():
             lines.append(
                 f<span <span class="k">class</span>="s">"  [{name}] 位置({elem[<span <span class="k">class</span>='s'>'x'</span>]},{elem[<span <span class="k">class</span>='s'>'y'</span>]}) "</span>
@@ -340,31 +426,12 @@ body {
 
 
 <span class="k">class</span> ComputerUseAgent:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"Computer Use Agent —— 模拟完整的 Screenshot-Action Loop。
-
-    核心循环：
-      <span class="k">while</span> <span class="k">not</span> done:
-          screenshot → analyze → decide → execute → observe
-    <span <span class="k">class</span>="s">""</span>"</span>
-
-    <span class="k">def</span> __init__(self):
+<span class="k">def</span> __init__(self):
         self.action_log = []
         self.max_actions = <span class="n">10</span>
 
     <span class="k">def</span> analyze_screen(self, screen: VirtualScreen) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 LLM 分析屏幕截图的结果。
-
-        真实实现中，这一步由 Claude 的视觉能力完成：
-          - 上传截图（base64）到 Claude API
-          - Claude 返回对界面元素的分析和下一步操作的建议
-
-        Args:
-            screen: 虚拟屏幕对象。
-
-        Returns:
-            分析结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        description = screen.describe()
+description = screen.describe()
         <span class="k">return</span> {
             <span <span class="k">class</span>="s">"resolution"</span>: f<span <span class="k">class</span>="s">"{screen.width}x{screen.height}"</span>,
             <span <span class="k">class</span>="s">"elements_found"</span>: len(screen.elements),
@@ -373,23 +440,7 @@ body {
 
     <span class="k">def</span> decide_action(self, task: str,
                       screen: VirtualScreen) -&gt; Optional[dict]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 LLM 决定的下一步操作。
-
-        真实实现中，Claude 返回结构化的工具调用：
-          tool: <span <span class="k">class</span>="s">"computer"</span>
-          action: {<span <span class="k">class</span>="s">"type"</span>: <span <span class="k">class</span>="s">"left_click"</span>, <span <span class="k">class</span>="s">"x"</span>: <span class="n">450</span>, <span <span class="k">class</span>="s">"y"</span>: <span class="n">200</span>}
-
-        这里用简化的规则模拟：
-          根据任务关键词匹配屏幕上的元素。
-
-        Args:
-            task: 任务描述。
-            screen: 当前屏幕。
-
-        Returns:
-            操作指令字典。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        <span class="k">for</span> name, elem <span class="k">in</span> screen.elements.items():
+<span class="k">for</span> name, elem <span class="k">in</span> screen.elements.items():
             <span class="k">if</span> name.lower() <span class="k">in</span> task.lower():
                 <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># 计算元素中心坐标</span>
                 cx = elem[<span <span class="k">class</span>="s">"x"</span>] + elem[<span <span class="k">class</span>="s">"w"</span>] // <span class="n">2</span>
@@ -411,16 +462,7 @@ body {
 
     <span class="k">def</span> execute_action(self, action: dict,
                        screen: VirtualScreen) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"执行操作并返回结果。
-
-        Args:
-            action: 操作指令。
-            screen: 当前屏幕。
-
-        Returns:
-            执行结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        action_type = action[<span <span class="k">class</span>="s">"type"</span>]
+action_type = action[<span <span class="k">class</span>="s">"type"</span>]
         result = {<span <span class="k">class</span>="s">"success"</span>: <span class="k">True</span>, <span <span class="k">class</span>="s">"action"</span>: action}
 
         <span class="k">if</span> action_type == <span <span class="k">class</span>="s">"left_click"</span>:
@@ -440,16 +482,7 @@ body {
         <span class="k">return</span> result
 
     <span class="k">def</span> run_task(self, task: str, screen: VirtualScreen) -&gt; dict:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"运行完整的 Computer Use 任务。
-
-        Args:
-            task: 任务描述。
-            screen: 虚拟屏幕环境。
-
-        Returns:
-            包含执行记录的结果。
-        <span <span class="k">class</span>="s">""</span>"</span>
-        print(f<span <span class="k">class</span>="s">"\n  🎯 任务: {task}"</span>)
+print(f<span <span class="k">class</span>="s">"\n  🎯 任务: {task}"</span>)
         print(f<span <span class="k">class</span>="s">"  📺 {screen.describe()}\n"</span>)
 
         <span class="k">for</span> step <span class="k">in</span> range(<span class="n">1</span>, self.max_actions + <span class="n">1</span>):
@@ -486,8 +519,7 @@ body {
 
 
 <span class="k">def</span> demo_computer_use():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"演示 Computer Use 的完整流程。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Computer Use Agent 演示"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -511,41 +543,6 @@ body {
 
     agent = ComputerUseAgent()
     result = agent.run_task(<span <span class="k">class</span>="s">"点击搜索按钮"</span>, search_screen)
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">17.7</span> 本章总结
-━━━━━━━━━━━━━
-
-核心要点回顾：
-
-<span class="n">1</span>. Computer Use = AI 用人类的方式操作电脑
-   - Screenshot-Action Loop: 截图→分析→决策→执行
-   - 不依赖 API，可以操作任何软件
-   - 核心挑战：像素坐标计算 + 视觉理解
-
-<span class="n">2</span>. 两大阵营
-   - Anthropic: 控制真实电脑（通用但危险）
-   - OpenAI CUA: 虚拟浏览器（安全但局限）
-
-<span class="n">3</span>. 当前局限性（面试时坦诚讨论）
-   - OSWorld <span class="n">14.9</span>%（人类 <span class="n">75</span>%）—— 还有很长的路
-   - 延迟 <span class="n">3</span>-4秒/步，成本 100倍于 API
-   - 安全风险高
-
-<span class="n">4</span>. 安全第一
-   - Docker 沙箱 + 非管理员 + 只读挂载
-   - 操作确认 + 审计日志
-   - 「Always sandbox. Never admin.」
-
-面试速记：
-  <span <span class="k">class</span>="s">"Computer Use 的原理和挑战？"</span>
-  → 原理：Screenshot-Action Loop（截图→视觉分析→坐标→操作）
-  → 挑战：像素坐标精确度、延迟、安全风险
-  → 定位：不是替代传统自动化，而是覆盖「API无法触及」的长尾
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
     print(<span <span class="k">class</span>="s">"║  第17章：Computer Use + GUI Agent                     ║"</span>)

@@ -326,13 +326,40 @@ body {
   │ Ch13 FastAPI       │ fastapi, uvicorn                  │
   │ Ch14 SQLite        │ 标准库（无需额外安装）              │
   │ Ch15-18 其他       │ 无需额外依赖                       │
-  └────────────────────┴────────────────────────────────────┘</pre></div><div class="code-section"><details open><summary>💻 源代码 (83 行)</summary><div class="code-block"><pre><span class="k">import</span> subprocess
+  └────────────────────┴────────────────────────────────────┘</pre>
+<p>&nbsp;</p>
+<p>检查 Python 版本是否满足要求（>= 3.10）。</p>
+<p>&nbsp;</p>
+<p>一键安装本课程所需的所有核心依赖。</p>
+<p>&nbsp;</p>
+<p>展示 API Key 配置说明。</p>
+<p>&nbsp;</p>
+<p>╔══════════════════════════════════════════════════════════╗</p>
+<pre>║              API Key 配置指南                             ║
+╠══════════════════════════════════════════════════════════╣
+║                                                          ║
+║  1. 在项目根目录创建 .env 文件：                           ║
+║     OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx               ║
+║     OPENAI_BASE_URL=https://api.openai.com/v1            ║
+║                                                          ║
+║  2. 如使用国产模型（如 DeepSeek / 通义千问）：              ║
+║     OPENAI_API_KEY=your-deepseek-key                     ║
+║     OPENAI_BASE_URL=https://api.deepseek.com/v1          ║
+║     LLM_MODEL=deepseek-chat                             ║
+║                                                          ║
+║  3. 验证配置：                                            ║
+║     python -c "from openai import OpenAI;                ║
+║       import os; from dotenv import load_dotenv;         ║
+║       load_dotenv();                                    ║
+║       client = OpenAI();                                ║
+║       print(client.models.list().data[0].id)"            ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝</pre></div><div class="code-section"><details open><summary>💻 源代码 (58 行)</summary><div class="code-block"><pre><span class="k">import</span> subprocess
 <span class="k">import</span> sys
 
 
 <span class="k">def</span> check_python_version():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"检查 Python 版本是否满足要求（&gt;= <span class="n">3.10</span>）。"</span><span <span class="k">class</span>="s">""</span></span>
-    version = sys.version_info
+version = sys.version_info
     <span class="k">if</span> version.major &gt;= <span class="n">3</span> <span class="k">and</span> version.minor &gt;= <span class="n">10</span>:
         print(f<span <span class="k">class</span>="s">"[✓] Python {version.major}.{version.minor}.{version.micro} - 满足要求"</span>)
         <span class="k">return</span> <span class="k">True</span>
@@ -341,8 +368,7 @@ body {
 
 
 <span class="k">def</span> install_dependencies():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"一键安装本课程所需的所有核心依赖。"</span><span <span class="k">class</span>="s">""</span></span>
-    packages = [
+packages = [
         <span <span class="k">class</span>="s">"openai&gt;=<span class="n">1.0</span>.<span class="n">0</span>"</span>,           <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># OpenAI API 调用 (Ch1-<span class="n">12</span>)</span>
         <span <span class="k">class</span>="s">"langchain&gt;=<span class="n">0.3</span>.<span class="n">0</span>"</span>,       <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LangChain 核心框架 (Ch4-<span class="n">5</span>)</span>
         <span <span class="k">class</span>="s">"langchain-openai"</span>,        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># LangChain OpenAI 集成 (Ch4-<span class="n">5</span>)</span>
@@ -363,31 +389,8 @@ body {
 
 
 <span class="k">def</span> show_env_setup_guide():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"展示 API Key 配置说明。"</span><span <span class="k">class</span>="s">""</span></span>
-    guide = <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-    ╔══════════════════════════════════════════════════════════╗
-    ║              API Key 配置指南                             ║
-    ╠══════════════════════════════════════════════════════════╣
-    ║                                                          ║
-    ║  <span class="n">1</span>. 在项目根目录创建 .env 文件：                           ║
-    ║     OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx               ║
-    ║     OPENAI_BASE_URL=https://api.openai.com/v1            ║
-    ║                                                          ║
-    ║  <span class="n">2</span>. 如使用国产模型（如 DeepSeek / 通义千问）：              ║
-    ║     OPENAI_API_KEY=your-deepseek-key                     ║
-    ║     OPENAI_BASE_URL=https://api.deepseek.com/v1          ║
-    ║     LLM_MODEL=deepseek-chat                             ║
-    ║                                                          ║
-    ║  <span class="n">3</span>. 验证配置：                                            ║
-    ║     python -c "<span class="k">from</span> openai <span class="k">import</span> OpenAI;                ║
-    ║       <span class="k">import</span> os; <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv;         ║
-    ║       load_dotenv();                                    ║
-    ║       client = OpenAI();                                ║
-    ║       print(client.models.list().data[<span class="n">0</span>].id)"            ║
-    ║                                                          ║
-    ╚══════════════════════════════════════════════════════════╝
-    <span <span class="k">class</span>="s">""</span>"</span>
-    print(guide)
+guide =
+print(guide)
 
 
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:

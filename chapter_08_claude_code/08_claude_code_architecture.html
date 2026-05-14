@@ -301,71 +301,216 @@ async def agent_loop_with_steering(user_input, h2a_queue):
 <p>关键数据（来自逆向工程分析）：</p>
 <li>吞吐量 > 10,000 消息/秒</li>
 <li>零延迟消息传递</li>
-<li>Promise-based 异步迭代器 + 智能背压控制</li></div><div class="code-section"><details open><summary>💻 源代码 (323 行)</summary><div class="code-block"><pre><span class="k">import</span> asyncio
+<li>Promise-based 异步迭代器 + 智能背压控制</li>
+<p>&nbsp;</p>
+<p>模拟 Claude Code 的 h2A 异步双缓冲队列。</p>
+<p>&nbsp;</p>
+<pre>演示如何在不中断 Agent 的情况下接受用户中途介入。</pre>
+<p>&nbsp;</p>
+<p>用户中途注入新指令（非阻塞）。</p>
+<p>&nbsp;</p>
+<p>Agent 消费所有待处理的注入消息。</p>
+<p>&nbsp;</p>
+<h2>8.4 上下文压缩 (Context Compaction) —— 解决长对话难题</h2>
+<p>&nbsp;</p>
+<p>这是 Claude Code 能够在数小时的长任务中保持稳定的关键技术。</p>
+<p>&nbsp;</p>
+<p>核心机制：</p>
+<li>Compressor (代号 wU2) 监控消息列表的 token 使用量</li>
+<li>当使用量达到上下文窗口的 ~92% 时自动触发</li>
+<li>Compressor 调用一次 LLM，生成「对话摘要」</li>
+<li>将早期消息（已总结的）移除，替换为摘要</li>
+<li>将重要信息移动到 Markdown 文件（长期记忆）</li>
+<p>&nbsp;</p>
+<p>为什么是 92%？</p>
+<li>太早压缩 → 浪费计算资源</li>
+<li>太晚压缩 → 没有空间放 tool 返回结果</li>
+<li>92% 是经过工程实践的平衡点</li>
+<p>&nbsp;</p>
+<p>为什么用 Markdown 而不是专用数据库？</p>
+<li>Markdown 对 LLM 最友好（训练数据中大量存在）</li>
+<li>人类可读，便于调试</li>
+<li>零依赖，无需额外基础设施</li>
+<p>&nbsp;</p>
+<p>压缩过程示意：</p>
+<p>压缩前：[System][User][Asst][Tool][Asst][Tool][User][Asst]...</p>
+<pre>                          ↑ 92% 阈值</pre>
+<p>压缩后：[System][Summary][最近3轮对话，后续消息]</p>
+<p>&nbsp;</p>
+<p>被压缩的内容：</p>
+<pre>→ 生成简短摘要（放入 Summary）
+→ 重要信息写入 Markdown 长期记忆文件
+→ 不重要的细节直接丢弃</pre>
+<p>&nbsp;</p>
+<p>模拟上下文压缩的过程。</p>
+<p>&nbsp;</p>
+<h2>8.5 分层 Multi-Agent 架构 —— Task 工具与 SubAgent</h2>
+<p>&nbsp;</p>
+<p>Claude Code 的多 Agent 是通过「Task 工具」实现的：</p>
+<li>主 Agent 调用 Task 工具 → 创建 SubAgent</li>
+<li>SubAgent 在独立上下文中运行</li>
+<li>SubAgent 完成后返回结果</li>
+<li>主 Agent 合成结果</li>
+<p>&nbsp;</p>
+<p>关键设计（Claude Code 1.0.60+ 版本）：</p>
+<p>&nbsp;</p>
+<li>上下文过滤（Context Filtering）</li>
+<li>v1.0.59: SubAgent 继承全部对话历史（浪费大量 token）</li>
+<li>v1.0.60+: SubAgent 只获得与任务相关的精简上下文</li>
+<li>效果：Token 消耗降低约 70%</li>
+<p>&nbsp;</p>
+<li>工具权限控制</li>
+<li>研究型 SubAgent：只读权限（Grep, View）</li>
+<li>实施型 SubAgent：完整权限（Edit, Write, Bash）</li>
+<li>权限通过 SubAgent 创建时动态配置</li>
+<p>&nbsp;</p>
+<li>并发限制</li>
+<li>最多同时运行一个 SubAgent（v1.0.33 时期）</li>
+<li>这不是技术限制，而是设计选择</li>
+<li>原因：避免 Agent 失控，保持可预测性</li>
+<p>&nbsp;</p>
+<p>伪代码还原：</p>
+<p>&nbsp;</p>
+<pre># Task 工具背后的 SubAgent 创建与执行
+def create_subagent(task_description: str, task_prompt: str,
+                    available_tools: list, permissions: dict):
+    # 1. 构建 SubAgent 专属系统提示词
+    system_prompt = (
+        "You are a specialized sub-agent.\n"
+        f"Task: {task_description}\n"
+        f"You have access to tools: "
+        f"{[t.name for t in available_tools]}\n"
+        f"Your permissions: {permissions}\n\n"
+        "IMPORTANT:\n"
+        "- You are stateless. Complete the task in one response.\n"
+        "- Return your findings concisely.\n"
+        "- Do not ask follow-up questions."
+    )</pre>
+<p>&nbsp;</p>
+<pre>    # 2. 执行 SubAgent（独立对话）
+    sub_messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": task_prompt},
+    ]</pre>
+<p>&nbsp;</p>
+<pre>    # 3. SubAgent 执行自己的循环
+    result = run_agent_loop(sub_messages, tools=available_tools)</pre>
+<p>&nbsp;</p>
+<pre>    # 4. 将结果返回主 Agent
+    return {"sub_agent_result": result}</pre>
+<p>&nbsp;</p>
+<p>Comparision with crewAI:</p>
+<pre>  ┌──────────────────┬───────────────────┬──────────────────────┐
+  │      特性         │    Claude Code     │       crewAI          │
+  ├──────────────────┼───────────────────┼──────────────────────┤
+  │ SubAgent 创建     │ Task 工具动态创建  │ 预定义 Agent 角色      │
+  │ 上下文隔离        │ 完全独立           │ 共享部分上下文         │
+  │ 状态管理          │ 无状态（单次执行）  │ 有状态（多次交互）     │
+  │ 并发              │ 受控（有限并发）    │ 自由并发              │
+  │ 适用场景          │ 编程、搜索、分析    │ 内容创作、多角色协作   │
+  └──────────────────┴───────────────────┴──────────────────────┘</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>8.6 Claude Agent SDK —— Agent 开发的新范式</h2>
+<p>&nbsp;</p>
+<p>2025年9月，Anthropic 将 Claude Code SDK 重命名为 Claude Agent SDK。</p>
+<p>&nbsp;</p>
+<p>核心理念：「给 Claude 一台电脑」</p>
+<p>&nbsp;</p>
+<p>Claude Code 之所以强大，不是因为特殊的 Agent 架构，</p>
+<p>而是因为它给了 Claude 程序员每天使用的工具：</p>
+<li>文件系统（读写文件）</li>
+<li>终端（执行命令）</li>
+<li>代码搜索（Grep）</li>
+<li>代码编辑（Edit）</li>
+<p>&nbsp;</p>
+<p>这些都是通用能力，不限于编程。</p>
+<p>Claude 可以用来读 CSV、搜索网页、生成图表、管理日历...</p>
+<p>&nbsp;</p>
+<p>SDK 的 Agent 循环设计：</p>
+<p>Gather Context → Take Action → Verify Work → Repeat</p>
+<p>&nbsp;</p>
+<pre>  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+  │ 收集上下文    │────→│  执行行动     │────→│  验证结果     │
+  │ - 搜索文件    │     │ - 编辑/写入   │     │ - 运行测试    │
+  │ - 读取代码    │     │ - 运行命令    │     │ - 检查 lint   │
+  │ - 查询历史    │     │ - 调用 API    │     │ - 审查 diff   │
+  └──────────────┘     └──────────────┘     └──────────────┘
+         ↑                                        │
+         └────────────────────────────────────────┘</pre>
+<pre>                    循环直到完成</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>8.7 Claude Code 的设计原则总结</h2>
+<p>&nbsp;</p>
+<p>从 Claude Code 可以学到的 Agent 工程哲学：</p>
+<p>&nbsp;</p>
+<li>Simple is Better</li>
+<li>单线程主循环 > 复杂的并行调度</li>
+<li>平面消息列表 > 树形消息结构</li>
+<li>Markdown 文件 > 专用数据库</li>
+<p>&nbsp;</p>
+<li>Tool-First Thinking</li>
+<li>Agent 的能力边界 = 工具的能力边界</li>
+<li>好工具胜过好 prompt</li>
+<p>&nbsp;</p>
+<li>Controllable Autonomy（可控自主）</li>
+<li>不追求完全自主，追求可控的自主</li>
+<li>人在回路 (h2A Steering)</li>
+<li>权限分级的工具访问</li>
+<p>&nbsp;</p>
+<li>Context Engineering（上下文工程）</li>
+<li>上下文压缩是 Agent 稳定性的关键</li>
+<li>92% 阈值是工程实践的产物</li>
+<li>Markdown 长期记忆是最简单的持久化方案</li>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>"Claude Code 的架构有什么特别之处？"</p>
+<p>→ 简洁的主循环 + 实时 Steering(h2A) + 上下文压缩 + 分层 SubAgent</p>
+<p>→ 设计哲学：做简单的事，用简单的工具</p>
+<p>→ 不给 LLM 过多选择，控制在可预测的路径上</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>8.8 本章总结</h2>
+<p>&nbsp;</p>
+<p>核心要点回顾：</p>
+<p>&nbsp;</p>
+<li>4层架构：用户交互 → Agent 核心调度 → 工具执行 → 存储持久化</li>
+<p>&nbsp;</p>
+<li>nO 主循环：简洁的 while(tool_calls) 循环，单线程，平面消息</li>
+<p>&nbsp;</p>
+<li>h2A Steering：异步双缓冲队列，允许用户中途介入不中断任务</li>
+<p>&nbsp;</p>
+<li>Context Compaction：92% 阈值触发，压缩早期对话为摘要</li>
+<p>&nbsp;</p>
+<li>SubAgent：通过 Task 工具创建，独立上下文，1.0.60 引入上下文过滤</li>
+<p>&nbsp;</p>
+<li>Claude Agent SDK：给 Claude 一台电脑，构建通用 Agent</li>
+<p>&nbsp;</p>
+<p>面试常问：</p>
+<p>"如果你要重新实现一个 Claude Code，核心架构怎么设计？"</p>
+<p>→ 单线程主循环 + h2A 双缓冲 + 上下文压缩 + 分层 SubAgent</p>
+<p>→ 工具优先，架构从简</p>
+<p>→ 重点在上下文管理和工具设计，不在复杂的 Agent 编排</p></div><div class="code-section"><details open><summary>💻 源代码 (120 行)</summary><div class="code-block"><pre><span class="k">import</span> asyncio
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
 
 <span class="k">class</span> SimulatedSteeringQueue:
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"模拟 Claude Code 的 h2A 异步双缓冲队列。
-
-    演示如何在不中断 Agent 的情况下接受用户中途介入。
-    <span <span class="k">class</span>="s">""</span>"</span>
-
-    <span class="k">def</span> __init__(self):
+<span class="k">def</span> __init__(self):
         self._pending = []
         self._lock = asyncio.Lock()
 
     <span class="k">async</span> <span class="k">def</span> inject(self, message: str):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"用户中途注入新指令（非阻塞）。"</span><span <span class="k">class</span>="s">""</span></span>
-        <span class="k">async</span> <span class="k">with</span> self._lock:
+<span class="k">async</span> <span class="k">with</span> self._lock:
             self._pending.append(message)
 
     <span class="k">async</span> <span class="k">def</span> drain(self) -&gt; list[str]:
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"Agent 消费所有待处理的注入消息。"</span><span <span class="k">class</span>="s">""</span></span>
-        <span class="k">async</span> <span class="k">with</span> self._lock:
+<span class="k">async</span> <span class="k">with</span> self._lock:
             msgs = self._pending.copy()
             self._pending.clear()
         <span class="k">return</span> msgs
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">8.4</span> 上下文压缩 (Context Compaction) —— 解决长对话难题
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-这是 Claude Code 能够在数小时的长任务中保持稳定的关键技术。
-
-核心机制：
-  <span class="n">1</span>. Compressor (代号 wU2) 监控消息列表的 token 使用量
-  <span class="n">2</span>. 当使用量达到上下文窗口的 ~<span class="n">92</span>% 时自动触发
-  <span class="n">3</span>. Compressor 调用一次 LLM，生成「对话摘要」
-  <span class="n">4</span>. 将早期消息（已总结的）移除，替换为摘要
-  <span class="n">5</span>. 将重要信息移动到 Markdown 文件（长期记忆）
-
-为什么是 <span class="n">92</span>%？
-  - 太早压缩 → 浪费计算资源
-  - 太晚压缩 → 没有空间放 tool 返回结果
-  - <span class="n">92</span>% 是经过工程实践的平衡点
-
-为什么用 Markdown 而不是专用数据库？
-  - Markdown 对 LLM 最友好（训练数据中大量存在）
-  - 人类可读，便于调试
-  - 零依赖，无需额外基础设施
-
-压缩过程示意：
-  压缩前：[System][User][Asst][Tool][Asst][Tool][User][Asst]...
-                              ↑ <span class="n">92</span>% 阈值
-  压缩后：[System][Summary][最近3轮对话，后续消息]
-
-  被压缩的内容：
-    → 生成简短摘要（放入 Summary）
-    → 重要信息写入 Markdown 长期记忆文件
-    → 不重要的细节直接丢弃
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">def</span> simulate_context_compaction():
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span><span <span class="k">class</span>="s">"模拟上下文压缩的过程。"</span><span <span class="k">class</span>="s">""</span></span>
-    print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
+print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
     print(<span <span class="k">class</span>="s">"  Context Compaction 模拟"</span>)
     print(<span <span class="k">class</span>="s">"="</span> * <span class="n">60</span>)
 
@@ -417,164 +562,6 @@ async def agent_loop_with_steering(user_input, h2a_queue):
         print(f<span <span class="k">class</span>="s">"  压缩后 token 估算: {new_tokens}"</span>)
         print(f<span <span class="k">class</span>="s">"  压缩后使用率: {new_usage:.<span class="n">1</span>%}"</span>)
         print(f<span <span class="k">class</span>="s">"  节省: {(current_tokens - new_tokens) / current_tokens:.<span class="n">0</span>%}"</span>)
-
-
-<span <span class="k">class</span>=<span <span class="k">class</span>="s">"s"</span>><span <span class="k">class</span>="s">""</span>"
-<span class="n">8.5</span> 分层 Multi-Agent 架构 —— Task 工具与 SubAgent
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Claude Code 的多 Agent 是通过「Task 工具」实现的：
-  - 主 Agent 调用 Task 工具 → 创建 SubAgent
-  - SubAgent 在独立上下文中运行
-  - SubAgent 完成后返回结果
-  - 主 Agent 合成结果
-
-关键设计（Claude Code <span class="n">1.0</span>.<span class="n">60</span>+ 版本）：
-
-<span class="n">1</span>. 上下文过滤（Context Filtering）
-   - v1.<span class="n">0.59</span>: SubAgent 继承全部对话历史（浪费大量 token）
-   - v1.<span class="n">0.60</span>+: SubAgent 只获得与任务相关的精简上下文
-   - 效果：Token 消耗降低约 <span class="n">70</span>%
-
-<span class="n">2</span>. 工具权限控制
-   - 研究型 SubAgent：只读权限（Grep, View）
-   - 实施型 SubAgent：完整权限（Edit, Write, Bash）
-   - 权限通过 SubAgent 创建时动态配置
-
-<span class="n">3</span>. 并发限制
-   - 最多同时运行一个 SubAgent（v1.<span class="n">0.33</span> 时期）
-   - 这不是技术限制，而是设计选择
-   - 原因：避免 Agent 失控，保持可预测性
-
-伪代码还原：
-
-    <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># Task 工具背后的 SubAgent 创建与执行</span>
-    <span class="k">def</span> create_subagent(task_description: str, task_prompt: str,
-                        available_tools: list, permissions: dict):
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">1</span>. 构建 SubAgent 专属系统提示词</span>
-        system_prompt = (
-            <span <span class="k">class</span>="s">"You are a specialized sub-agent.\n"</span>
-            f<span <span class="k">class</span>="s">"Task: {task_description}\n"</span>
-            f<span <span class="k">class</span>="s">"You have access to tools: "</span>
-            f<span <span class="k">class</span>="s">"{[t.name <span class="k">for</span> t <span class="k">in</span> available_tools]}\n"</span>
-            f<span <span class="k">class</span>="s">"Your permissions: {permissions}\n\n"</span>
-            <span <span class="k">class</span>="s">"IMPORTANT:\n"</span>
-            <span <span class="k">class</span>="s">"- You are stateless. Complete the task <span class="k">in</span> one response.\n"</span>
-            <span <span class="k">class</span>="s">"- Return your findings concisely.\n"</span>
-            <span <span class="k">class</span>="s">"- Do <span class="k">not</span> ask follow-up questions."</span>
-        )
-
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">2</span>. 执行 SubAgent（独立对话）</span>
-        sub_messages = [
-            {<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"system"</span>, <span <span class="k">class</span>="s">"content"</span>: system_prompt},
-            {<span <span class="k">class</span>="s">"role"</span>: <span <span class="k">class</span>="s">"user"</span>, <span <span class="k">class</span>="s">"content"</span>: task_prompt},
-        ]
-
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">3</span>. SubAgent 执行自己的循环</span>
-        result = run_agent_loop(sub_messages, tools=available_tools)
-
-        <span <span class="k">class</span>=<span <span class="k">class</span>="s">"h"</span>># <span class="n">4</span>. 将结果返回主 Agent</span>
-        <span class="k">return</span> {<span <span class="k">class</span>="s">"sub_agent_result"</span>: result}
-
-Comparision <span class="k">with</span> crewAI:
-  ┌──────────────────┬───────────────────┬──────────────────────┐
-  │      特性         │    Claude Code     │       crewAI          │
-  ├──────────────────┼───────────────────┼──────────────────────┤
-  │ SubAgent 创建     │ Task 工具动态创建  │ 预定义 Agent 角色      │
-  │ 上下文隔离        │ 完全独立           │ 共享部分上下文         │
-  │ 状态管理          │ 无状态（单次执行）  │ 有状态（多次交互）     │
-  │ 并发              │ 受控（有限并发）    │ 自由并发              │
-  │ 适用场景          │ 编程、搜索、分析    │ 内容创作、多角色协作   │
-  └──────────────────┴───────────────────┴──────────────────────┘
-
-
-<span class="n">8.6</span> Claude Agent SDK —— Agent 开发的新范式
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-2025年9月，Anthropic 将 Claude Code SDK 重命名为 Claude Agent SDK。
-
-核心理念：「给 Claude 一台电脑」
-
-  Claude Code 之所以强大，不是因为特殊的 Agent 架构，
-  而是因为它给了 Claude 程序员每天使用的工具：
-  - 文件系统（读写文件）
-  - 终端（执行命令）
-  - 代码搜索（Grep）
-  - 代码编辑（Edit）
-
-  这些都是通用能力，不限于编程。
-  Claude 可以用来读 CSV、搜索网页、生成图表、管理日历...
-
-SDK 的 Agent 循环设计：
-  Gather Context → Take Action → Verify Work → Repeat
-
-  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-  │ 收集上下文    │────→│  执行行动     │────→│  验证结果     │
-  │ - 搜索文件    │     │ - 编辑/写入   │     │ - 运行测试    │
-  │ - 读取代码    │     │ - 运行命令    │     │ - 检查 lint   │
-  │ - 查询历史    │     │ - 调用 API    │     │ - 审查 diff   │
-  └──────────────┘     └──────────────┘     └──────────────┘
-         ↑                                        │
-         └────────────────────────────────────────┘
-                        循环直到完成
-
-
-<span class="n">8.7</span> Claude Code 的设计原则总结
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-从 Claude Code 可以学到的 Agent 工程哲学：
-
-<span class="n">1</span>. Simple <span class="k">is</span> Better
-   - 单线程主循环 &gt; 复杂的并行调度
-   - 平面消息列表 &gt; 树形消息结构
-   - Markdown 文件 &gt; 专用数据库
-
-<span class="n">2</span>. Tool-First Thinking
-   - Agent 的能力边界 = 工具的能力边界
-   - 好工具胜过好 prompt
-
-<span class="n">3</span>. Controllable Autonomy（可控自主）
-   - 不追求完全自主，追求可控的自主
-   - 人在回路 (h2A Steering)
-   - 权限分级的工具访问
-
-<span class="n">4</span>. Context Engineering（上下文工程）
-   - 上下文压缩是 Agent 稳定性的关键
-   - <span class="n">92</span>% 阈值是工程实践的产物
-   - Markdown 长期记忆是最简单的持久化方案
-
-面试速记：
-  <span <span class="k">class</span>="s">"Claude Code 的架构有什么特别之处？"</span>
-  → 简洁的主循环 + 实时 Steering(h2A) + 上下文压缩 + 分层 SubAgent
-  → 设计哲学：做简单的事，用简单的工具
-  → 不给 LLM 过多选择，控制在可预测的路径上
-
-
-<span class="n">8.8</span> 本章总结
-━━━━━━━━━━━━━━
-
-核心要点回顾：
-
-<span class="n">1</span>. 4层架构：用户交互 → Agent 核心调度 → 工具执行 → 存储持久化
-
-<span class="n">2</span>. nO 主循环：简洁的 <span class="k">while</span>(tool_calls) 循环，单线程，平面消息
-
-<span class="n">3</span>. h2A Steering：异步双缓冲队列，允许用户中途介入不中断任务
-
-<span class="n">4</span>. Context Compaction：<span class="n">92</span>% 阈值触发，压缩早期对话为摘要
-
-<span class="n">5</span>. SubAgent：通过 Task 工具创建，独立上下文，<span class="n">1.0</span>.<span class="n">60</span> 引入上下文过滤
-
-<span class="n">6</span>. Claude Agent SDK：给 Claude 一台电脑，构建通用 Agent
-
-面试常问：
-  <span <span class="k">class</span>="s">"如果你要重新实现一个 Claude Code，核心架构怎么设计？"</span>
-  → 单线程主循环 + h2A 双缓冲 + 上下文压缩 + 分层 SubAgent
-  → 工具优先，架构从简
-  → 重点在上下文管理和工具设计，不在复杂的 Agent 编排
-<span <span class="k">class</span>="s">""</span>"</span>
-
-
 <span class="k">if</span> __name__ == <span <span class="k">class</span>="s">"__main__"</span>:
 
     print(<span <span class="k">class</span>="s">"╔══════════════════════════════════════════════════════╗"</span>)
