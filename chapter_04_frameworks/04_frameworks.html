@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -167,28 +179,10 @@ body {
 <p>&nbsp;</p>
 <h2>4.0 主流框架全景图</h2>
 <p>&nbsp;</p>
-<pre>┌────────────────────┬──────────────┬────────────────────────────┐
-│       框架          │     定位      │          核心特点           │
-├────────────────────┼──────────────┼────────────────────────────┤
-│ LangChain          │ 通用 LLM 框架 │ 组件化、生态最丰富          │
-│ LangGraph          │ Agent 编排    │ 状态机模型、图式工作流      │
-│ crewAI             │ 多智能体协作  │ 角色扮演、任务委派           │
-│ AutoGen (微软)      │ 对话式 Agent  │ 多Agent对话、人在回路        │
-│ OpenAI Assistants  │ 托管式 Agent  │ 零配置、但灵活性低           │
-│ Dify / Coze        │ 低代码 Agent  │ 可视化搭建、非技术人员友好   │
-└────────────────────┴──────────────┴────────────────────────────┘</pre>
+<table><tr><th>框架</th><th>定位</th><th>核心特点</th></tr><tr><td>LangChain</td><td>通用 LLM 框架</td><td>组件化、生态最丰富</td></tr><tr><td>LangGraph</td><td>Agent 编排</td><td>状态机模型、图式工作流</td></tr><tr><td>crewAI</td><td>多智能体协作</td><td>角色扮演、任务委派</td></tr><tr><td>AutoGen (微软)</td><td>对话式 Agent</td><td>多Agent对话、人在回路</td></tr><tr><td>OpenAI Assistants</td><td>托管式 Agent</td><td>零配置、但灵活性低</td></tr><tr><td>Dify / Coze</td><td>低代码 Agent</td><td>可视化搭建、非技术人员友好</td></tr></table>
 <p>&nbsp;</p>
 <p>框架选择速查表（面试高频！）：</p>
-<pre>┌──────────────────────────────────────┬────────────────────────┐
-│                   场景                │        推荐框架         │
-├──────────────────────────────────────┼────────────────────────┤
-│ 快速原型、学习研究                    │ LangChain              │
-│ 复杂工作流、生产环境                  │ LangGraph              │
-│ 多角色协作（市场分析、内容创作）       │ crewAI                 │
-│ 需要人在回路的对话系统                │ AutoGen                │
-│ 快速搭建内部工具                      │ Dify / Coze            │
-│ 完全掌控、极致性能                    │ 裸写（第1章的方式）     │
-└──────────────────────────────────────┴────────────────────────┘</pre>
+<table><tr><th>场景</th><th>推荐框架</th></tr><tr><td>快速原型、学习研究</td><td>LangChain</td></tr><tr><td>复杂工作流、生产环境</td><td>LangGraph</td></tr><tr><td>多角色协作（市场分析、内容创作）</td><td>crewAI</td></tr><tr><td>需要人在回路的对话系统</td><td>AutoGen</td></tr><tr><td>快速搭建内部工具</td><td>Dify / Coze</td></tr><tr><td>完全掌控、极致性能</td><td>裸写（第1章的方式）</td></tr></table>
 <p>&nbsp;</p>
 <p>下面我们重点学习 LangChain Agent 和 LangGraph。</p>
 <p>这两个是目前市场上使用最广泛的框架。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (6 行)</summary><div class="code-block"><pre><span class="k">import</span> os
@@ -547,15 +541,7 @@ load_dotenv()
 <li>自建 LangGraph 图（完全定制）</li>
 <p>&nbsp;</p>
 <p>选型核心考虑因素：</p>
-<pre>  ┌──────────────┬────────────────────────────────────┐
-  │    因素       │               说明                  │
-  ├──────────────┼────────────────────────────────────┤
-  │ 复杂度        │ 简单用 LangChain，复杂用 LangGraph  │
-  │ 可控性        │ 生产环境优先 LangGraph              │
-  │ 团队能力      │ 新手用 LangChain，熟手自建           │
-  │ 成本          │ 裸写 < LangChain < LangGraph       │
-  │ 生态          │ LangChain 生态最丰富                │
-  └──────────────┴────────────────────────────────────┘</pre></div><div class="lecture"><h2>4.4 本章总结</h2>
+<table><tr><th>因素</th><th>说明</th></tr><tr><td>复杂度</td><td>简单用 LangChain，复杂用 LangGraph</td></tr><tr><td>可控性</td><td>生产环境优先 LangGraph</td></tr><tr><td>团队能力</td><td>新手用 LangChain，熟手自建</td></tr><tr><td>成本</td><td>裸写 < LangChain < LangGraph</td></tr><tr><td>生态</td><td>LangChain 生态最丰富</td></tr></table></div><div class="lecture"><h2>4.4 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>

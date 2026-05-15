@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -188,48 +200,34 @@ body {
 <p>MCP 解决了什么核心问题？</p>
 <p>&nbsp;</p>
 <p>旧世界（MCP 之前）：</p>
-<pre>    ┌──────┐   自定义协议   ┌──────────┐
-    │ LLM   │──────────────→│ Google API│
-    │       │   自定义协议   ├──────────┤
-    │       │──────────────→│ GitHub API│
-    │       │   自定义协议   ├──────────┤
-    │       │──────────────→│ 数据库     │
-    └──────┘                └──────────┘</pre>
-<pre>每连接一个新系统，都要写新的适配代码！</pre>
+<pre>┌──────┐   自定义协议   ┌──────────┐
+│ LLM   │──────────────→│ Google API│
+│       │   自定义协议   ├──────────┤
+│       │──────────────→│ GitHub API│
+│       │   自定义协议   ├──────────┤
+│       │──────────────→│ 数据库     │
+└──────┘                └──────────┘
+每连接一个新系统，都要写新的适配代码！</pre>
 <p>&nbsp;</p>
 <p>新世界（MCP 之后）：</p>
-<pre>    ┌──────┐     MCP       ┌──────────┐
-    │ LLM   │──────────────→│ MCP Server│→ Google
-    │       │     MCP       ├──────────┤
-    │       │──────────────→│ MCP Server│→ GitHub
-    │       │     MCP       ├──────────┤
-    │       │──────────────→│ MCP Server│→ Database
-    └──────┘                └──────────┘</pre>
-<pre>一个协议，连接所有！新系统只需实现一个 MCP Server。</pre>
+<pre>┌──────┐     MCP       ┌──────────┐
+│ LLM   │──────────────→│ MCP Server│→ Google
+│       │     MCP       ├──────────┤
+│       │──────────────→│ MCP Server│→ GitHub
+│       │     MCP       ├──────────┤
+│       │──────────────→│ MCP Server│→ Database
+└──────┘                └──────────┘
+一个协议，连接所有！新系统只需实现一个 MCP Server。</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>10.2 MCP 的三层架构 —— Host / Client / Server</h2>
 <p>&nbsp;</p>
-<pre>  ┌──────────────────────────────────────────────────────────┐
-  │                     Host Application                      │
-  │  ┌─────────────────┐  ┌─────────────────┐                │
-  │  │   MCP Client 1   │  │   MCP Client 2  │  ...          │
-  │  │  (1:1 连接)     │  │  (1:1 连接)     │                │
-  │  └────────┬────────┘  └────────┬────────┘                │
-  │           │                    │                          │
-  └───────────┼────────────────────┼──────────────────────────┘
-              │                    │
-     MCP协议  │           MCP协议  │
-    (JSON-RPC)│          (JSON-RPC)│</pre>
-<pre>          ▼                    ▼</pre>
-<pre>  ┌──────────────────┐  ┌──────────────────┐
-  │   MCP Server 1    │  │   MCP Server 2    │
-  │   文件系统 & Git   │  │     数据库        │
-  │                   │  │                   │
-  │  • read_file()    │  │  • query()        │
-  │  • write_file()   │  │  • insert()       │
-  │  • git_status()   │  │  • schema()       │
-  └──────────────────┘  └──────────────────┘</pre>
+<table><tr><th></th><th>MCP Client 1</th><th></th><th>MCP Client 2</th><th>...</th></tr><tr><td></td><td>(1:1 连接)</td><td></td><td>(1:1 连接)</td><td></td></tr></table>
+<pre>          │                    │
+ MCP协议  │           MCP协议  │
+(JSON-RPC)│          (JSON-RPC)│
+          ▼                    ▼</pre>
+<table><tr><th>MCP Server 1</th><th></th><th>MCP Server 2</th></tr><tr><td>文件系统 & Git</td><td></td><td>数据库</td></tr><tr><td>• read_file()</td><td></td><td>• query()</td></tr><tr><td>• write_file()</td><td></td><td>• insert()</td></tr><tr><td>• git_status()</td><td></td><td>• schema()</td></tr></table>
 <p>&nbsp;</p>
 <p>三个角色的职责：</p>
 <p>&nbsp;</p>
@@ -311,32 +309,7 @@ NOTIFICATION_EXAMPLE = {
 <p>&nbsp;</p>
 <p>完整的 MCP 调用生命周期：</p>
 <p>&nbsp;</p>
-<pre>  ┌────────────────────────────────────────────┐
-  │  Phase 1: 初始化 (Initialize)              │
-  │  ┌──────────────────────────────────────┐  │
-  │  │ Client                    Server     │  │
-  │  │   │── initialize ──────────→│        │  │
-  │  │   │←─ capabilities + info ─│        │  │
-  │  │   │── initialized ─────────→│        │  │
-  │  └──────────────────────────────────────┘  │
-  ├────────────────────────────────────────────┤
-  │  Phase 2: 发现工具 (Tool Discovery)         │
-  │  ┌──────────────────────────────────────┐  │
-  │  │   │── tools/list ──────────→│        │  │
-  │  │   │←─ [工具1, 工具2, ...] ─│        │  │
-  │  └──────────────────────────────────────┘  │
-  ├────────────────────────────────────────────┤
-  │  Phase 3: 调用工具 (Tool Invocation)        │
-  │  ┌──────────────────────────────────────┐  │
-  │  │   │── tools/call ──────────→│        │  │
-  │  │   │←─ tool_result ────────│        │  │
-  │  └──────────────────────────────────────┘  │
-  ├────────────────────────────────────────────┤
-  │  Phase 4: 关闭 (Teardown)                  │
-  │  ┌──────────────────────────────────────┐  │
-  │  │   │── 关闭连接 ─────────────→│        │  │
-  │  └──────────────────────────────────────┘  │
-  └────────────────────────────────────────────┘</pre>
+<table><tr><th></th><th></th><th>── initialize ──────────→</th><th></th><th></th></tr><tr><td></td><td></td><td>←─ capabilities + info ─</td><td></td><td></td></tr><tr><td></td><td></td><td>── initialized ─────────→</td><td></td><td></td></tr><tr><td></td><td></td><td>── tools/list ──────────→</td><td></td><td></td></tr><tr><td></td><td></td><td>←─ [工具1, 工具2, ...] ─</td><td></td><td></td></tr><tr><td></td><td></td><td>── tools/call ──────────→</td><td></td><td></td></tr><tr><td></td><td></td><td>←─ tool_result ────────</td><td></td><td></td></tr><tr><td></td><td></td><td>── 关闭连接 ─────────────→</td><td></td><td></td></tr></table>
 <p>&nbsp;</p>
 <p>MCP 的三大核心原语（Server 能力）：</p>
 <p>&nbsp;</p>
@@ -619,17 +592,7 @@ NOTIFICATION_EXAMPLE = {
 <p>&nbsp;</p>
 <p>这是面试中的高频问题！</p>
 <p>&nbsp;</p>
-<pre>  ┌──────────────┬──────────────────┬───────────────────┐
-  │     维度      │   MCP             │  Function Calling  │
-  ├──────────────┼──────────────────┼───────────────────┤
-  │ 本质          │ 通信协议          │ LLM 能力            │
-  │ 标准化        │ 开放标准          │ 厂商自有实现        │
-  │ 连接模式      │ Client↔Server    │ 直接在 API 调用中    │
-  │ 工具发现      │ tools/list 动态   │ 每次请求手动传入     │
-  │ 服务器生态    │ 独立部署 MCP Server│ 无独立服务器概念     │
-  │ 可组合性      │ 多 Server 组合    │ 依赖应用代码         │
-  │ 跨模型支持    │ 是（协议层面）     │ 取决于厂商           │
-  └──────────────┴──────────────────┴───────────────────┘</pre>
+<table><tr><th>维度</th><th>MCP</th><th>Function Calling</th></tr><tr><td>本质</td><td>通信协议</td><td>LLM 能力</td></tr><tr><td>标准化</td><td>开放标准</td><td>厂商自有实现</td></tr><tr><td>连接模式</td><td>Client↔Server</td><td>直接在 API 调用中</td></tr><tr><td>工具发现</td><td>tools/list 动态</td><td>每次请求手动传入</td></tr><tr><td>服务器生态</td><td>独立部署 MCP Server</td><td>无独立服务器概念</td></tr><tr><td>可组合性</td><td>多 Server 组合</td><td>依赖应用代码</td></tr><tr><td>跨模型支持</td><td>是（协议层面）</td><td>取决于厂商</td></tr></table>
 <p>&nbsp;</p>
 <p>关系：</p>
 <li>Function Calling 定义「LLM 如何决定调用工具」</li>

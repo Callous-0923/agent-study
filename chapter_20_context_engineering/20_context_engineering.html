@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -216,13 +228,7 @@ body {
  扩展后的位置信息不如原本精确</pre>
 <p>&nbsp;</p>
 <p>实验结果（来自 Anthropic 研究）：</p>
-<pre>  ┌────────────────┬──────────────────┐
-  │ 上下文使用率     │ 信息提取准确率*    │
-  ├────────────────┼──────────────────┤
-  │ 10% (20K)      │ ~95%             │
-  │ 50% (100K)     │ ~88%             │
-  │ 90% (180K)     │ ~75%             │
-  └────────────────┴──────────────────┘</pre>
+<table><tr><th>上下文使用率</th><th>信息提取准确率*</th></tr><tr><td>10% (20K)</td><td>~95%</td></tr><tr><td>50% (100K)</td><td>~88%</td></tr><tr><td>90% (180K)</td><td>~75%</td></tr></table>
 <p>* Claude 在 needle-in-haystack 测试中的近似值</p>
 <p>&nbsp;</p>
 <p>关键启示：</p>
@@ -235,23 +241,7 @@ body {
 <p>&nbsp;</p>
 <p>把上下文当作「预算」来管理：</p>
 <p>&nbsp;</p>
-<pre>  ┌──────────────────────────────────────────┐
-  │              上下文预算 = 200K tokens      │
-  │                                            │
-  │  ┌──────────────────┐  15% = 30K tokens   │
-  │  │  System Prompt   │                      │
-  │  ├──────────────────┤  5% = 10K tokens    │
-  │  │  Tool Definitions│                      │
-  │  ├──────────────────┤  10% = 20K tokens   │
-  │  │  External Context │  (MCP/RAG 检索结果)  │
-  │  ├──────────────────┤  50% = 100K tokens  │
-  │  │  对话历史         │                      │
-  │  ├──────────────────┤  15% = 30K tokens   │
-  │  │  预留 (生成缓冲)  │                      │
-  │  └──────────────────┘  5% = 10K tokens    │
-  │  │  安全余量         │                      │
-  │  └──────────────────┘                      │
-  └──────────────────────────────────────────┘</pre>
+<table><tr><th></th><th>System Prompt</th><th></th></tr><tr><td></td><td>Tool Definitions</td><td></td></tr><tr><td></td><td>External Context</td><td>(MCP/RAG 检索结果)</td></tr><tr><td></td><td>对话历史</td><td></td></tr><tr><td></td><td>预留 (生成缓冲)</td><td></td></tr><tr><td></td><td>安全余量</td><td></td></tr></table>
 <p>&nbsp;</p>
 <p>Context Compaction 策略（面试重点！）：</p>
 <p>&nbsp;</p>

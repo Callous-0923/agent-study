@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -281,15 +293,7 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>&nbsp;</p>
 <p>内置 Module 类型：</p>
 <p>&nbsp;</p>
-<pre>  ┌──────────────────┬──────────────────────────────────┐
-  │ Module            │        作用                       │
-  ├──────────────────┼──────────────────────────────────┤
-  │ dspy.Predict      │ 最基本的单步 LLM 调用             │
-  │ dspy.ChainOfThought│ 带推理链的 LM 调用               │
-  │ dspy.ReAct        │ ReAct Agent 循环                 │
-  │ dspy.MultiChain   │ 多链并行 + 投票                  │
-  │ dspy.ProgramOfThought│ 用代码辅助推理                │
-  └──────────────────┴──────────────────────────────────┘</pre>
+<table><tr><th>Module</th><th>作用</th></tr><tr><td>dspy.Predict</td><td>最基本的单步 LLM 调用</td></tr><tr><td>dspy.ChainOfThought</td><td>带推理链的 LM 调用</td></tr><tr><td>dspy.ReAct</td><td>ReAct Agent 循环</td></tr><tr><td>dspy.MultiChain</td><td>多链并行 + 投票</td></tr><tr><td>dspy.ProgramOfThought</td><td>用代码辅助推理</td></tr></table>
 <p>&nbsp;</p>
 <p>类比 LangChain：</p>
 <p>LangChain Chain ≈ DSPy Module</p>
@@ -362,14 +366,7 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>&nbsp;</p>
 <p>DSPy 的 Optimizer 类型：</p>
 <p>&nbsp;</p>
-<pre>  ┌─────────────────────┬──────────────────────────────────┐
-  │ Optimizer            │         做什么                    │
-  ├─────────────────────┼──────────────────────────────────┤
-  │ BootstrapFewShot    │ 自动找出最佳少样本示例              │
-  │ MIPROv2             │ 自动探索最优指令 + 示例组合         │
-  │ BootstrapFinetune   │ 为每个 Module 自动微调小模型        │
-  │ BetterTogether      │ 组合多个 Optimizer 级联优化         │
-  └─────────────────────┴──────────────────────────────────┘</pre>
+<table><tr><th>Optimizer</th><th>做什么</th></tr><tr><td>BootstrapFewShot</td><td>自动找出最佳少样本示例</td></tr><tr><td>MIPROv2</td><td>自动探索最优指令 + 示例组合</td></tr><tr><td>BootstrapFinetune</td><td>为每个 Module 自动微调小模型</td></tr><tr><td>BetterTogether</td><td>组合多个 Optimizer 级联优化</td></tr></table>
 <p>&nbsp;</p>
 <p>工作流程（MIPROv2 为例）：</p>
 <p>&nbsp;</p>

@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -232,32 +244,7 @@ body {
 <p>&nbsp;</p>
 <h2>11.3 OpenAI vs Anthropic —— 两套实现对比</h2>
 <p>&nbsp;</p>
-<pre>┌──────────────────┬───────────────────────┬──────────────────────────┐
-│      维度         │  OpenAI Function Call  │  Anthropic Tool Use      │
-├──────────────────┼───────────────────────┼──────────────────────────┤
-│ 工具定义格式      │ 嵌套对象               │ 更简洁的 Tool 对象        │
-│                  │ {type:"function",     │ {name:"...",            │
-│                  │  function:{...}}      │  description:"...",      │
-│                  │                       │  input_schema:{...}}     │
-├──────────────────┼───────────────────────┼──────────────────────────┤
-│ 返回格式          │ tool_calls 数组        │ content 中的 tool_use    │
-│                  │ [{"function":{...}}]  │ blocks                  │
-├──────────────────┼───────────────────────┼──────────────────────────┤
-│ 并行调用          │ 同时返回多个 tool_call  │ 同时返回多个 tool_use    │
-│                  │ (parallel_tool_calls  │ block                   │
-│                  │  参数控制)             │                         │
-├──────────────────┼───────────────────────┼──────────────────────────┤
-│ 流式支持          │ 增量式 tool_call 名称   │ content_block 流式输出   │
-│                  │ 和参数                  │                         │
-├──────────────────┼───────────────────────┼──────────────────────────┤
-│ 严格模式          │ strict: true          │ 不支持单独的 strict 模式   │
-│                  │ (保证 JSON Schema 一致) │ (但通过 prompt 可实现)    │
-├──────────────────┼───────────────────────┼──────────────────────────┤
-│ Token 计算        │ tools 序列化拼入 prompt │ tools 作为独立参数       │
-├──────────────────┼───────────────────────┼──────────────────────────┤
-│ 工具结果返回      │ Tool Message           │ Tool Result Content Block│
-│                  │ role="tool"            │ type="tool_result"      │
-└──────────────────┴───────────────────────┴──────────────────────────┘</pre>
+<table><tr><th>维度</th><th>OpenAI Function Call</th><th>Anthropic Tool Use</th></tr><tr><td>工具定义格式</td><td>嵌套对象</td><td>更简洁的 Tool 对象</td></tr><tr><td></td><td>{type:"function",</td><td>{name:"...",</td></tr><tr><td></td><td>function:{...}}</td><td>description:"...",</td></tr><tr><td></td><td></td><td>input_schema:{...}}</td></tr><tr><td>返回格式</td><td>tool_calls 数组</td><td>content 中的 tool_use</td></tr><tr><td></td><td>[{"function":{...}}]</td><td>blocks</td></tr><tr><td>并行调用</td><td>同时返回多个 tool_call</td><td>同时返回多个 tool_use</td></tr><tr><td></td><td>(parallel_tool_calls</td><td>block</td></tr><tr><td></td><td>参数控制)</td><td></td></tr><tr><td>流式支持</td><td>增量式 tool_call 名称</td><td>content_block 流式输出</td></tr><tr><td></td><td>和参数</td><td></td></tr><tr><td>严格模式</td><td>strict: true</td><td>不支持单独的 strict 模式</td></tr><tr><td></td><td>(保证 JSON Schema 一致)</td><td>(但通过 prompt 可实现)</td></tr><tr><td>Token 计算</td><td>tools 序列化拼入 prompt</td><td>tools 作为独立参数</td></tr><tr><td>工具结果返回</td><td>Tool Message</td><td>Tool Result Content Block</td></tr><tr><td></td><td>role="tool"</td><td>type="tool_result"</td></tr></table>
 <p>&nbsp;</p>
 <p>两种格式对比（JSON）：</p>
 <p>&nbsp;</p>

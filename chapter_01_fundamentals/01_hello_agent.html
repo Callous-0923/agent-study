@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -213,7 +225,7 @@ client = OpenAI(
 <p>把结果返回给 LLM，LLM 组织成自然语言回答用户</p>
 <p>&nbsp;</p>
 <p>类比：LLM 像一位「盲人指挥家」，他能决定需要什么信息，</p>
-<p>但必须由我们（代码）去执行实际的工具调用。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (134 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get_weather</span><span class="code-badge code-badge-func">search_web</span><span class="code-badge code-badge-func">calculate</span><span class="code-badge code-badge-const">TOOLS</span><span class="code-badge code-badge-const">TOOL_MAP</span></div><div class="code-block"><pre><span class="k">import</span> os
+<p>但必须由我们（代码）去执行实际的工具调用。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (135 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get_weather</span><span class="code-badge code-badge-func">search_web</span><span class="code-badge code-badge-func">calculate</span><span class="code-badge code-badge-const">TOOLS</span><span class="code-badge code-badge-const">TOOL_MAP</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -303,8 +315,9 @@ TOOLS = [
         query: 搜索关键词。
 
     Returns:
-        模拟的搜索结果。
-    """</span>
+        模拟的搜索结果。 字典形式，键为搜索关键词，值为搜索结果。
+        如果没有找到相关结果，返回空字符串。
+       """</span>
     mock_results = {
         <span class="s">"python"</span>: <span class="s">"Python 是一种解释型、面向对象的高级编程语言。"</span>,
         <span class="s">"agent"</span>: (
@@ -515,7 +528,7 @@ TEST_CASES = [
 
 
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
-    main()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (374 行)</summary><div class="code-block"><pre><span class="s">"""
+    main()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (375 行)</summary><div class="code-block"><pre><span class="s">"""
 第1章：AI Agent 基础概念 —— 从 LLM 调用到第一个 Agent
 =====================================================
 
@@ -674,8 +687,9 @@ TOOLS = [
         query: 搜索关键词。
 
     Returns:
-        模拟的搜索结果。
-    """</span>
+        模拟的搜索结果。 字典形式，键为搜索关键词，值为搜索结果。
+        如果没有找到相关结果，返回空字符串。
+       """</span>
     mock_results = {
         <span class="s">"python"</span>: <span class="s">"Python 是一种解释型、面向对象的高级编程语言。"</span>,
         <span class="s">"agent"</span>: (

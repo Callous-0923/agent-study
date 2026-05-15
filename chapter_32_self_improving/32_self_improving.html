@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -177,26 +189,12 @@ body {
 <p>Self-Improving Agent = 会记笔记、总结教训、改进方法的实习生</p>
 <p>&nbsp;</p>
 <p>核心循环：</p>
-<pre>  ┌─────────────────────────────────────────┐
-  │                                           │
-  │  执行任务 → 收集结果 → 评测打分            │
-  │      ↑                      ↓             │
-  │      │              低分案例（Bad Case）    │
-  │      │                      ↓             │
-  │      └──── 改进 Prompt ← 分析原因          │
-  │                                           │
-  └─────────────────────────────────────────┘</pre>
+<table><tr><th></th><th>低分案例（Bad Case）</th></tr><tr><td></td><td>↓</td></tr></table>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>32.2 Self-Improving vs Reflection vs Fine-tuning</h2>
 <p>&nbsp;</p>
-<pre>┌────────────────┬────────────────────┬─────────────────────┐
-│ 方式             │       机制          │        成本          │
-├────────────────┼────────────────────┼─────────────────────┤
-│ Reflection     │ 单次任务内自我审查    │ 低（多一次 LLM 调用）  │
-│ Self-Improving │ 跨任务的持续改进       │ 中（定期跑优化流程）    │
-│ Fine-tuning    │ 重新训练模型权重       │ 高（GPU + 数据标注）   │
-└────────────────┴────────────────────┴─────────────────────┘</pre>
+<table><tr><th>方式</th><th>机制</th><th>成本</th></tr><tr><td>Reflection</td><td>单次任务内自我审查</td><td>低（多一次 LLM 调用）</td></tr><tr><td>Self-Improving</td><td>跨任务的持续改进</td><td>中（定期跑优化流程）</td></tr><tr><td>Fine-tuning</td><td>重新训练模型权重</td><td>高（GPU + 数据标注）</td></tr></table>
 <p>&nbsp;</p>
 <p>Reflection（Ch3/Ch19）：一次任务内的自我批评</p>
 <p>Self-Improving（本章）：横跨多次任务的持续改进</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (164 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">execute</span><span class="code-badge code-badge-func">collect_result</span><span class="code-badge code-badge-func">improve</span><span class="code-badge code-badge-func">demo_self_improving</span><span class="code-badge code-badge-func">exact_metric</span><span class="code-badge code-badge-class">SelfImprovingAgent</span></div><div class="code-block"><pre><span class="k">import</span> json

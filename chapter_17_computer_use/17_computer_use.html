@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -187,34 +199,7 @@ body {
 <p>&nbsp;</p>
 <p>这是所有 Computer Use 系统的底层逻辑：</p>
 <p>&nbsp;</p>
-<pre>  ┌──────────────────────────────────────────────────┐
-  │                                                    │
-  │  1. 📸 Screenshot: 截取当前屏幕画面                 │
-  │         │                                          │
-  │         ▼                                          │
-  │  2. 👁️ Analyze: LLM 视觉分析画面                    │
-  │     - 识别窗口、按钮、文本框                        │
-  │     - 读取屏幕上的文字内容                          │
-  │     - 理解当前界面的状态                            │
-  │         │                                          │
-  │         ▼                                          │
-  │  3. 🤔 Decide: 决定下一步操作                       │
-  │     - 应该点击哪里？                                │
-  │     - 应该输入什么？                                │
-  │     - 是否需要滚动？                                │
-  │         │                                          │
-  │         ▼                                          │
-  │  4. 🖱️ Execute: 执行操作                            │
-  │     - mouse_move(x, y)                             │
-  │     - left_click()                                 │
-  │     - type("文本")                                 │
-  │     - scroll(direction)                            │
-  │     - key_press("Enter")                           │
-  │         │                                          │
-  │         ▼                                          │
-  │     回到步骤 1（直到任务完成）                       │
-  │                                                    │
-  └──────────────────────────────────────────────────┘</pre>
+<table><tr><th>1. 📸 Screenshot: 截取当前屏幕画面</th></tr><tr><td>▼</td></tr><tr><td>2. 👁️ Analyze: LLM 视觉分析画面</td></tr><tr><td>- 识别窗口、按钮、文本框</td></tr><tr><td>- 读取屏幕上的文字内容</td></tr><tr><td>- 理解当前界面的状态</td></tr><tr><td>▼</td></tr><tr><td>3. 🤔 Decide: 决定下一步操作</td></tr><tr><td>- 应该点击哪里？</td></tr><tr><td>- 应该输入什么？</td></tr><tr><td>- 是否需要滚动？</td></tr><tr><td>▼</td></tr><tr><td>4. 🖱️ Execute: 执行操作</td></tr><tr><td>- mouse_move(x, y)</td></tr><tr><td>- left_click()</td></tr><tr><td>- type("文本")</td></tr><tr><td>- scroll(direction)</td></tr><tr><td>- key_press("Enter")</td></tr><tr><td>▼</td></tr><tr><td>回到步骤 1（直到任务完成）</td></tr></table>
 <p>&nbsp;</p>
 <p>关键挑战：像素坐标的精确计算</p>
 <p>&nbsp;</p>
@@ -234,19 +219,7 @@ body {
 <p>&nbsp;</p>
 <h2>17.3 Anthropic Computer Use vs OpenAI CUA</h2>
 <p>&nbsp;</p>
-<pre>┌──────────────┬─────────────────────────┬─────────────────────────┐
-│     维度      │  Anthropic Computer Use  │   OpenAI CUA            │
-├──────────────┼─────────────────────────┼─────────────────────────┤
-│ 发布时间      │ 2024.10 (API)            │ 2025.01 (Operator)       │
-│             │ 2025.10 (正式发布)        │                         │
-│ 操作范围      │ 整个操作系统              │ 浏览器内（虚拟浏览器）    │
-│ 模型          │ Claude 3.5+ Sonnet      │ GPT-4o (CUA 微调版)     │
-│ 环境          │ 用户真实桌面/Docker      │ 安全的虚拟浏览器环境      │
-│ 安全性        │ 依赖使用者自行沙箱         │ 平台内置安全隔离         │
-│ 动作类型      │ 鼠标+键盘+截图            │ 浏览器操作（点击/输入/滚动）│
-│ 成本          │ 截图Token昂贵            │ 浏览器操作Token消耗较低   │
-│ Benchmark    │ OSWorld 14.9%            │ 未公布独立评分           │
-└──────────────┴─────────────────────────┴─────────────────────────┘</pre>
+<table><tr><th>维度</th><th>Anthropic Computer Use</th><th>OpenAI CUA</th></tr><tr><td>发布时间</td><td>2024.10 (API)</td><td>2025.01 (Operator)</td></tr><tr><td></td><td>2025.10 (正式发布)</td><td></td></tr><tr><td>操作范围</td><td>整个操作系统</td><td>浏览器内（虚拟浏览器）</td></tr><tr><td>模型</td><td>Claude 3.5+ Sonnet</td><td>GPT-4o (CUA 微调版)</td></tr><tr><td>环境</td><td>用户真实桌面/Docker</td><td>安全的虚拟浏览器环境</td></tr><tr><td>安全性</td><td>依赖使用者自行沙箱</td><td>平台内置安全隔离</td></tr><tr><td>动作类型</td><td>鼠标+键盘+截图</td><td>浏览器操作（点击/输入/滚动）</td></tr><tr><td>成本</td><td>截图Token昂贵</td><td>浏览器操作Token消耗较低</td></tr><tr><td>Benchmark</td><td>OSWorld 14.9%</td><td>未公布独立评分</td></tr></table>
 <p>&nbsp;</p>
 <p>Anthropic 的设计哲学：</p>
 <p>「给 Claude 真实的电脑，让它按人类的方式工作」</p>
@@ -263,13 +236,7 @@ body {
 <h2>17.4 性能数据与局限</h2>
 <p>&nbsp;</p>
 <p>OSWorld Benchmark 成绩：</p>
-<pre>  ┌──────────────────┬───────────┐
-  │      系统         │   得分     │
-  ├──────────────────┼───────────┤
-  │ 人类              │   75.0%   │
-  │ Claude 3.5 Sonnet │   14.9%   │
-  │ GPT-4V            │    7.8%   │
-  └──────────────────┴───────────┘</pre>
+<table><tr><th>系统</th><th>得分</th></tr><tr><td>人类</td><td>75.0%</td></tr><tr><td>Claude 3.5 Sonnet</td><td>14.9%</td></tr><tr><td>GPT-4V</td><td>7.8%</td></tr></table>
 <p>&nbsp;</p>
 <p>→ Claude 翻倍了前最好成绩，但离人类还很远</p>
 <p>&nbsp;</p>

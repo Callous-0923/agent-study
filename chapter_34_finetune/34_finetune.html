@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -168,6 +180,7 @@ body {
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>34.1 为什么微调 Agent？</h2>
+<p>━━━━━━━━━━━━━━━━━━━━☆</p>
 <p>&nbsp;</p>
 <p>场景：客服 Agent，每天 100 万次简单查询。</p>
 <p>全用 GPT-4o → $2500/天</p>
@@ -224,13 +237,7 @@ body {
 <p>&nbsp;</p>
 <h2>34.4 微调 vs 路由 vs 全用大模型</h2>
 <p>&nbsp;</p>
-<pre>┌──────────────┬──────────┬──────────┬──────────┐
-│                │ 成本/次   │  延迟     │  准确率   │
-├──────────────┼──────────┼──────────┼──────────┤
-│ 全用 GPT-4o    │ $0.01    │ 2s       │ 95%      │
-│ 微调 Llama-3B  │ $0.0002  │ 0.1s     │ 90%      │
-│ 路由(90%小模型)  │ $0.0012  │ 0.4s     │ 94%      │
-└──────────────┴──────────┴──────────┴──────────┘</pre>
+<table><tr><th></th><th>成本/次</th><th>延迟</th><th>准确率</th></tr><tr><td>全用 GPT-4o</td><td>$0.01</td><td>2s</td><td>95%</td></tr><tr><td>微调 Llama-3B</td><td>$0.0002</td><td>0.1s</td><td>90%</td></tr><tr><td>路由(90%小模型)</td><td>$0.0012</td><td>0.4s</td><td>94%</td></tr></table>
 <p>&nbsp;</p>
 <p>最佳实践：路由为主 + 微调为辅</p>
 <li>80-90% 查询 → 微调小模型</li>

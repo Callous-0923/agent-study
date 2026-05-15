@@ -157,8 +157,9 @@ def search_web(query: str) -> str:
         query: 搜索关键词。
 
     Returns:
-        模拟的搜索结果。
-    """
+        模拟的搜索结果。 字典形式，键为搜索关键词，值为搜索结果。
+        如果没有找到相关结果，返回空字符串。
+       """
     mock_results = {
         "python": "Python 是一种解释型、面向对象的高级编程语言。",
         "agent": (

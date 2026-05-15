@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -288,16 +300,7 @@ body {
       示例调用：get_weather(city='北京')"</pre>
 <p>&nbsp;</p>
 <p>工具描述评分卡：</p>
-<pre>  ┌────────────────────────┬──────────┐
-  │ 描述要素                  │ 加分      │
-  ├────────────────────────┼──────────┤
-  │ 有功能描述                │ +1       │
-  │ 有使用场景                │ +2       │
-  │ 有边界条件                │ +2       │
-  │ 有调用示例                │ +1       │
-  │ 参数有 enum 限制          │ +2       │
-  │ 参数有详细描述            │ +1       │
-  └────────────────────────┴──────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (113 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">score_tool_description</span><span class="code-badge code-badge-class">ToolDescriptionOptimizer</span></div><div class="code-block"><pre><span class="k">import</span> json
+<table><tr><th>描述要素</th><th>加分</th></tr><tr><td>有功能描述</td><td>+1</td></tr><tr><td>有使用场景</td><td>+2</td></tr><tr><td>有边界条件</td><td>+2</td></tr><tr><td>有调用示例</td><td>+1</td></tr><tr><td>参数有 enum 限制</td><td>+2</td></tr><tr><td>参数有详细描述</td><td>+1</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (113 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">score_tool_description</span><span class="code-badge code-badge-class">ToolDescriptionOptimizer</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dataclasses <span class="k">import</span> dataclass

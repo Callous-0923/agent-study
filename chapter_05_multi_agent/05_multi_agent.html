@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -191,18 +203,7 @@ body {
 <p>&nbsp;</p>
 <p>三种经典架构：</p>
 <p>&nbsp;</p>
-<pre>┌──────────────┬───────────────────────────────────────┐
-│    架构       │               核心思想                  │
-├──────────────┼───────────────────────────────────────┤
-│ 协作式        │ 多个 Agent 平等对话，共同决策            │
-│ (Horizontal) │ 典型：AutoGen 的 GroupChat              │
-├──────────────┼───────────────────────────────────────┤
-│ 分层式        │ 上级 Agent 委派任务给下级 Agent          │
-│ (Vertical)   │ 典型：crewAI 的 Crew + Task 模型        │
-├──────────────┼───────────────────────────────────────┤
-│ 竞争式        │ 多个 Agent 各自生成方案，择优选用         │
-│ (Competitive)│ 典型：辩论式 Agent / Self-Play          │
-└──────────────┴───────────────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (15 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<table><tr><th>架构</th><th>核心思想</th></tr><tr><td>协作式</td><td>多个 Agent 平等对话，共同决策</td></tr><tr><td>(Horizontal)</td><td>典型：AutoGen 的 GroupChat</td></tr><tr><td>分层式</td><td>上级 Agent 委派任务给下级 Agent</td></tr><tr><td>(Vertical)</td><td>典型：crewAI 的 Crew + Task 模型</td></tr><tr><td>竞争式</td><td>多个 Agent 各自生成方案，择优选用</td></tr><tr><td>(Competitive)</td><td>典型：辩论式 Agent / Self-Play</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (15 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -369,16 +370,16 @@ REVIEWER_SYSTEM_PROMPT = <span class="s">"""你是一位严格的内容审核编
 <pre> [START]
     │
     ▼</pre>
-<pre>   ┌─────────┐
+<pre class="ascii-art">   ┌─────────┐
    │  Writer  │ ←──────────┐
-   └────┬────┘             │
-        │ (草稿)            │
-        ▼                   │
-   ┌──────────┐   不合格     │
+   └────┬────┘             │</pre>
+<pre>    │ (草稿)            │
+    ▼                   │</pre>
+<pre class="ascii-art">   ┌──────────┐   不合格     │
    │ Reviewer  │────────────┘
-   └────┬─────┘
-        │ (合格)</pre>
-<pre>    ▼
+   └────┬─────┘</pre>
+<pre>    │ (合格)
+    ▼
  [END]</pre>
 <p>&nbsp;</p>
 <p>这是协作式 + 分层式的混合架构：</p>

@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -169,43 +181,17 @@ body {
 <p>&nbsp;</p>
 <h2>25.1 向量数据库在 Agent 架构中的位置</h2>
 <p>&nbsp;</p>
-<pre>  ┌────────────────────────────────────────────────────┐
-  │                  Agent 记忆系统                       │
-  │                                                      │
-  │  Ch14 SQLite ──────→ 结构化数据（会话/用户/任务）     │
-  │  Ch16 MemGPT ──────→ 长期记忆管理策略                 │
-  │  Ch25 向量数据库 ──→ 语义搜索（RAG / 对话检索）       │
-  │                                                      │
-  │  三者在 Agent 中的关系：                               │
-  │    SQLite 存「关系型数据」                            │
-  │    向量库 存「非结构化语义」                          │
-  │    MemGPT 策略 决定「什么数据存在哪里」                │
-  └────────────────────────────────────────────────────┘</pre>
+<table><tr><th>Agent 记忆系统</th></tr><tr><td>Ch14 SQLite ──────→ 结构化数据（会话/用户/任务）</td></tr><tr><td>Ch16 MemGPT ──────→ 长期记忆管理策略</td></tr><tr><td>Ch25 向量数据库 ──→ 语义搜索（RAG / 对话检索）</td></tr><tr><td>三者在 Agent 中的关系：</td></tr><tr><td>SQLite 存「关系型数据」</td></tr><tr><td>向量库 存「非结构化语义」</td></tr><tr><td>MemGPT 策略 决定「什么数据存在哪里」</td></tr></table>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>25.2 5 大向量数据库对比</h2>
 <p>&nbsp;</p>
-<pre>  ┌──────────┬──────────┬──────────┬──────────┬──────────┐
-  │          │  Chroma  │ Pinecone │  Milvus  │  Qdrant  │
-  ├──────────┼──────────┼──────────┼──────────┼──────────┤
-  │ 类型      │ 开源轻量  │ 商业托管  │ 开源分布式│ 开源高性能 │
-  │ 上手难度  │ ⭐(30min)│ ⭐(30min)│ ⭐⭐⭐    │ ⭐⭐      │
-  │ 数据规模  │ <100万   │ 不限      │ 10亿+     │ 10亿      │
-  │ 延迟(P99) │ ~200ms  │ <50ms    │ <50ms    │ <80ms    │
-  │ 部署       │ pip install│ SaaS    │ K8s/Helm │ Docker   │
-  │ 适合       │ 原型/MVP  │ 企业快速上线│ 大规模生产│ 性能优先  │
-  │ 成本       │ 免费      │ $$$      │ 运维成本  │ 运维成本  │
-  └──────────┴──────────┴──────────┴──────────┴──────────┘</pre>
+<table><tr><th></th><th>Chroma</th><th>Pinecone</th><th>Milvus</th><th>Qdrant</th></tr><tr><td>类型</td><td>开源轻量</td><td>商业托管</td><td>开源分布式</td><td>开源高性能</td></tr><tr><td>上手难度</td><td>⭐(30min)</td><td>⭐(30min)</td><td>⭐⭐⭐</td><td>⭐⭐</td></tr><tr><td>数据规模</td><td><100万</td><td>不限</td><td>10亿+</td><td>10亿</td></tr><tr><td>延迟(P99)</td><td>~200ms</td><td><50ms</td><td><50ms</td><td><80ms</td></tr><tr><td>部署</td><td>pip install</td><td>SaaS</td><td>K8s/Helm</td><td>Docker</td></tr><tr><td>适合</td><td>原型/MVP</td><td>企业快速上线</td><td>大规模生产</td><td>性能优先</td></tr><tr><td>成本</td><td>免费</td><td>$$$</td><td>运维成本</td><td>运维成本</td></tr></table>
 <p>&nbsp;</p>
 <p>选型决策树（面试必备！）：</p>
 <p>&nbsp;</p>
 <p>你的需求是什么？</p>
-<pre>  ├─ 快速原型/学习 → Chroma（pip install 搞定）
-  ├─ 不想管运维 → Pinecone（全托管，但付费）
-  ├─ 千万级以上 + 生产环境 → Qdrant 或 Milvus
-  │   ├─ 需要分布式 → Milvus
-  │   └─ 追求单机极致性能 → Qdrant
-  └─ 已有 Postgres/Redis → pgvector / Redis Stack</pre>
+<table><tr><th>├─ 需要分布式 → Milvus</th></tr><tr><td>└─ 追求单机极致性能 → Qdrant</td></tr></table>
 <p>&nbsp;</p>
 <p>面试回答框架：</p>
 <p>「我选择 XX 向量库，原因是：</p>
@@ -217,15 +203,7 @@ body {
 <h2>25.3 Embedding 策略 —— 被忽视的关键</h2>
 <p>&nbsp;</p>
 <p>Embedding 模型选择：</p>
-<pre>  ┌──────────────────────┬──────────┬──────────┬──────────┐
-  │ 模型                  │ 维度      │ 语言      │ 适合场景  │
-  ├──────────────────────┼──────────┼──────────┼──────────┤
-  │ text-embedding-3-small│ 512/1536 │ 多语言    │ 通用 RAG  │
-  │ text-embedding-3-large│ 256/3072 │ 多语言    │ 高精度    │
-  │ bge-large-zh-v1.5     │ 1024     │ 中文优先  │ 中文 RAG  │
-  │ all-MiniLM-L6-v2      │ 384      │ 英文      │ 轻量原型  │
-  │ Cohere Embed v3       │ 1024     │ 多语言    │ 企业级    │
-  └──────────────────────┴──────────┴──────────┴──────────┘</pre>
+<table><tr><th>模型</th><th>维度</th><th>语言</th><th>适合场景</th></tr><tr><td>text-embedding-3-small</td><td>512/1536</td><td>多语言</td><td>通用 RAG</td></tr><tr><td>text-embedding-3-large</td><td>256/3072</td><td>多语言</td><td>高精度</td></tr><tr><td>bge-large-zh-v1.5</td><td>1024</td><td>中文优先</td><td>中文 RAG</td></tr><tr><td>all-MiniLM-L6-v2</td><td>384</td><td>英文</td><td>轻量原型</td></tr><tr><td>Cohere Embed v3</td><td>1024</td><td>多语言</td><td>企业级</td></tr></table>
 <p>&nbsp;</p>
 <p>维度对性能的影响：</p>
 <li>384 维：检索速度快 3x，召回率约 85%</li>

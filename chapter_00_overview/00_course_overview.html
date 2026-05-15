@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -231,21 +243,7 @@ body {
 <p>&nbsp;</p>
 <p>Agent = LLM + 规划(Planning) + 记忆(Memory) + 工具(Tools)</p>
 <p>&nbsp;</p>
-<pre>  ┌─────────────────────────────────────────────┐
-  │                  AI Agent                   │
-  │  ┌─────────┐  ┌────────┐  ┌──────────────┐  │
-  │  │   LLM   │  │ 规划器  │  │   记忆系统    │  │
-  │  │ (大脑)   │  │Planning│  │   Memory     │   │ 
-  │  └────┬────┘  └───┬────┘  └──────┬───────┘  │
-  │       │           │              │          │
-  │       └───────────┼──────────────┘          │
-  │                   │                         │
-  │            ┌──────┴──────┐                  │
-  │            │   工具调用    │                 │
-  │            │   Tools     │                  │
-  │            │ 搜索/API/代码│                  │
-  │            └─────────────┘                  │
-  └─────────────────────────────────────────────┘</pre>
+<table><tr><th></th><th>LLM</th><th></th><th>规划器</th><th></th><th>记忆系统</th><th></th></tr><tr><td></td><td>(大脑)</td><td></td><td>Planning</td><td></td><td>Memory</td><td></td></tr></table>
 <p>&nbsp;</p>
 <p>Agent 执行循环（核心，面试高频！）：</p>
 <li>感知(Perceive)：接收用户输入和上一次行动的结果</li>
@@ -262,41 +260,7 @@ body {
 <p>&nbsp;</p>
 <p>本课程按「理论 → 框架 → 深度 → 工程」四层递进组织：</p>
 <p>&nbsp;</p>
-<pre>  ┌─────────────────────────────────────────────────────────────┐
-  │ 第1层：Agent 理论基础（Ch1-3）                                │
-  │ ┌──────────────┬──────────────────────────────────────────┐ │
-  │ │ Ch1 基础概念  │ Agent 定义、LLM 调用、手写第一个 Agent    │ │
-  │ │ Ch2 核心组件  │ 规划器 + 记忆系统 + 工具设计黄金法则       │ │
-  │ │ Ch3 类型分类  │ ReAct / Plan-Execute / Reflexion 对比    │ │
-  │ └──────────────┴──────────────────────────────────────────┘ │
-  ├─────────────────────────────────────────────────────────────┤
-  │ 第2层：工程实践与框架（Ch4-7）                                │
-  │ ┌──────────────┬──────────────────────────────────────────┐ │
-  │ │ Ch4 主流框架  │ LangChain Agent + LangGraph 状态机实战    │ │
-  │ │ Ch5 多智能体  │ 协作式/分层式 Multi-Agent 架构            │ │
-  │ │ Ch6 评估测试  │ 评测框架 + 测试策略 + 生产 Checklist       │ │
-  │ │ Ch7 求职面试  │ 20道高频面试题 + 项目指南 + 面试流程       │ │
-  │ └──────────────┴──────────────────────────────────────────┘ │
-  ├─────────────────────────────────────────────────────────────┤
-  │ 第3层：深度技术剖析（Ch8-12）                                │
-  │ ┌──────────────┬──────────────────────────────────────────┐ │
-  │ │ Ch8 ClaudeCode│ nO主循环/h2A实时Steering/上下文压缩/SubAgent│
-  │ │ Ch9 RAG深度   │ Naive→Advanced→GraphRAG→Agentic RAG      │
-  │ │ Ch10 MCP协议  │ JSON-RPC/原语/能力协商/stdio/SSE          │
-  │ │ Ch11 ToolCall │ OpenAI vs Anthropic/Streaming/Strict     │
-  │ │ Ch12 基础设施  │ OpenClaw架构/Harness/Agent生产化Checklist │
-  │ └──────────────┴──────────────────────────────────────────┘ │
-  ├─────────────────────────────────────────────────────────────┤
-  │ 第4层：工程化与前沿（Ch13-18）                                │
-  │ ┌──────────────┬──────────────────────────────────────────┐ │
-  │ │ Ch13 FastAPI  │ REST/SSE/WebSocket Agent 服务化部署      │
-  │ │ Ch14 SQLite   │ 5表Schema + WAL + 会话/任务/用户管理     │
-  │ │ Ch15 A2A协议   │ AgentCard/Task/Artifact + 多Agent协作    │
-  │ │ Ch16 MemGPT   │ Core Memory/Heartbeat/Sleep-Time/FS记忆  │
-  │ │ Ch17 CompUse  │ Screenshot-Action Loop/坐标/安全沙箱     │
-  │ │ Ch18 安全防护  │ Prompt Injection/权限分级/审计/4层防御   │
-  │ └──────────────┴──────────────────────────────────────────┘ │
-  └─────────────────────────────────────────────────────────────┘</pre>
+<table><tr><th></th><th>Ch1 基础概念</th><th>Agent 定义、LLM 调用、手写第一个 Agent</th><th></th></tr><tr><td></td><td>Ch2 核心组件</td><td>规划器 + 记忆系统 + 工具设计黄金法则</td><td></td></tr><tr><td></td><td>Ch3 类型分类</td><td>ReAct / Plan-Execute / Reflexion 对比</td><td></td></tr><tr><td></td><td>Ch4 主流框架</td><td>LangChain Agent + LangGraph 状态机实战</td><td></td></tr><tr><td></td><td>Ch5 多智能体</td><td>协作式/分层式 Multi-Agent 架构</td><td></td></tr><tr><td></td><td>Ch6 评估测试</td><td>评测框架 + 测试策略 + 生产 Checklist</td><td></td></tr><tr><td></td><td>Ch7 求职面试</td><td>20道高频面试题 + 项目指南 + 面试流程</td><td></td></tr></table>
 <p>&nbsp;</p>
 <p>学习建议：</p>
 <li>如果你是 Agent 新手：按 Ch1→Ch18 顺序学习</li>
@@ -342,17 +306,7 @@ body {
 <p>下面是一键安装脚本，运行本文件即可检查环境。</p>
 <p>如需运行后续章节的 Agent 代码，需要安装如下依赖：</p>
 <p>&nbsp;</p>
-<pre>  ┌────────────────────┬────────────────────────────────────┐
-  │       章节          │            需要的依赖               │
-  ├────────────────────┼────────────────────────────────────┤
-  │ Ch1-3 基础理论     │ openai, python-dotenv              │
-  │ Ch4-5 框架         │ langchain, langchain-openai,      │
-  │                    │ langgraph                         │
-  │ Ch8-12 深度技术    │ pydantic, httpx, tiktoken         │
-  │ Ch13 FastAPI       │ fastapi, uvicorn                  │
-  │ Ch14 SQLite        │ 标准库（无需额外安装）              │
-  │ Ch15-18 其他       │ 无需额外依赖                       │
-  └────────────────────┴────────────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (83 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check_python_version</span><span class="code-badge code-badge-func">install_dependencies</span><span class="code-badge code-badge-func">show_env_setup_guide</span></div><div class="code-block"><pre><span class="k">import</span> subprocess
+<table><tr><th>章节</th><th>需要的依赖</th></tr><tr><td>Ch1-3 基础理论</td><td>openai, python-dotenv</td></tr><tr><td>Ch4-5 框架</td><td>langchain, langchain-openai,</td></tr><tr><td></td><td>langgraph</td></tr><tr><td>Ch8-12 深度技术</td><td>pydantic, httpx, tiktoken</td></tr><tr><td>Ch13 FastAPI</td><td>fastapi, uvicorn</td></tr><tr><td>Ch14 SQLite</td><td>标准库（无需额外安装）</td></tr><tr><td>Ch15-18 其他</td><td>无需额外依赖</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (83 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check_python_version</span><span class="code-badge code-badge-func">install_dependencies</span><span class="code-badge code-badge-func">show_env_setup_guide</span></div><div class="code-block"><pre><span class="k">import</span> subprocess
 <span class="k">import</span> sys
 
 

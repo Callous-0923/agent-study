@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -183,16 +195,7 @@ body {
 <li>错误处理是否健壮？</li>
 <p>&nbsp;</p>
 <p>评估维度全景：</p>
-<pre>┌──────────────┬──────────────────────────────────────┐
-│    维度       │              评估内容                 │
-├──────────────┼──────────────────────────────────────┤
-│ 任务完成率    │ 是否成功完成用户指定的任务？           │
-│ 工具调用准确率 │ 是否选择了正确的工具？参数是否正确？   │
-│ 执行效率      │ 完成任务需要多少步？消耗多少 token？   │
-│ 鲁棒性        │ 输入异常/工具失败时的处理能力          │
-│ 安全性        │ 是否执行了危险操作？                  │
-│ 用户体验      │ 回答是否流畅、有帮助、易于理解？       │
-└──────────────┴──────────────────────────────────────┘</pre>
+<table><tr><th>维度</th><th>评估内容</th></tr><tr><td>任务完成率</td><td>是否成功完成用户指定的任务？</td></tr><tr><td>工具调用准确率</td><td>是否选择了正确的工具？参数是否正确？</td></tr><tr><td>执行效率</td><td>完成任务需要多少步？消耗多少 token？</td></tr><tr><td>鲁棒性</td><td>输入异常/工具失败时的处理能力</td></tr><tr><td>安全性</td><td>是否执行了危险操作？</td></tr><tr><td>用户体验</td><td>回答是否流畅、有帮助、易于理解？</td></tr></table>
 <p>&nbsp;</p>
 <p>主流 Agent Benchmark：</p>
 <li>AgentBench: 8 个真实环境的 Agent 评测</li>

@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -172,32 +184,7 @@ body {
 <p>&nbsp;</p>
 <p>Claude Code 的架构可以抽象为 4 个层次：</p>
 <p>&nbsp;</p>
-<pre>┌─────────────────────────────────────────────────────┐
-│  Layer 1: 用户交互层 (User Interaction Layer)         │
-│  ├─ CLI 界面 (REPL)                                  │
-│  ├─ VS Code 插件                                      │
-│  ├─ Web UI                                           │
-│  └─ Claude Agent SDK (供开发者嵌入)                   │
-├─────────────────────────────────────────────────────┤
-│  Layer 2: Agent 核心调度层 (Core Scheduling Layer)    │
-│  ├─ nO: 主 Agent 循环引擎（单线程）                    │
-│  ├─ h2A: 异步双缓冲消息队列（实时 Steering）          │
-│  ├─ StreamGen: 流式输出管理                           │
-│  ├─ ToolEngine: 工具调用编排器                        │
-│  └─ Compressor (wU2): 上下文压缩器                    │
-├─────────────────────────────────────────────────────┤
-│  Layer 3: 工具执行与管理层 (Tool Execution Layer)     │
-│  ├─ Bash / Grep / View / Edit / Write 等基础工具       │
-│  ├─ Task 工具 → SubAgent 创建与管理                   │
-│  ├─ MCP 工具集成（连接外部 MCP Server）               │
-│  └─ 权限与安全控制 (Permission System)                │
-├─────────────────────────────────────────────────────┤
-│  Layer 4: 存储与持久化层 (Storage & Persistence)      │
-│  ├─ TODO 列表（短期任务管理）                          │
-│  ├─ Markdown 文件（长期项目记忆）                      │
-│  ├─ Git 集成（diff-based 工作流）                     │
-│  └─ 会话状态持久化                                    │
-└─────────────────────────────────────────────────────┘</pre>
+<table><tr><th>Layer 1: 用户交互层 (User Interaction Layer)</th></tr><tr><td>├─ CLI 界面 (REPL)</td></tr><tr><td>├─ VS Code 插件</td></tr><tr><td>├─ Web UI</td></tr><tr><td>└─ Claude Agent SDK (供开发者嵌入)</td></tr><tr><td>Layer 2: Agent 核心调度层 (Core Scheduling Layer)</td></tr><tr><td>├─ nO: 主 Agent 循环引擎（单线程）</td></tr><tr><td>├─ h2A: 异步双缓冲消息队列（实时 Steering）</td></tr><tr><td>├─ StreamGen: 流式输出管理</td></tr><tr><td>├─ ToolEngine: 工具调用编排器</td></tr><tr><td>└─ Compressor (wU2): 上下文压缩器</td></tr><tr><td>Layer 3: 工具执行与管理层 (Tool Execution Layer)</td></tr><tr><td>├─ Bash / Grep / View / Edit / Write 等基础工具</td></tr><tr><td>├─ Task 工具 → SubAgent 创建与管理</td></tr><tr><td>├─ MCP 工具集成（连接外部 MCP Server）</td></tr><tr><td>└─ 权限与安全控制 (Permission System)</td></tr><tr><td>Layer 4: 存储与持久化层 (Storage & Persistence)</td></tr><tr><td>├─ TODO 列表（短期任务管理）</td></tr><tr><td>├─ Markdown 文件（长期项目记忆）</td></tr><tr><td>├─ Git 集成（diff-based 工作流）</td></tr><tr><td>└─ 会话状态持久化</td></tr></table>
 <p>&nbsp;</p>
 <p>核心理念：「做简单的事」—— Markdown 代替数据库、正则代替向量搜索、</p>
 <pre>    单线程代替并行、平面消息代替复杂线程。</pre>
@@ -492,15 +479,7 @@ def create_subagent(task_description: str, task_prompt: str,
     return {"sub_agent_result": result}</pre>
 <p>&nbsp;</p>
 <p>Comparision with crewAI:</p>
-<pre>  ┌──────────────────┬───────────────────┬──────────────────────┐
-  │      特性         │    Claude Code     │       crewAI          │
-  ├──────────────────┼───────────────────┼──────────────────────┤
-  │ SubAgent 创建     │ Task 工具动态创建  │ 预定义 Agent 角色      │
-  │ 上下文隔离        │ 完全独立           │ 共享部分上下文         │
-  │ 状态管理          │ 无状态（单次执行）  │ 有状态（多次交互）     │
-  │ 并发              │ 受控（有限并发）    │ 自由并发              │
-  │ 适用场景          │ 编程、搜索、分析    │ 内容创作、多角色协作   │
-  └──────────────────┴───────────────────┴──────────────────────┘</pre>
+<table><tr><th>特性</th><th>Claude Code</th><th>crewAI</th></tr><tr><td>SubAgent 创建</td><td>Task 工具动态创建</td><td>预定义 Agent 角色</td></tr><tr><td>上下文隔离</td><td>完全独立</td><td>共享部分上下文</td></tr><tr><td>状态管理</td><td>无状态（单次执行）</td><td>有状态（多次交互）</td></tr><tr><td>并发</td><td>受控（有限并发）</td><td>自由并发</td></tr><tr><td>适用场景</td><td>编程、搜索、分析</td><td>内容创作、多角色协作</td></tr></table>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>8.6 Claude Agent SDK —— Agent 开发的新范式</h2>
@@ -522,15 +501,10 @@ def create_subagent(task_description: str, task_prompt: str,
 <p>SDK 的 Agent 循环设计：</p>
 <p>Gather Context → Take Action → Verify Work → Repeat</p>
 <p>&nbsp;</p>
-<pre>  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-  │ 收集上下文    │────→│  执行行动     │────→│  验证结果     │
-  │ - 搜索文件    │     │ - 编辑/写入   │     │ - 运行测试    │
-  │ - 读取代码    │     │ - 运行命令    │     │ - 检查 lint   │
-  │ - 查询历史    │     │ - 调用 API    │     │ - 审查 diff   │
-  └──────────────┘     └──────────────┘     └──────────────┘
-         ↑                                        │
-         └────────────────────────────────────────┘</pre>
-<pre>                    循环直到完成</pre>
+<table><tr><th>收集上下文</th><th>────→</th><th>执行行动</th><th>────→</th><th>验证结果</th></tr><tr><td>- 搜索文件</td><td></td><td>- 编辑/写入</td><td></td><td>- 运行测试</td></tr><tr><td>- 读取代码</td><td></td><td>- 运行命令</td><td></td><td>- 检查 lint</td></tr><tr><td>- 查询历史</td><td></td><td>- 调用 API</td><td></td><td>- 审查 diff</td></tr></table>
+<pre>     ↑                                        │
+     └────────────────────────────────────────┘
+                    循环直到完成</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>8.7 Claude Code 的设计原则总结</h2>

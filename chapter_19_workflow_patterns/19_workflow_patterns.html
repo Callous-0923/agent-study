@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -187,32 +199,10 @@ body {
 <p>&nbsp;</p>
 <h2>19.2 设计模式全景图</h2>
 <p>&nbsp;</p>
-<pre>┌──────────────────────────────────────────────────────────────┐
-│                  Agentic Design Patterns                       │
-├────────────┬─────────────────────────────────────────────────┤
-│ 1. ReAct   │ 推理-行动循环，最通用（Ch3/Ch8 已深入讲过）       │
-│ 2. Reflection│ 自我批评 → 迭代改进（本章19.3）                │
-│ 3. Routing  │ 按任务特征路由到不同处理器（本章19.4）           │
-│ 4. Planning │ 先制定计划再执行（本章19.5）                    │
-│ 5. Orchestrator│ 协调者分发任务给专业 Worker（本章19.6）       │
-│ 6. Evaluator │ 评估-优化双循环（本章19.7）                   │
-│ 7. Human-in- │ 关键节点人工确认（本章19.8）                  │
-│    the-Loop │                                                 │
-└────────────┴─────────────────────────────────────────────────┘</pre>
+<table><tr><th>1. ReAct</th><th>推理-行动循环，最通用（Ch3/Ch8 已深入讲过）</th></tr><tr><td>2. Reflection</td><td>自我批评 → 迭代改进（本章19.3）</td></tr><tr><td>3. Routing</td><td>按任务特征路由到不同处理器（本章19.4）</td></tr><tr><td>4. Planning</td><td>先制定计划再执行（本章19.5）</td></tr><tr><td>5. Orchestrator</td><td>协调者分发任务给专业 Worker（本章19.6）</td></tr><tr><td>6. Evaluator</td><td>评估-优化双循环（本章19.7）</td></tr><tr><td>7. Human-in-</td><td>关键节点人工确认（本章19.8）</td></tr><tr><td>the-Loop</td><td></td></tr></table>
 <p>&nbsp;</p>
 <p>快速选择矩阵（面试时脱口而出！）：</p>
-<pre>┌────────────────────────────┬──────────────────────────────┐
-│         任务特征             │         推荐模式              │
-├────────────────────────────┼──────────────────────────────┤
-│ 输出质量 > 速度             │ Reflection                   │
-│ 多种类型但可分类的任务       │ Routing                      │
-│ 复杂的多步骤任务            │ Planning + ReAct             │
-│ 可分解为独立子任务          │ Orchestrator-Worker          │
-│ 需要通过评测指标迭代优化    │ Evaluator-Optimizer          │
-│ 涉及资金/数据安全的操作     │ Human-in-the-Loop            │
-│ 路径不可预测的复杂推理      │ 纯 ReAct Agent               │
-│ 简单、步骤固定的任务        │ 不需要 Agent！直接用 LLM 调用  │
-└────────────────────────────┴──────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (5 行)</summary><div class="code-block"><pre><span class="k">import</span> json
+<table><tr><th>任务特征</th><th>推荐模式</th></tr><tr><td>输出质量 > 速度</td><td>Reflection</td></tr><tr><td>多种类型但可分类的任务</td><td>Routing</td></tr><tr><td>复杂的多步骤任务</td><td>Planning + ReAct</td></tr><tr><td>可分解为独立子任务</td><td>Orchestrator-Worker</td></tr><tr><td>需要通过评测指标迭代优化</td><td>Evaluator-Optimizer</td></tr><tr><td>涉及资金/数据安全的操作</td><td>Human-in-the-Loop</td></tr><tr><td>路径不可预测的复杂推理</td><td>纯 ReAct Agent</td></tr><tr><td>简单、步骤固定的任务</td><td>不需要 Agent！直接用 LLM 调用</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (5 行)</summary><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional

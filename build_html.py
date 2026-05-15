@@ -104,14 +104,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -435,117 +447,99 @@ def build_html(filepath: str, output_path: str = None):
     return output_path
 
 
+def _parse_ascii_table(block_lines: list[str]) -> str:
+    # 将 ASCII 表格块转换为 HTML <table>
+    # 识别: 边框行(含┌├└┐┘┤┬┴─) + 数据行(仅含│)
+    data_rows = []
+    for line in block_lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        # 纯边框行(无│数据分隔) → 跳过
+        if '│' not in stripped:
+            continue
+        # 数据行: 去掉首尾边框, 按│切分
+        cells_text = stripped.strip("│")
+        cells = [c.strip() for c in cells_text.split("│")]
+        if any(c for c in cells):  # 至少有一个非空cell
+            data_rows.append(cells)
+
+    if len(data_rows) < 2:
+        return ""  # 不够构成表格
+
+    # 检查列数一致
+    col_count = max(len(r) for r in data_rows)
+    data_rows = [r for r in data_rows if len(r) == col_count]
+    if len(data_rows) < 2:
+        return ""
+
+    html = "<table>"
+    for ri, row in enumerate(data_rows):
+        tag = "th" if ri == 0 else "td"
+        html += "<tr>"
+        for cell in row:
+            html += f"<{tag}>{cell}</{tag}>"
+        html += "</tr>"
+    html += "</table>"
+    return html
+
+
+def _render_block(block: list[str]) -> str:
+    # 将收集的框线块转为 HTML: 优先表格, 其次架构图(pre)
+    if not block:
+        return ""
+    table_html = _parse_ascii_table(block)
+    if table_html:
+        return table_html
+    # 架构图: 保留原样
+    return '<pre class="ascii-art">' + "\n".join(block) + "</pre>"
+
+
 def parse_lecture(docstring: str) -> str:
-    """
-    处理:
-      - ### / ## → h2/h3
-      - ━━ 分隔线 → <hr>
-      - ●/• 列表 → <ul>
-      - 有序列表 → <ol>
-      - 代码块（缩进4空格或```）→ <pre>
-      - 粗体 **text** → <strong>
-      - 表格 → <table> (简单检测 | 分隔)
-      - ┌─┐ 等 box-drawing 字符 → <pre> 块
-      - 表情符号保留
-    """
+    # 解析讲义文本 → HTML
     lines = docstring.split("\n")
     output = []
     i = 0
-    in_code_block = False
+    block_lines = []           # 收集连续的框线行
+    in_code_fence = False
     code_buffer = []
-    in_box = False
-    box_buffer = []
-    in_table = False
-    table_buffer = []
     goals = []
     interview_points = []
 
-    def flush_code():
-        nonlocal in_code_block, code_buffer
+    def flush_block():
+        nonlocal block_lines
+        if block_lines:
+            output.append(_render_block(block_lines))
+            block_lines = []
+
+    def flush_code_fence():
+        nonlocal in_code_fence, code_buffer
         if code_buffer:
             output.append("<pre>" + "\n".join(code_buffer) + "</pre>")
             code_buffer = []
-            in_code_block = False
-
-    def flush_box():
-        nonlocal in_box, box_buffer
-        if box_buffer:
-            output.append("<pre>" + "\n".join(box_buffer) + "</pre>")
-            box_buffer = []
-            in_box = False
-
-    def flush_table():
-        nonlocal in_table, table_buffer
-        if table_buffer:
-            # 检测表格行数
-            rows = []
-            for tline in table_buffer:
-                tline = tline.strip("│").strip()
-                cells = [c.strip() for c in tline.split("│")]
-                rows.append(cells)
-            if len(rows) >= 2 and all(r for r in rows):
-                html = "<table>"
-                for ri, row in enumerate(rows):
-                    tag = "th" if ri == 0 else "td"
-                    html += "<tr>"
-                    for cell in row:
-                        html += f"<{tag}>{cell}</{tag}>"
-                    html += "</tr>"
-                html += "</table>"
-                output.append(html)
-            else:
-                output.append("<pre>" + "\n".join(table_buffer) + "</pre>")
-            table_buffer = []
-            in_table = False
+            in_code_fence = False
 
     while i < len(lines):
         line = lines[i]
+        stripped = line.strip()
 
-        # box-drawing 块检测
-        if any(c in line for c in "┌└├│┐┘┤┬┴"):
-            flush_code()
-            flush_table()
-            if not in_box:
-                in_box = True
-            box_buffer.append(line)
-            i += 1
-            continue
-        elif in_box:
-            flush_box()
-
-        # 表格检测（含 │ 且非 box 行）
-        if "│" in line and not any(c in line for c in "┌└├┐┘┤"):
-            flush_code()
-            flush_box()
-            if not in_table:
-                in_table = True
-            table_buffer.append(line)
-            i += 1
-            continue
-        elif in_table:
-            flush_table()
-
-        # 代码块 ```
-        if line.strip().startswith("```"):
-            if in_code_block:
-                flush_code()
+        # ``` 代码块
+        if stripped.startswith("```"):
+            if in_code_fence:
+                flush_code_fence()
             else:
-                flush_table()
-                flush_box()
-                in_code_block = True
+                flush_block()
+                in_code_fence = True
             i += 1
             continue
-
-        if in_code_block:
+        if in_code_fence:
             code_buffer.append(line)
             i += 1
             continue
 
-        # 缩进代码块（4 空格开头的行）
-        if line.startswith("    ") and not line.strip().startswith("-") and not line.strip().startswith("1.") and not line.strip().startswith("•"):
-            # 检测连续缩进
-            flush_table()
-            flush_box()
+        # 缩进 4 格代码块
+        if line.startswith("    ") and not stripped.startswith("-") and not stripped.startswith("1.") and not stripped.startswith("•") and stripped:
+            flush_block()
             cb = [line[4:]]
             j = i + 1
             while j < len(lines) and lines[j].startswith("    "):
@@ -555,30 +549,13 @@ def parse_lecture(docstring: str) -> str:
             i = j
             continue
 
-        flush_code()
-        flush_box()
-        flush_table()
-
-        stripped = line.strip()
-
-        # 目标提取
-        if stripped.startswith("📌 本章目标") or stripped.startswith("📌 本章结构"):
-            # 收集后续的编号项
+        # 框线行 (含表格边框字符)
+        if any(c in line for c in "┌└├┐┘┤┬┴│"):
+            block_lines.append(line)
             i += 1
-            while i < len(lines) and (
-                re.match(r'^\s+\d+\.', lines[i]) or
-                re.match(r'^\s+\d+\.\s', lines[i])
-            ):
-                goals.append(lines[i].strip())
-                i += 1
             continue
-
-        if stripped.startswith("📌 面试高频点"):
-            i += 1
-            while i < len(lines) and lines[i].strip().startswith("-"):
-                interview_points.append(lines[i].strip()[1:].strip())
-                i += 1
-            continue
+        elif block_lines:
+            flush_block()
 
         # 空行
         if not stripped:
@@ -586,19 +563,32 @@ def parse_lecture(docstring: str) -> str:
             i += 1
             continue
 
-        # 章节标题 ━━
-        if stripped.startswith("━━") or all(c in "━" for c in stripped if c != " "):
+        # ━━ 章节分隔
+        if all(c in "━" for c in stripped if c != " "):
             i += 1
             continue
 
-        # 小节标识 (如 "0.1 Agent 是什么？—— 用类比建立直觉")
-        section_match = re.match(r'^(\d+\.\d+)\s+(.+)', stripped)
-        if section_match:
+        # 目标/考点提取
+        if stripped.startswith("📌 本章目标") or stripped.startswith("📌 本章结构"):
+            i += 1
+            while i < len(lines) and re.match(r'^\s+\d+\.', lines[i]):
+                goals.append(lines[i].strip())
+                i += 1
+            continue
+        if stripped.startswith("📌 面试高频点"):
+            i += 1
+            while i < len(lines) and lines[i].strip().startswith("-"):
+                interview_points.append(lines[i].strip()[1:].strip())
+                i += 1
+            continue
+
+        # 小节标题 "X.Y title"
+        if re.match(r'^\d+\.\d+[  ]', stripped):
             output.append(f'<h2>{stripped}</h2>')
             i += 1
             continue
 
-        # ## / ### 风格标题
+        # Markdown 标题
         if stripped.startswith("### "):
             output.append(f'<h3>{stripped[4:]}</h3>')
             i += 1
@@ -608,22 +598,19 @@ def parse_lecture(docstring: str) -> str:
             i += 1
             continue
 
-        # 粗体
+        # 粗体 ** **
         stripped = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', stripped)
-
-        # 行内代码
+        # 行内代码 ` `
         stripped = re.sub(r'`([^`]+)`', r'<code>\1</code>', stripped)
 
-        # 列表项
+        # 列表
         if re.match(r'^[-•]\s', stripped):
             output.append(f'<li>{stripped[1:].strip()}</li>')
             i += 1
             continue
-
-        # 有序列表
-        ol_match = re.match(r'^(\d+)\.\s+(.+)', stripped)
-        if ol_match:
-            output.append(f'<li>{ol_match.group(2)}</li>')
+        if re.match(r'^\d+\.\s', stripped):
+            inner = re.sub(r'^\d+\.\s', '', stripped)
+            output.append(f'<li>{inner}</li>')
             i += 1
             continue
 
@@ -633,25 +620,19 @@ def parse_lecture(docstring: str) -> str:
             i += 1
             continue
 
-        # 分隔线
+        # ---
         if stripped == "---":
             output.append("<hr>")
             i += 1
             continue
 
-        # 普通段落
         output.append(f"<p>{stripped}</p>")
         i += 1
 
-    # 清理残余
-    flush_code()
-    flush_box()
-    flush_table()
+    flush_block()
+    flush_code_fence()
 
-    # 组装
     result = ""
-
-    # 目标标签行
     if goals or interview_points:
         result += '<div class="tag-row">'
         for g in goals:
@@ -659,7 +640,6 @@ def parse_lecture(docstring: str) -> str:
         for ip in interview_points:
             result += f'<span class="tag tag-interview">🎤 {ip}</span>'
         result += '</div>'
-
     result += "\n".join(output)
     return result
 

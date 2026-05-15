@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -171,24 +183,7 @@ body {
 <p>&nbsp;</p>
 <p>当前市场上 Agent 相关的岗位类型：</p>
 <p>&nbsp;</p>
-<pre>┌──────────────────┬─────────────────────────────────────────┐
-│      岗位         │             工作内容与要求                │
-├──────────────────┼─────────────────────────────────────────┤
-│ Agent 应用工程师  │ 用 LangChain/LangGraph 构建 Agent 应用    │
-│                  │ 要求：Python + 框架熟练 + 业务理解力       │
-├──────────────────┼─────────────────────────────────────────┤
-│ Agent 平台工程师  │ 开发 Agent 基础设施（编排/评测/监控）      │
-│                  │ 要求：Python/Go + 分布式系统 + 工程能力    │
-├──────────────────┼─────────────────────────────────────────┤
-│ Agent 产品经理    │ 定义 Agent 产品形态和用户体验             │
-│                  │ 要求：产品感 + Agent 技术理解 + 数据分析   │
-├──────────────────┼─────────────────────────────────────────┤
-│ Prompt 工程师     │ 专门设计和优化 Agent 的提示词             │
-│                  │ 要求：语言学功底 + 系统思维 + 评测经验     │
-├──────────────────┼─────────────────────────────────────────┤
-│ Agent 研究员      │ Agent 学术研究（新架构/新范式）           │
-│                  │ 要求：顶会论文 + 理论基础 + 工程实现能力   │
-└──────────────────┴─────────────────────────────────────────┘</pre>
+<table><tr><th>岗位</th><th>工作内容与要求</th></tr><tr><td>Agent 应用工程师</td><td>用 LangChain/LangGraph 构建 Agent 应用</td></tr><tr><td></td><td>要求：Python + 框架熟练 + 业务理解力</td></tr><tr><td>Agent 平台工程师</td><td>开发 Agent 基础设施（编排/评测/监控）</td></tr><tr><td></td><td>要求：Python/Go + 分布式系统 + 工程能力</td></tr><tr><td>Agent 产品经理</td><td>定义 Agent 产品形态和用户体验</td></tr><tr><td></td><td>要求：产品感 + Agent 技术理解 + 数据分析</td></tr><tr><td>Prompt 工程师</td><td>专门设计和优化 Agent 的提示词</td></tr><tr><td></td><td>要求：语言学功底 + 系统思维 + 评测经验</td></tr><tr><td>Agent 研究员</td><td>Agent 学术研究（新架构/新范式）</td></tr><tr><td></td><td>要求：顶会论文 + 理论基础 + 工程实现能力</td></tr></table>
 <p>&nbsp;</p>
 <p>招聘趋势（2024-2025）：</p>
 <li>Agent 应用工程师需求量最大（占 60%+）</li>

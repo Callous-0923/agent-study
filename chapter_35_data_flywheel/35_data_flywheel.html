@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -177,15 +189,7 @@ body {
 <p>&nbsp;</p>
 <p>飞轮的核心组件：</p>
 <p>&nbsp;</p>
-<pre>  ┌──────────────────────────────────────────────┐
-  │                                                │
-  │  用户交互 → 日志采集 → Bad Case 识别            │
-  │      ↑                        ↓                │
-  │      │                LLM 自动标注               │
-  │      │                        ↓                │
-  │      └──── 评测验证 ← 改进注入                  │
-  │                                                │
-  └──────────────────────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (141 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">log_interaction</span><span class="code-badge code-badge-func">get_stats</span><span class="code-badge code-badge-func">export_bad_cases</span><span class="code-badge code-badge-func">demo_flywheel</span><span class="code-badge code-badge-class">DataFlywheel</span></div><div class="code-block"><pre><span class="k">import</span> json
+<table><tr><th></th><th>LLM 自动标注</th></tr><tr><td></td><td>↓</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (141 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">log_interaction</span><span class="code-badge code-badge-func">get_stats</span><span class="code-badge code-badge-func">export_bad_cases</span><span class="code-badge code-badge-func">demo_flywheel</span><span class="code-badge code-badge-class">DataFlywheel</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> collections <span class="k">import</span> defaultdict

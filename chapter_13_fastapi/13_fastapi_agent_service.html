@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -534,29 +546,23 @@ agent = SimulatedAgent()
         f<span class="s">"{time.time()}-{os.urandom(8).hex()}"</span>.encode()
     ).hexdigest()[:<span class="n">16</span>]</pre></div></details></div><div class="lecture"><h2>13.5 生产部署架构</h2>
 <p>&nbsp;</p>
-<pre>  ┌──────────────────────────────────────────────────────┐
-  │                     Nginx (反向代理)                   │
-  │  • SSL 终止                                           │
-  │  • 负载均衡 (round-robin / least-connections)         │
-  │  • Rate Limiting                                      │
-  │  • WebSocket 升级 (Connection: Upgrade)               │
-  └──────────┬───────────┬───────────┬───────────────────┘
-             │           │           │
-    ┌────────▼──┐ ┌──────▼───┐ ┌───▼────────┐
-    │  Agent    │ │  Agent   │ │  Agent     │
-    │  Worker 1 │ │  Worker 2│ │  Worker 3  │
-    │ (FastAPI) │ │ (FastAPI)│ │  (FastAPI) │
-    └───────────┘ └──────────┘ └────────────┘
-             │           │           │
-             └───────────┼───────────┘
-                         │
-              ┌──────────▼──────────┐
-              │   Redis / RabbitMQ  │  ← 消息队列（异步任务）
-              └─────────────────────┘
-                         │
-              ┌──────────▼──────────┐
-              │  SQLite / PostgreSQL│  ← 持久化存储（第14章详讲）
-              └─────────────────────┘</pre>
+<table><tr><th>Nginx (反向代理)</th></tr><tr><td>• SSL 终止</td></tr><tr><td>• 负载均衡 (round-robin / least-connections)</td></tr><tr><td>• Rate Limiting</td></tr><tr><td>• WebSocket 升级 (Connection: Upgrade)</td></tr></table>
+<pre>         │           │           │
+┌────────▼──┐ ┌──────▼───┐ ┌───▼────────┐
+│  Agent    │ │  Agent   │ │  Agent     │
+│  Worker 1 │ │  Worker 2│ │  Worker 3  │
+│ (FastAPI) │ │ (FastAPI)│ │  (FastAPI) │
+└───────────┘ └──────────┘ └────────────┘
+         │           │           │
+         └───────────┼───────────┘
+                     │
+          ┌──────────▼──────────┐
+          │   Redis / RabbitMQ  │  ← 消息队列（异步任务）
+          └─────────────────────┘
+                     │
+          ┌──────────▼──────────┐
+          │  SQLite / PostgreSQL│  ← 持久化存储（第14章详讲）
+          └─────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>Docker 部署示例：</p>
 <p>FROM python:3.12-slim</p>
@@ -576,18 +582,7 @@ agent = SimulatedAgent()
 <p>&nbsp;</p>
 <h2>13.6 SSE vs WebSocket vs 普通 HTTP —— 该怎么选？</h2>
 <p>&nbsp;</p>
-<pre>┌──────────────┬───────────────┬───────────────┬────────────────┐
-│     特性      │  普通 HTTP     │     SSE        │   WebSocket    │
-├──────────────┼───────────────┼───────────────┼────────────────┤
-│ 通信方向      │ 请求→响应      │ 服务器→客户端   │ 双向           │
-│ 协议          │ HTTP          │ HTTP           │ WS (升级HTTP)  │
-│ 浏览器支持    │ ✅            │ ✅ (EventSource)│ ✅             │
-│ 自动重连      │ 无            │ ✅ (内置)       │ 需手动实现      │
-│ 二进制数据    │ ✅            │ ❌ (仅文本)     │ ✅             │
-│ 穿透防火墙    │ ✅            │ ✅             │ 可能被拦截      │
-│ Agent 场景    │ 简单问答       │ 流式输出        │ 实时双向对话    │
-│ 实现复杂度    │ ⭐            │ ⭐⭐           │ ⭐⭐⭐          │
-└──────────────┴───────────────┴───────────────┴────────────────┘</pre>
+<table><tr><th>特性</th><th>普通 HTTP</th><th>SSE</th><th>WebSocket</th></tr><tr><td>通信方向</td><td>请求→响应</td><td>服务器→客户端</td><td>双向</td></tr><tr><td>协议</td><td>HTTP</td><td>HTTP</td><td>WS (升级HTTP)</td></tr><tr><td>浏览器支持</td><td>✅</td><td>✅ (EventSource)</td><td>✅</td></tr><tr><td>自动重连</td><td>无</td><td>✅ (内置)</td><td>需手动实现</td></tr><tr><td>二进制数据</td><td>✅</td><td>❌ (仅文本)</td><td>✅</td></tr><tr><td>穿透防火墙</td><td>✅</td><td>✅</td><td>可能被拦截</td></tr><tr><td>Agent 场景</td><td>简单问答</td><td>流式输出</td><td>实时双向对话</td></tr><tr><td>实现复杂度</td><td>⭐</td><td>⭐⭐</td><td>⭐⭐⭐</td></tr></table>
 <p>&nbsp;</p>
 <p>Agent 场景推荐：</p>
 <li>简单问答 → POST /agent/chat（普通 HTTP）</li>

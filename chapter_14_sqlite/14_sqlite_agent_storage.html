@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -202,43 +214,7 @@ body {
 <p>&nbsp;</p>
 <p>核心表设计（5 张表）：</p>
 <p>&nbsp;</p>
-<pre>  ┌────────────────────────────────────────────────────┐
-  │                    SQLite 数据库                     │
-  │                                                      │
-  │  ┌─────────────┐  ┌──────────────────┐             │
-  │  │   sessions   │  │    messages       │             │
-  │  │  ─────────  │  │   ────────────   │             │
-  │  │  id (PK)    │  │   id (PK)         │             │
-  │  │  user_id    │──│   session_id (FK) │             │
-  │  │  title      │  │   role            │             │
-  │  │  status     │  │   content         │             │
-  │  │  created_at │  │   tool_calls_json │             │
-  │  │  updated_at │  │   token_count     │             │
-  │  └─────────────┘  │   created_at      │             │
-  │                    └──────────────────┘             │
-  │                                                      │
-  │  ┌─────────────┐  ┌──────────────────┐             │
-  │  │    tasks     │  │    tool_logs      │             │
-  │  │  ─────────  │  │   ────────────   │             │
-  │  │  id (PK)    │  │   id (PK)         │             │
-  │  │  session_id │  │   session_id      │             │
-  │  │  type       │  │   tool_name       │             │
-  │  │  payload    │  │   input_json      │             │
-  │  │  status     │  │   output_json     │             │
-  │  │  result     │  │   elapsed_ms      │             │
-  │  │  created_at │  │   success         │             │
-  │  └─────────────┘  │   created_at      │             │
-  │                    └──────────────────┘             │
-  │                                                      │
-  │  ┌─────────────┐                                    │
-  │  │    users     │  ← 扩展用（配额/权限/偏好）        │
-  │  │  ─────────  │                                    │
-  │  │  id (PK)    │                                    │
-  │  │  name       │                                    │
-  │  │  quota_total│                                    │
-  │  │  quota_used │                                    │
-  │  └─────────────┘                                    │
-  └────────────────────────────────────────────────────┘</pre>
+<table><tr><th></th><th>sessions</th><th></th><th>messages</th><th></th></tr><tr><td></td><td>─────────</td><td></td><td>────────────</td><td></td></tr><tr><td></td><td>id (PK)</td><td></td><td>id (PK)</td><td></td></tr><tr><td></td><td>user_id</td><td>──</td><td>session_id (FK)</td><td></td></tr><tr><td></td><td>title</td><td></td><td>role</td><td></td></tr><tr><td></td><td>status</td><td></td><td>content</td><td></td></tr><tr><td></td><td>created_at</td><td></td><td>tool_calls_json</td><td></td></tr><tr><td></td><td>updated_at</td><td></td><td>token_count</td><td></td></tr><tr><td></td><td>tasks</td><td></td><td>tool_logs</td><td></td></tr><tr><td></td><td>─────────</td><td></td><td>────────────</td><td></td></tr><tr><td></td><td>id (PK)</td><td></td><td>id (PK)</td><td></td></tr><tr><td></td><td>session_id</td><td></td><td>session_id</td><td></td></tr><tr><td></td><td>type</td><td></td><td>tool_name</td><td></td></tr><tr><td></td><td>payload</td><td></td><td>input_json</td><td></td></tr><tr><td></td><td>status</td><td></td><td>output_json</td><td></td></tr><tr><td></td><td>result</td><td></td><td>elapsed_ms</td><td></td></tr><tr><td></td><td>created_at</td><td></td><td>success</td><td></td></tr></table>
 <p>&nbsp;</p>
 <p>设计要点（面试重点！）：</p>
 <li>sessions 和 messages 是 1:N 关系</li>

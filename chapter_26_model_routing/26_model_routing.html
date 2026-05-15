@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -191,25 +203,10 @@ body {
 <p>&nbsp;</p>
 <h2>26.2 四种路由策略</h2>
 <p>&nbsp;</p>
-<pre>  ┌─────────────────────┬──────────────────────────────────┐
-  │ 策略                 │            核心思想               │
-  ├─────────────────────┼──────────────────────────────────┤
-  │ 1. Threshold Router │ 复杂度评分 → 超过阈值用大模型      │
-  │ 2. Cascade Router   │ 先用小模型 → 不行再升级            │
-  │ 3. Semantic Router  │ 语义相似度 → 匹配最佳模型           │
-  │ 4. Cost-Aware Router │ 成本约束下最大化质量               │
-  └─────────────────────┴──────────────────────────────────┘</pre>
+<table><tr><th>策略</th><th>核心思想</th></tr><tr><td>1. Threshold Router</td><td>复杂度评分 → 超过阈值用大模型</td></tr><tr><td>2. Cascade Router</td><td>先用小模型 → 不行再升级</td></tr><tr><td>3. Semantic Router</td><td>语义相似度 → 匹配最佳模型</td></tr><tr><td>4. Cost-Aware Router</td><td>成本约束下最大化质量</td></tr></table>
 <p>&nbsp;</p>
 <p>策略对比：</p>
-<pre>  ┌──────────────┬──────────┬──────────┬──────────┬──────────┐
-  │              │Threshold │ Cascade  │ Semantic │Cost-Aware│
-  ├──────────────┼──────────┼──────────┼──────────┼──────────┤
-  │ 实现难度      │ ⭐       │ ⭐⭐      │ ⭐⭐⭐     │ ⭐⭐⭐     │
-  │ 延迟(额外)    │ <10ms   │ 可能+延迟 │ <50ms   │ <100ms  │
-  │ 成本节省      │ ~50%    │ ~60%     │ ~70%    │ ~80%    │
-  │ 质量保证      │ 较好     │ 最好      │ 较好     │ 可配置    │
-  │ 适合场景      │ 通用     │ 安全第一   │ 多领域    │ 成本敏感   │
-  └──────────────┴──────────┴──────────┴──────────┴──────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (285 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">threshold_route</span><span class="code-badge code-badge-func">cascade_route</span><span class="code-badge code-badge-func">semantic_route</span><span class="code-badge code-badge-func">cost_aware_route</span><span class="code-badge code-badge-func">demo_routing</span><span class="code-badge code-badge-class">ModelRouter</span></div><div class="code-block"><pre><span class="k">import</span> time
+<table><tr><th></th><th>Threshold</th><th>Cascade</th><th>Semantic</th><th>Cost-Aware</th></tr><tr><td>实现难度</td><td>⭐</td><td>⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐⭐</td></tr><tr><td>延迟(额外)</td><td><10ms</td><td>可能+延迟</td><td><50ms</td><td><100ms</td></tr><tr><td>成本节省</td><td>~50%</td><td>~60%</td><td>~70%</td><td>~80%</td></tr><tr><td>质量保证</td><td>较好</td><td>最好</td><td>较好</td><td>可配置</td></tr><tr><td>适合场景</td><td>通用</td><td>安全第一</td><td>多领域</td><td>成本敏感</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (285 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">threshold_route</span><span class="code-badge code-badge-func">cascade_route</span><span class="code-badge code-badge-func">semantic_route</span><span class="code-badge code-badge-func">cost_aware_route</span><span class="code-badge code-badge-func">demo_routing</span><span class="code-badge code-badge-class">ModelRouter</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">import</span> json
 <span class="k">import</span> hashlib

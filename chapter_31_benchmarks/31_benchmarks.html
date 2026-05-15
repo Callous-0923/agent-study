@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -169,15 +181,7 @@ body {
 <p>&nbsp;</p>
 <h2>31.1 五大评测对比</h2>
 <p>&nbsp;</p>
-<pre>┌────────────────┬──────────────┬──────────────────────┬──────────┐
-│ 评测名称        │  评测什么     │       特点            │  难度     │
-├────────────────┼──────────────┼──────────────────────┼──────────┤
-│ GAIA           │ 通用助理     │ 多步推理+工具使用       │ ⭐⭐⭐    │
-│ AgentBench     │ 多环境 Agent  │ 8 个真实环境            │ ⭐⭐⭐⭐   │
-│ WebArena       │ Web 操作     │ 真实网站交互             │ ⭐⭐⭐⭐   │
-│ tau-bench      │ 工具使用精度  │ 函数参数正确率            │ ⭐⭐      │
-│ SWE-bench      │ 代码修复     │ 真实 GitHub Issue        │ ⭐⭐⭐⭐⭐  │
-└────────────────┴──────────────┴──────────────────────┴──────────┘</pre>
+<table><tr><th>评测名称</th><th>评测什么</th><th>特点</th><th>难度</th></tr><tr><td>GAIA</td><td>通用助理</td><td>多步推理+工具使用</td><td>⭐⭐⭐</td></tr><tr><td>AgentBench</td><td>多环境 Agent</td><td>8 个真实环境</td><td>⭐⭐⭐⭐</td></tr><tr><td>WebArena</td><td>Web 操作</td><td>真实网站交互</td><td>⭐⭐⭐⭐</td></tr><tr><td>tau-bench</td><td>工具使用精度</td><td>函数参数正确率</td><td>⭐⭐</td></tr><tr><td>SWE-bench</td><td>代码修复</td><td>真实 GitHub Issue</td><td>⭐⭐⭐⭐⭐</td></tr></table>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>31.2 GAIA —— 通用 AI 助手评测</h2>

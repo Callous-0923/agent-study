@@ -50,14 +50,26 @@ body {
   color: #555;
 }
 .lecture table {
-  border-collapse: collapse; width: 100%; margin: 14px 0;
-  font-size: .92em;
+  border-collapse: collapse; width: 100%; margin: 16px 0;
+  font-size: .92em; background: white; border-radius: 6px; overflow: hidden;
 }
-.lecture th, .lecture td {
-  border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left;
+.lecture table th {
+  background: #667eea; color: white; font-weight: 600;
+  padding: 10px 14px; text-align: left;
 }
-.lecture th { background: #f0f0ff; font-weight: 600; }
+.lecture table td {
+  padding: 9px 14px; border-bottom: 1px solid #e8e8f0;
+}
+.lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+
+/* 架构图 pre */
+.ascii-art {
+  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
+  padding: 16px 20px; overflow-x: auto; font-size: .82em;
+  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
+  border: 1px solid #e0e0ea;
+}
 
 /* 目标/考点标签 */
 .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
@@ -169,21 +181,7 @@ body {
 <p>&nbsp;</p>
 <p>RAG 从 2020 年到 2025 年经历了三个重要阶段：</p>
 <p>&nbsp;</p>
-<pre>  ┌──────────────────────────────────────────────────────┐
-  │                                                        │
-  │  2020-2022: Naive RAG                                 │
-  │  「问 → 检索 → 生成」三步走                              │
-  │  代表: Facebook RAG 论文、LangChain 基础 QA Chain        │
-  │                                                        │
-  │  2023-2024: Advanced RAG                              │
-  │  加入查询重写、混合检索、重排序、纠错等优化                │
-  │  代表: HyDE、Multi-Query、Self-RAG、CRAG               │
-  │                                                        │
-  │  2024-2025: Next-Gen RAG                              │
-  │  知识图谱、Agent 协作、多模态、长文本                     │
-  │  代表: GraphRAG (微软)、Agentic RAG、Multimodal RAG     │
-  │                                                        │
-  └──────────────────────────────────────────────────────┘</pre>
+<table><tr><th>2020-2022: Naive RAG</th></tr><tr><td>「问 → 检索 → 生成」三步走</td></tr><tr><td>代表: Facebook RAG 论文、LangChain 基础 QA Chain</td></tr><tr><td>2023-2024: Advanced RAG</td></tr><tr><td>加入查询重写、混合检索、重排序、纠错等优化</td></tr><tr><td>代表: HyDE、Multi-Query、Self-RAG、CRAG</td></tr><tr><td>2024-2025: Next-Gen RAG</td></tr><tr><td>知识图谱、Agent 协作、多模态、长文本</td></tr><tr><td>代表: GraphRAG (微软)、Agentic RAG、Multimodal RAG</td></tr></table>
 <p>&nbsp;</p>
 <p>Naive RAG 的问题（面试常问！）:</p>
 <li>检索不准：语义相似 ≠ 问题相关</li>
@@ -609,15 +607,7 @@ body {
 <p>&nbsp;</p>
 <p>核心能力升级：</p>
 <p>&nbsp;</p>
-<pre>  ┌──────────────┬──────────────────────┬──────────────────────┐
-  │     能力      │      传统 RAG         │     Agentic RAG      │
-  ├──────────────┼──────────────────────┼──────────────────────┤
-  │ 查询处理      │ 单次检索              │ 多轮自适应检索         │
-  │ 检索策略      │ 固定（总是向量搜索）   │ 动态选择（向量/图谱/API）│
-  │ 结果判断      │ 无（直接用检索结果）   │ 自检 + 补充检索         │
-  │ 工具使用      │ 只有检索              │ 检索 + 计算 + API     │
-  │ 错误处理      │ 无                    │ 多轮重试 + 纠错        │
-  └──────────────┴──────────────────────┴──────────────────────┘</pre>
+<table><tr><th>能力</th><th>传统 RAG</th><th>Agentic RAG</th></tr><tr><td>查询处理</td><td>单次检索</td><td>多轮自适应检索</td></tr><tr><td>检索策略</td><td>固定（总是向量搜索）</td><td>动态选择（向量/图谱/API）</td></tr><tr><td>结果判断</td><td>无（直接用检索结果）</td><td>自检 + 补充检索</td></tr><tr><td>工具使用</td><td>只有检索</td><td>检索 + 计算 + API</td></tr><tr><td>错误处理</td><td>无</td><td>多轮重试 + 纠错</td></tr></table>
 <p>&nbsp;</p>
 <p>Agentic RAG 的工作流程:</p>
 <p>&nbsp;</p>
@@ -646,15 +636,7 @@ body {
 <p>RAGAS (RAG Assessment) 是最流行的 RAG 评估框架。</p>
 <p>&nbsp;</p>
 <p>核心指标：</p>
-<pre>  ┌──────────────────┬────────────────────────────────────┐
-  │      指标         │              含义                   │
-  ├──────────────────┼────────────────────────────────────┤
-  │ Faithfulness     │ 回答是否完全基于检索到的上下文？       │
-  │ Answer Relevance │ 回答是否直接回应了问题？              │
-  │ Context Recall   │ 检索到的内容覆盖了回答所需的全部信息？ │
-  │ Context Precision│ 检索到的内容有多少是真正相关的？       │
-  │ Answer Correctness│ 答案的事实准确性                     │
-  └──────────────────┴────────────────────────────────────┘</pre>
+<table><tr><th>指标</th><th>含义</th></tr><tr><td>Faithfulness</td><td>回答是否完全基于检索到的上下文？</td></tr><tr><td>Answer Relevance</td><td>回答是否直接回应了问题？</td></tr><tr><td>Context Recall</td><td>检索到的内容覆盖了回答所需的全部信息？</td></tr><tr><td>Context Precision</td><td>检索到的内容有多少是真正相关的？</td></tr><tr><td>Answer Correctness</td><td>答案的事实准确性</td></tr></table>
 <p>&nbsp;</p>
 <p>2025年评估趋势：</p>
 <li>LLM-as-Judge 成为主流（用 GPT-4 评估 RAG 输出）</li>
