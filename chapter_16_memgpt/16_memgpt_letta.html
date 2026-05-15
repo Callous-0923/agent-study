@@ -63,12 +63,26 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 pre */
+/* 架构图 / 流程图 */
+.diagram-box {
+  background: #1a1e2b; border-radius: 10px; overflow: hidden;
+  margin: 18px 0; border: 1px solid #2a3045;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+}
+.diagram-header {
+  background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
+  color: #8ab4f8; font-size: .85em; font-weight: 600;
+  padding: 8px 18px; letter-spacing: .5px;
+  border-bottom: 1px solid #3a4a6a;
+}
 .ascii-art {
-  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
-  padding: 16px 20px; overflow-x: auto; font-size: .82em;
-  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
-  border: 1px solid #e0e0ea;
+  background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
+  padding: 18px 22px; overflow-x: auto; font-size: .8em;
+  line-height: 1.3; margin: 0;
+  font-family: "JetBrains Mono","Fira Code","Cascadia Code","Consolas",monospace;
+  border: none; white-space: pre;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 目标/考点标签 */
@@ -216,7 +230,35 @@ body {
 <p>&nbsp;</p>
 <h2>16.2 MemGPT 的内存管理机制</h2>
 <p>&nbsp;</p>
-<table><tr><th></th><th></th><th>System</th><th></th><th>Memory</th><th></th><th>Conversation</th><th></th><th></th></tr><tr><td></td><td></td><td>Prompt</td><td></td><td>Blocks</td><td></td><td>History</td><td></td><td></td></tr></table>
+<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">┌────────────────────────────────────────────────────┐
+│                 MemGPT Agent                         │
+│                                                      │
+│  ┌──────────────────────────────────────────────┐  │
+│  │            Core Memory (上下文内)              │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────────┐ │  │
+│  │  │ System   │ │ Memory   │ │ Conversation │ │  │
+│  │  │ Prompt   │ │ Blocks   │ │ History      │ │  │
+│  │  └──────────┘ └──────────┘ └──────────────┘ │  │
+│  └──────────────────────────────────────────────┘  │
+│                       │                             │
+│            ┌──────────┴──────────┐                  │
+│            │   对话历史管理工具     │                  │
+│            │  ─────────────────  │                  │
+│            │  conversation_search │ ← 搜索完整历史    │
+│            │  core_memory_append  │ ← 编辑记忆块      │
+│            │  core_memory_replace │ ← 替换记忆块      │
+│            └─────────────────────┘                  │
+│                       │                             │
+│  ┌────────────────────┴──────────────────────────┐ │
+│  │              外部记忆（上下文外）                │ │
+│  │  ┌────────────────┐  ┌──────────────────────┐ │ │
+│  │  │ Recall Memory   │  │  Archival Memory      │ │ │
+│  │  │ (对话历史全文)    │  │  (向量库 + 知识检索)   │ │ │
+│  │  │ archival_memory │  │  archival_memory     │ │ │
+│  │  │ _search        │  │  _insert             │ │ │
+│  │  └────────────────┘  └──────────────────────┘ │ │
+│  └──────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────┘</pre></div>
 <p>&nbsp;</p>
 <p>核心工具（Agent 通过 Function Calling 调用）：</p>
 <li>send_message: 向用户发送消息（MemGPT 唯一的消息出口）</li>

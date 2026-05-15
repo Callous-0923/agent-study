@@ -63,12 +63,26 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 pre */
+/* 架构图 / 流程图 */
+.diagram-box {
+  background: #1a1e2b; border-radius: 10px; overflow: hidden;
+  margin: 18px 0; border: 1px solid #2a3045;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+}
+.diagram-header {
+  background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
+  color: #8ab4f8; font-size: .85em; font-weight: 600;
+  padding: 8px 18px; letter-spacing: .5px;
+  border-bottom: 1px solid #3a4a6a;
+}
 .ascii-art {
-  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
-  padding: 16px 20px; overflow-x: auto; font-size: .82em;
-  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
-  border: 1px solid #e0e0ea;
+  background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
+  padding: 18px 22px; overflow-x: auto; font-size: .8em;
+  line-height: 1.3; margin: 0;
+  font-family: "JetBrains Mono","Fira Code","Cascadia Code","Consolas",monospace;
+  border: none; white-space: pre;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 目标/考点标签 */
@@ -181,7 +195,21 @@ body {
 <p>&nbsp;</p>
 <p>RAG 从 2020 年到 2025 年经历了三个重要阶段：</p>
 <p>&nbsp;</p>
-<table><tr><th>2020-2022: Naive RAG</th></tr><tr><td>「问 → 检索 → 生成」三步走</td></tr><tr><td>代表: Facebook RAG 论文、LangChain 基础 QA Chain</td></tr><tr><td>2023-2024: Advanced RAG</td></tr><tr><td>加入查询重写、混合检索、重排序、纠错等优化</td></tr><tr><td>代表: HyDE、Multi-Query、Self-RAG、CRAG</td></tr><tr><td>2024-2025: Next-Gen RAG</td></tr><tr><td>知识图谱、Agent 协作、多模态、长文本</td></tr><tr><td>代表: GraphRAG (微软)、Agentic RAG、Multimodal RAG</td></tr></table>
+<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌──────────────────────────────────────────────────────┐
+  │                                                        │
+  │  2020-2022: Naive RAG                                 │
+  │  「问 → 检索 → 生成」三步走                              │
+  │  代表: Facebook RAG 论文、LangChain 基础 QA Chain        │
+  │                                                        │
+  │  2023-2024: Advanced RAG                              │
+  │  加入查询重写、混合检索、重排序、纠错等优化                │
+  │  代表: HyDE、Multi-Query、Self-RAG、CRAG               │
+  │                                                        │
+  │  2024-2025: Next-Gen RAG                              │
+  │  知识图谱、Agent 协作、多模态、长文本                     │
+  │  代表: GraphRAG (微软)、Agentic RAG、Multimodal RAG     │
+  │                                                        │
+  └──────────────────────────────────────────────────────┘</pre></div>
 <p>&nbsp;</p>
 <p>Naive RAG 的问题（面试常问！）:</p>
 <li>检索不准：语义相似 ≠ 问题相关</li>

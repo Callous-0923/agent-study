@@ -117,12 +117,26 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 pre */
+/* 架构图 / 流程图 */
+.diagram-box {
+  background: #1a1e2b; border-radius: 10px; overflow: hidden;
+  margin: 18px 0; border: 1px solid #2a3045;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+}
+.diagram-header {
+  background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
+  color: #8ab4f8; font-size: .85em; font-weight: 600;
+  padding: 8px 18px; letter-spacing: .5px;
+  border-bottom: 1px solid #3a4a6a;
+}
 .ascii-art {
-  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
-  padding: 16px 20px; overflow-x: auto; font-size: .82em;
-  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
-  border: 1px solid #e0e0ea;
+  background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
+  padding: 18px 22px; overflow-x: auto; font-size: .8em;
+  line-height: 1.3; margin: 0;
+  font-family: "JetBrains Mono","Fira Code","Cascadia Code","Consolas",monospace;
+  border: none; white-space: pre;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 目标/考点标签 */
@@ -449,29 +463,35 @@ def build_html(filepath: str, output_path: str = None):
 
 def _parse_ascii_table(block_lines: list[str]) -> str:
     # 将 ASCII 表格块转换为 HTML <table>
-    # 识别: 边框行(含┌├└┐┘┤┬┴─) + 数据行(仅含│)
+    # 关键：排除架构图（架构图中 │ 是嵌套框而非列分隔符）
+    BOX_RE = re.compile(r'[┌└├┐┘┤┬┴═]')
     data_rows = []
     for line in block_lines:
         stripped = line.strip()
-        if not stripped:
+        if not stripped or '│' not in stripped:
             continue
-        # 纯边框行(无│数据分隔) → 跳过
-        if '│' not in stripped:
-            continue
-        # 数据行: 去掉首尾边框, 按│切分
         cells_text = stripped.strip("│")
         cells = [c.strip() for c in cells_text.split("│")]
-        if any(c for c in cells):  # 至少有一个非空cell
+        if any(c for c in cells):
             data_rows.append(cells)
 
     if len(data_rows) < 2:
-        return ""  # 不够构成表格
+        return ""
 
-    # 检查列数一致
-    col_count = max(len(r) for r in data_rows)
-    data_rows = [r for r in data_rows if len(r) == col_count]
+    # 列数一致性检测
+    col_counts = [len(r) for r in data_rows]
+    most_common_cols = max(set(col_counts), key=col_counts.count)
+    if most_common_cols < 2:
+        return ""  # 只有一列 → 可能是架构图边框
+    data_rows = [r for r in data_rows if len(r) == most_common_cols]
     if len(data_rows) < 2:
         return ""
+
+    # 反检测：如果任何格子内容含框线字符 → 这是架构图
+    for row in data_rows:
+        for cell in row:
+            if BOX_RE.search(cell):
+                return ""
 
     html = "<table>"
     for ri, row in enumerate(data_rows):
@@ -484,14 +504,33 @@ def _parse_ascii_table(block_lines: list[str]) -> str:
     return html
 
 
+def _is_likely_diagram(block: list[str]) -> bool:
+    # 判断是否是架构图/流程图(非纯表格)
+    has_box_chars = any(any(c in l for c in "┌└├┐┘┤┬┴") for l in block)
+    has_data_cols = any("│" in l for l in block)
+    if not has_box_chars:
+        return False
+    # 如果已经判定为表格(_parse_ascii_table 不为空)则不算架构图
+    if _parse_ascii_table(block):
+        return False
+    return len(block) >= 3
+
+
 def _render_block(block: list[str]) -> str:
-    # 将收集的框线块转为 HTML: 优先表格, 其次架构图(pre)
+    # 将收集的框线块转为 HTML: 优先表格, 其次架构图, 否则 pre
     if not block:
         return ""
     table_html = _parse_ascii_table(block)
     if table_html:
         return table_html
-    # 架构图: 保留原样
+    if _is_likely_diagram(block):
+        inner = "\n".join(block)
+        return (
+            '<div class="diagram-box">'
+            '<div class="diagram-header">📊 架构示意</div>'
+            f'<pre class="ascii-art">{inner}</pre>'
+            '</div>'
+        )
     return '<pre class="ascii-art">' + "\n".join(block) + "</pre>"
 
 

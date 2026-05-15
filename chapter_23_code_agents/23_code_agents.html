@@ -63,12 +63,26 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 pre */
+/* 架构图 / 流程图 */
+.diagram-box {
+  background: #1a1e2b; border-radius: 10px; overflow: hidden;
+  margin: 18px 0; border: 1px solid #2a3045;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+}
+.diagram-header {
+  background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
+  color: #8ab4f8; font-size: .85em; font-weight: 600;
+  padding: 8px 18px; letter-spacing: .5px;
+  border-bottom: 1px solid #3a4a6a;
+}
 .ascii-art {
-  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
-  padding: 16px 20px; overflow-x: auto; font-size: .82em;
-  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
-  border: 1px solid #e0e0ea;
+  background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
+  padding: 18px 22px; overflow-x: auto; font-size: .8em;
+  line-height: 1.3; margin: 0;
+  font-family: "JetBrains Mono","Fira Code","Cascadia Code","Consolas",monospace;
+  border: none; white-space: pre;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 目标/考点标签 */
@@ -291,7 +305,29 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
 <p>&nbsp;</p>
 <p>不管什么架构，代码 Agent 的执行流程都可以抽象为：</p>
 <p>&nbsp;</p>
-<table><tr><th>1. 理解任务 (Understand)</th></tr><tr><td>→ 读取 Issue / PR 描述</td></tr><tr><td>→ 分析项目结构</td></tr><tr><td>2. 定位问题 (Localize)</td></tr><tr><td>→ Grep 搜索相关代码</td></tr><tr><td>→ 阅读相关文件</td></tr><tr><td>→ 理解调用关系</td></tr><tr><td>3. 制定方案 (Plan)</td></tr><tr><td>→ 确定修改哪些文件</td></tr><tr><td>→ 确定怎么改</td></tr><tr><td>4. 实施修改 (Implement)</td></tr><tr><td>→ 编辑文件</td></tr><tr><td>5. 验证 (Verify)</td></tr><tr><td>→ 运行测试</td></tr><tr><td>→ 如果失败 → 回到第 2 步</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (114 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">understand</span><span class="code-badge code-badge-func">localize</span><span class="code-badge code-badge-func">plan</span><span class="code-badge code-badge-func">implement</span><span class="code-badge code-badge-func">verify</span><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-func">demo_code_agents</span><span class="code-badge code-badge-class">CodeAgentSimulator</span></div><div class="code-block"><pre><span class="k">import</span> time
+<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌──────────────────────────────────────────┐
+  │                                             │
+  │  1. 理解任务 (Understand)                   │
+  │     → 读取 Issue / PR 描述                   │
+  │     → 分析项目结构                           │
+  │                                             │
+  │  2. 定位问题 (Localize)                     │
+  │     → Grep 搜索相关代码                      │
+  │     → 阅读相关文件                           │
+  │     → 理解调用关系                           │
+  │                                             │
+  │  3. 制定方案 (Plan)                         │
+  │     → 确定修改哪些文件                       │
+  │     → 确定怎么改                             │
+  │                                             │
+  │  4. 实施修改 (Implement)                    │
+  │     → 编辑文件                               │
+  │                                             │
+  │  5. 验证 (Verify)                           │
+  │     → 运行测试                               │
+  │     → 如果失败 → 回到第 2 步                 │
+  │                                             │
+  └──────────────────────────────────────────┘</pre></div></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (114 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">understand</span><span class="code-badge code-badge-func">localize</span><span class="code-badge code-badge-func">plan</span><span class="code-badge code-badge-func">implement</span><span class="code-badge code-badge-func">verify</span><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-func">demo_code_agents</span><span class="code-badge code-badge-class">CodeAgentSimulator</span></div><div class="code-block"><pre><span class="k">import</span> time
 
 
 <span class="k">class</span> <span class="f">CodeAgentSimulator</span>:

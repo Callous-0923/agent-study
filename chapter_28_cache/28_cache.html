@@ -63,12 +63,26 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 pre */
+/* 架构图 / 流程图 */
+.diagram-box {
+  background: #1a1e2b; border-radius: 10px; overflow: hidden;
+  margin: 18px 0; border: 1px solid #2a3045;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+}
+.diagram-header {
+  background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
+  color: #8ab4f8; font-size: .85em; font-weight: 600;
+  padding: 8px 18px; letter-spacing: .5px;
+  border-bottom: 1px solid #3a4a6a;
+}
 .ascii-art {
-  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
-  padding: 16px 20px; overflow-x: auto; font-size: .82em;
-  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
-  border: 1px solid #e0e0ea;
+  background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
+  padding: 18px 22px; overflow-x: auto; font-size: .8em;
+  line-height: 1.3; margin: 0;
+  font-family: "JetBrains Mono","Fira Code","Cascadia Code","Consolas",monospace;
+  border: none; white-space: pre;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 目标/考点标签 */
@@ -196,7 +210,28 @@ body {
 <p>&nbsp;</p>
 <h2>28.2 三级缓存架构</h2>
 <p>&nbsp;</p>
-<table><tr><th>L1: Exact Match Cache</th></tr><tr><td>─────────────────────────────────</td></tr><tr><td>查询: "今天天气" → 缓存中查 "今天天气"</td></tr><tr><td>命中条件: 完全相同的文本</td></tr><tr><td>命中率: 5-10%</td></tr><tr><td>延迟: <1ms</td></tr><tr><td>L2: Semantic Cache</td></tr><tr><td>─────────────────────────────────</td></tr><tr><td>查询: "今天天气" → 缓存中查相似查询 → 命中 "今天天气怎么样"</td></tr><tr><td>命中条件: 余弦相似度 > 0.95</td></tr><tr><td>命中率: 20-40%</td></tr><tr><td>延迟: ~10ms</td></tr><tr><td>L3: LLM-as-Cache</td></tr><tr><td>─────────────────────────────────</td></tr><tr><td>查询: 无法在前2级命中 → 调用廉价小模型</td></tr><tr><td>如果小模型回答合适 → 缓存结果</td></tr><tr><td>命中率: 10-20% (加上前两级：总 40-70%)</td></tr><tr><td>延迟: ~500ms</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (145 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get</span><span class="code-badge code-badge-func">set</span><span class="code-badge code-badge-func">hit_rate</span><span class="code-badge code-badge-func">query</span><span class="code-badge code-badge-func">report</span><span class="code-badge code-badge-class">ExactMatchCache</span><span class="code-badge code-badge-class">SemanticCache</span><span class="code-badge code-badge-class">ThreeLevelCache</span></div><div class="code-block"><pre><span class="k">import</span> time
+<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌─────────────────────────────────────────────────┐
+  │                 L1: Exact Match Cache              │
+  │  ─────────────────────────────────               │
+  │  查询: "今天天气" → 缓存中查 "今天天气"             │
+  │  命中条件: 完全相同的文本                           │
+  │  命中率: 5-10%                                    │
+  │  延迟: <1ms                                       │
+  ├─────────────────────────────────────────────────┤
+  │                 L2: Semantic Cache                 │
+  │  ─────────────────────────────────               │
+  │  查询: "今天天气" → 缓存中查相似查询 → 命中 "今天天气怎么样"│
+  │  命中条件: 余弦相似度 > 0.95                        │
+  │  命中率: 20-40%                                    │
+  │  延迟: ~10ms                                       │
+  ├─────────────────────────────────────────────────┤
+  │                 L3: LLM-as-Cache                   │
+  │  ─────────────────────────────────               │
+  │  查询: 无法在前2级命中 → 调用廉价小模型               │
+  │  如果小模型回答合适 → 缓存结果                       │
+  │  命中率: 10-20% (加上前两级：总 40-70%)              │
+  │  延迟: ~500ms                                      │
+  └─────────────────────────────────────────────────┘</pre></div></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (145 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get</span><span class="code-badge code-badge-func">set</span><span class="code-badge code-badge-func">hit_rate</span><span class="code-badge code-badge-func">query</span><span class="code-badge code-badge-func">report</span><span class="code-badge code-badge-class">ExactMatchCache</span><span class="code-badge code-badge-class">SemanticCache</span><span class="code-badge code-badge-class">ThreeLevelCache</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">import</span> hashlib
 <span class="k">import</span> numpy <span class="k">as</span> np

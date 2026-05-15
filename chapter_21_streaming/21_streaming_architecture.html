@@ -63,12 +63,26 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 pre */
+/* 架构图 / 流程图 */
+.diagram-box {
+  background: #1a1e2b; border-radius: 10px; overflow: hidden;
+  margin: 18px 0; border: 1px solid #2a3045;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+}
+.diagram-header {
+  background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
+  color: #8ab4f8; font-size: .85em; font-weight: 600;
+  padding: 8px 18px; letter-spacing: .5px;
+  border-bottom: 1px solid #3a4a6a;
+}
 .ascii-art {
-  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
-  padding: 16px 20px; overflow-x: auto; font-size: .82em;
-  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
-  border: 1px solid #e0e0ea;
+  background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
+  padding: 18px 22px; overflow-x: auto; font-size: .8em;
+  line-height: 1.3; margin: 0;
+  font-family: "JetBrains Mono","Fira Code","Cascadia Code","Consolas",monospace;
+  border: none; white-space: pre;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 目标/考点标签 */
@@ -237,7 +251,18 @@ body {
 <p>&nbsp;</p>
 <p>方案：EventBus —— 发布-订阅模式</p>
 <p>&nbsp;</p>
-<table><tr><th></th><th>LLM</th><th></th><th>Tool</th><th></th><th>User</th><th></th></tr><tr><td></td><td>Service</td><td></td><td>Executor</td><td></td><td>Interface</td><td></td></tr></table>
+<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌──────────────────────────────────────────────────┐
+  │                   EventBus                        │
+  │                   (消息中枢)                       │
+  │                                                    │
+  │   pub/sub         pub/sub          pub/sub        │
+  │   token_stream    tool_call         interrupt      │
+  │      ↕               ↕                 ↕           │
+  │  ┌────────┐    ┌──────────┐    ┌──────────┐     │
+  │  │  LLM   │    │  Tool    │    │  User    │     │
+  │  │ Service│    │ Executor │    │  Interface│     │
+  │  └────────┘    └──────────┘    └──────────┘     │
+  └──────────────────────────────────────────────────┘</pre></div>
 <p>&nbsp;</p>
 <p>EventBus 的优势：</p>
 <li>解耦：LLM 不需要知道 UI 的存在</li>

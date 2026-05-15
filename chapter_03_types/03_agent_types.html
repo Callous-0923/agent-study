@@ -63,12 +63,26 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 pre */
+/* 架构图 / 流程图 */
+.diagram-box {
+  background: #1a1e2b; border-radius: 10px; overflow: hidden;
+  margin: 18px 0; border: 1px solid #2a3045;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+}
+.diagram-header {
+  background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
+  color: #8ab4f8; font-size: .85em; font-weight: 600;
+  padding: 8px 18px; letter-spacing: .5px;
+  border-bottom: 1px solid #3a4a6a;
+}
 .ascii-art {
-  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
-  padding: 16px 20px; overflow-x: auto; font-size: .82em;
-  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
-  border: 1px solid #e0e0ea;
+  background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
+  padding: 18px 22px; overflow-x: auto; font-size: .8em;
+  line-height: 1.3; margin: 0;
+  font-family: "JetBrains Mono","Fira Code","Cascadia Code","Consolas",monospace;
+  border: none; white-space: pre;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 目标/考点标签 */
@@ -179,7 +193,15 @@ body {
 <p>&nbsp;</p>
 <p>Agent 类型全景图</p>
 <p>&nbsp;</p>
-<table><tr><th>1. ReAct Agent        → 每步推理，最通用</th></tr><tr><td>2. Plan-Execute Agent → 先规划再执行，结构化任务</td></tr><tr><td>3. Reflexion Agent    → 执行+反思，自我改进</td></tr><tr><td>4. Tool-calling Agent → 纯工具调用，不需要推理</td></tr><tr><td>5. Multi-Agent        → 多角色协作（第5章详讲）</td></tr></table>
+<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌────────────────────────────────────────────────────┐
+  │                                                    │
+  │  1. ReAct Agent        → 每步推理，最通用          │
+  │  2. Plan-Execute Agent → 先规划再执行，结构化任务   │
+  │  3. Reflexion Agent    → 执行+反思，自我改进       │
+  │  4. Tool-calling Agent → 纯工具调用，不需要推理     │
+  │  5. Multi-Agent        → 多角色协作（第5章详讲）    │
+  │                                                    │
+  └────────────────────────────────────────────────────┘</pre></div>
 <p>&nbsp;</p>
 <p>各类型关键区别：</p>
 <table><tr><th>特性</th><th>ReAct</th><th>Plan-Exec</th><th>Reflexion</th><th>Tool-Call</th></tr><tr><td>规划方式</td><td>动态推理</td><td>前置规划</td><td>动态+反思</td><td>不规划</td></tr><tr><td>复杂任务</td><td>中等</td><td>强</td><td>强</td><td>弱</td></tr><tr><td>执行效率</td><td>中等</td><td>高</td><td>低(多次)</td><td>高</td></tr><tr><td>错误恢复</td><td>自动</td><td>需重新规划</td><td>强(反思)</td><td>弱</td></tr><tr><td>Token 消耗</td><td>中等</td><td>低</td><td>高</td><td>低</td></tr><tr><td>典型场景</td><td>通用</td><td>数据分析</td><td>代码审查</td><td>API 网关</td></tr></table>

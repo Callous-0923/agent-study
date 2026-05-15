@@ -63,12 +63,26 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 pre */
+/* 架构图 / 流程图 */
+.diagram-box {
+  background: #1a1e2b; border-radius: 10px; overflow: hidden;
+  margin: 18px 0; border: 1px solid #2a3045;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+}
+.diagram-header {
+  background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
+  color: #8ab4f8; font-size: .85em; font-weight: 600;
+  padding: 8px 18px; letter-spacing: .5px;
+  border-bottom: 1px solid #3a4a6a;
+}
 .ascii-art {
-  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
-  padding: 16px 20px; overflow-x: auto; font-size: .82em;
-  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
-  border: 1px solid #e0e0ea;
+  background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
+  padding: 18px 22px; overflow-x: auto; font-size: .8em;
+  line-height: 1.3; margin: 0;
+  font-family: "JetBrains Mono","Fira Code","Cascadia Code","Consolas",monospace;
+  border: none; white-space: pre;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 目标/考点标签 */
@@ -199,7 +213,34 @@ body {
 <p>&nbsp;</p>
 <p>这是所有 Computer Use 系统的底层逻辑：</p>
 <p>&nbsp;</p>
-<table><tr><th>1. 📸 Screenshot: 截取当前屏幕画面</th></tr><tr><td>▼</td></tr><tr><td>2. 👁️ Analyze: LLM 视觉分析画面</td></tr><tr><td>- 识别窗口、按钮、文本框</td></tr><tr><td>- 读取屏幕上的文字内容</td></tr><tr><td>- 理解当前界面的状态</td></tr><tr><td>▼</td></tr><tr><td>3. 🤔 Decide: 决定下一步操作</td></tr><tr><td>- 应该点击哪里？</td></tr><tr><td>- 应该输入什么？</td></tr><tr><td>- 是否需要滚动？</td></tr><tr><td>▼</td></tr><tr><td>4. 🖱️ Execute: 执行操作</td></tr><tr><td>- mouse_move(x, y)</td></tr><tr><td>- left_click()</td></tr><tr><td>- type("文本")</td></tr><tr><td>- scroll(direction)</td></tr><tr><td>- key_press("Enter")</td></tr><tr><td>▼</td></tr><tr><td>回到步骤 1（直到任务完成）</td></tr></table>
+<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌──────────────────────────────────────────────────┐
+  │                                                    │
+  │  1. 📸 Screenshot: 截取当前屏幕画面                 │
+  │         │                                          │
+  │         ▼                                          │
+  │  2. 👁️ Analyze: LLM 视觉分析画面                    │
+  │     - 识别窗口、按钮、文本框                        │
+  │     - 读取屏幕上的文字内容                          │
+  │     - 理解当前界面的状态                            │
+  │         │                                          │
+  │         ▼                                          │
+  │  3. 🤔 Decide: 决定下一步操作                       │
+  │     - 应该点击哪里？                                │
+  │     - 应该输入什么？                                │
+  │     - 是否需要滚动？                                │
+  │         │                                          │
+  │         ▼                                          │
+  │  4. 🖱️ Execute: 执行操作                            │
+  │     - mouse_move(x, y)                             │
+  │     - left_click()                                 │
+  │     - type("文本")                                 │
+  │     - scroll(direction)                            │
+  │     - key_press("Enter")                           │
+  │         │                                          │
+  │         ▼                                          │
+  │     回到步骤 1（直到任务完成）                       │
+  │                                                    │
+  └──────────────────────────────────────────────────┘</pre></div>
 <p>&nbsp;</p>
 <p>关键挑战：像素坐标的精确计算</p>
 <p>&nbsp;</p>

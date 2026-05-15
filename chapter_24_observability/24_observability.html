@@ -63,12 +63,26 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 pre */
+/* 架构图 / 流程图 */
+.diagram-box {
+  background: #1a1e2b; border-radius: 10px; overflow: hidden;
+  margin: 18px 0; border: 1px solid #2a3045;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+}
+.diagram-header {
+  background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
+  color: #8ab4f8; font-size: .85em; font-weight: 600;
+  padding: 8px 18px; letter-spacing: .5px;
+  border-bottom: 1px solid #3a4a6a;
+}
 .ascii-art {
-  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
-  padding: 16px 20px; overflow-x: auto; font-size: .82em;
-  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
-  border: 1px solid #e0e0ea;
+  background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
+  padding: 18px 22px; overflow-x: auto; font-size: .8em;
+  line-height: 1.3; margin: 0;
+  font-family: "JetBrains Mono","Fira Code","Cascadia Code","Consolas",monospace;
+  border: none; white-space: pre;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 目标/考点标签 */
@@ -217,7 +231,22 @@ body {
 <p>&nbsp;</p>
 <p>Trace 的核心数据结构：Span</p>
 <p>&nbsp;</p>
-<table><tr><th></th><th></th><th>├── model: gpt-4o-mini</th></tr><tr><td></td><td></td><td>├── input_tokens: 1250</td></tr><tr><td></td><td></td><td>├── output_tokens: 86</td></tr><tr><td></td><td></td><td>└── latency_ms: 1520</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (298 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">latency_ms</span><span class="code-badge code-badge-func">start_trace</span><span class="code-badge code-badge-func">span</span><span class="code-badge code-badge-func">log_llm_call</span><span class="code-badge code-badge-func">log_tool_call</span><span class="code-badge code-badge-func">get_trace</span><span class="code-badge code-badge-func">get_metrics</span><span class="code-badge code-badge-func">print_trace_tree</span><span class="code-badge code-badge-func">print_dashboard</span><span class="code-badge code-badge-func">demo_agent_tracing</span><span class="code-badge code-badge-class">TraceSpan</span><span class="code-badge code-badge-class">AgentTracer</span></div><div class="code-block"><pre><span class="k">import</span> time
+<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌──────────────────────────────────────────────┐
+  │                  Trace (根)                    │
+  │  ├── Span: Agent 步骤 1 (thinking)            │
+  │  │   ├── Span: LLM 调用                       │
+  │  │   │   ├── model: gpt-4o-mini              │
+  │  │   │   ├── input_tokens: 1250              │
+  │  │   │   ├── output_tokens: 86               │
+  │  │   │   └── latency_ms: 1520                │
+  │  │   └── Span: 工具调用                        │
+  │  │       ├── tool: search                    │
+  │  │       ├── args: {"query": "AI Agent"}      │
+  │  │       ├── result_summary: "找到5条结果"     │
+  │  │       └── latency_ms: 350                 │
+  │  ├── Span: Agent 步骤 2 (tool_call)           │
+  │  └── Span: Agent 步骤 3 (done)                │
+  └──────────────────────────────────────────────┘</pre></div></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (298 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">latency_ms</span><span class="code-badge code-badge-func">start_trace</span><span class="code-badge code-badge-func">span</span><span class="code-badge code-badge-func">log_llm_call</span><span class="code-badge code-badge-func">log_tool_call</span><span class="code-badge code-badge-func">get_trace</span><span class="code-badge code-badge-func">get_metrics</span><span class="code-badge code-badge-func">print_trace_tree</span><span class="code-badge code-badge-func">print_dashboard</span><span class="code-badge code-badge-func">demo_agent_tracing</span><span class="code-badge code-badge-class">TraceSpan</span><span class="code-badge code-badge-class">AgentTracer</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional

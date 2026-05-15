@@ -63,12 +63,26 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 pre */
+/* 架构图 / 流程图 */
+.diagram-box {
+  background: #1a1e2b; border-radius: 10px; overflow: hidden;
+  margin: 18px 0; border: 1px solid #2a3045;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+}
+.diagram-header {
+  background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
+  color: #8ab4f8; font-size: .85em; font-weight: 600;
+  padding: 8px 18px; letter-spacing: .5px;
+  border-bottom: 1px solid #3a4a6a;
+}
 .ascii-art {
-  background: #f0f0f5; color: #3a3a5c; border-radius: 8px;
-  padding: 16px 20px; overflow-x: auto; font-size: .82em;
-  line-height: 1.35; margin: 14px 0; font-family: "JetBrains Mono","Fira Code",monospace;
-  border: 1px solid #e0e0ea;
+  background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
+  padding: 18px 22px; overflow-x: auto; font-size: .8em;
+  line-height: 1.3; margin: 0;
+  font-family: "JetBrains Mono","Fira Code","Cascadia Code","Consolas",monospace;
+  border: none; white-space: pre;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 目标/考点标签 */
@@ -184,7 +198,32 @@ body {
 <p>&nbsp;</p>
 <p>Claude Code 的架构可以抽象为 4 个层次：</p>
 <p>&nbsp;</p>
-<table><tr><th>Layer 1: 用户交互层 (User Interaction Layer)</th></tr><tr><td>├─ CLI 界面 (REPL)</td></tr><tr><td>├─ VS Code 插件</td></tr><tr><td>├─ Web UI</td></tr><tr><td>└─ Claude Agent SDK (供开发者嵌入)</td></tr><tr><td>Layer 2: Agent 核心调度层 (Core Scheduling Layer)</td></tr><tr><td>├─ nO: 主 Agent 循环引擎（单线程）</td></tr><tr><td>├─ h2A: 异步双缓冲消息队列（实时 Steering）</td></tr><tr><td>├─ StreamGen: 流式输出管理</td></tr><tr><td>├─ ToolEngine: 工具调用编排器</td></tr><tr><td>└─ Compressor (wU2): 上下文压缩器</td></tr><tr><td>Layer 3: 工具执行与管理层 (Tool Execution Layer)</td></tr><tr><td>├─ Bash / Grep / View / Edit / Write 等基础工具</td></tr><tr><td>├─ Task 工具 → SubAgent 创建与管理</td></tr><tr><td>├─ MCP 工具集成（连接外部 MCP Server）</td></tr><tr><td>└─ 权限与安全控制 (Permission System)</td></tr><tr><td>Layer 4: 存储与持久化层 (Storage & Persistence)</td></tr><tr><td>├─ TODO 列表（短期任务管理）</td></tr><tr><td>├─ Markdown 文件（长期项目记忆）</td></tr><tr><td>├─ Git 集成（diff-based 工作流）</td></tr><tr><td>└─ 会话状态持久化</td></tr></table>
+<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">┌─────────────────────────────────────────────────────┐
+│  Layer 1: 用户交互层 (User Interaction Layer)         │
+│  ├─ CLI 界面 (REPL)                                  │
+│  ├─ VS Code 插件                                      │
+│  ├─ Web UI                                           │
+│  └─ Claude Agent SDK (供开发者嵌入)                   │
+├─────────────────────────────────────────────────────┤
+│  Layer 2: Agent 核心调度层 (Core Scheduling Layer)    │
+│  ├─ nO: 主 Agent 循环引擎（单线程）                    │
+│  ├─ h2A: 异步双缓冲消息队列（实时 Steering）          │
+│  ├─ StreamGen: 流式输出管理                           │
+│  ├─ ToolEngine: 工具调用编排器                        │
+│  └─ Compressor (wU2): 上下文压缩器                    │
+├─────────────────────────────────────────────────────┤
+│  Layer 3: 工具执行与管理层 (Tool Execution Layer)     │
+│  ├─ Bash / Grep / View / Edit / Write 等基础工具       │
+│  ├─ Task 工具 → SubAgent 创建与管理                   │
+│  ├─ MCP 工具集成（连接外部 MCP Server）               │
+│  └─ 权限与安全控制 (Permission System)                │
+├─────────────────────────────────────────────────────┤
+│  Layer 4: 存储与持久化层 (Storage & Persistence)      │
+│  ├─ TODO 列表（短期任务管理）                          │
+│  ├─ Markdown 文件（长期项目记忆）                      │
+│  ├─ Git 集成（diff-based 工作流）                     │
+│  └─ 会话状态持久化                                    │
+└─────────────────────────────────────────────────────┘</pre></div>
 <p>&nbsp;</p>
 <p>核心理念：「做简单的事」—— Markdown 代替数据库、正则代替向量搜索、</p>
 <pre>    单线程代替并行、平面消息代替复杂线程。</pre>
