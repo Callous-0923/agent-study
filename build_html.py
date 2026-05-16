@@ -65,7 +65,41 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
   background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
 }
-.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+.page-wrapper { display: flex; min-height: 100vh; }
+
+/* 侧边栏 TOC */
+.sidebar {
+  width: 240px; min-width: 240px; background: #0f172a; color: #e2e8f0;
+  padding: 24px 0; position: sticky; top: 0; height: 100vh;
+  overflow-y: auto; font-size: .85em; border-right: 1px solid #1e293b;
+}
+.sidebar-title {
+  font-weight: 700; font-size: 1.05em; padding: 0 18px 16px;
+  border-bottom: 1px solid #1e293b; margin-bottom: 12px; color: white;
+}
+.sidebar-title a { color: #8ab4f8; text-decoration: none; }
+.sidebar-title a:hover { text-decoration: underline; }
+.sidebar-layer {
+  padding: 6px 18px; margin-top: 8px; color: #64748b;
+  font-size: .78em; text-transform: uppercase; letter-spacing: .5px;
+}
+.sidebar-link {
+  display: block; padding: 5px 18px 5px 18px; color: #94a3b8;
+  text-decoration: none; border-left: 2px solid transparent;
+  transition: all .15s; font-size: .88em;
+}
+.sidebar-link:hover { color: #e2e8f0; background: rgba(255,255,255,.04); }
+.sidebar-link.active {
+  color: #60a5fa; background: rgba(96,165,250,.1);
+  border-left-color: #60a5fa; font-weight: 600;
+}
+
+/* 主内容区 */
+.main-content {
+  flex: 1; min-width: 0; padding: 40px 24px 80px;
+  max-width: calc(100vw - 240px);
+}
+.container { max-width: 900px; margin: 0 auto; }
 
 /* 标题 */
 .hero {
@@ -191,9 +225,21 @@ body {
 .code-badge-class { background: #1e3a5f; color: #dcdcaa; }
 .code-badge-const { background: #1e3a5f; color: #b5cea8; }
 
-/* 移动端 */
+/* 响应式 */
+@media (max-width: 960px) {
+  .sidebar { width: 200px; min-width: 200px; }
+  .main-content { max-width: calc(100vw - 200px); }
+}
+@media (max-width: 768px) {
+  .page-wrapper { flex-direction: column; }
+  .sidebar { width: 100%; min-width: auto; height: auto; max-height: 45vh;
+    position: static; display: none; }
+  .sidebar.open { display: block; }
+  .sidebar-toggle { display: flex; align-items: center; justify-content: center; }
+  .main-content { max-width: 100%; padding: 16px 10px 60px; }
+}
 @media (max-width: 640px) {
-  .container { padding: 16px 12px 60px; }
+  .container { padding: 0; }
   .hero { padding: 28px 18px; }
   .hero h1 { font-size: 1.4em; }
   .lecture { padding: 20px 16px; }
@@ -230,6 +276,15 @@ body {
 }
 .breadcrumb a { color: #667eea; text-decoration: none; }
 .breadcrumb a:hover { text-decoration: underline; }
+
+/* 移动端侧边栏开关 */
+.sidebar-toggle {
+  display: none; position: fixed; bottom: 20px; right: 20px; z-index: 200;
+  width: 44px; height: 44px; border-radius: 50%; background: #667eea;
+  color: white; border: none; font-size: 1.2em; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(102,126,234,.4);
+}
+@media (max-width: 768px) { .sidebar-toggle { display: flex; align-items: center; justify-content: center; } }
 """
 
 HEADER = """<!DOCTYPE html>
@@ -243,10 +298,43 @@ HEADER = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="container">
+<div class="page-wrapper">
 """
 
-FOOTER = """</div></body></html>"""
+FOOTER = """</div></div></div></body></html>"""
+
+
+SIDEBAR_LAYERS = [
+    ("第1层 理论基础", [0, 1, 2, 3]),
+    ("第2层 工程实践", [4, 5, 6, 7]),
+    ("第3层 深度技术", [8, 9, 10, 11, 12]),
+    ("第4层 工程化前沿", [13, 14, 15, 16, 17, 18]),
+    ("第5层 高级架构", [19, 20, 21, 22, 23, 24]),
+    ("第6层 基础补强", [25, 26, 27, 28]),
+    ("第7层 专家进阶", [29, 30, 31, 32, 33, 34, 35, 36]),
+]
+
+
+def _make_sidebar(current_ch: int) -> str:
+    # 生成侧边栏 TOC HTML
+    parts = ['<div class="sidebar" id="sidebar">']
+    parts.append('<div class="sidebar-title">'
+                 f'<a href="{BASE_URL}/index.html">🤖 AI Agent 全栈课程</a>'
+                 '</div>')
+    for layer_name, ch_nums in SIDEBAR_LAYERS:
+        parts.append(f'<div class="sidebar-layer">{layer_name}</div>')
+        for ch in ch_nums:
+            if ch in CHAPTERS:
+                dir_name, file_name, ch_title = CHAPTERS[ch]
+                active = ' active' if ch == current_ch else ''
+                parts.append(
+                    f'<a class="sidebar-link{active}"'
+                    f' href="{BASE_URL}/{dir_name}/{file_name}">'
+                    f'Ch{ch} {ch_title.split(" — ")[0][:18]}</a>'
+                )
+    parts.append('</div>')
+    parts.append('<button class="sidebar-toggle" onclick="document.getElementById(\'sidebar\').classList.toggle(\'open\')">☰</button>')
+    return "\n".join(parts)
 
 
 def _make_nav(ch_num: int) -> str:
@@ -266,7 +354,7 @@ def _make_nav(ch_num: int) -> str:
         parts.append('<span class="nav-link nav-disabled">← 已是第一章</span>')
 
     # 主页
-    parts.append(f'<a class="nav-link nav-home" href="{BASE_URL}/chapter_00_overview/00_course_overview.html">📖 课程主页</a>')
+    parts.append(f'<a class="nav-link nav-home" href="{BASE_URL}/index.html">📖 课程主页</a>')
 
     # 下一章
     if next_ch in CHAPTERS:
@@ -380,8 +468,11 @@ def build_html(filepath: str, output_path: str = None):
 
     # 面包屑 + 导航 + hero
     dir_name, file_name, ch_title = CHAPTERS.get(ch_num, ("", "", ""))
+    # 侧边栏
+    html += _make_sidebar(ch_num)
+    html += '<div class="main-content"><div class="container">'
     html += '<div class="breadcrumb">'
-    html += f'<a href="{BASE_URL}/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a>'
+    html += f'<a href="{BASE_URL}/index.html">📖 AI Agent 全栈课程</a>'
     html += f' &raquo; <strong>第{ch_num}章 {ch_title}</strong>'
     html += '</div>'
     html += _make_nav(ch_num)

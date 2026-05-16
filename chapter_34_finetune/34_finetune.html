@@ -11,7 +11,41 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
   background: #f8f9fa; color: #1a1a2e; line-height: 1.8;
 }
-.container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+.page-wrapper { display: flex; min-height: 100vh; }
+
+/* 侧边栏 TOC */
+.sidebar {
+  width: 240px; min-width: 240px; background: #0f172a; color: #e2e8f0;
+  padding: 24px 0; position: sticky; top: 0; height: 100vh;
+  overflow-y: auto; font-size: .85em; border-right: 1px solid #1e293b;
+}
+.sidebar-title {
+  font-weight: 700; font-size: 1.05em; padding: 0 18px 16px;
+  border-bottom: 1px solid #1e293b; margin-bottom: 12px; color: white;
+}
+.sidebar-title a { color: #8ab4f8; text-decoration: none; }
+.sidebar-title a:hover { text-decoration: underline; }
+.sidebar-layer {
+  padding: 6px 18px; margin-top: 8px; color: #64748b;
+  font-size: .78em; text-transform: uppercase; letter-spacing: .5px;
+}
+.sidebar-link {
+  display: block; padding: 5px 18px 5px 18px; color: #94a3b8;
+  text-decoration: none; border-left: 2px solid transparent;
+  transition: all .15s; font-size: .88em;
+}
+.sidebar-link:hover { color: #e2e8f0; background: rgba(255,255,255,.04); }
+.sidebar-link.active {
+  color: #60a5fa; background: rgba(96,165,250,.1);
+  border-left-color: #60a5fa; font-weight: 600;
+}
+
+/* 主内容区 */
+.main-content {
+  flex: 1; min-width: 0; padding: 40px 24px 80px;
+  max-width: calc(100vw - 240px);
+}
+.container { max-width: 900px; margin: 0 auto; }
 
 /* 标题 */
 .hero {
@@ -137,9 +171,21 @@ body {
 .code-badge-class { background: #1e3a5f; color: #dcdcaa; }
 .code-badge-const { background: #1e3a5f; color: #b5cea8; }
 
-/* 移动端 */
+/* 响应式 */
+@media (max-width: 960px) {
+  .sidebar { width: 200px; min-width: 200px; }
+  .main-content { max-width: calc(100vw - 200px); }
+}
+@media (max-width: 768px) {
+  .page-wrapper { flex-direction: column; }
+  .sidebar { width: 100%; min-width: auto; height: auto; max-height: 45vh;
+    position: static; display: none; }
+  .sidebar.open { display: block; }
+  .sidebar-toggle { display: flex; align-items: center; justify-content: center; }
+  .main-content { max-width: 100%; padding: 16px 10px 60px; }
+}
 @media (max-width: 640px) {
-  .container { padding: 16px 12px 60px; }
+  .container { padding: 0; }
   .hero { padding: 28px 18px; }
   .hero h1 { font-size: 1.4em; }
   .lecture { padding: 20px 16px; }
@@ -177,13 +223,69 @@ body {
 .breadcrumb a { color: #667eea; text-decoration: none; }
 .breadcrumb a:hover { text-decoration: underline; }
 
+/* 移动端侧边栏开关 */
+.sidebar-toggle {
+  display: none; position: fixed; bottom: 20px; right: 20px; z-index: 200;
+  width: 44px; height: 44px; border-radius: 50%; background: #667eea;
+  color: white; border: none; font-size: 1.2em; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(102,126,234,.4);
+}
+@media (max-width: 768px) { .sidebar-toggle { display: flex; align-items: center; justify-content: center; } }
+
 </style>
 </head>
 <body>
-<div class="container">
-<div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第34章 模型微调 for Function Calling — LoRA·成本收益对比</strong></div><div class="nav-bar">
+<div class="page-wrapper">
+<div class="sidebar" id="sidebar">
+<div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
+<div class="sidebar-layer">第1层 理论基础</div>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">Ch0 课程概览与环境搭建</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_01_fundamentals/01_hello_agent.html">Ch1 第一个 Agent</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_02_components/02_agent_components.html">Ch2 Agent 核心组件</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_03_types/03_agent_types.html">Ch3 Agent 类型分类</a>
+<div class="sidebar-layer">第2层 工程实践</div>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_04_frameworks/04_frameworks.html">Ch4 主流框架实战</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_05_multi_agent/05_multi_agent.html">Ch5 多智能体系统</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_06_evaluation/06_evaluation.html">Ch6 评估与测试</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_07_interview/07_interview_prep.html">Ch7 求职面试准备</a>
+<div class="sidebar-layer">第3层 深度技术</div>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html">Ch8 Claude Code 架构</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html">Ch9 RAG 深度剖析</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html">Ch10 MCP 协议详解</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html">Ch11 Tool Calling 底层</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_12_infrastructure/12_infrastructure.html">Ch12 Agent 生产基础设施</a>
+<div class="sidebar-layer">第4层 工程化前沿</div>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_13_fastapi/13_fastapi_agent_service.html">Ch13 FastAPI 服务化</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_14_sqlite/14_sqlite_agent_storage.html">Ch14 SQLite 持久化</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_15_a2a/15_a2a_protocol.html">Ch15 Google A2A 协议</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_16_memgpt/16_memgpt_letta.html">Ch16 MemGPT/Letta 记忆</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_17_computer_use/17_computer_use.html">Ch17 Computer Use</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_18_security/18_agent_security.html">Ch18 Agent 安全与护栏</a>
+<div class="sidebar-layer">第5层 高级架构</div>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_19_workflow_patterns/19_workflow_patterns.html">Ch19 Agentic Workflow 设</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_20_context_engineering/20_context_engineering.html">Ch20 Context Engineerin</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_21_streaming/21_streaming_architecture.html">Ch21 Streaming & 实时架构</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_22_dspy/22_dspy.html">Ch22 DSPy 自动优化</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_23_code_agents/23_code_agents.html">Ch23 代码 Agent 架构横评</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_24_observability/24_observability.html">Ch24 Agent 可观测性</a>
+<div class="sidebar-layer">第6层 基础补强</div>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_25_vectordb/25_vectordb.html">Ch25 向量数据库选型</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_26_model_routing/26_model_routing.html">Ch26 模型路由策略</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_27_prompt_eng/27_prompt_engineering.html">Ch27 Agent Prompt 工程</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_28_cache/28_cache.html">Ch28 语义缓存与 Token 优化</a>
+<div class="sidebar-layer">第7层 专家进阶</div>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_29_multimodal/29_multimodal.html">Ch29 Multi-Modal Agent</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_30_reliability/30_reliability.html">Ch30 Agent 可靠性工程</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_31_benchmarks/31_benchmarks.html">Ch31 Agent 评测体系深度</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_32_self_improving/32_self_improving.html">Ch32 Self-Improving Age</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_33_prompt_cache/33_prompt_cache.html">Ch33 Prompt Caching & 推</a>
+<a class="sidebar-link active" href="https://callous-0923.github.io/agent-study/chapter_34_finetune/34_finetune.html">Ch34 模型微调 for Function </a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_35_data_flywheel/35_data_flywheel.html">Ch35 数据飞轮</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_36_defense/36_defense.html">Ch36 Agent 纵深安全</a>
+</div>
+<button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button><div class="main-content"><div class="container"><div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/index.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第34章 模型微调 for Function Calling — LoRA·成本收益对比</strong></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_33_prompt_cache/33_prompt_cache.html" title="Prompt Caching & 推理优化 — Anthropic Cache·推测解码">← 第33章</a>
-<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_35_data_flywheel/35_data_flywheel.html" title="数据飞轮 — 从日志采集到自动改进的闭环">第35章 →</a>
 </div><div class="hero"><h1>第34章 模型微调 for Function Calling —— 用小模型做 Agent</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解什么时候值得微调一个 Agent 专用模型</span><span class="tag tag-goal">2. 掌握 LoRA 微调的基本概念和流程</span><span class="tag tag-goal">3. 了解 Function Calling 微调的数据准备方法</span><span class="tag tag-goal">4. 对比微调 vs 路由的成本收益</span><span class="tag tag-interview">🎤 「为什么不直接用大模型，还要微调？」</span><span class="tag tag-interview">🎤 「LoRA 是什么？怎么用在 Agent 上？」</span><span class="tag tag-interview">🎤 「微调后的小模型能替代 GPT-4o 吗？」</span></div><p>第34章：模型微调 for Function Calling —— 用小模型做 Agent</p>
 <p>=============================================================</p>
@@ -576,6 +678,6 @@ LoRA = Low-Rank Adaptation
     <span class="b">print</span>(<span class="s">"\n✅ 第34章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_33_prompt_cache/33_prompt_cache.html" title="Prompt Caching & 推理优化 — Anthropic Cache·推测解码">← 第33章</a>
-<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html">📖 课程主页</a>
+<a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_35_data_flywheel/35_data_flywheel.html" title="数据飞轮 — 从日志采集到自动改进的闭环">第35章 →</a>
-</div></div></body></html>
+</div></div></div></div></body></html>

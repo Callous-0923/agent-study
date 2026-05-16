@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent 全栈学习课程 — 36 章 · 7 层递进</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  background: #f5f6fa; color: #1a1a2e; line-height: 1.7;
+}
+
+/* Header */
+.hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #2d1b69 100%);
+  color: white; padding: 64px 32px; text-align: center;
+}
+.hero h1 { font-size: 2.2em; margin-bottom: 10px; letter-spacing: -0.5px; }
+.hero .subtitle { opacity: 0.8; font-size: 1.1em; margin-bottom: 20px; }
+.hero .badges { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.hero .badge {
+  background: rgba(255,255,255,.12); padding: 5px 16px; border-radius: 20px;
+  font-size: .85em; border: 1px solid rgba(255,255,255,.2);
+}
+
+/* Container */
+.container { max-width: 1000px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* Intro */
+.intro {
+  background: white; border-radius: 12px; padding: 28px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.05); margin-bottom: 32px;
+  text-align: center; font-size: 1.05em; color: #555;
+}
+
+/* Layer sections */
+.layer { margin-bottom: 36px; }
+.layer-title {
+  font-size: 1.15em; font-weight: 700; color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 10px 20px; border-radius: 8px 8px 0 0;
+}
+.layer-bg { background: white; border-radius: 0 0 8px 8px; box-shadow: 0 2px 10px rgba(0,0,0,.04); }
+.layer-bg table { width: 100%; border-collapse: collapse; }
+.layer-bg td { padding: 11px 16px; border-bottom: 1px solid #f1f1f5; font-size: .94em; }
+.layer-bg tr:last-child td { border-bottom: none; }
+.layer-bg a {
+  color: #667eea; text-decoration: none; font-weight: 600;
+}
+.layer-bg a:hover { text-decoration: underline; }
+.ch-num { color: #999; font-size: .85em; margin-right: 6px; }
+.ch-tech { color: #777; font-size: .85em; }
+
+/* Footer */
+.footer { text-align: center; color: #aaa; margin-top: 40px; font-size: .9em; }
+.footer a { color: #667eea; text-decoration: none; }
+
+/* Mobile */
+@media (max-width: 640px) {
+  .hero h1 { font-size: 1.4em; }
+  .hero { padding: 36px 18px; }
+  .container { padding: 20px 10px 60px; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🤖 AI Agent 全栈学习课程</h1>
+  <p class="subtitle">从零到一，系统掌握 AI Agent 核心理论与工程实践</p>
+  <div class="badges">
+    <span class="badge">📚 36 章节</span>
+    <span class="badge">🏗️ 7 层递进</span>
+    <span class="badge">🐍 Python 3.10+</span>
+    <span class="badge">📖 可运行讲义</span>
+    <span class="badge">🎓 面试导向</span>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="intro">
+  这是一套<strong>面向求职</strong>的 AI Agent 全栈学习课程，从 Agent 基础理论到 Claude Code 逆向工程、从 RAG 到 MCP/A2A 协议、从 DSPy 到生产可观测性，覆盖 36 个主题、7 个层次。每个章节都是<strong>可独立运行的 .py 文件</strong>，既是完整讲义，又是可执行代码。<br>
+  <strong>适合人群</strong>：应届毕业生、转行工程师、任何想系统学习 AI Agent 的开发者。
+</div>
+
+<div class="layer">
+  <div class="layer-title">第1层：Agent 理论基础 (Ch0-3)</div>
+  <div class="layer-bg"><table>
+    <tr><td><span class="ch-num">Ch0</span> <a href="chapter_00_overview/00_course_overview.html">课程概览与环境搭建</a> <span class="ch-tech">学习路线图 · 依赖安装 · API Key 配置</span></td></tr>
+    <tr><td><span class="ch-num">Ch1</span> <a href="chapter_01_fundamentals/01_hello_agent.html">第一个 Agent</a> <span class="ch-tech">裸写 ReAct 循环 · Function Calling 原理</span></td></tr>
+    <tr><td><span class="ch-num">Ch2</span> <a href="chapter_02_components/02_agent_components.html">Agent 核心组件</a> <span class="ch-tech">规划器 · 记忆系统 · 工具设计黄金法则</span></td></tr>
+    <tr><td><span class="ch-num">Ch3</span> <a href="chapter_03_types/03_agent_types.html">Agent 类型分类</a> <span class="ch-tech">ReAct · Plan-Execute · Reflexion 对比</span></td></tr>
+  </table></div>
+</div>
+
+<div class="layer">
+  <div class="layer-title">第2层：工程实践与框架 (Ch4-7)</div>
+  <div class="layer-bg"><table>
+    <tr><td><span class="ch-num">Ch4</span> <a href="chapter_04_frameworks/04_frameworks.html">主流框架实战</a> <span class="ch-tech">LangChain Agent · LangGraph 状态机</span></td></tr>
+    <tr><td><span class="ch-num">Ch5</span> <a href="chapter_05_multi_agent/05_multi_agent.html">多智能体系统</a> <span class="ch-tech">Writer+Reviewer 协作 · crewAI 风格</span></td></tr>
+    <tr><td><span class="ch-num">Ch6</span> <a href="chapter_06_evaluation/06_evaluation.html">评估与测试</a> <span class="ch-tech">评测框架 · LLM-as-Judge · 生产 Checklist</span></td></tr>
+    <tr><td><span class="ch-num">Ch7</span> <a href="chapter_07_interview/07_interview_prep.html">求职面试准备</a> <span class="ch-tech">20 道高频面试题 · 项目指南 · 面试流程</span></td></tr>
+  </table></div>
+</div>
+
+<div class="layer">
+  <div class="layer-title">第3层：深度技术剖析 (Ch8-12)</div>
+  <div class="layer-bg"><table>
+    <tr><td><span class="ch-num">Ch8</span> <a href="chapter_08_claude_code/08_claude_code_architecture.html">Claude Code 架构</a> <span class="ch-tech">nO 主循环 · h2A Steering · 上下文压缩 · SubAgent</span></td></tr>
+    <tr><td><span class="ch-num">Ch9</span> <a href="chapter_09_rag_deepdive/09_rag_deepdive.html">RAG 深度剖析</a> <span class="ch-tech">Naive→Advanced→GraphRAG→Agentic RAG</span></td></tr>
+    <tr><td><span class="ch-num">Ch10</span> <a href="chapter_10_mcp/10_mcp_deepdive.html">MCP 协议详解</a> <span class="ch-tech">JSON-RPC · 原语(Tools/Resources/Prompts) · 能力协商</span></td></tr>
+    <tr><td><span class="ch-num">Ch11</span> <a href="chapter_11_tool_calling/11_tool_calling_deepdive.html">Tool Calling 底层</a> <span class="ch-tech">OpenAI vs Anthropic · Streaming 组装 · Strict 模式</span></td></tr>
+    <tr><td><span class="ch-num">Ch12</span> <a href="chapter_12_infrastructure/12_infrastructure.html">Agent 生产基础设施</a> <span class="ch-tech">OpenClaw 架构 · Harness · 生产化 Checklist</span></td></tr>
+  </table></div>
+</div>
+
+<div class="layer">
+  <div class="layer-title">第4层：工程化与前沿 (Ch13-18)</div>
+  <div class="layer-bg"><table>
+    <tr><td><span class="ch-num">Ch13</span> <a href="chapter_13_fastapi/13_fastapi_agent_service.html">FastAPI 服务化</a> <span class="ch-tech">REST API · SSE 流式 · WebSocket · 生产部署</span></td></tr>
+    <tr><td><span class="ch-num">Ch14</span> <a href="chapter_14_sqlite/14_sqlite_agent_storage.html">SQLite 持久化</a> <span class="ch-tech">5 表 Schema · WAL 模式 · 审计查询</span></td></tr>
+    <tr><td><span class="ch-num">Ch15</span> <a href="chapter_15_a2a/15_a2a_protocol.html">Google A2A 协议</a> <span class="ch-tech">AgentCard · Task · Artifact · Multi-Agent 协作</span></td></tr>
+    <tr><td><span class="ch-num">Ch16</span> <a href="chapter_16_memgpt/16_memgpt_letta.html">MemGPT/Letta 记忆</a> <span class="ch-tech">Core Memory · Heartbeat · Sleep-Time Compute</span></td></tr>
+    <tr><td><span class="ch-num">Ch17</span> <a href="chapter_17_computer_use/17_computer_use.html">Computer Use</a> <span class="ch-tech">Screenshot-Action Loop · 坐标计算 · 安全沙箱</span></td></tr>
+    <tr><td><span class="ch-num">Ch18</span> <a href="chapter_18_security/18_agent_security.html">Agent 安全与护栏</a> <span class="ch-tech">Prompt Injection · 权限分级 · 4层防御</span></td></tr>
+  </table></div>
+</div>
+
+<div class="layer">
+  <div class="layer-title">第5层：高级架构与优化 (Ch19-24)</div>
+  <div class="layer-bg"><table>
+    <tr><td><span class="ch-num">Ch19</span> <a href="chapter_19_workflow_patterns/19_workflow_patterns.html">Agentic Workflow 设计模式</a> <span class="ch-tech">Reflection · Routing · Orchestrator-Worker 等 7 种</span></td></tr>
+    <tr><td><span class="ch-num">Ch20</span> <a href="chapter_20_context_engineering/20_context_engineering.html">Context Engineering</a> <span class="ch-tech">Context Rot · 预算管理 · XML 结构化 Prompt</span></td></tr>
+    <tr><td><span class="ch-num">Ch21</span> <a href="chapter_21_streaming/21_streaming_architecture.html">Streaming & 实时架构</a> <span class="ch-tech">EventBus · 动态中断 · 背压控制</span></td></tr>
+    <tr><td><span class="ch-num">Ch22</span> <a href="chapter_22_dspy/22_dspy.html">DSPy 自动优化</a> <span class="ch-tech">Signature→Module→Optimizer · 与 LangChain 互补</span></td></tr>
+    <tr><td><span class="ch-num">Ch23</span> <a href="chapter_23_code_agents/23_code_agents.html">代码 Agent 架构横评</a> <span class="ch-tech">CodeAct · ACI · Plan-Execute · SWE-bench</span></td></tr>
+    <tr><td><span class="ch-num">Ch24</span> <a href="chapter_24_observability/24_observability.html">Agent 可观测性</a> <span class="ch-tech">Tracing Span 树 · LangSmith vs LangFuse</span></td></tr>
+  </table></div>
+</div>
+
+<div class="layer">
+  <div class="layer-title">第6层：基础能力补强 (Ch25-28)</div>
+  <div class="layer-bg"><table>
+    <tr><td><span class="ch-num">Ch25</span> <a href="chapter_25_vectordb/25_vectordb.html">向量数据库选型</a> <span class="ch-tech">Chroma · Pinecone · Milvus · Qdrant</span></td></tr>
+    <tr><td><span class="ch-num">Ch26</span> <a href="chapter_26_model_routing/26_model_routing.html">模型路由策略</a> <span class="ch-tech">Threshold · Cascade · Semantic · Cost-Aware</span></td></tr>
+    <tr><td><span class="ch-num">Ch27</span> <a href="chapter_27_prompt_eng/27_prompt_engineering.html">Agent Prompt 工程</a> <span class="ch-tech">System Prompt 6 模块模板 · 工具描述评分卡</span></td></tr>
+    <tr><td><span class="ch-num">Ch28</span> <a href="chapter_28_cache/28_cache.html">语义缓存与 Token 优化</a> <span class="ch-tech">三级缓存 · Token 预算管理</span></td></tr>
+  </table></div>
+</div>
+
+<div class="layer">
+  <div class="layer-title">第7层：专家级进阶 (Ch29-36)</div>
+  <div class="layer-bg"><table>
+    <tr><td><span class="ch-num">Ch29</span> <a href="chapter_29_multimodal/29_multimodal.html">Multi-Modal Agent</a> <span class="ch-tech">视觉+文本联合推理 · Token 预算</span></td></tr>
+    <tr><td><span class="ch-num">Ch30</span> <a href="chapter_30_reliability/30_reliability.html">Agent 可靠性工程</a> <span class="ch-tech">熔断器 · 退避重试 · 幂等 · 降级</span></td></tr>
+    <tr><td><span class="ch-num">Ch31</span> <a href="chapter_31_benchmarks/31_benchmarks.html">Agent 评测体系深度</a> <span class="ch-tech">GAIA · AgentBench · WebArena · tau-bench</span></td></tr>
+    <tr><td><span class="ch-num">Ch32</span> <a href="chapter_32_self_improving/32_self_improving.html">Self-Improving Agent</a> <span class="ch-tech">Bad Case 收集→自动改 Prompt→评测验证</span></td></tr>
+    <tr><td><span class="ch-num">Ch33</span> <a href="chapter_33_prompt_cache/33_prompt_cache.html">Prompt Caching & 推理优化</a> <span class="ch-tech">Anthropic Cache · KV共享 · 推测解码</span></td></tr>
+    <tr><td><span class="ch-num">Ch34</span> <a href="chapter_34_finetune/34_finetune.html">模型微调 for Function Calling</a> <span class="ch-tech">LoRA · 微调数据准备 · 成本收益</span></td></tr>
+    <tr><td><span class="ch-num">Ch35</span> <a href="chapter_35_data_flywheel/35_data_flywheel.html">数据飞轮</a> <span class="ch-tech">交互采集→Bad Case识别→自动触发改进</span></td></tr>
+    <tr><td><span class="ch-num">Ch36</span> <a href="chapter_36_defense/36_defense.html">Agent 纵深安全</a> <span class="ch-tech">Canary Token · 分层隔离 · 行为沙箱</span></td></tr>
+  </table></div>
+</div>
+
+<div class="footer">
+  <p>⭐ <a href="https://github.com/Callous-0923/agent-study">GitHub</a> · MIT License · 持续更新中</p>
+</div>
+
+</div>
+</body>
+</html>
