@@ -343,7 +343,12 @@ client = OpenAI(
         response_format={<span class="s">"type"</span>: <span class="s">"json_object"</span>},
         temperature=<span class="n">0.3</span>,
     )
-    <span class="k">return</span> json.loads(response.choices[<span class="n">0</span>].message.content)</pre></div></details></div><div class="lecture"><p>2.1.1 Plan-Execute 规划器实战</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (33 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">plan_execute</span></div><div class="code-block"><pre><span class="k">import</span> os
+    <span class="k">return</span> json.loads(response.choices[<span class="n">0</span>].message.content)</pre></div></details></div><div class="lecture"><p>2.1.1 Plan-Execute 规划器 —— 先把计划列出来再执行</p>
+<p>为什么需要规划器？设想你让 Agent「帮我做一个市场调研报告」。</p>
+<p>这不是一步能完成的任务——需要查资料、分析数据、写报告多个步骤。</p>
+<p>如果每步都让 LLM 临时判断下一步做什么（纯 ReAct 模式），</p>
+<p>容易跑偏或遗漏步骤。Plan-Execute 的思想是「先列计划，再一步步执行」，</p>
+<p>就像项目管理中的甘特图——这也是面试中最常被问到的 Agent 设计模式之一。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (33 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">plan_execute</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -755,7 +760,7 @@ client = OpenAI(
         run_full_demo()
     <span class="k">except</span> Exception <span class="k">as</span> e:
         <span class="b">print</span>(f<span class="s">"\n⚠️ 综合演示需要 API Key，错误信息: {e}"</span>)
-        <span class="b">print</span>(<span class="s">"请确保 .env 文件配置正确后重试。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (488 行)</summary><div class="code-block"><pre><span class="s">"""
+        <span class="b">print</span>(<span class="s">"请确保 .env 文件配置正确后重试。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (493 行)</summary><div class="code-block"><pre><span class="s">"""
 第2章：Agent 核心组件深度解析
 =====================================
 
@@ -837,7 +842,12 @@ client = OpenAI(
 
 
 <span class="s">"""
-2.1.1 Plan-Execute 规划器实战
+2.1.1 Plan-Execute 规划器 —— 先把计划列出来再执行
+为什么需要规划器？设想你让 Agent「帮我做一个市场调研报告」。
+这不是一步能完成的任务——需要查资料、分析数据、写报告多个步骤。
+如果每步都让 LLM 临时判断下一步做什么（纯 ReAct 模式），
+容易跑偏或遗漏步骤。Plan-Execute 的思想是「先列计划，再一步步执行」，
+就像项目管理中的甘特图——这也是面试中最常被问到的 Agent 设计模式之一。
 """</span>
 
 

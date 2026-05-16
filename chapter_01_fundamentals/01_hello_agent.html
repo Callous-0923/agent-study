@@ -477,16 +477,34 @@ TOOL_MAP = {
     <span class="s">"calculate"</span>: calculate,
 }</pre></div></details></div><div class="lecture"><h2>1.3 手写 Agent 循环 —— 理解底层原理</h2>
 <p>&nbsp;</p>
-<p>这是本章最核心的部分！</p>
+<p>如果你只用过 LangChain 或 CrewAI 的现成 Agent，大概率不知道</p>
+<p>每次工具调用背后发生了什么。面试官常问：「Agent 循环的每一步</p>
+<p>分别做什么？」——这就是本节要讲的。</p>
 <p>&nbsp;</p>
-<p>每个 Agent 的运行本质上是一个循环：</p>
-<li>把用户消息发给 LLM</li>
+<p>每个 Agent 的运行本质上是一个循环，我们称之为「ReAct 循环」</p>
+<p>（Reasoning + Acting 的合成词）。这个名字来自一篇著名的论文，</p>
+<p>但别被术语吓到，它做的事情非常简单：</p>
+<p>&nbsp;</p>
+<p>循环的 4 个步骤：</p>
+<li>把用户消息发给 LLM（Think 阶段）</li>
 <li>LLM 判断：直接回答？还是需要调用工具？</li>
-<li>如果需要调用工具 → 执行工具 → 把结果发给 LLM，回到步骤 1</li>
-<li>如果可以回答 → 输出答案，结束</li>
+<pre> → 如果需要工具：进入第 3 步
+ → 如果可以回答：进入第 4 步</pre>
+<li>执行工具调用（Act 阶段）→ 把结果发回给 LLM → 回到步骤 1</li>
+<li>输出最终答案，结束循环</li>
 <p>&nbsp;</p>
-<p>这个循环被称为 ReAct 循环（Reasoning + Acting），</p>
-<p>是 LangChain / AutoGPT / crewAI 等所有框架的底层逻辑。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (92 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run_agent</span></div><div class="code-block"><pre><span class="k">import</span> os
+<p>为什么需要一个循环？因为 LLM 可能需要调用多次工具：</p>
+<p>「北京和深圳哪个更热？」这个看似简单的问题，Agent 需要：</p>
+<p>第1轮 LLM → 判断需要 get_weather("北京")</p>
+<p>第2轮 LLM → 拿到北京天气后，还需要 get_weather("深圳")</p>
+<p>第3轮 LLM → 比较两个城市的温度 → 给出最终回答</p>
+<p>&nbsp;</p>
+<p>这就是 ReAct 循环的核心价值——不是单次推理，而是</p>
+<p>「推理 → 行动 → 观察 → 再推理」的持续过程。</p>
+<p>&nbsp;</p>
+<p>面试速记：</p>
+<p>ReAct = Reasoning + Acting</p>
+<p>本质 = 一个 while 循环，每轮 LLM 决定「说什么」还是「调什么工具」</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (92 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run_agent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -644,7 +662,7 @@ TEST_CASES = [
 
 
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
-    main()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (375 行)</summary><div class="code-block"><pre><span class="s">"""
+    main()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (393 行)</summary><div class="code-block"><pre><span class="s">"""
 第1章：AI Agent 基础概念 —— 从 LLM 调用到第一个 Agent
 =====================================================
 
@@ -855,16 +873,34 @@ TOOL_MAP = {
 1.3 手写 Agent 循环 —— 理解底层原理
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-这是本章最核心的部分！
+如果你只用过 LangChain 或 CrewAI 的现成 Agent，大概率不知道
+每次工具调用背后发生了什么。面试官常问：「Agent 循环的每一步
+分别做什么？」——这就是本节要讲的。
 
-每个 Agent 的运行本质上是一个循环：
-  1. 把用户消息发给 LLM
+每个 Agent 的运行本质上是一个循环，我们称之为「ReAct 循环」
+（Reasoning + Acting 的合成词）。这个名字来自一篇著名的论文，
+但别被术语吓到，它做的事情非常简单：
+
+循环的 4 个步骤：
+  1. 把用户消息发给 LLM（Think 阶段）
   2. LLM 判断：直接回答？还是需要调用工具？
-  3. 如果需要调用工具 → 执行工具 → 把结果发给 LLM，回到步骤 1
-  4. 如果可以回答 → 输出答案，结束
+     → 如果需要工具：进入第 3 步
+     → 如果可以回答：进入第 4 步
+  3. 执行工具调用（Act 阶段）→ 把结果发回给 LLM → 回到步骤 1
+  4. 输出最终答案，结束循环
 
-这个循环被称为 ReAct 循环（Reasoning + Acting），
-是 LangChain / AutoGPT / crewAI 等所有框架的底层逻辑。
+为什么需要一个循环？因为 LLM 可能需要调用多次工具：
+  「北京和深圳哪个更热？」这个看似简单的问题，Agent 需要：
+  第1轮 LLM → 判断需要 get_weather("北京")
+  第2轮 LLM → 拿到北京天气后，还需要 get_weather("深圳")
+  第3轮 LLM → 比较两个城市的温度 → 给出最终回答
+
+这就是 ReAct 循环的核心价值——不是单次推理，而是
+「推理 → 行动 → 观察 → 再推理」的持续过程。
+
+面试速记：
+  ReAct = Reasoning + Acting
+  本质 = 一个 while 循环，每轮 LLM 决定「说什么」还是「调什么工具」
 """</span>
 
 

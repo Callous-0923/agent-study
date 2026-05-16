@@ -80,7 +80,12 @@ def call_llm_with_json(prompt: str, system_msg: str = "") -> dict:
 
 
 """
-2.1.1 Plan-Execute 规划器实战
+2.1.1 Plan-Execute 规划器 —— 先把计划列出来再执行
+为什么需要规划器？设想你让 Agent「帮我做一个市场调研报告」。
+这不是一步能完成的任务——需要查资料、分析数据、写报告多个步骤。
+如果每步都让 LLM 临时判断下一步做什么（纯 ReAct 模式），
+容易跑偏或遗漏步骤。Plan-Execute 的思想是「先列计划，再一步步执行」，
+就像项目管理中的甘特图——这也是面试中最常被问到的 Agent 设计模式之一。
 """
 
 

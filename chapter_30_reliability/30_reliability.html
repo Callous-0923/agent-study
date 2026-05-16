@@ -297,17 +297,32 @@ body {
 <p>&nbsp;</p>
 <h2>30.1 Agent 为什么需要专门的可靠性？</h2>
 <p>&nbsp;</p>
-<p>传统 API 的故障模式：</p>
-<li>超时 → 重试</li>
-<li>500 → 降级</li>
+<p>传统 API 的故障模式很单纯：</p>
+<li>超时 → 重试就好</li>
+<li>返回 500 → 降级处理就好</li>
 <p>&nbsp;</p>
-<p>Agent 特有的故障模式：</p>
+<p>但 Agent 系统的故障模式完全不同，更复杂、更危险。因为 Agent</p>
+<p>不是「一个请求走完就结束」的模式——它是多轮迭代的思考过程。</p>
+<p>&nbsp;</p>
+<p>Agent 特有的 4 大故障模式（面试必问）：</p>
 <li>LLM 返回幻觉参数 → 工具执行报错</li>
-<li>Agent 陷入死循环 → 无限消耗 Token</li>
-<li>工具调用雪崩 → 一个失败导致后续全部失败</li>
-<li>上下文爆炸 → 对话历史过长 → LLM 行为异常</li>
+<pre> 例如 LLM 把订单号 "ORD-123" 理解成 "ORD_123"，工具找不到这个订单。
+ 这在传统 API 中不存在——传统 API 的参数都是程序传入的，不会「猜错」。</pre>
 <p>&nbsp;</p>
-<p>可靠性 = 系统在故障下仍能提供「可接受」的服务。</p>
+<li>Agent 陷入死循环 → 无限消耗 Token</li>
+<pre> 例如 LLM 反复调用 search_weather → 每次都说「没找到」→ 再调一遍。
+ 一个死循环可能几分钟烧掉 $10 的 API 费用。传统 API 不存在「自己调用自己」的循环。</pre>
+<p>&nbsp;</p>
+<li>工具调用雪崩 → 一个失败导致后续全部失败</li>
+<pre> Agent 先调 search_db，超时了。LLM 拿到超时结果，又调了另一个搜索工具。
+ 此时上下文被大量失败信息污染，后续判断全偏了。</pre>
+<p>&nbsp;</p>
+<li>上下文爆炸 → 对话历史过长 → LLM 行为异常</li>
+<pre> 经过 20 轮工具调用后，messages 数组里堆满了 tool_call 和 tool_result。
+ 超过 LLM 上下文窗口后，Agent 可能丢失关键信息。</pre>
+<p>&nbsp;</p>
+<p>可靠性的核心定义：系统在故障下仍能提供「可接受」的服务。</p>
+<p>对于 Agent 来说，可接受意味着：不进入死循环、不重复扣费、不丢失关键信息。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>30.2 熔断器 (Circuit Breaker)</h2>
@@ -590,7 +605,7 @@ body {
         <span class="s">"超时: LLM 60s / Tool 30s"</span>,
     ]:
         <span class="b">print</span>(f<span class="s">"  ✅ {item}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第30章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (344 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第30章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (359 行)</summary><div class="code-block"><pre><span class="s">"""
 第30章：Agent 可靠性工程 —— 在生产环境中活下来
 ===============================================
 
@@ -613,17 +628,32 @@ body {
 30.1 Agent 为什么需要专门的可靠性？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-传统 API 的故障模式：
-  - 超时 → 重试
-  - 500 → 降级
+传统 API 的故障模式很单纯：
+  - 超时 → 重试就好
+  - 返回 500 → 降级处理就好
 
-Agent 特有的故障模式：
-  - LLM 返回幻觉参数 → 工具执行报错
-  - Agent 陷入死循环 → 无限消耗 Token
-  - 工具调用雪崩 → 一个失败导致后续全部失败
-  - 上下文爆炸 → 对话历史过长 → LLM 行为异常
+但 Agent 系统的故障模式完全不同，更复杂、更危险。因为 Agent
+不是「一个请求走完就结束」的模式——它是多轮迭代的思考过程。
 
-可靠性 = 系统在故障下仍能提供「可接受」的服务。
+Agent 特有的 4 大故障模式（面试必问）：
+  1. LLM 返回幻觉参数 → 工具执行报错
+     例如 LLM 把订单号 "ORD-123" 理解成 "ORD_123"，工具找不到这个订单。
+     这在传统 API 中不存在——传统 API 的参数都是程序传入的，不会「猜错」。
+
+  2. Agent 陷入死循环 → 无限消耗 Token
+     例如 LLM 反复调用 search_weather → 每次都说「没找到」→ 再调一遍。
+     一个死循环可能几分钟烧掉 $10 的 API 费用。传统 API 不存在「自己调用自己」的循环。
+
+  3. 工具调用雪崩 → 一个失败导致后续全部失败
+     Agent 先调 search_db，超时了。LLM 拿到超时结果，又调了另一个搜索工具。
+     此时上下文被大量失败信息污染，后续判断全偏了。
+
+  4. 上下文爆炸 → 对话历史过长 → LLM 行为异常
+     经过 20 轮工具调用后，messages 数组里堆满了 tool_call 和 tool_result。
+     超过 LLM 上下文窗口后，Agent 可能丢失关键信息。
+
+可靠性的核心定义：系统在故障下仍能提供「可接受」的服务。
+对于 Agent 来说，可接受意味着：不进入死循环、不重复扣费、不丢失关键信息。
 
 
 30.2 熔断器 (Circuit Breaker)

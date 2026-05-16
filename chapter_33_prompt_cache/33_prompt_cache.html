@@ -299,29 +299,36 @@ body {
 <p>&nbsp;</p>
 <table><tr><th>层</th><th>原理</th><th>命中率</th><th>节省幅度</th></tr><tr><td>L1: 语义缓存</td><td>相似查询匹配</td><td>30-50%</td><td>100%</td></tr><tr><td>L2: Prompt Caching</td><td>相同前缀重用</td><td>60-90%</td><td>90%</td></tr><tr><td>L3: KV-Cache 共享</td><td>跨请求共享状态</td><td>取决于场景</td><td>50-80%</td></tr></table>
 <p>&nbsp;</p>
-<h2>33.2 Anthropic Prompt Caching</h2>
+<h2>33.2 Anthropic Prompt Caching —— 90% 节省的秘密</h2>
 <p>&nbsp;</p>
-<p>本质：对 System Prompt 和长上下文做缓存。</p>
+<p>如果你用过 Anthropic API，会发现一个奇怪的现象：即使给 Claude 发送</p>
+<p>完全相同的 System Prompt（比如「你是一个客服助手...」），每次请求</p>
+<p>都会完整计费这段文本的 Token。这就像每次打开 YouTube 都重新下载</p>
+<p>整个网页——明明大部分内容没变。</p>
 <p>&nbsp;</p>
-<p>工作原理：</p>
-<li>标记需要缓存的 content block（加上 cache_control）</li>
-<li>相同前缀的请求，Claude 跳过重复的编码计算</li>
+<p>Anthropic Prompt Caching 解决的就是这个问题。</p>
+<p>&nbsp;</p>
+<p>本质：对 System Prompt 和长上下文做缓存，多次调用时只计费「新增内容」。</p>
+<p>&nbsp;</p>
+<p>工作流程（三步）：</p>
+<li>在你的 content block 中加上 cache_control 标记</li>
+<pre> → 告诉 Claude：「这段内容以后可能会重复用」</pre>
+<li>下一次请求如果包含相同前缀，Claude 跳过重复的编码计算</li>
+<pre> → 不需要重新把 System Prompt 转成向量</pre>
 <li>输入 Token 费用降低 90%</li>
+<pre> → 10 万 Token 的 System Prompt 从 $0.30 降到 $0.03</pre>
 <p>&nbsp;</p>
-<p>使用示例：</p>
-<p>response = client.beta.prompt_caching.messages.create(</p>
-<pre>  model="claude-sonnet-4-20250514",
-  system=[{
-      "type": "text",
-      "text": system_prompt,
-      "cache_control": {"type": "ephemeral"},  ← 标记缓存
-  }],
-  messages=[...],</pre>
-<p>)</p>
+<p>关键限制：</p>
+<li>最少 1024 tokens 才能被缓存（太短不值得）</li>
+<li>缓存 TTL: 5 分钟（没有活跃使用会自动失效）</li>
+<li>目前仅 Anthropic 原生支持，OpenAI 有类似机制但不完全相同</li>
 <p>&nbsp;</p>
-<p>缓存 min_token 要求：</p>
-<li>最少 1024 tokens 才能被缓存</li>
-<li>缓存 TTL: 5 分钟（无活跃使用则失效）</li>
+<p>这对 Agent 意味着什么？</p>
+<p>如果你的 Agent 有 5000 Token 的 System Prompt + Tool Definitions，</p>
+<p>每轮对话每次都计费这 5000 Token。假设每天 10000 次调用：</p>
+<li>无缓存：5000 × 10000 × $0.000003 = $150/天（仅前缀部分）</li>
+<li>有缓存：5000 × 1 × $0.000003（首次）+ 用户Token × 9999 次 ≈ $4.5/天</li>
+<p>→ 节省了 97% 的前缀成本</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>33.3 什么时候用 Prompt Caching？</h2>
@@ -467,7 +474,7 @@ body {
         (<span class="s">"L3 KV-Cache 共享"</span>, <span class="s">"跨请求状态共享，50-80% 节省"</span>),
     ]:
         <span class="b">print</span>(f<span class="s">"  {name:18s} → {benefit}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第33章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (214 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第33章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (221 行)</summary><div class="code-block"><pre><span class="s">"""
 第33章：Prompt Caching &amp; 推理优化 —— 省钱的工程手段
 =====================================================
 
@@ -498,30 +505,37 @@ body {
 │ L3: KV-Cache 共享 │ 跨请求共享状态  │ 取决于场景 │ 50-80%   │
 └──────────────────┴──────────────┴──────────┴──────────┘
 
-33.2 Anthropic Prompt Caching
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33.2 Anthropic Prompt Caching —— 90% 节省的秘密
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-本质：对 System Prompt 和长上下文做缓存。
+如果你用过 Anthropic API，会发现一个奇怪的现象：即使给 Claude 发送
+完全相同的 System Prompt（比如「你是一个客服助手...」），每次请求
+都会完整计费这段文本的 Token。这就像每次打开 YouTube 都重新下载
+整个网页——明明大部分内容没变。
 
-工作原理：
-  1. 标记需要缓存的 content block（加上 cache_control）
-  2. 相同前缀的请求，Claude 跳过重复的编码计算
+Anthropic Prompt Caching 解决的就是这个问题。
+
+本质：对 System Prompt 和长上下文做缓存，多次调用时只计费「新增内容」。
+
+工作流程（三步）：
+  1. 在你的 content block 中加上 cache_control 标记
+     → 告诉 Claude：「这段内容以后可能会重复用」
+  2. 下一次请求如果包含相同前缀，Claude 跳过重复的编码计算
+     → 不需要重新把 System Prompt 转成向量
   3. 输入 Token 费用降低 90%
+     → 10 万 Token 的 System Prompt 从 $0.30 降到 $0.03
 
-使用示例：
-  response = client.beta.prompt_caching.messages.create(
-      model="claude-sonnet-4-20250514",
-      system=[{
-          "type": "text",
-          "text": system_prompt,
-          "cache_control": {"type": "ephemeral"},  ← 标记缓存
-      }],
-      messages=[...],
-  )
+关键限制：
+  - 最少 1024 tokens 才能被缓存（太短不值得）
+  - 缓存 TTL: 5 分钟（没有活跃使用会自动失效）
+  - 目前仅 Anthropic 原生支持，OpenAI 有类似机制但不完全相同
 
-缓存 min_token 要求：
-  - 最少 1024 tokens 才能被缓存
-  - 缓存 TTL: 5 分钟（无活跃使用则失效）
+这对 Agent 意味着什么？
+  如果你的 Agent 有 5000 Token 的 System Prompt + Tool Definitions，
+  每轮对话每次都计费这 5000 Token。假设每天 10000 次调用：
+  - 无缓存：5000 × 10000 × $0.000003 = $150/天（仅前缀部分）
+  - 有缓存：5000 × 1 × $0.000003（首次）+ 用户Token × 9999 次 ≈ $4.5/天
+  → 节省了 97% 的前缀成本
 
 
 33.3 什么时候用 Prompt Caching？

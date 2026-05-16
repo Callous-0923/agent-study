@@ -295,25 +295,30 @@ body {
 <p>数据飞轮 = 今天的数据 → 明天的改进 → 后天更好的数据</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>35.1 什么是数据飞轮？</h2>
+<h2>35.1 什么是数据飞轮？—— 和传统开发的本质区别</h2>
 <p>&nbsp;</p>
-<p>传统开发：发布 → 等待反馈 → 人工分析 → 手动改进 → 再发布</p>
-<p>周期：周/月级别</p>
+<p>传统软件开发是「大爆炸」模式：开发 → 测试 → 发布 → 等反馈 → 手动分析 → 手动改进 → 再发布。一个改进周期可能需要数周甚至数月。</p>
 <p>&nbsp;</p>
-<p>数据飞轮：发布 → 自动采集 → 自动分析 → 自动改进 → 自动验证</p>
-<p>周期：天/小时级别</p>
+<p>数据飞轮（Data Flywheel）是一种不同的哲学：让系统自己从交互中学习。</p>
 <p>&nbsp;</p>
-<p>飞轮的核心组件：</p>
+<p>飞轮这个名字来自亚马逊的经典理念。在 Agent 语境下它的意思是：</p>
+<p>今天的用户交互数据 → 明天就能驱动系统改进 → 后天产生更好的交互数据</p>
+<p>→ 循环往复，像飞轮一样越转越快</p>
 <p>&nbsp;</p>
-<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌──────────────────────────────────────────────┐
-  │                                                │
-  │  用户交互 → 日志采集 → Bad Case 识别            │
-  │      ↑                        ↓                │
-  │      │                LLM 自动标注               │
-  │      │                        ↓                │
-  │      └──── 评测验证 ← 改进注入                  │
-  │                                                │
-  └──────────────────────────────────────────────┘</pre></div></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (141 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">log_interaction</span><span class="code-badge code-badge-func">get_stats</span><span class="code-badge code-badge-func">export_bad_cases</span><span class="code-badge code-badge-func">demo_flywheel</span><span class="code-badge code-badge-class">DataFlywheel</span></div><div class="code-block"><pre><span class="k">import</span> json
+<p>这和传统开发的关键区别在于「谁来做分析」：</p>
+<li>传统：人工看日志 → 人工写改进 → 人工测试 → 人工发布</li>
+<li>飞轮：系统自动采日志 → LLM 自动标注 Bad Case → 自动触发优化</li>
+<pre>       → 自动回归评测 → 自动部署</pre>
+<p>&nbsp;</p>
+<p>飞轮的四阶段：</p>
+<li>采集 —— 记录每一次用户交互 + 评分 + 反馈文字</li>
+<li>标注 —— LLM 自动判断哪些是 Bad Case、归类问题类型</li>
+<li>改进 —— 触发对应场景的 Prompt 优化或路由调整</li>
+<li>验证 —— 跑回归评测确认改进有效才发布</li>
+<p>&nbsp;</p>
+<p>为什么这样做很有价值？因为 Agent 的「质量」不是静态的——</p>
+<p>Prompt 改了、工具变了、用户行为变了，Agent 的表现都可能退化。</p>
+<p>飞轮让质量监控变成自动化、持续化的过程，而不是等用户投诉才知道出问题。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (141 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">log_interaction</span><span class="code-badge code-badge-func">get_stats</span><span class="code-badge code-badge-func">export_bad_cases</span><span class="code-badge code-badge-func">demo_flywheel</span><span class="code-badge code-badge-class">DataFlywheel</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> collections <span class="k">import</span> defaultdict
@@ -453,7 +458,7 @@ body {
         (<span class="s">"4. 验证"</span>, <span class="s">"回归评测 → 确认改进 → 发布"</span>),
     ]:
         <span class="b">print</span>(f<span class="s">"  {stage:8s} → {desc}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第35章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (184 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第35章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (189 行)</summary><div class="code-block"><pre><span class="s">"""
 第35章：数据飞轮 —— 让 Agent 越用越好
 ======================================
 
@@ -473,26 +478,31 @@ body {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-35.1 什么是数据飞轮？
-━━━━━━━━━━━━━━━━━━━
+35.1 什么是数据飞轮？—— 和传统开发的本质区别
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-传统开发：发布 → 等待反馈 → 人工分析 → 手动改进 → 再发布
-  周期：周/月级别
+传统软件开发是「大爆炸」模式：开发 → 测试 → 发布 → 等反馈 → 手动分析 → 手动改进 → 再发布。一个改进周期可能需要数周甚至数月。
 
-数据飞轮：发布 → 自动采集 → 自动分析 → 自动改进 → 自动验证
-  周期：天/小时级别
+数据飞轮（Data Flywheel）是一种不同的哲学：让系统自己从交互中学习。
 
-飞轮的核心组件：
+飞轮这个名字来自亚马逊的经典理念。在 Agent 语境下它的意思是：
+  今天的用户交互数据 → 明天就能驱动系统改进 → 后天产生更好的交互数据
+  → 循环往复，像飞轮一样越转越快
 
-  ┌──────────────────────────────────────────────┐
-  │                                                │
-  │  用户交互 → 日志采集 → Bad Case 识别            │
-  │      ↑                        ↓                │
-  │      │                LLM 自动标注               │
-  │      │                        ↓                │
-  │      └──── 评测验证 ← 改进注入                  │
-  │                                                │
-  └──────────────────────────────────────────────┘
+这和传统开发的关键区别在于「谁来做分析」：
+  - 传统：人工看日志 → 人工写改进 → 人工测试 → 人工发布
+  - 飞轮：系统自动采日志 → LLM 自动标注 Bad Case → 自动触发优化
+           → 自动回归评测 → 自动部署
+
+飞轮的四阶段：
+  1. 采集 —— 记录每一次用户交互 + 评分 + 反馈文字
+  2. 标注 —— LLM 自动判断哪些是 Bad Case、归类问题类型
+  3. 改进 —— 触发对应场景的 Prompt 优化或路由调整
+  4. 验证 —— 跑回归评测确认改进有效才发布
+
+为什么这样做很有价值？因为 Agent 的「质量」不是静态的——
+Prompt 改了、工具变了、用户行为变了，Agent 的表现都可能退化。
+飞轮让质量监控变成自动化、持续化的过程，而不是等用户投诉才知道出问题。
 """</span>
 
 <span class="k">import</span> json

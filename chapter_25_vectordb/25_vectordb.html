@@ -334,8 +334,36 @@ body {
 <p>&nbsp;</p>
 <h2>25.3 Embedding 策略 —— 被忽视的关键</h2>
 <p>&nbsp;</p>
-<p>Embedding 模型选择：</p>
-<table><tr><th>模型</th><th>维度</th><th>语言</th><th>适合场景</th></tr><tr><td>text-embedding-3-small</td><td>512/1536</td><td>多语言</td><td>通用 RAG</td></tr><tr><td>text-embedding-3-large</td><td>256/3072</td><td>多语言</td><td>高精度</td></tr><tr><td>bge-large-zh-v1.5</td><td>1024</td><td>中文优先</td><td>中文 RAG</td></tr><tr><td>all-MiniLM-L6-v2</td><td>384</td><td>英文</td><td>轻量原型</td></tr><tr><td>Cohere Embed v3</td><td>1024</td><td>多语言</td><td>企业级</td></tr></table>
+<p>大多数人只关注「选什么向量数据库」，但真正的性能瓶颈往往</p>
+<p>不在数据库本身，而在 Embedding 策略。选错 Embedding 模型，</p>
+<p>再好的数据库也救不回来。</p>
+<p>&nbsp;</p>
+<p>一个类比帮你理解：向量数据库 = 书架，Embedding 模型 = 你如何</p>
+<p>给书上标签。如果你标签贴错了（中文书用英文模型），或者标签不清晰</p>
+<p>（维度太低），找书时必然混乱。</p>
+<p>&nbsp;</p>
+<p>维度选择的权衡（面试高频）：</p>
+<p>高维度（1536/3072）：</p>
+<pre>优点：更精准的语义表示，能捕捉细微差别
+缺点：存储 > 2x，检索速度慢 2-4x，Embedding API 费用高
+</pre>
+<p>低维度（384/512）：</p>
+<pre>优点：存储小，检索快，API 费低
+缺点：语义精度下降，复杂查询可能匹配不准</pre>
+<p>&nbsp;</p>
+<p>→ 工业界的经验法则：RAG 用 512-1024 维度足够；</p>
+<pre>极其复杂的语义匹配场景才需要 1536-3072。
+</pre>
+<p>为什么？因为实际 RAG 系统里，检索只是第一步，后面还有</p>
+<p>重排序（reranking）和 LLM 生成两个环节来修正检索误差。</p>
+<p>多花 2 倍的成本追求检索完美，不如花在后续环节。</p>
+<p>&nbsp;</p>
+<p>批量优化的工程技巧：</p>
+<p>单个请求发送 Embedding 是最大的浪费。</p>
+<p>text-embedding-3 系列支持一次发送最多 2048 篇文档，</p>
+<p>速度和成本都优化到 1/10。但你需要注意不要超过 API limits。</p>
+<pre class="ascii-art">  │ Cohere Embed v3       │ 1024     │ 多语言    │ 企业级    │
+  └──────────────────────┴──────────┴──────────┴──────────┘</pre>
 <p>&nbsp;</p>
 <p>维度对性能的影响：</p>
 <li>384 维：检索速度快 3x，召回率约 85%</li>
@@ -631,7 +659,7 @@ body {
         <span class="s">"已有PG/Redis → pgvector"</span>,
     ]:
         <span class="b">print</span>(f<span class="s">"  {item}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第25章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (387 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第25章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (407 行)</summary><div class="code-block"><pre><span class="s">"""
 第25章：向量数据库选型与实战 —— Agent 记忆与 RAG 的底座
 ============================================================
 
@@ -703,14 +731,34 @@ body {
 25.3 Embedding 策略 —— 被忽视的关键
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Embedding 模型选择：
-  ┌──────────────────────┬──────────┬──────────┬──────────┐
-  │ 模型                  │ 维度      │ 语言      │ 适合场景  │
-  ├──────────────────────┼──────────┼──────────┼──────────┤
-  │ text-embedding-3-small│ 512/1536 │ 多语言    │ 通用 RAG  │
-  │ text-embedding-3-large│ 256/3072 │ 多语言    │ 高精度    │
-  │ bge-large-zh-v1.5     │ 1024     │ 中文优先  │ 中文 RAG  │
-  │ all-MiniLM-L6-v2      │ 384      │ 英文      │ 轻量原型  │
+大多数人只关注「选什么向量数据库」，但真正的性能瓶颈往往
+不在数据库本身，而在 Embedding 策略。选错 Embedding 模型，
+再好的数据库也救不回来。
+
+一个类比帮你理解：向量数据库 = 书架，Embedding 模型 = 你如何
+给书上标签。如果你标签贴错了（中文书用英文模型），或者标签不清晰
+（维度太低），找书时必然混乱。
+
+维度选择的权衡（面试高频）：
+  高维度（1536/3072）：
+    优点：更精准的语义表示，能捕捉细微差别
+    缺点：存储 &gt; 2x，检索速度慢 2-4x，Embedding API 费用高
+    
+  低维度（384/512）：
+    优点：存储小，检索快，API 费低
+    缺点：语义精度下降，复杂查询可能匹配不准
+
+  → 工业界的经验法则：RAG 用 512-1024 维度足够；
+    极其复杂的语义匹配场景才需要 1536-3072。
+    
+  为什么？因为实际 RAG 系统里，检索只是第一步，后面还有
+  重排序（reranking）和 LLM 生成两个环节来修正检索误差。
+  多花 2 倍的成本追求检索完美，不如花在后续环节。
+
+批量优化的工程技巧：
+  单个请求发送 Embedding 是最大的浪费。
+  text-embedding-3 系列支持一次发送最多 2048 篇文档，
+  速度和成本都优化到 1/10。但你需要注意不要超过 API limits。
   │ Cohere Embed v3       │ 1024     │ 多语言    │ 企业级    │
   └──────────────────────┴──────────┴──────────┴──────────┘
 
