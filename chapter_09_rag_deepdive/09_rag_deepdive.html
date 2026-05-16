@@ -315,9 +315,9 @@ body {
 <p>&nbsp;</p>
 <p>Naive RAG 的问题（面试常问！）:</p>
 <li>检索不准：语义相似 ≠ 问题相关</li>
-<pre>2. 上下文丢失：大块文本导致 LLM 忽略关键信息
-3. 无法处理复杂关系：「A影响了B，B又影响了C」需要多跳推理
-4. 无自检能力：检索到无关内容也不知道</pre>
+<p>2. 上下文丢失：大块文本导致 LLM 忽略关键信息</p>
+<p>3. 无法处理复杂关系：「A影响了B，B又影响了C」需要多跳推理</p>
+<p>4. 无自检能力：检索到无关内容也不知道</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>9.2 Naive RAG 实现 —— 理解基础再谈优化</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (112 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_documents</span><span class="code-badge code-badge-func">search</span><span class="code-badge code-badge-func">demo_naive_rag</span><span class="code-badge code-badge-class">NaiveVectorStore</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
@@ -585,30 +585,30 @@ body {
 <p>为什么需要 GraphRAG？</p>
 <p>&nbsp;</p>
 <p>Naive RAG 的场景：「Python 是什么？」</p>
-<pre>→ 检索到「Python是一种编程语言」的文本块
-→ 回答正确 ✓</pre>
+<p>→ 检索到「Python是一种编程语言」的文本块</p>
+<p>→ 回答正确 ✓</p>
 <p>&nbsp;</p>
 <p>Naive RAG 失败的场景：「Python 的设计者还参与了哪些项目？」</p>
-<pre>→ 检索到「Python是由Guido创建的」和「Dropbox使用Python」
-→ 但这些块之间没有关联，无法回答「Guido还做过什么」
-→ 回答失败 ✗</pre>
+<p>→ 检索到「Python是由Guido创建的」和「Dropbox使用Python」</p>
+<p>→ 但这些块之间没有关联，无法回答「Guido还做过什么」</p>
+<p>→ 回答失败 ✗</p>
 <p>&nbsp;</p>
 <p>GraphRAG 的优势：</p>
-<pre>→ 知识图谱中存储了「Guido → 创建 → Python」
-→ 以及「Guido → 工作于 → Google → 参与 → Dropbox」
-→ 可以沿着图谱的边（关系）进行多跳推理
-→ 回答正确 ✓</pre>
+<p>→ 知识图谱中存储了「Guido → 创建 → Python」</p>
+<p>→ 以及「Guido → 工作于 → Google → 参与 → Dropbox」</p>
+<p>→ 可以沿着图谱的边（关系）进行多跳推理</p>
+<p>→ 回答正确 ✓</p>
 <p>&nbsp;</p>
 <p>GraphRAG 的核心原理：</p>
 <p>&nbsp;</p>
 <li>图构建 (Graph Construction)</li>
-<pre> 从文档中抽取实体和关系，构建知识图谱</pre>
+<p>从文档中抽取实体和关系，构建知识图谱</p>
 <p>&nbsp;</p>
 <li>混合检索 (Hybrid Retrieval)</li>
-<pre> 同时使用向量搜索和图遍历</pre>
+<p>同时使用向量搜索和图遍历</p>
 <p>&nbsp;</p>
 <li>多跳推理 (Multi-hop Reasoning)</li>
-<pre> 沿着图谱的边寻找推理路径</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (120 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_relation</span><span class="code-badge code-badge-func">traverse</span><span class="code-badge code-badge-func">find_path</span><span class="code-badge code-badge-func">demo_graphrag</span><span class="code-badge code-badge-class">SimpleKnowledgeGraph</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<p>沿着图谱的边寻找推理路径</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (120 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_relation</span><span class="code-badge code-badge-func">traverse</span><span class="code-badge code-badge-func">find_path</span><span class="code-badge code-badge-func">demo_graphrag</span><span class="code-badge code-badge-class">SimpleKnowledgeGraph</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
 <span class="k">class</span> <span class="f">SimpleKnowledgeGraph</span>:
@@ -744,19 +744,19 @@ body {
 <p>用户: "2024年OpenAI的营收比2023年增长了百分之多少？"</p>
 <p>&nbsp;</p>
 <p>传统 RAG:</p>
-<pre>→ 检索「OpenAI 营收」→ 可能找到 2023 和 2024 的数据
-→ 但 RAG 不会算百分比，直接给了用户两段数字
-→ 用户还需要自己算</pre>
+<p>→ 检索「OpenAI 营收」→ 可能找到 2023 和 2024 的数据</p>
+<p>→ 但 RAG 不会算百分比，直接给了用户两段数字</p>
+<p>→ 用户还需要自己算</p>
 <p>&nbsp;</p>
 <p>Agentic RAG:</p>
-<pre>→ Step 1: 分析问题 → 需要「2023营收」「2024营收」「百分比计算」
-→ Step 2: 搜索「OpenAI 2023年营收」 → 得到 $1.6B
-→ Step 3: 搜索「OpenAI 2024年营收」 → 得到 $3.7B
-→ Step 4: 计算 (3.7-1.6)/1.6 = 131.25%
-→ Step 5: 回答「增长约 131%」</pre>
+<p>→ Step 1: 分析问题 → 需要「2023营收」「2024营收」「百分比计算」</p>
+<p>→ Step 2: 搜索「OpenAI 2023年营收」 → 得到 $1.6B</p>
+<p>→ Step 3: 搜索「OpenAI 2024年营收」 → 得到 $3.7B</p>
+<p>→ Step 4: 计算 (3.7-1.6)/1.6 = 131.25%</p>
+<p>→ Step 5: 回答「增长约 131%」</p>
 <p>&nbsp;</p>
 <p>Agentic RAG 包含了一个 Agent 循环：</p>
-<pre>思考需要什么信息 → 检索/计算 → 不满足就继续 → 满足则输出</pre>
+<p>思考需要什么信息 → 检索/计算 → 不满足就继续 → 满足则输出</p>
 <p>&nbsp;</p>
 <p>业内数据（2025年）：</p>
 <li>Agentic RAG 在复杂查询上的准确率比传统 RAG 高 30-50%</li>

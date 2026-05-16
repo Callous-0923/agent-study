@@ -317,19 +317,19 @@ body {
 <p>Tracing 的层次模型：</p>
 <p>&nbsp;</p>
 <p>Level 1: 单次 LLM 调用 Trace</p>
-<pre>记录: model / input_tokens / output_tokens / latency / status</pre>
+<p>记录: model / input_tokens / output_tokens / latency / status</p>
 <p>&nbsp;</p>
 <p>Level 2: Chain/Agent 级别 Trace</p>
-<pre>记录: 完整的 Agent 执行链
-- 每个 tool_call: tool_name + args + result + latency
-- 每个 LLM 调用: system_prompt_snapshot + user_message
-- 每个步骤间的关系（父子 span）</pre>
+<p>记录: 完整的 Agent 执行链</p>
+<li>每个 tool_call: tool_name + args + result + latency</li>
+<li>每个 LLM 调用: system_prompt_snapshot + user_message</li>
+<li>每个步骤间的关系（父子 span）</li>
 <p>&nbsp;</p>
 <p>Level 3: Multi-Agent Trace</p>
-<pre>记录: Agent 之间的消息传递
-- 哪个 Agent 把任务委派给了哪个 Agent
-- 委派的 context 是什么
-- 返回的 artifact 是什么</pre>
+<p>记录: Agent 之间的消息传递</p>
+<li>哪个 Agent 把任务委派给了哪个 Agent</li>
+<li>委派的 context 是什么</li>
+<li>返回的 artifact 是什么</li>
 <p>&nbsp;</p>
 <p>Trace 的核心数据结构：Span</p>
 <p>&nbsp;</p>
@@ -661,16 +661,16 @@ body {
 <p>Agent 告警规则（面试时脱口而出！）：</p>
 <p>&nbsp;</p>
 <p>关键指标告警：</p>
-<pre>☐ 成功率 < 95% (1h 窗口) → PagerDuty/Slack 告警
-☐ P99 延迟 > 60s → 延迟告警
-☐ Token 消耗 > 预算 × 80% → 预算告警
-☐ 工具调用失败率 > 10% → 工具故障告警
-☐ 连续 N 次相同错误 → 死循环告警</pre>
+<p>☐ 成功率 < 95% (1h 窗口) → PagerDuty/Slack 告警</p>
+<p>☐ P99 延迟 > 60s → 延迟告警</p>
+<p>☐ Token 消耗 > 预算 × 80% → 预算告警</p>
+<p>☐ 工具调用失败率 > 10% → 工具故障告警</p>
+<p>☐ 连续 N 次相同错误 → 死循环告警</p>
 <p>&nbsp;</p>
 <p>异常检测：</p>
-<pre>☐ 用户输入异常（Prompt Injection 检测触发）
-☐ 输出异常（内容安全审核触发）
-☐ 流量异常（Rate Limiting 触发）</pre>
+<p>☐ 用户输入异常（Prompt Injection 检测触发）</p>
+<p>☐ 输出异常（内容安全审核触发）</p>
+<p>☐ 流量异常（Rate Limiting 触发）</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>24.5 Agent 可观测性 Checklist</h2>

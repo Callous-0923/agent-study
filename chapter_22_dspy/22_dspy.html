@@ -302,23 +302,21 @@ body {
 <p>&nbsp;</p>
 <p>你写了一个 Agent：</p>
 <pre>prompt = "你是一个助手，请用中文回答..."</pre>
-<p>&nbsp;</p>
 <p>换一个模型（GPT-4 → Claude）：</p>
-<pre>→ Prompt 要重新调整
-→ 效果可能大幅下降
-→ 这就是「Prompt 脆弱性」</pre>
+<p>→ Prompt 要重新调整</p>
+<p>→ 效果可能大幅下降</p>
+<p>→ 这就是「Prompt 脆弱性」</p>
 <p>&nbsp;</p>
 <p>DSPy 的解决方案：</p>
 <p>把 Prompt 当作「代码的编译产物」而非手写字符串</p>
 <p>&nbsp;</p>
 <p>类比：</p>
-<pre>传统 Prompt = 手动写汇编代码（每换一个 CPU 就要重写）
-DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
-<p>&nbsp;</p>
+<p>传统 Prompt = 手动写汇编代码（每换一个 CPU 就要重写）</p>
+<pre>DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>翻译成 DSPy 术语：</p>
-<pre>DSPy 程序（Python 代码）→ Optimizer（编译器）→ Prompt（机器码）
-                                       ↑
-                                自动适配不同的 LLM</pre>
+<p>DSPy 程序（Python 代码）→ Optimizer（编译器）→ Prompt（机器码）</p>
+<p>↑</p>
+<p>自动适配不同的 LLM</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>22.2 Signature —— 把 Prompt 变成「函数签名」</h2>
@@ -330,7 +328,6 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>class QA(dspy.Signature):</p>
 <pre>  question = dspy.InputField(desc="问题")
   answer = dspy.OutputField(desc="答案")</pre>
-<p>&nbsp;</p>
 <p>Signature 的优势：</p>
 <li>声明式：描述「输入什么、输出什么」，不碰字符串</li>
 <li>自文档化：desc 即文档，人类和 Optimizer 都能理解</li>
@@ -420,9 +417,9 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>class AgentQA(dspy.Module):</p>
 <pre>  def __init__(self):
       self.search = dspy.ChainOfThought("query -> results")
-      self.answer = dspy.ChainOfThought("context, question -> answer")</pre>
-<p>&nbsp;</p>
-<pre>  def forward(self, question):
+      self.answer = dspy.ChainOfThought("context, question -> answer")
+
+  def forward(self, question):
       results = self.search(query=question)
       return self.answer(context=results, question=question)</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (42 行)</summary><div class="code-badges"><span class="code-badge code-badge-class">DSPyModule</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
@@ -487,16 +484,16 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>工作流程（MIPROv2 为例）：</p>
 <p>&nbsp;</p>
 <li>Bootstrapping 阶段：</li>
-<pre> 运行未优化的程序多次 → 收集成功轨迹
- → 筛选出得分高的输入输出对 → 作为候选示例</pre>
+<p>运行未优化的程序多次 → 收集成功轨迹</p>
+<p>→ 筛选出得分高的输入输出对 → 作为候选示例</p>
 <p>&nbsp;</p>
 <li>Grounded Proposal 阶段：</li>
-<pre> 分析程序代码 + 数据 + 轨迹
- → 生成多个候选指令（instruction variants）</pre>
+<p>分析程序代码 + 数据 + 轨迹</p>
+<p>→ 生成多个候选指令（instruction variants）</p>
 <p>&nbsp;</p>
 <li>Discrete Search 阶段：</li>
-<pre> 在训练集上尝试不同「指令 + 示例」的组合
- → 用 Metric 评分 → 选出最优组合</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (81 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">compile</span><span class="code-badge code-badge-class">DSPyOptimizer</span></div><div class="code-block"><pre><span class="k">import</span> json
+<p>在训练集上尝试不同「指令 + 示例」的组合</p>
+<p>→ 用 Metric 评分 → 选出最优组合</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (81 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">compile</span><span class="code-badge code-badge-class">DSPyOptimizer</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -581,18 +578,18 @@ DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）</pre>
 <p>DSPy 不是 LangChain 的替代品，是补充：</p>
 <p>&nbsp;</p>
 <p>DSPy 擅长：</p>
-<pre>✓ 自动优化 Agent 每一步的 Prompt
-✓ 发现最佳的 few-shot 示例
-✓ 结构化输出的质量保证</pre>
+<p>✓ 自动优化 Agent 每一步的 Prompt</p>
+<p>✓ 发现最佳的 few-shot 示例</p>
+<p>✓ 结构化输出的质量保证</p>
 <p>&nbsp;</p>
 <p>LangChain 擅长：</p>
-<pre>✓ Agent 编排（LangGraph 的图式工作流）
-✓ 工具集成（MCP、向量数据库、API）
-✓ 生态系统（社区、文档、第三方集成）</pre>
+<p>✓ Agent 编排（LangGraph 的图式工作流）</p>
+<p>✓ 工具集成（MCP、向量数据库、API）</p>
+<p>✓ 生态系统（社区、文档、第三方集成）</p>
 <p>&nbsp;</p>
 <p>两者配合：</p>
-<pre>用 LangGraph 搭建 Agent 的执行流程
-用 DSPy 优化每个 LLM 调用节点的 Prompt</pre>
+<p>用 LangGraph 搭建 Agent 的执行流程</p>
+<p>用 DSPy 优化每个 LLM 调用节点的 Prompt</p>
 <p>&nbsp;</p>
 <p>面试中这样描述会非常加分：</p>
 <p>"我们用 LangGraph 做 Agent 编排（控制流），</p>

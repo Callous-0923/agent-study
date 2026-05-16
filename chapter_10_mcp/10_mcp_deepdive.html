@@ -301,55 +301,47 @@ body {
 <p>类比：USB-C 接口</p>
 <p>&nbsp;</p>
 <p>在没有 USB-C 之前：</p>
-<pre>手机用 Micro-USB、电脑用 USB-A、显示器用 HDMI、硬盘用 Thunderbolt
-每种设备需要不同的线，接口混乱不堪</pre>
+<p>手机用 Micro-USB、电脑用 USB-A、显示器用 HDMI、硬盘用 Thunderbolt</p>
+<p>每种设备需要不同的线，接口混乱不堪</p>
 <p>&nbsp;</p>
 <p>USB-C 统一了这一切：</p>
-<pre>一个接口，连接所有设备
-协议统一，但每个设备的「功能」不同</pre>
+<p>一个接口，连接所有设备</p>
+<p>协议统一，但每个设备的「功能」不同</p>
 <p>&nbsp;</p>
 <p>MCP 就是 AI 世界的 USB-C：</p>
-<pre>一个协议，连接所有外部系统
-协议统一（JSON-RPC），但每个 Server 的「工具」不同
-2024年11月由 Anthropic 发布，迅速成为行业标准</pre>
+<p>一个协议，连接所有外部系统</p>
+<p>协议统一（JSON-RPC），但每个 Server 的「工具」不同</p>
+<p>2024年11月由 Anthropic 发布，迅速成为行业标准</p>
 <p>&nbsp;</p>
 <p>MCP 解决了什么核心问题？</p>
 <p>&nbsp;</p>
 <p>旧世界（MCP 之前）：</p>
-<pre>┌──────┐   自定义协议   ┌──────────┐
-│ LLM   │──────────────→│ Google API│
-│       │   自定义协议   ├──────────┤
-│       │──────────────→│ GitHub API│
-│       │   自定义协议   ├──────────┤
-│       │──────────────→│ 数据库     │
-└──────┘                └──────────┘
-每连接一个新系统，都要写新的适配代码！</pre>
+<p>┌──────┐   自定义协议   ┌──────────┐</p>
+<p>│ LLM   │──────────────→│ Google API│</p>
+<p>│       │   自定义协议   ├──────────┤</p>
+<p>│       │──────────────→│ GitHub API│</p>
+<p>│       │   自定义协议   ├──────────┤</p>
+<p>│       │──────────────→│ 数据库     │</p>
+<p>└──────┘                └──────────┘</p>
+<p>每连接一个新系统，都要写新的适配代码！</p>
 <p>&nbsp;</p>
 <p>新世界（MCP 之后）：</p>
-<pre>┌──────┐     MCP       ┌──────────┐
-│ LLM   │──────────────→│ MCP Server│→ Google
-│       │     MCP       ├──────────┤
-│       │──────────────→│ MCP Server│→ GitHub
-│       │     MCP       ├──────────┤
-│       │──────────────→│ MCP Server│→ Database
-└──────┘                └──────────┘
-一个协议，连接所有！新系统只需实现一个 MCP Server。</pre>
+<p>┌──────┐     MCP       ┌──────────┐</p>
+<p>│ LLM   │──────────────→│ MCP Server│→ Google</p>
+<p>│       │     MCP       ├──────────┤</p>
+<p>│       │──────────────→│ MCP Server│→ GitHub</p>
+<p>│       │     MCP       ├──────────┤</p>
+<p>│       │──────────────→│ MCP Server│→ Database</p>
+<p>└──────┘                └──────────┘</p>
+<p>一个协议，连接所有！新系统只需实现一个 MCP Server。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>10.2 MCP 的三层架构 —— Host / Client / Server</h2>
 <p>&nbsp;</p>
-<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌──────────────────────────────────────────────────────────┐
-  │                     Host Application                      │
-  │  ┌─────────────────┐  ┌─────────────────┐                │
-  │  │   MCP Client 1   │  │   MCP Client 2  │  ...          │
-  │  │  (1:1 连接)     │  │  (1:1 连接)     │                │
-  │  └────────┬────────┘  └────────┬────────┘                │
-  │           │                    │                          │
-  └───────────┼────────────────────┼──────────────────────────┘</pre></div>
-<pre>          │                    │
- MCP协议  │           MCP协议  │
-(JSON-RPC)│          (JSON-RPC)│
-          ▼                    ▼</pre>
+<p>│                    │</p>
+<p>MCP协议  │           MCP协议  │</p>
+<p>(JSON-RPC)│          (JSON-RPC)│</p>
+<p>▼                    ▼</p>
 <table><tr><th>MCP Server 1</th><th></th><th>MCP Server 2</th></tr><tr><td>文件系统 & Git</td><td></td><td>数据库</td></tr><tr><td>• read_file()</td><td></td><td>• query()</td></tr><tr><td>• write_file()</td><td></td><td>• insert()</td></tr><tr><td>• git_status()</td><td></td><td>• schema()</td></tr></table>
 <p>&nbsp;</p>
 <p>三个角色的职责：</p>
@@ -373,11 +365,11 @@ body {
 <p>&nbsp;</p>
 <p>关键设计原则（面试常问！）：</p>
 <li>Server 不能看到完整对话，也不能「看到」其他 Server</li>
-<pre> → 安全隔离：对话历史留在 Host，Server 只收到必要信息</pre>
+<p>→ 安全隔离：对话历史留在 Host，Server 只收到必要信息</p>
 <li>Server 应极其简单易构建</li>
-<pre> → 复杂逻辑留给 Host，Server 只做一件事</pre>
+<p>→ 复杂逻辑留给 Host，Server 只做一件事</p>
 <li>Server 应高度可组合</li>
-<pre> → 多个 Server 可以无缝组合使用</pre>
+<p>→ 多个 Server 可以无缝组合使用</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>10.3 MCP 的消息格式 —— JSON-RPC 2.0</h2>
@@ -488,21 +480,21 @@ NOTIFICATION_EXAMPLE = {
 <p>&nbsp;</p>
 <p>Server 声明的能力（capabilities）:</p>
 <p>{</p>
-<pre>"capabilities": {
-  "tools": {"listChanged": true},     // 支持工具，且工具列表可动态变化
-  "resources": {"subscribe": true},   // 支持资源，且支持订阅更新
-  "prompts": {"listChanged": false},  // 支持提示模板，列表静态不变
-  "logging": {}                       // 支持日志输出
-}</pre>
+<p>"capabilities": {</p>
+<p>"tools": {"listChanged": true},     // 支持工具，且工具列表可动态变化</p>
+<p>"resources": {"subscribe": true},   // 支持资源，且支持订阅更新</p>
+<p>"prompts": {"listChanged": false},  // 支持提示模板，列表静态不变</p>
+<p>"logging": {}                       // 支持日志输出</p>
+<pre>}</pre>
 <p>}</p>
 <p>&nbsp;</p>
 <p>Client 声明的能力:</p>
 <p>{</p>
-<pre>"capabilities": {
-  "sampling": {},                     // 支持 LLM 采样
-  "roots": {"listChanged": true},     // 支持根目录声明
-  "experimental": {"featureX": {}}    // 实验性功能
-}</pre>
+<p>"capabilities": {</p>
+<p>"sampling": {},                     // 支持 LLM 采样</p>
+<p>"roots": {"listChanged": true},     // 支持根目录声明</p>
+<p>"experimental": {"featureX": {}}    // 实验性功能</p>
+<pre>}</pre>
 <p>}</p>
 <p>&nbsp;</p>
 <p>为什么需要能力协商？</p>
@@ -511,7 +503,7 @@ NOTIFICATION_EXAMPLE = {
 <li>安全隔离：Host 可以拒绝某些能力（如不启用 sampling）</li>
 <p>&nbsp;</p>
 <p>类比：两人见面先握手说「我会英语、中文、日语」</p>
-<pre>    然后选择双方都会的语言交流。</pre>
+<p>然后选择双方都会的语言交流。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>10.6 MCP 传输层 —— stdio vs SSE</h2>
@@ -788,7 +780,7 @@ NOTIFICATION_EXAMPLE = {
 <p>"请解释 MCP 的工作原理"</p>
 <p>→ 三层架构(Host/Client/Server) + JSON-RPC 通信</p>
 <p>→ 生命周期：Initialize → Capability Negotiation →</p>
-<pre>Tools/Resources/Prompts → Teardown</pre>
+<p>Tools/Resources/Prompts → Teardown</p>
 <p>→ 核心价值：标准化 LLM 与外部工具/数据的交互</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (37 行)</summary><div class="code-block"><pre><span class="h"># === Request（请求）===</span>
 
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:

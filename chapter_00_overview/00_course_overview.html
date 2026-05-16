@@ -309,9 +309,9 @@ body {
 <p>用户：「北京明天天气怎么样？」</p>
 <p>Agent 内部执行了 4 步：</p>
 <li>思考(Think)：用户想知道天气 → 我需要调用天气查询工具</li>
-<pre> 2. 行动(Act)：调用 get_weather("北京") → 发送 HTTP 请求到天气 API
- 3. 观察(Observe)：返回 {"明天": "晴，25°C"} → 拿到真实数据
- 4. 回答：用自然语言组织结果 → 「北京明天晴天，气温 25°C」</pre>
+<p>2. 行动(Act)：调用 get_weather("北京") → 发送 HTTP 请求到天气 API</p>
+<p>3. 观察(Observe)：返回 {"明天": "晴，25°C"} → 拿到真实数据</p>
+<p>4. 回答：用自然语言组织结果 → 「北京明天晴天，气温 25°C」</p>
 <p>&nbsp;</p>
 <p>核心区别：</p>
 <li>LLM = 「大脑」（会思考，但只能靠记忆）</li>
@@ -382,10 +382,10 @@ body {
 <p>&nbsp;</p>
 <p>Agent 执行循环（核心，面试高频！）：</p>
 <li>感知(Perceive)：接收用户输入和上一次行动的结果</li>
-<pre>2. 思考(Think)：LLM 分析当前状态，决定下一步
-3. 行动(Act)：调用工具或生成最终回答
-4. 观察(Observe)：获取行动结果
-→ 回到步骤 1，直到任务完成</pre>
+<p>2. 思考(Think)：LLM 分析当前状态，决定下一步</p>
+<p>3. 行动(Act)：调用工具或生成最终回答</p>
+<p>4. 观察(Observe)：获取行动结果</p>
+<p>→ 回到步骤 1，直到任务完成</p>
 <p>&nbsp;</p>
 <p>这个循环被称为「ReAct 循环」(Reasoning + Acting)，</p>
 <p>是 99% 的 Agent 框架的底层逻辑。</p>
@@ -435,7 +435,7 @@ body {
 <li>如果你是 Agent 新手：按 Ch1→Ch18 顺序学习</li>
 <li>如果你已有基础：直接跳到 Ch8 开始深度技术</li>
 <li>如果你要准备面试：Ch7(面试题) + Ch8(Claude Code) + Ch10(MCP)</li>
-<pre>                   + Ch11(ToolCall) + Ch15(A2A) + Ch18(安全)</pre>
+<p>+ Ch11(ToolCall) + Ch15(A2A) + Ch18(安全)</p>
 <li>如果你要构建产品：Ch13(FastAPI) + Ch14(SQLite) + Ch12(生产)</li>
 <p>&nbsp;</p>
 <hr>

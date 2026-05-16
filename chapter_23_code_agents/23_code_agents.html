@@ -307,12 +307,12 @@ body {
 <li>Code-as-Action (CodeAct)</li>
 <p>&nbsp;</p>
 <p>OpenHands 的创新：</p>
-<pre>不预定义 read_file/write_file 等固定工具
-Agent 直接写 Python/Bash 脚本来完成任务</pre>
+<p>不预定义 read_file/write_file 等固定工具</p>
+<p>Agent 直接写 Python/Bash 脚本来完成任务</p>
 <p>&nbsp;</p>
 <p>对比传统 tool-calling：</p>
-<pre>传统: tools = [read_file, grep, edit, ...]
-CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
+<p>传统: tools = [read_file, grep, edit, ...]</p>
+<p>CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</p>
 <p>&nbsp;</p>
 <p>优势：无限可扩展（任何脚本能做的事 Agent 都能做）</p>
 <p>劣势：可靠性低（执行任意代码的失败面更大）</p>
@@ -320,8 +320,8 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
 <li>Agent-Computer Interface (ACI)</li>
 <p>&nbsp;</p>
 <p>SWE-Agent 的创新（Princeton）：</p>
-<pre>像设计 HCI（人机交互界面）一样设计 AI 的交互界面
-文件查看看带行号、编辑器按行号操作...</pre>
+<p>像设计 HCI（人机交互界面）一样设计 AI 的交互界面</p>
+<p>文件查看看带行号、编辑器按行号操作...</p>
 <p>&nbsp;</p>
 <p>关键设计：</p>
 <li>文件查看器显示行号（方便 LLM 定位）</li>
@@ -351,13 +351,13 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
 <p>两个版本：</p>
 <p>&nbsp;</p>
 <p>SWE-bench Full (2294 个任务)：</p>
-<pre>所有真实 issue，但部分 issue 描述不清晰</pre>
+<p>所有真实 issue，但部分 issue 描述不清晰</p>
 <p>&nbsp;</p>
 <p>SWE-bench Verified (500 个任务)：</p>
-<pre>人工精选，确保问题描述准确、可独立复现</pre>
+<p>人工精选，确保问题描述准确、可独立复现</p>
 <p>&nbsp;</p>
 <p>SWE-bench Lite (300 个任务)：</p>
-<pre>进一步精简，适合快速评测</pre>
+<p>进一步精简，适合快速评测</p>
 <p>&nbsp;</p>
 <p>评测流程：</p>
 <li>给 Agent GitHub Issue 描述</li>
@@ -379,14 +379,14 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
 <p>&nbsp;</p>
 <p>Agentless 的三阶段流程：</p>
 <li>Localization（定位）：LLM 扫描文件，找出需要修改的位置</li>
-<pre>2. Repair（修复）：LLM 生成 patch
-3. Validation（验证）：运行测试</pre>
+<p>2. Repair（修复）：LLM 生成 patch</p>
+<p>3. Validation（验证）：运行测试</p>
 <p>&nbsp;</p>
 <p>和 Agent 的关键区别：</p>
-<pre>✗ 没有循环
-✗ 没有工具调用
-✗ 没有自主决策
-→ 居然比很多 Agent 效果更好！</pre>
+<p>✗ 没有循环</p>
+<p>✗ 没有工具调用</p>
+<p>✗ 没有自主决策</p>
+<p>→ 居然比很多 Agent 效果更好！</p>
 <p>&nbsp;</p>
 <p>为什么？</p>
 <p>&nbsp;</p>
@@ -395,10 +395,10 @@ CodeAct: Agent 写 `for f in glob("*.py"): ...` 来操作</pre>
 <li>Agent 消耗了 token 在「思考过程」而非「解决问题」上</li>
 <p>&nbsp;</p>
 <p>Anthropic 的回应（在 Claude Code 的优化中）：</p>
-<pre>「做最简单的事」
-搜索用 Grep 而不是 Embedding
-记忆用 Markdown 而不是数据库
-单线程而不是多 Agent 并行</pre>
+<p>「做最简单的事」</p>
+<p>搜索用 Grep 而不是 Embedding</p>
+<p>记忆用 Markdown 而不是数据库</p>
+<p>单线程而不是多 Agent 并行</p>
 <p>&nbsp;</p>
 <p>这条哲学和 Agentless 的发现是一致的。</p>
 <p>&nbsp;</p>

@@ -312,11 +312,11 @@ body {
 <p>&nbsp;</p>
 <p>工作流程（三步）：</p>
 <li>在你的 content block 中加上 cache_control 标记</li>
-<pre> → 告诉 Claude：「这段内容以后可能会重复用」</pre>
+<p>→ 告诉 Claude：「这段内容以后可能会重复用」</p>
 <li>下一次请求如果包含相同前缀，Claude 跳过重复的编码计算</li>
-<pre> → 不需要重新把 System Prompt 转成向量</pre>
+<p>→ 不需要重新把 System Prompt 转成向量</p>
 <li>输入 Token 费用降低 90%</li>
-<pre> → 10 万 Token 的 System Prompt 从 $0.30 降到 $0.03</pre>
+<p>→ 10 万 Token 的 System Prompt 从 $0.30 降到 $0.03</p>
 <p>&nbsp;</p>
 <p>关键限制：</p>
 <li>最少 1024 tokens 才能被缓存（太短不值得）</li>

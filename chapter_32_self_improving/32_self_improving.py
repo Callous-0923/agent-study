@@ -21,12 +21,24 @@
 32.1 什么是 Self-Improving Agent？
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-传统 Agent：固定 Prompt → 固定逻辑 → 无法改进
+把 Agent 想象成实习生：传统 Agent 是那种「永远不改进」的实习生——
+犯了错下次还犯，Prompt 一成不变。Self-Improving Agent 则是那种
+「会总结教训」的实习生——每次出错后自己分析原因，优化工作方法。
+
+技术上，Self-Improving 指的是 Agent 能自动从交互数据中识别问题、
+调整自己的行为（通常通过修改 Prompt 或路由策略）、再验证改进效果
+——全程不需要人类介入。
+
+传统 Agent：固定 Prompt → 固定逻辑 → 永远不进步
 Self-Improving：执行 → 出错 → 分析原因 → 自动修改 Prompt → 验证改进
 
-类比：
-  传统 Agent = 一个永远不学习的实习生
-  Self-Improving Agent = 会记笔记、总结教训、改进方法的实习生
+为什么这个能力对面试官来说如此重要？因为它回答了 Agent 领域最大的
+质疑：「Agent 上线后怎么持续变好？」——Self-Improving 就是答案。
+
+不过要澄清一个常见混淆：Self-Improving 不是 Fine-tuning。
+Fine-tuning 是改模型权重，需要 GPU；Self-Improving 是改 Prompt 或
+路由规则，只需要让 LLM 分析 Bad Case 就能触发。成本低、可逆、
+可以频繁运行。
 
 核心循环：
   ┌─────────────────────────────────────────┐

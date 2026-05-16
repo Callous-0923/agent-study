@@ -483,20 +483,20 @@ REVIEWER_SYSTEM_PROMPT = <span class="s">"""你是一位严格的内容审核编
 
     <span class="k">return</span> workflow.compile()</pre></div></details></div><div class="lecture"><p>图结构示意：</p>
 <p>&nbsp;</p>
-<pre> [START]
-    │
-    ▼</pre>
+<p>[START]</p>
+<p>│</p>
+<p>▼</p>
+<p>│ (草稿)            │</p>
+<p>▼                   │</p>
+<p>│ (合格)</p>
+<p>▼</p>
+<p>[END]</p>
 <div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">   ┌─────────┐
    │  Writer  │ ←──────────┐
-   └────┬────┘             │</pre></div>
-<pre>    │ (草稿)            │
-    ▼                   │</pre>
-<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">   ┌──────────┐   不合格     │
+   └────┬────┘             │
+   ┌──────────┐   不合格     │
    │ Reviewer  │────────────┘
    └────┬─────┘</pre></div>
-<pre>    │ (合格)
-    ▼
- [END]</pre>
 <p>&nbsp;</p>
 <p>这是协作式 + 分层式的混合架构：</p>
 <li>Writer 和 Reviewer 是协作关系（双方一起产出内容）</li>

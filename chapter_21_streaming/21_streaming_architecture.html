@@ -313,7 +313,7 @@ body {
 <p>实时架构的目标：</p>
 <p>&nbsp;</p>
 <p>用户 → 发送消息 → 实时看到 Agent 的思考过程 →</p>
-<pre>     中途可以修正方向 → 最终得到结果</pre>
+<p>中途可以修正方向 → 最终得到结果</p>
 <p>&nbsp;</p>
 <p>核心能力：</p>
 <li>流式输出：LLM 每生成一个 token 就推送给用户</li>
@@ -337,19 +337,19 @@ body {
 <p>&nbsp;</p>
 <p>关键组件：</p>
 <p>EventBus：事件总线，所有组件通过它通信</p>
-<pre>→ 解耦 LLM 调用、工具执行、UI 更新</pre>
+<p>→ 解耦 LLM 调用、工具执行、UI 更新</p>
 <p>&nbsp;</p>
 <p>StateManager：状态管理器，唯一数据源</p>
-<pre>→ 记录 Agent 当前步骤、对话历史、工具执行状态</pre>
+<p>→ 记录 Agent 当前步骤、对话历史、工具执行状态</p>
 <p>&nbsp;</p>
 <p>StreamBridge：流式桥接</p>
-<pre>→ 将 LLM 的 streaming 输出桥接到前端</pre>
+<p>→ 将 LLM 的 streaming 输出桥接到前端</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>21.3 EventBus 模式 —— Agent 架构的核心</h2>
 <p>&nbsp;</p>
 <p>问题：Agent 的多个组件（LLM 调用 / 工具执行 / 前端 UI）</p>
-<pre>  怎么高效通信而不互相耦合？</pre>
+<p>怎么高效通信而不互相耦合？</p>
 <p>&nbsp;</p>
 <p>方案：EventBus —— 发布-订阅模式</p>
 <p>&nbsp;</p>
@@ -644,16 +644,16 @@ body {
 <p>解决方案：</p>
 <p>&nbsp;</p>
 <li>缓冲区控制</li>
-<pre> 前端维护一个固定大小的缓冲队列
- 满了就暂停 SSE 流</pre>
+<p>前端维护一个固定大小的缓冲队列</p>
+<p>满了就暂停 SSE 流</p>
 <p>&nbsp;</p>
 <li>自适应降频</li>
-<pre> 如果前端处理变慢 → 减少推送频率
- 从「每 token 推送」降级到「每 5 token 推送」</pre>
+<p>如果前端处理变慢 → 减少推送频率</p>
+<p>从「每 token 推送」降级到「每 5 token 推送」</p>
 <p>&nbsp;</p>
 <li>生产者-消费者模式</li>
-<pre> 生产者（LLM）→ 队列 → 消费者（前端）
- 队列有容量上限，满了暂停生产者</pre>
+<p>生产者（LLM）→ 队列 → 消费者（前端）</p>
+<p>队列有容量上限，满了暂停生产者</p>
 <p>&nbsp;</p>
 <p>这就是 Claude Code h2A 的「智能背压控制」</p>
 <p>（Ch8 提到：吞吐量 > 10,000 消息/秒 + 智能背压）。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (88 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">stats</span><span class="code-badge code-badge-func">demo_event_driven_agent</span><span class="code-badge code-badge-class">BackpressureController</span></div><div class="code-block"><pre><span class="k">import</span> asyncio

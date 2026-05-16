@@ -662,6 +662,22 @@ agent = SimulatedAgent()
         f<span class="s">"{time.time()}-{os.urandom(8).hex()}"</span>.encode()
     ).hexdigest()[:<span class="n">16</span>]</pre></div></details></div><div class="lecture"><h2>13.5 生产部署架构</h2>
 <p>&nbsp;</p>
+<p>│           │           │</p>
+<p>┌────────▼──┐ ┌──────▼───┐ ┌───▼────────┐</p>
+<p>│  Agent    │ │  Agent   │ │  Agent     │</p>
+<p>│  Worker 1 │ │  Worker 2│ │  Worker 3  │</p>
+<p>│ (FastAPI) │ │ (FastAPI)│ │  (FastAPI) │</p>
+<p>└───────────┘ └──────────┘ └────────────┘</p>
+<p>│           │           │</p>
+<p>└───────────┼───────────┘</p>
+<p>│</p>
+<p>┌──────────▼──────────┐</p>
+<p>│   Redis / RabbitMQ  │  ← 消息队列（异步任务）</p>
+<p>└─────────────────────┘</p>
+<p>│</p>
+<p>┌──────────▼──────────┐</p>
+<p>│  SQLite / PostgreSQL│  ← 持久化存储（第14章详讲）</p>
+<p>└─────────────────────┘</p>
 <div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌──────────────────────────────────────────────────────┐
   │                     Nginx (反向代理)                   │
   │  • SSL 终止                                           │
@@ -669,22 +685,6 @@ agent = SimulatedAgent()
   │  • Rate Limiting                                      │
   │  • WebSocket 升级 (Connection: Upgrade)               │
   └──────────┬───────────┬───────────┬───────────────────┘</pre></div>
-<pre>         │           │           │
-┌────────▼──┐ ┌──────▼───┐ ┌───▼────────┐
-│  Agent    │ │  Agent   │ │  Agent     │
-│  Worker 1 │ │  Worker 2│ │  Worker 3  │
-│ (FastAPI) │ │ (FastAPI)│ │  (FastAPI) │
-└───────────┘ └──────────┘ └────────────┘
-         │           │           │
-         └───────────┼───────────┘
-                     │
-          ┌──────────▼──────────┐
-          │   Redis / RabbitMQ  │  ← 消息队列（异步任务）
-          └─────────────────────┘
-                     │
-          ┌──────────▼──────────┐
-          │  SQLite / PostgreSQL│  ← 持久化存储（第14章详讲）
-          └─────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>Docker 部署示例：</p>
 <p>FROM python:3.12-slim</p>

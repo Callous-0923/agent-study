@@ -306,6 +306,11 @@ body {
 <p>&nbsp;</p>
 <p>OpenClaw 的 Gateway 中心化架构：</p>
 <p>&nbsp;</p>
+<p>│                  │                  │</p>
+<p>┌──────┴──────┐   ┌──────┴──────┐   ┌──────┴──────┐</p>
+<p>│  Channel 1   │   │  Channel 2   │   │  Channel 3   │</p>
+<p>│  WhatsApp    │   │  Telegram    │   │   Discord    │</p>
+<p>└─────────────┘   └─────────────┘   └─────────────┘</p>
 <div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌─────────────────────────────────────────────────────────┐
   │                    The Gateway                           │
   │                  (Node.js 控制平面)                       │
@@ -325,11 +330,6 @@ body {
   │  │         长期记忆 + 用户偏好 + 对话历史             │  │
   │  └──────────────────────────────────────────────────┘  │
   └─────────────────────────────────────────────────────────┘</pre></div>
-<pre>       │                  │                  │
-┌──────┴──────┐   ┌──────┴──────┐   ┌──────┴──────┐
-│  Channel 1   │   │  Channel 2   │   │  Channel 3   │
-│  WhatsApp    │   │  Telegram    │   │   Discord    │
-└─────────────┘   └─────────────┘   └─────────────┘</pre>
 <p>&nbsp;</p>
 <p>Gateway 的职责：</p>
 <li>消息路由：从不同 Channel 接收消息，路由到正确的 LLM Provider</li>
@@ -359,11 +359,11 @@ body {
 <li>每个 Skill 是一个独立的模块（含工具定义 + 实现）</li>
 <p>&nbsp;</p>
 <p>示例 Skill：</p>
-<pre>skill/weather         → 天气查询
-skill/calendar        → 日历管理
-skill/email           → 邮件发送
-skill/translation     → 翻译服务
-skill/code-review     → 代码审查</pre>
+<p>skill/weather         → 天气查询</p>
+<p>skill/calendar        → 日历管理</p>
+<p>skill/email           → 邮件发送</p>
+<p>skill/translation     → 翻译服务</p>
+<p>skill/code-review     → 代码审查</p>
 <p>&nbsp;</p>
 <p>ClawHub：</p>
 <li>AgentSkills 的注册中心</li>
@@ -411,15 +411,15 @@ skill/code-review     → 代码审查</pre>
 <p>核心概念：</p>
 <p>&nbsp;</p>
 <li>Scenario（评测场景）</li>
-<pre> 定义要评测什么：场景描述 + 任务列表 + 成功标准</pre>
+<p>定义要评测什么：场景描述 + 任务列表 + 成功标准</p>
 <p>&nbsp;</p>
 <li>Task（评测任务）</li>
-<pre> 每个 Scenario 包含多个 Task：
- - task_id：任务ID
- - description：Agent 收到的提示词
- - success_criteria：评测指标 + 阈值
- - required_tools：Agent 应该调用的工具
- - expected_state_changes：期望的状态变化</pre>
+<p>每个 Scenario 包含多个 Task：</p>
+<li>task_id：任务ID</li>
+<li>description：Agent 收到的提示词</li>
+<li>success_criteria：评测指标 + 阈值</li>
+<li>required_tools：Agent 应该调用的工具</li>
+<li>expected_state_changes：期望的状态变化</li>
 <p>&nbsp;</p>
 <li>Tool Sandbox（工具沙箱）</li>
 <li>模拟工具调用（不调用真实 API）</li>
@@ -437,15 +437,15 @@ skill/code-review     → 代码审查</pre>
 <li>luna_judge_score：LLM-as-Judge 语义评测</li>
 <p>&nbsp;</p>
 <p>评测流程：</p>
+<p>│</p>
+<p>▼</p>
+<p>┌───────────────┐</p>
+<p>│ Tool Sandbox  │  ← 模拟工具调用</p>
+<p>│ Policy Engine │  ← 检查合规性</p>
+<p>└───────────────┘</p>
 <div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
   │ 加载场景  │───→│ 执行任务  │───→│ 收集指标  │───→│ 生成报告  │
   └──────────┘    └──────────┘    └──────────┘    └──────────┘</pre></div>
-<pre>                   │
-                   ▼
-           ┌───────────────┐
-           │ Tool Sandbox  │  ← 模拟工具调用
-           │ Policy Engine │  ← 检查合规性
-           └───────────────┘</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>12.5 Agent 生产基础设施全景图</h2>
@@ -461,15 +461,15 @@ skill/code-review     → 代码审查</pre>
 <li>指标看板：成功率、平均延迟、Token 消耗趋势、错误分布</li>
 <p>&nbsp;</p>
 <p>LangSmith / LangFuse 的使用：</p>
-<pre>┌──────────┐     ┌──────────────┐     ┌──────────┐
-│ Agent    │────→│ LangSmith    │────→│ 可视化    │
-│ 执行过程  │     │ (Tracing)    │     │ Dashboard │
-└──────────┘     └──────────────┘     └──────────┘
-                        │
-                        ▼
-                  ┌──────────┐
-                  │ 告警系统  │ ← PagerDuty / Slack
-                  └──────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (43 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check</span><span class="code-badge code-badge-func">print_checklist</span><span class="code-badge code-badge-class">AgentProductionChecklist</span></div><div class="code-block"><pre><span class="k">class</span> <span class="f">AgentProductionChecklist</span>:
+<p>┌──────────┐     ┌──────────────┐     ┌──────────┐</p>
+<p>│ Agent    │────→│ LangSmith    │────→│ 可视化    │</p>
+<p>│ 执行过程  │     │ (Tracing)    │     │ Dashboard │</p>
+<p>└──────────┘     └──────────────┘     └──────────┘</p>
+<p>│</p>
+<p>▼</p>
+<p>┌──────────┐</p>
+<p>│ 告警系统  │ ← PagerDuty / Slack</p>
+<p>└──────────┘</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (43 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check</span><span class="code-badge code-badge-func">print_checklist</span><span class="code-badge code-badge-class">AgentProductionChecklist</span></div><div class="code-block"><pre><span class="k">class</span> <span class="f">AgentProductionChecklist</span>:
     <span class="s">"""Agent 生产化就绪度检查清单。"""</span>
 
     CHECKLIST = [

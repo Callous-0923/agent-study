@@ -329,13 +329,13 @@ body {
 <p>每条训练数据是一个 (user_message, tool_call_or_answer) 对：</p>
 <p>&nbsp;</p>
 <p>{</p>
-<pre>"messages": [
-  {"role": "system", "content": "你是客服 Agent..."},
-  {"role": "user",   "content": "帮我查订单 #12345"},
-  {"role": "assistant", "content": null,
-   "tool_calls": [{
-     "function": {"name": "query_order", "arguments": "{\"order_id\":\"12345\"}"}
-   }]}
+<p>"messages": [</p>
+<p>{"role": "system", "content": "你是客服 Agent..."},</p>
+<p>{"role": "user",   "content": "帮我查订单 #12345"},</p>
+<p>{"role": "assistant", "content": null,</p>
+<p>"tool_calls": [{</p>
+<p>"function": {"name": "query_order", "arguments": "{\"order_id\":\"12345\"}"}</p>
+<pre>   }]}
 ]</pre>
 <p>}</p>
 <p>&nbsp;</p>

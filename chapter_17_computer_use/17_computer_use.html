@@ -350,9 +350,9 @@ body {
 <p>但 LLM 是文本模型，不理解像素</p>
 <p>&nbsp;</p>
 <p>Anthropic 的解决方案（训练阶段）：</p>
-<pre>专门训练 Claude 精确计数像素的能力
-"Training Claude to count pixels accurately was critical.
- Without this skill, the model finds it difficult to give mouse commands."</pre>
+<p>专门训练 Claude 精确计数像素的能力</p>
+<p>"Training Claude to count pixels accurately was critical.</p>
+<p>Without this skill, the model finds it difficult to give mouse commands."</p>
 <p>&nbsp;</p>
 <p>实操中的坐标系统：</p>
 <li>截图尺寸通常是 1280x800 或 1920x1080</li>
@@ -411,12 +411,12 @@ body {
 <p>安全措施（必须！）：</p>
 <p>&nbsp;</p>
 <li>Docker 容器隔离</li>
-<pre> docker run -d \
-   --security-opt=no-new-privileges \
-   --cap-drop=ALL \
-   --network=none \
-   --read-only \
-   computer-use-sandbox</pre>
+<p>docker run -d \</p>
+<p>--security-opt=no-new-privileges \</p>
+<p>--cap-drop=ALL \</p>
+<p>--network=none \</p>
+<p>--read-only \</p>
+<p>computer-use-sandbox</p>
 <p>&nbsp;</p>
 <li>操作系统级隔离</li>
 <li>非管理员用户</li>

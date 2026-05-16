@@ -308,13 +308,13 @@ body {
 <p>&nbsp;</p>
 <p>你做的事：</p>
 <li>解析这条 JSON</li>
-<pre>2. 调用打车 API("天安门", "机场")
-3. 告诉朋友结果</pre>
+<p>2. 调用打车 API("天安门", "机场")</p>
+<p>3. 告诉朋友结果</p>
 <p>&nbsp;</p>
 <p>LLM 做的事：</p>
 <li>根据你的 tool definition，决定是否使用工具</li>
-<pre>2. 返回一个结构化的 JSON（而不是自然语言）
-3. 你的代码解析 JSON 并执行真正的函数</pre>
+<p>2. 返回一个结构化的 JSON（而不是自然语言）</p>
+<p>3. 你的代码解析 JSON 并执行真正的函数</p>
 <p>&nbsp;</p>
 <p>所以 Function Calling 本质上是：</p>
 <p>「LLM 的结构化输出能力」+「协议规约」</p>
@@ -327,16 +327,16 @@ body {
 <p>&nbsp;</p>
 <p>POST /v1/chat/completions</p>
 <p>{</p>
-<pre>"model": "gpt-4o",
-"messages": [...],
-"tools": [
-  {
-    "type": "function",
-    "function": {
-      "name": "get_weather",
-      "description": "查询天气",
-      "parameters": {...}
-    }
+<p>"model": "gpt-4o",</p>
+<p>"messages": [...],</p>
+<p>"tools": [</p>
+<p>{</p>
+<p>"type": "function",</p>
+<p>"function": {</p>
+<p>"name": "get_weather",</p>
+<p>"description": "查询天气",</p>
+<p>"parameters": {...}</p>
+<pre>    }
   }
 ]</pre>
 <p>}</p>
@@ -366,29 +366,29 @@ body {
 <p>&nbsp;</p>
 <p># OpenAI 格式</p>
 <p>{</p>
-<pre>"role": "assistant",
-"tool_calls": [
-  {
-    "id": "call_abc123",
-    "type": "function",
-    "function": {
-      "name": "get_weather",
-      "arguments": "{\"city\": \"北京\"}"
-    }
+<p>"role": "assistant",</p>
+<p>"tool_calls": [</p>
+<p>{</p>
+<p>"id": "call_abc123",</p>
+<p>"type": "function",</p>
+<p>"function": {</p>
+<p>"name": "get_weather",</p>
+<p>"arguments": "{\"city\": \"北京\"}"</p>
+<pre>    }
   }
 ]</pre>
 <p>}</p>
 <p>&nbsp;</p>
 <p># Anthropic 格式</p>
 <p>{</p>
-<pre>"role": "assistant",
-"content": [
-  {
-    "type": "tool_use",
-    "id": "toolu_abc123",
-    "name": "get_weather",
-    "input": {"city": "北京"}
-  }
+<p>"role": "assistant",</p>
+<p>"content": [</p>
+<p>{</p>
+<p>"type": "tool_use",</p>
+<p>"id": "toolu_abc123",</p>
+<p>"name": "get_weather",</p>
+<p>"input": {"city": "北京"}</p>
+<pre>  }
 ]</pre>
 <p>}</p>
 <p>&nbsp;</p>
@@ -432,8 +432,8 @@ ANTHROPIC_TOOL = {
 <p>用户：「北京和上海的天气分别怎么样？」</p>
 <p>&nbsp;</p>
 <p>LLM 返回 2 个 tool_call（同一个 response）:</p>
-<pre>tool_call_1: get_weather("北京")
-tool_call_2: get_weather("上海")</pre>
+<p>tool_call_1: get_weather("北京")</p>
+<p>tool_call_2: get_weather("上海")</p>
 <p>&nbsp;</p>
 <p>你的代码并行执行这两个请求（节省时间！）</p>
 <p>&nbsp;</p>
@@ -461,20 +461,20 @@ tool_call_2: get_weather("上海")</pre>
 <p>在 streaming 模式下，tool_call 是「增量式」到达的：</p>
 <p>&nbsp;</p>
 <p>OpenAI streaming 过程：</p>
-<pre>chunk_1: {"delta": {"tool_calls": [{"index": 0, "id": "call_abc"}]}}
-chunk_2: {"delta": {"tool_calls": [{"index": 0, "function": {"name": "get"}}]}}
-chunk_3: {"delta": {"tool_calls": [{"index": 0, "function": {"name": "_weather"}}]}}
-chunk_4: {"delta": {"tool_calls": [{"index": 0, "function": {"arguments": "{\"cit"}}]}}
-chunk_5: {"delta": {"tool_calls": [{"index": 0, "function": {"arguments": "y\":\"北京\"}} ]}}
-...</pre>
+<p>chunk_1: {"delta": {"tool_calls": [{"index": 0, "id": "call_abc"}]}}</p>
+<p>chunk_2: {"delta": {"tool_calls": [{"index": 0, "function": {"name": "get"}}]}}</p>
+<p>chunk_3: {"delta": {"tool_calls": [{"index": 0, "function": {"name": "_weather"}}]}}</p>
+<p>chunk_4: {"delta": {"tool_calls": [{"index": 0, "function": {"arguments": "{\"cit"}}]}}</p>
+<p>chunk_5: {"delta": {"tool_calls": [{"index": 0, "function": {"arguments": "y\":\"北京\"}} ]}}</p>
+<p>...</p>
 <p>&nbsp;</p>
 <p>我们需要「组装」这些增量片段为完整的 tool_call。</p>
 <p>&nbsp;</p>
 <p>Anthropic streaming 过程：</p>
-<pre>chunk_1: {"type": "content_block_start", "content_block": {"type": "tool_use", ...}}
-chunk_2: {"type": "content_block_delta", "delta": {"type": "input_json_delta", "partial_json": "{\"city\""}}
-chunk_3: {"type": "content_block_delta", "delta": {"type": "input_json_delta", "partial_json": ":\"北京\"}"}}
-...</pre>
+<p>chunk_1: {"type": "content_block_start", "content_block": {"type": "tool_use", ...}}</p>
+<p>chunk_2: {"type": "content_block_delta", "delta": {"type": "input_json_delta", "partial_json": "{\"city\""}}</p>
+<p>chunk_3: {"type": "content_block_delta", "delta": {"type": "input_json_delta", "partial_json": ":\"北京\"}"}}</p>
+<p>...</p>
 <p>&nbsp;</p>
 <p>关键挑战：</p>
 <li>需要维护状态机（哪些 tool_call 是同一个？）</li>
@@ -495,16 +495,16 @@ chunk_3: {"type": "content_block_delta", "delta": {"type": "input_json_delta", "
 <p>&nbsp;</p>
 <p>示例：</p>
 <p>{</p>
-<pre>"type": "function",
-"function": {
-  "name": "get_weather",
-  "strict": true,  // ← 开启严格模式
-  "parameters": {
-    "type": "object",
-    "properties": {
-      "city": {"type": "string"},
-      "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]}
-    },
+<p>"type": "function",</p>
+<p>"function": {</p>
+<p>"name": "get_weather",</p>
+<p>"strict": true,  // ← 开启严格模式</p>
+<p>"parameters": {</p>
+<p>"type": "object",</p>
+<p>"properties": {</p>
+<p>"city": {"type": "string"},</p>
+<p>"unit": {"type": "string", "enum": ["celsius", "fahrenheit"]}</p>
+<pre>    },
     "required": ["city", "unit"],
     "additionalProperties": false  // ← strict 模式必须设置
   }
@@ -527,9 +527,9 @@ chunk_3: {"type": "content_block_delta", "delta": {"type": "input_json_delta", "
 <li>工具描述即 Prompt 工程</li>
 <li>description 不只是给开发者看的，是给 LLM 看的！</li>
 <li>描述要回答三个问题：</li>
-<pre> a. 这个工具「做什么」？
- b. 「什么时候」该用？
- c. 「什么时候」不该用？</pre>
+<p>a. 这个工具「做什么」？</p>
+<p>b. 「什么时候」该用？</p>
+<p>c. 「什么时候」不该用？</p>
 <p>&nbsp;</p>
 <li>参数设计原则</li>
 <li>用 enum 限制选项（减少幻觉）</li>

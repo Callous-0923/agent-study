@@ -328,7 +328,7 @@ body {
 └─────────────────────────────────────────────────────┘</pre></div>
 <p>&nbsp;</p>
 <p>核心理念：「做简单的事」—— Markdown 代替数据库、正则代替向量搜索、</p>
-<pre>    单线程代替并行、平面消息代替复杂线程。</pre>
+<p>单线程代替并行、平面消息代替复杂线程。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>8.2 主 Agent 循环 (nO) —— 用简单对抗复杂</h2>
@@ -336,8 +336,8 @@ body {
 <p>nO 是 Claude Code 的心脏。它实现了一个极其简洁的 while 循环：</p>
 <p>&nbsp;</p>
 <p>while (response has tool_calls):</p>
-<pre>   execute tools in parallel (when safe)
-   feed results back to model</pre>
+<p>execute tools in parallel (when safe)</p>
+<p>feed results back to model</p>
 <p>return final text response</p>
 <p>&nbsp;</p>
 <p>这和我们第1章手写的 Agent 循环几乎一模一样！</p>
@@ -362,29 +362,29 @@ body {
 <p>&nbsp;</p>
 <pre># nO 主循环的简化实现
 async def agent_loop_nO(user_input: str, context: dict):
-    messages = [build_system_prompt(), {"role": "user", "content": user_input}]</pre>
-<p>&nbsp;</p>
-<pre>    while True:
+    messages = [build_system_prompt(), {"role": "user", "content": user_input}]
+
+    while True:
         # 检查是否需要上下文压缩
         if estimate_tokens(messages) > THRESHOLD_PCT * MAX_TOKENS:
-            messages = await compressor_wU2(messages)</pre>
-<p>&nbsp;</p>
-<pre>        # 调用 LLM
+            messages = await compressor_wU2(messages)
+
+        # 调用 LLM
         response = await llm.beta.messages.create(
             model="claude-sonnet-4-20250514",
             messages=messages,
             tools=TOOLS,
             max_tokens=8192,
-        )</pre>
-<p>&nbsp;</p>
-<pre>        # 如果 LLM 直接返回文本（无工具调用），退出循环
+        )
+
+        # 如果 LLM 直接返回文本（无工具调用），退出循环
         if not response.tool_calls:
-            return response.content</pre>
-<p>&nbsp;</p>
-<pre>        # 执行工具调用（可并行）
-        tool_results = await execute_tools(response.tool_calls)</pre>
-<p>&nbsp;</p>
-<pre>        # 将 assistant 消息 + tool 结果加入消息列表
+            return response.content
+
+        # 执行工具调用（可并行）
+        tool_results = await execute_tools(response.tool_calls)
+
+        # 将 assistant 消息 + tool 结果加入消息列表
         messages.append({"role": "assistant", "content": response})
         for result in tool_results:
             messages.append({"role": "user", "content": [{
@@ -392,8 +392,6 @@ async def agent_loop_nO(user_input: str, context: dict):
                 "tool_use_id": result.id,
                 "content": result.output,
             }]})</pre>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
 <h2>8.3 h2A 实时 Steering 机制 —— 让人可以「中途介入」</h2>
 <p>&nbsp;</p>
 <p>这是 Claude Code 最被低估的创新。</p>
@@ -421,22 +419,22 @@ class h2AQueue:
     def __init__(self):
         self._active_buffer = []
         self._pending_buffer = []
-        self._lock = asyncio.Lock()</pre>
-<p>&nbsp;</p>
-<pre>    async def push_user_message(self, msg):
+        self._lock = asyncio.Lock()
+
+    async def push_user_message(self, msg):
         # 用户中途发送消息（非阻塞）
         async with self._lock:
-            self._pending_buffer.append(msg)</pre>
-<p>&nbsp;</p>
-<pre>    async def drain_pending(self):
+            self._pending_buffer.append(msg)
+
+    async def drain_pending(self):
         # nO 在每步结束后消费待处理消息
         async with self._lock:
             # 原子性地交换两个缓冲区
             self._active_buffer, self._pending_buffer = self._pending_buffer, []
         msgs = self._active_buffer
-        return msgs</pre>
-<p>&nbsp;</p>
-<pre># nO 循环中使用 h2A
+        return msgs
+
+# nO 循环中使用 h2A
 async def agent_loop_with_steering(user_input, h2a_queue):
     messages = [...]
     while True:
@@ -444,14 +442,13 @@ async def agent_loop_with_steering(user_input, h2a_queue):
         steering_msgs = await h2a_queue.drain_pending()
         if steering_msgs:
             messages.append({"role": "user", "content": steering_msgs[0]})
-            # 不需要重新开始，只需在现有对话中追加即可</pre>
-<p>&nbsp;</p>
-<pre>        response = await llm.create(messages=messages, tools=TOOLS)
+            # 不需要重新开始，只需在现有对话中追加即可
+
+        response = await llm.create(messages=messages, tools=TOOLS)
         if not response.tool_calls:
             return response.content
         # 执行工具...
         await execute_tools(response.tool_calls)</pre>
-<p>&nbsp;</p>
 <p>关键数据（来自逆向工程分析）：</p>
 <li>吞吐量 > 10,000 消息/秒</li>
 <li>零延迟消息传递</li>
@@ -502,13 +499,13 @@ async def agent_loop_with_steering(user_input, h2a_queue):
 <p>&nbsp;</p>
 <p>压缩过程示意：</p>
 <p>压缩前：[System][User][Asst][Tool][Asst][Tool][User][Asst]...</p>
-<pre>                          ↑ 92% 阈值</pre>
+<p>↑ 92% 阈值</p>
 <p>压缩后：[System][Summary][最近3轮对话，后续消息]</p>
 <p>&nbsp;</p>
 <p>被压缩的内容：</p>
-<pre>→ 生成简短摘要（放入 Summary）
-→ 重要信息写入 Markdown 长期记忆文件
-→ 不重要的细节直接丢弃</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (57 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">simulate_context_compaction</span></div><div class="code-block"><pre><span class="k">import</span> asyncio
+<p>→ 生成简短摘要（放入 Summary）</p>
+<p>→ 重要信息写入 Markdown 长期记忆文件</p>
+<p>→ 不重要的细节直接丢弃</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (57 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">simulate_context_compaction</span></div><div class="code-block"><pre><span class="k">import</span> asyncio
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
 <span class="k">def</span> <span class="f">simulate_context_compaction</span>():
@@ -605,20 +602,19 @@ def create_subagent(task_description: str, task_prompt: str,
         "- You are stateless. Complete the task in one response.\n"
         "- Return your findings concisely.\n"
         "- Do not ask follow-up questions."
-    )</pre>
-<p>&nbsp;</p>
-<pre>    # 2. 执行 SubAgent（独立对话）
+    )
+
+    # 2. 执行 SubAgent（独立对话）
     sub_messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": task_prompt},
-    ]</pre>
-<p>&nbsp;</p>
-<pre>    # 3. SubAgent 执行自己的循环
-    result = run_agent_loop(sub_messages, tools=available_tools)</pre>
-<p>&nbsp;</p>
-<pre>    # 4. 将结果返回主 Agent
+    ]
+
+    # 3. SubAgent 执行自己的循环
+    result = run_agent_loop(sub_messages, tools=available_tools)
+
+    # 4. 将结果返回主 Agent
     return {"sub_agent_result": result}</pre>
-<p>&nbsp;</p>
 <p>Comparision with crewAI:</p>
 <table><tr><th>特性</th><th>Claude Code</th><th>crewAI</th></tr><tr><td>SubAgent 创建</td><td>Task 工具动态创建</td><td>预定义 Agent 角色</td></tr><tr><td>上下文隔离</td><td>完全独立</td><td>共享部分上下文</td></tr><tr><td>状态管理</td><td>无状态（单次执行）</td><td>有状态（多次交互）</td></tr><tr><td>并发</td><td>受控（有限并发）</td><td>自由并发</td></tr><tr><td>适用场景</td><td>编程、搜索、分析</td><td>内容创作、多角色协作</td></tr></table>
 <p>&nbsp;</p>
@@ -642,10 +638,10 @@ def create_subagent(task_description: str, task_prompt: str,
 <p>SDK 的 Agent 循环设计：</p>
 <p>Gather Context → Take Action → Verify Work → Repeat</p>
 <p>&nbsp;</p>
+<p>↑                                        │</p>
+<p>└────────────────────────────────────────┘</p>
+<p>循环直到完成</p>
 <table><tr><th>收集上下文</th><th>────→</th><th>执行行动</th><th>────→</th><th>验证结果</th></tr><tr><td>- 搜索文件</td><td></td><td>- 编辑/写入</td><td></td><td>- 运行测试</td></tr><tr><td>- 读取代码</td><td></td><td>- 运行命令</td><td></td><td>- 检查 lint</td></tr><tr><td>- 查询历史</td><td></td><td>- 调用 API</td><td></td><td>- 审查 diff</td></tr></table>
-<pre>     ↑                                        │
-     └────────────────────────────────────────┘
-                    循环直到完成</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>8.7 Claude Code 的设计原则总结</h2>

@@ -310,7 +310,7 @@ body {
 <p>类比：</p>
 <p>Prompt Engineering = 写好一封邮件</p>
 <p>Context Engineering = 管理一个人的整个信息流</p>
-<pre>（收件箱、日历、笔记、任务列表、知识库...）</pre>
+<p>（收件箱、日历、笔记、任务列表、知识库...）</p>
 <p>&nbsp;</p>
 <p>为什么需要这个转变？</p>
 <p>&nbsp;</p>
@@ -331,17 +331,17 @@ body {
 <p>数学原理（为什么会有 Context Rot？）：</p>
 <p>&nbsp;</p>
 <li>Transformer 的 n² 关系</li>
-<pre> 每个 token 关注所有其他 token → n 个 token 有 n² 个关系
- 当 n 从 1K 增长到 100K，关系数从 1M 增长到 10B
- 模型的注意力被「稀释」</pre>
+<p>每个 token 关注所有其他 token → n 个 token 有 n² 个关系</p>
+<p>当 n 从 1K 增长到 100K，关系数从 1M 增长到 10B</p>
+<p>模型的注意力被「稀释」</p>
 <p>&nbsp;</p>
 <li>训练数据分布</li>
-<pre> LLM 训练数据中，短文本远多于长文本
- 模型对长距离依赖的经验不足</pre>
+<p>LLM 训练数据中，短文本远多于长文本</p>
+<p>模型对长距离依赖的经验不足</p>
 <p>&nbsp;</p>
 <li>位置编码限制</li>
-<pre> RoPE 等位置编码在长上下文时需要插值扩展
- 扩展后的位置信息不如原本精确</pre>
+<p>RoPE 等位置编码在长上下文时需要插值扩展</p>
+<p>扩展后的位置信息不如原本精确</p>
 <p>&nbsp;</p>
 <p>实验结果（来自 Anthropic 研究）：</p>
 <table><tr><th>上下文使用率</th><th>信息提取准确率*</th></tr><tr><td>10% (20K)</td><td>~95%</td></tr><tr><td>50% (100K)</td><td>~88%</td></tr><tr><td>90% (180K)</td><td>~75%</td></tr></table>
@@ -378,21 +378,21 @@ body {
 <p>Context Compaction 策略（面试重点！）：</p>
 <p>&nbsp;</p>
 <p>策略 1: 滑动窗口</p>
-<pre>只保留最近 N 条消息
-优点：简单  | 缺点：丢失早期关键信息</pre>
+<p>只保留最近 N 条消息</p>
+<p>优点：简单  | 缺点：丢失早期关键信息</p>
 <p>&nbsp;</p>
 <p>策略 2: 摘要压缩</p>
-<pre>对早期对话用 LLM 生成摘要，替换原消息
-优点：保留关键信息  | 缺点：多一次 LLM 调用</pre>
+<p>对早期对话用 LLM 生成摘要，替换原消息</p>
+<p>优点：保留关键信息  | 缺点：多一次 LLM 调用</p>
 <p>&nbsp;</p>
 <p>策略 3: 分层记忆</p>
-<pre>最新 → 完整保留
-中期 → 摘要压缩
-远期 → 向量检索
-优点：平衡  | 缺点：实现复杂</pre>
+<p>最新 → 完整保留</p>
+<p>中期 → 摘要压缩</p>
+<p>远期 → 向量检索</p>
+<p>优点：平衡  | 缺点：实现复杂</p>
 <p>&nbsp;</p>
 <p>策略 4: Claude Code 的 92% 触发压缩 (Ch8 讲过)</p>
-<pre>优点：自动化  | 缺点：92% 是经验值，不一定最优</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (79 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">allocate</span><span class="code-badge code-badge-func">used</span><span class="code-badge code-badge-func">available</span><span class="code-badge code-badge-func">usage_report</span><span class="code-badge code-badge-class">ContextBudget</span></div><div class="code-block"><pre><span class="k">import</span> json
+<p>优点：自动化  | 缺点：92% 是经验值，不一定最优</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (79 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">allocate</span><span class="code-badge code-badge-func">used</span><span class="code-badge code-badge-func">available</span><span class="code-badge code-badge-func">usage_report</span><span class="code-badge code-badge-class">ContextBudget</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> re
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -480,24 +480,24 @@ body {
 <p>Anthropic 推荐的 Prompt 结构：</p>
 <p>&nbsp;</p>
 <p><system></p>
-<pre><background_information>
-  当前的上下文背景...
-</background_information>
-<instructions>
-  你需要完成的任务...
-</instructions>
-<tool_guidance>
-  工具使用说明...
-</tool_guidance>
-<output_description>
-  输出格式要求...
-</output_description></pre>
+<p><background_information></p>
+<p>当前的上下文背景...</p>
+<p></background_information></p>
+<p><instructions></p>
+<p>你需要完成的任务...</p>
+<p></instructions></p>
+<p><tool_guidance></p>
+<p>工具使用说明...</p>
+<p></tool_guidance></p>
+<p><output_description></p>
+<p>输出格式要求...</p>
+<p></output_description></p>
 <p></system></p>
 <p>&nbsp;</p>
 <p>结构化的好处（面试重点！）：</p>
 <li>减少「语义混杂」：LLM 不会混淆指令和数据</li>
 <li>防御 Prompt Injection：用户内容在 <user_input> 中，</li>
-<pre> 不会混入指令区</pre>
+<p>不会混入指令区</p>
 <li>便于动态拼接上下文：可以程序化增删 sections</li>
 <li>便于调试：按 tag 搜索对应的上下文块</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (94 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_section</span><span class="code-badge code-badge-func">build</span><span class="code-badge code-badge-func">extract_section</span><span class="code-badge code-badge-func">demo_structured_prompt</span><span class="code-badge code-badge-class">StructuredPrompt</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
@@ -597,15 +597,15 @@ body {
 <p>Anthropic 的实践经验：</p>
 <p>&nbsp;</p>
 <p>Prompt 太简单（硬编码 if-else 级别）：</p>
-<pre>→ 过于脆弱，不能处理变体</pre>
+<p>→ 过于脆弱，不能处理变体</p>
 <p>&nbsp;</p>
 <p>Prompt 太复杂/笼统（万言书级别）：</p>
-<pre>→ LLM 抓不住重点
-→ 容易出现「上下文衰减」</pre>
+<p>→ LLM 抓不住重点</p>
+<p>→ 容易出现「上下文衰减」</p>
 <p>&nbsp;</p>
 <p>Golden Zone：</p>
-<pre>→ 信息密度最高、恰好覆盖所需、不冗余
-→ 每段内容要有明确的「信息价值 vs token 成本」</pre>
+<p>→ 信息密度最高、恰好覆盖所需、不冗余</p>
+<p>→ 每段内容要有明确的「信息价值 vs token 成本」</p>
 <p>&nbsp;</p>
 <h2>20.6 Anthropic Skill.md 模式</h2>
 <p>&nbsp;</p>
@@ -632,9 +632,9 @@ body {
 <p>&nbsp;</p>
 <p>优势：</p>
 <li>Markdown 对 LLM 友好（训练数据中大量存在）</li>
-<pre>2. 人类可维护（非技术人员也能写）
-3. 结构清晰（LLM 容易遵循）
-4. 可作为 MCP Tool 的描述增强</pre>
+<p>2. 人类可维护（非技术人员也能写）</p>
+<p>3. 结构清晰（LLM 容易遵循）</p>
+<p>4. 可作为 MCP Tool 的描述增强</p>
 <p>&nbsp;</p>
 <p>这个模式在 Claude Code 中被大量使用。</p>
 <p>&nbsp;</p>

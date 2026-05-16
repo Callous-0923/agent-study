@@ -625,6 +625,25 @@ def _render_block(block: list[str]) -> str:
     return '<pre class="ascii-art">' + "\n".join(block) + "</pre>"
 
 
+def _looks_like_code(line: str) -> bool:
+    # 判断一行缩进文本是否像代码而非普通段落
+    CODE_PATTERNS = [
+        r'^def\s+\w+', r'^class\s+\w+', r'^import\s+', r'^from\s+\w+\s+import',
+        r'^return\s', r'^yield\s', r'^if\s+__name__', r'^@\w+',
+        r'^[a-zA-Z_]\w*\s*=\s*', r'^[a-zA-Z_]\w*\.\w+\(',
+        r'^print\(', r'^for\s+\w+\s+in\s', r'^while\s', r'^try\s*:',
+        r'^with\s+\w+', r'^except', r'^finally\s*:', r'^elif\s',
+        r'^else\s*:', r'^async\s', r'^await\s', r'^raise\s',
+        r'^#', r'^"""', r"^'''",
+        r'^\w+\.\w+\(', r'^self\.', r'^\s*\}',
+    ]
+    line_stripped = line.strip()
+    for pat in CODE_PATTERNS:
+        if re.match(pat, line_stripped):
+            return True
+    return False
+
+
 def parse_lecture(docstring: str) -> str:
     # 解析讲义文本 → HTML
     lines = docstring.split("\n")
@@ -667,16 +686,35 @@ def parse_lecture(docstring: str) -> str:
             i += 1
             continue
 
-        # 缩进 4 格代码块
+        # 缩进 4 格代码块 —— 仅当内容像代码时才渲染为 pre
         if line.startswith("    ") and not stripped.startswith("-") and not stripped.startswith("1.") and not stripped.startswith("•") and stripped:
+            looks_like_code = _looks_like_code(stripped)
+            if not looks_like_code:
+                output.append(f"<p>{stripped}</p>")
+                i += 1
+                continue
             flush_block()
-            cb = [line[4:]]
-            j = i + 1
-            while j < len(lines) and lines[j].startswith("    "):
-                cb.append(lines[j][4:])
-                j += 1
+            # 收集连续缩进的行
+            cb = []
+            while i < len(lines) and lines[i].startswith("    "):
+                cb.append(lines[i][4:])
+                i += 1
+            # 向前看：跳过空行，如果后面还有代码块就合并
+            while i < len(lines):
+                peek = lines[i].strip()
+                if not peek:
+                    cb.append("")  # 保留下一个代码块前的空行
+                    i += 1
+                elif lines[i].startswith("    ") and _looks_like_code(lines[i].strip()):
+                    while i < len(lines) and lines[i].startswith("    "):
+                        cb.append(lines[i][4:])
+                        i += 1
+                else:
+                    break
+            # 去除尾部空行
+            while cb and cb[-1] == "":
+                cb.pop()
             output.append("<pre>" + "\n".join(cb) + "</pre>")
-            i = j
             continue
 
         # 框线行 (含表格边框字符)

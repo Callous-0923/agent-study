@@ -313,17 +313,17 @@ body {
 <p>什么时候用 SQLite？什么时候升级到 PostgreSQL？</p>
 <p>&nbsp;</p>
 <p>SQLite 适用：</p>
-<pre>✓ 单机部署的 Agent 服务
-✓ 原型开发 / MVP 阶段
-✓ 个人 Agent 助手
-✓ 中小型团队内部工具
-✓ 对话历史 < 10M 条</pre>
+<p>✓ 单机部署的 Agent 服务</p>
+<p>✓ 原型开发 / MVP 阶段</p>
+<p>✓ 个人 Agent 助手</p>
+<p>✓ 中小型团队内部工具</p>
+<p>✓ 对话历史 < 10M 条</p>
 <p>&nbsp;</p>
 <p>PostgreSQL 适用：</p>
-<pre>→ 多副本高可用需求
-→ 写入 QPS > 1000
-→ 需要行级权限控制
-→ 需要地理分布部署</pre>
+<p>→ 多副本高可用需求</p>
+<p>→ 写入 QPS > 1000</p>
+<p>→ 需要行级权限控制</p>
+<p>→ 需要地理分布部署</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>14.2 Agent 数据库 schema 设计</h2>
@@ -335,7 +335,7 @@ body {
 <p>设计要点（面试重点！）：</p>
 <li>sessions 和 messages 是 1:N 关系</li>
 <li>tool_calls 存储在 messages 表的 JSON 字段中（不用单独的表）</li>
-<pre> → 减少 JOIN，提高读取性能</pre>
+<p>→ 减少 JOIN，提高读取性能</p>
 <li>tool_logs 是独立的审计表（记录每次工具调用的详细信息）</li>
 <li>tasks 表支持异步任务（暂停/恢复/取消）</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (132 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get_db</span><span class="code-badge code-badge-func">init_database</span><span class="code-badge code-badge-const">DB_PATH</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
@@ -827,39 +827,39 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
 <p>决策 1: 为什么 tool_calls 存在 messages 表里而不单独建表？</p>
 <p>&nbsp;</p>
 <p>方案 A（单独建表）:</p>
-<pre>messages 表 + tool_calls 表 → JOIN 查询</pre>
+<p>messages 表 + tool_calls 表 → JOIN 查询</p>
 <p>&nbsp;</p>
 <p>方案 B（JSON 字段）:</p>
-<pre>messages 表的 tool_calls_json 字段</pre>
+<p>messages 表的 tool_calls_json 字段</p>
 <p>&nbsp;</p>
 <p>选择方案 B 的理由：</p>
-<pre>✓ Agent 读取对话历史时，要一次性加载所有信息（含 tool_calls）
-✓ 单表读取比 JOIN 快得多
-✓ Agent 不会按 tool_name 筛选历史消息（没有这种查询需求）
-✓ 但 tool_logs 表单独存在（用于审计和分析查询）</pre>
+<p>✓ Agent 读取对话历史时，要一次性加载所有信息（含 tool_calls）</p>
+<p>✓ 单表读取比 JOIN 快得多</p>
+<p>✓ Agent 不会按 tool_name 筛选历史消息（没有这种查询需求）</p>
+<p>✓ 但 tool_logs 表单独存在（用于审计和分析查询）</p>
 <p>&nbsp;</p>
 <p>决策 2: WAL 模式为什么重要？</p>
 <p>&nbsp;</p>
 <p>WAL = Write-Ahead Logging（预写式日志）</p>
 <p>&nbsp;</p>
 <p>默认模式（DELETE）:</p>
-<pre>写入时锁定整个数据库 → 读写互斥
-AgentA 在写入消息 → AgentB 无法读取历史</pre>
+<p>写入时锁定整个数据库 → 读写互斥</p>
+<p>AgentA 在写入消息 → AgentB 无法读取历史</p>
 <p>&nbsp;</p>
 <p>WAL 模式:</p>
-<pre>写入操作记录到 WAL 文件 → 不阻塞读取
-支持无限并发读 + 1 个写
-AgentA 写消息 + AgentB 读历史 = 同时进行 ✓</pre>
+<p>写入操作记录到 WAL 文件 → 不阻塞读取</p>
+<p>支持无限并发读 + 1 个写</p>
+<p>AgentA 写消息 + AgentB 读历史 = 同时进行 ✓</p>
 <p>&nbsp;</p>
 <p>代价：</p>
-<pre>WAL 文件会增长，需要定期 checkpoint（SQLite 自动处理）</pre>
+<p>WAL 文件会增长，需要定期 checkpoint（SQLite 自动处理）</p>
 <p>&nbsp;</p>
 <p>决策 3: 为什么用 TEXT 存时间而不是 TIMESTAMP？</p>
 <p>&nbsp;</p>
 <p>SQLite 没有 DATE/TIME 类型，TEXT 的 ISO8601 格式：</p>
-<pre>✓ 人类可读（便于调试）
-✓ 排序正确（符合 ISO8601 字典序）
-✓ 跨语言一致</pre>
+<p>✓ 人类可读（便于调试）</p>
+<p>✓ 排序正确（符合 ISO8601 字典序）</p>
+<p>✓ 跨语言一致</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>14.5 SQLite 在 Agent 场景中的高级用法</h2>
@@ -867,8 +867,8 @@ AgentA 写消息 + AgentB 读历史 = 同时进行 ✓</pre>
 <li>FTS5 全文搜索 —— 搜索对话历史</li>
 <p>&nbsp;</p>
 <p>CREATE VIRTUAL TABLE messages_fts USING fts5(</p>
-<pre>  content,
-  content='messages',        -- 外部内容表
+<p>content,</p>
+<pre>  content='messages',        -- 外部内容表
   content_rowid='id'          -- 外部表的行ID</pre>
 <p>);</p>
 <p>&nbsp;</p>

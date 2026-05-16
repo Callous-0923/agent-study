@@ -297,20 +297,24 @@ body {
 <p>&nbsp;</p>
 <h2>27.1 Agent Prompt 和普通 Prompt 的区别</h2>
 <p>&nbsp;</p>
-<p>普通 LLM Prompt：</p>
-<p>只需要告诉模型「输出什么」</p>
+<p>很多人觉得「写 Prompt 有什么难的，告诉 AI 要做啥不就行了」。</p>
+<p>但对于 Agent，这个想法会导致灾难性的性能差距。</p>
 <p>&nbsp;</p>
-<p>Agent Prompt：</p>
-<p>需要告诉模型：</p>
-<li>你是谁（角色）</li>
-<pre>2. 你能做什么（工具列表）
-3. 什么时候该做什么（工具选择逻辑）
-4. 什么不该做（边界/安全约束）
-5. 输出格式是什么</pre>
+<p>普通 LLM Prompt：「请翻译这段文字」——只需要告诉模型输出什么。</p>
+<p>&nbsp;</p>
+<p>Agent Prompt 需要同时回答 5 个问题（缺一个都会翻车）：</p>
+<li>你是谁（角色）——「不能做什么」和「能做什么」同样重要</li>
+<li>你能做什么（工具列表）——格式错误 = LLM 根本不会调工具</li>
+<li>什么时候该做什么（工具选择逻辑）——群发邮件 or 单发？</li>
+<li>什么不该做（边界/安全约束）——不是所有请求都应该执行</li>
+<li>输出格式是什么——JSON? 自然语言? 两者切换?</li>
 <p>&nbsp;</p>
 <p>类比：</p>
-<p>普通 Prompt = 给厨师一个菜名</p>
-<p>Agent Prompt = 给厨师菜谱 + 厨房设备清单 + 工作流程</p>
+<p>普通 Prompt = 给厨师一个菜名（「来一份蛋炒饭」）</p>
+<p>Agent Prompt = 给厨师菜谱 + 全套厨具说明书 + 工作流程 + 安全手册</p>
+<p>&nbsp;</p>
+<p>面试官常问：「你的 Agent System Prompt 怎么写？」——如果你能张嘴说出</p>
+<p>这 5 个模块，已经超过了 80% 的候选人。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>27.2 Agent System Prompt 模板（面试送分题！）</h2>
@@ -318,24 +322,24 @@ body {
 <p>标准化模板（基于 Anthropic 2025 推荐）：</p>
 <p>&nbsp;</p>
 <p><system></p>
-<pre><role>
-  你是一个 [角色描述]。
-</role>
-<capabilities>
-  你可以使用的工具：[工具列表]
-</capabilities>
-<tool_guidance>
-  每个工具的使用场景和注意事项...
-</tool_guidance>
-<workflow>
-  解决问题时应该遵循的工作流程...
-</workflow>
-<constraints>
-  你不能做的事情...
-</constraints>
-<output_format>
-  输出格式要求...
-</output_format></pre>
+<p><role></p>
+<p>你是一个 [角色描述]。</p>
+<p></role></p>
+<p><capabilities></p>
+<p>你可以使用的工具：[工具列表]</p>
+<p></capabilities></p>
+<p><tool_guidance></p>
+<p>每个工具的使用场景和注意事项...</p>
+<p></tool_guidance></p>
+<p><workflow></p>
+<p>解决问题时应该遵循的工作流程...</p>
+<p></workflow></p>
+<p><constraints></p>
+<p>你不能做的事情...</p>
+<p></constraints></p>
+<p><output_format></p>
+<p>输出格式要求...</p>
+<p></output_format></p>
 <p></system></p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (64 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_capabilities</span><span class="code-badge code-badge-func">add_tool_guidance</span><span class="code-badge code-badge-func">add_workflow</span><span class="code-badge code-badge-func">add_constraints</span><span class="code-badge code-badge-func">add_output_format</span><span class="code-badge code-badge-func">build</span><span class="code-badge code-badge-func">estimate_tokens</span><span class="code-badge code-badge-class">AgentPromptBuilder</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -412,8 +416,8 @@ body {
 <p>&nbsp;</p>
 <p>✗ 差： "查询天气"</p>
 <p>✅ 好： "查询指定城市当天的实时天气，包括气温、湿度、风力。</p>
-<pre>      适用于用户询问天气相关问题时。不支持未来天气预报。
-      示例调用：get_weather(city='北京')"</pre>
+<p>适用于用户询问天气相关问题时。不支持未来天气预报。</p>
+<p>示例调用：get_weather(city='北京')"</p>
 <p>&nbsp;</p>
 <p>工具描述评分卡：</p>
 <table><tr><th>描述要素</th><th>加分</th></tr><tr><td>有功能描述</td><td>+1</td></tr><tr><td>有使用场景</td><td>+2</td></tr><tr><td>有边界条件</td><td>+2</td></tr><tr><td>有调用示例</td><td>+1</td></tr><tr><td>参数有 enum 限制</td><td>+2</td></tr><tr><td>参数有详细描述</td><td>+1</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (113 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">score_tool_description</span><span class="code-badge code-badge-class">ToolDescriptionOptimizer</span></div><div class="code-block"><pre><span class="k">import</span> json
@@ -631,7 +635,7 @@ body {
         <span class="s">"✅ 参数有详细描述"</span>,
     ]:
         <span class="b">print</span>(f<span class="s">"  {item}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第27章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (381 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第27章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (385 行)</summary><div class="code-block"><pre><span class="s">"""
 第27章：Agent Prompt 工程 —— 工具描述也是 Prompt
 ===================================================
 
@@ -654,20 +658,24 @@ body {
 27.1 Agent Prompt 和普通 Prompt 的区别
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-普通 LLM Prompt：
-  只需要告诉模型「输出什么」
+很多人觉得「写 Prompt 有什么难的，告诉 AI 要做啥不就行了」。
+但对于 Agent，这个想法会导致灾难性的性能差距。
 
-Agent Prompt：
-  需要告诉模型：
-    1. 你是谁（角色）
-    2. 你能做什么（工具列表）
-    3. 什么时候该做什么（工具选择逻辑）
-    4. 什么不该做（边界/安全约束）
-    5. 输出格式是什么
+普通 LLM Prompt：「请翻译这段文字」——只需要告诉模型输出什么。
+
+Agent Prompt 需要同时回答 5 个问题（缺一个都会翻车）：
+  1. 你是谁（角色）——「不能做什么」和「能做什么」同样重要
+  2. 你能做什么（工具列表）——格式错误 = LLM 根本不会调工具
+  3. 什么时候该做什么（工具选择逻辑）——群发邮件 or 单发？
+  4. 什么不该做（边界/安全约束）——不是所有请求都应该执行
+  5. 输出格式是什么——JSON? 自然语言? 两者切换?
 
 类比：
-  普通 Prompt = 给厨师一个菜名
-  Agent Prompt = 给厨师菜谱 + 厨房设备清单 + 工作流程
+  普通 Prompt = 给厨师一个菜名（「来一份蛋炒饭」）
+  Agent Prompt = 给厨师菜谱 + 全套厨具说明书 + 工作流程 + 安全手册
+
+面试官常问：「你的 Agent System Prompt 怎么写？」——如果你能张嘴说出
+这 5 个模块，已经超过了 80% 的候选人。
 
 
 27.2 Agent System Prompt 模板（面试送分题！）
