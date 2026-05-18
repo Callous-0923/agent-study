@@ -52,17 +52,20 @@ body {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
 }
-.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero h1 { font-size: 2em; margin-bottom: 8px; letter-spacing: -0.5px; }
 .hero .subtitle { opacity: 0.9; font-size: 1.05em; }
 
-/* 讲义内容 */
+/* 讲义标题层级 */
 .lecture { background: white; border-radius: 10px; padding: 36px 32px;
   box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
 .lecture h2 {
-  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  font-size: 1.25em; color: #667eea; margin: 28px 0 12px;
   padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
 }
-.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture h3 {
+  font-size: 1.08em; color: #555; margin: 22px 0 8px;
+  padding-left: 10px; border-left: 3px solid #667eea;
+}
 .lecture p { margin: 10px 0; }
 .lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
 .lecture li { margin: 4px 0; }
@@ -287,9 +290,7 @@ body {
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html" title="MCP 协议详解 — JSON-RPC·原语·能力协商">← 第10章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_12_infrastructure/12_infrastructure.html" title="Agent 生产基础设施 — OpenClaw·Harness·Checklist">第12章 →</a>
-</div><div class="hero"><h1>第11章 Tool Calling 底层机制深度剖析</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 深入理解 LLM Function Calling 的「真正原理」</span><span class="tag tag-goal">2. 掌握 OpenAI / Anthropic 两套实现的技术细节和差异</span><span class="tag tag-goal">3. 理解 Streaming Tool Calls 的机制</span><span class="tag tag-goal">4. 学会 Parallel Tool Calling 的使用与限制</span><span class="tag tag-goal">5. 掌握 Strict Function Calling（严格模式）</span><span class="tag tag-goal">6. 理解 Tool Calling 中的常见陷阱和解决方案</span><span class="tag tag-interview">🎤 LLM 是如何「知道」该调用哪个工具的？</span><span class="tag tag-interview">🎤 OpenAI 的 function calling 和 Anthropic 的 tool_use 有什么区别？</span><span class="tag tag-interview">🎤 什么是 Parallel Tool Calling？什么时候该用，什么时候不该用？</span><span class="tag tag-interview">🎤 Streaming 模式下如何处理 Tool Call？</span><span class="tag tag-interview">🎤 Token 消耗：tool definitions 计入 prompt token 吗？</span></div><p>第11章：Tool Calling 底层机制深度剖析</p>
-<p>=====================================</p>
-<p>&nbsp;</p>
+</div><div class="hero"><h1>第11章 Tool Calling 底层机制深度剖析</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 深入理解 LLM Function Calling 的「真正原理」</span><span class="tag tag-goal">2. 掌握 OpenAI / Anthropic 两套实现的技术细节和差异</span><span class="tag tag-goal">3. 理解 Streaming Tool Calls 的机制</span><span class="tag tag-goal">4. 学会 Parallel Tool Calling 的使用与限制</span><span class="tag tag-goal">5. 掌握 Strict Function Calling（严格模式）</span><span class="tag tag-goal">6. 理解 Tool Calling 中的常见陷阱和解决方案</span><span class="tag tag-interview">🎤 LLM 是如何「知道」该调用哪个工具的？</span><span class="tag tag-interview">🎤 OpenAI 的 function calling 和 Anthropic 的 tool_use 有什么区别？</span><span class="tag tag-interview">🎤 什么是 Parallel Tool Calling？什么时候该用，什么时候不该用？</span><span class="tag tag-interview">🎤 Streaming 模式下如何处理 Tool Call？</span><span class="tag tag-interview">🎤 Token 消耗：tool definitions 计入 prompt token 吗？</span></div><p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>本章是基于 OpenAI / Anthropic API 文档 + 实践经验的总结</p>

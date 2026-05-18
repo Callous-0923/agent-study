@@ -106,17 +106,20 @@ body {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
 }
-.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero h1 { font-size: 2em; margin-bottom: 8px; letter-spacing: -0.5px; }
 .hero .subtitle { opacity: 0.9; font-size: 1.05em; }
 
-/* 讲义内容 */
+/* 讲义标题层级 */
 .lecture { background: white; border-radius: 10px; padding: 36px 32px;
   box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
 .lecture h2 {
-  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  font-size: 1.25em; color: #667eea; margin: 28px 0 12px;
   padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
 }
-.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture h3 {
+  font-size: 1.08em; color: #555; margin: 22px 0 8px;
+  padding-left: 10px; border-left: 3px solid #667eea;
+}
 .lecture p { margin: 10px 0; }
 .lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
 .lecture li { margin: 4px 0; }
@@ -750,9 +753,24 @@ def parse_lecture(docstring: str) -> str:
                 i += 1
             continue
 
-        # 小节标题 "X.Y title"
+        # 三级子标题 "X.Y.Z title" (如 2.1.1 / 29.4.1)
+        if re.match(r'^\d+\.\d+\.\d+[  .]', stripped):
+            output.append(f'<h3>{stripped}</h3>')
+            i += 1
+            continue
+
+        # 二级小节标题 "X.Y title"
         if re.match(r'^\d+\.\d+[  ]', stripped):
             output.append(f'<h2>{stripped}</h2>')
+            i += 1
+            continue
+
+        # 章节主标题 "第X章：..." → 跳过（hero 中已显示）
+        if re.match(r'^第\d+章[：:]', stripped):
+            i += 1
+            continue
+        # 副标题 ==== 或 ---- 分隔线
+        if re.match(r'^={3,}$', stripped) or re.match(r'^-{3,}$', stripped):
             i += 1
             continue
 

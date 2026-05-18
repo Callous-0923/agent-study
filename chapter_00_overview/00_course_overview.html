@@ -52,17 +52,20 @@ body {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white; padding: 48px 32px; border-radius: 12px; margin-bottom: 36px;
 }
-.hero h1 { font-size: 2em; margin-bottom: 8px; }
+.hero h1 { font-size: 2em; margin-bottom: 8px; letter-spacing: -0.5px; }
 .hero .subtitle { opacity: 0.9; font-size: 1.05em; }
 
-/* 讲义内容 */
+/* 讲义标题层级 */
 .lecture { background: white; border-radius: 10px; padding: 36px 32px;
   box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
 .lecture h2 {
-  font-size: 1.35em; color: #667eea; margin: 28px 0 12px;
+  font-size: 1.25em; color: #667eea; margin: 28px 0 12px;
   padding-bottom: 6px; border-bottom: 2px solid #e8e8ff;
 }
-.lecture h3 { font-size: 1.1em; color: #444; margin: 20px 0 8px; }
+.lecture h3 {
+  font-size: 1.08em; color: #555; margin: 22px 0 8px;
+  padding-left: 10px; border-left: 3px solid #667eea;
+}
 .lecture p { margin: 10px 0; }
 .lecture ul, .lecture ol { margin: 8px 0 8px 24px; }
 .lecture li { margin: 4px 0; }
@@ -287,12 +290,9 @@ body {
 <span class="nav-link nav-disabled">← 已是第一章</span>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_01_fundamentals/01_hello_agent.html" title="第一个 Agent — 裸写 ReAct 循环">第1章 →</a>
-</div><div class="hero"><h1>第0章 AI Agent 课程概览与前置知识</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解「什么是 AI Agent」- 建立直觉认知</span><span class="tag tag-goal">2. 掌握 Agent 的核心组成公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">3. 了解 Agent 开发的完整技术栈和 36 章学习路线</span><span class="tag tag-goal">4. 确认学习本课程所需的前置知识</span><span class="tag tag-goal">0.1 Agent 是什么？（5分钟理解）</span><span class="tag tag-goal">0.2 为什么 2024-2026 年是 Agent 爆发期？</span><span class="tag tag-goal">0.3 Agent 核心公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">0.4 全套学习路线图（36章七层递进）</span><span class="tag tag-goal">0.5 前置知识自查清单</span><span class="tag tag-goal">0.6 环境搭建（一键运行）</span></div><p>第0章：AI Agent 课程概览与前置知识</p>
-<p>===================================</p>
+</div><div class="hero"><h1>第0章 AI Agent 课程概览与前置知识</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解「什么是 AI Agent」- 建立直觉认知</span><span class="tag tag-goal">2. 掌握 Agent 的核心组成公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">3. 了解 Agent 开发的完整技术栈和 36 章学习路线</span><span class="tag tag-goal">4. 确认学习本课程所需的前置知识</span><span class="tag tag-goal">0.1 Agent 是什么？（5分钟理解）</span><span class="tag tag-goal">0.2 为什么 2024-2026 年是 Agent 爆发期？</span><span class="tag tag-goal">0.3 Agent 核心公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">0.4 全套学习路线图（36章七层递进）</span><span class="tag tag-goal">0.5 前置知识自查清单</span><span class="tag tag-goal">0.6 环境搭建（一键运行）</span></div><p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p>&nbsp;</p>
-<hr>
 <p>&nbsp;</p>
 <h2>0.1 Agent 是什么？—— 用类比建立直觉</h2>
 <p>&nbsp;</p>
@@ -321,7 +321,6 @@ body {
 <p>而是在给它装「手」——让它能查、能算、能操作。这才是 Agent 和</p>
 <p>聊天机器人的本质分界线。</p>
 <p>&nbsp;</p>
-<hr>
 <p>&nbsp;</p>
 <h2>0.2 为什么 Agent 是 2024-2026 年最热门方向？</h2>
 <p>&nbsp;</p>
@@ -358,7 +357,6 @@ body {
 <li>硅谷 VC 投资方向全面转向 Agent 赛道</li>
 <li>Agent 工程师薪资范围：一线城市 25K-80K（视经验和公司）</li>
 <p>&nbsp;</p>
-<hr>
 <p>&nbsp;</p>
 <h2>0.3 Agent 核心公式</h2>
 <p>&nbsp;</p>
@@ -438,7 +436,6 @@ body {
 <p>+ Ch11(ToolCall) + Ch15(A2A) + Ch18(安全)</p>
 <li>如果你要构建产品：Ch13(FastAPI) + Ch14(SQLite) + Ch12(生产)</li>
 <p>&nbsp;</p>
-<hr>
 <p>&nbsp;</p>
 <h2>0.5 前置知识自查清单</h2>
 <p>&nbsp;</p>
@@ -468,7 +465,6 @@ body {
 <li>不需要分布式系统经验</li>
 <li>不需要前端开发能力</li>
 <p>&nbsp;</p>
-<hr>
 <p>&nbsp;</p>
 <h2>0.6 环境搭建</h2>
 <p>&nbsp;</p>
