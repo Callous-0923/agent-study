@@ -1,0 +1,9 @@
+{
+  "name": "agent-study",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Agent 全栈学习课程 - 36章7层递进",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'"
+  }
+}
