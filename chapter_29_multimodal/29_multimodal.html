@@ -335,7 +335,13 @@ body {
 <p>这就是 Computer Use 的基础（Ch17 讲过截图-动作循环）。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>29.3 图片分析 Agent 实现</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (83 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">analyze</span><span class="code-badge code-badge-class">ImageAnalysisAgent</span></div><div class="code-block"><pre><span class="k">import</span> base64
+<h2>29.3 图片分析 Agent 实现</h2>
+<p>&nbsp;</p>
+<p>下面实现一个 ImageAnalysisAgent 类，模拟多模态 Agent 的完整决策流程。</p>
+<p>虽然这里用规则模拟替代了真实 GPT-4o Vision 调用，但保留了核心的三步</p>
+<p>Pipeline：视觉理解 → 工具决策 → 生成回答。这套 Pipeline 的架构和真实</p>
+<p>多模态 Agent 完全相同，你可以直接把 _detect_objects / _extract_text 替换</p>
+<p>为 GPT-4o / Claude Vision API 调用。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (83 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">analyze</span><span class="code-badge code-badge-class">ImageAnalysisAgent</span></div><div class="code-block"><pre><span class="k">import</span> base64
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> os
@@ -529,7 +535,7 @@ body {
         (<span class="s">"视频流分析"</span>, <span class="s">"逐帧提取→聚合推理"</span>),
     ]:
         <span class="b">print</span>(f<span class="s">"  {mode:16s} → {desc}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第29章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (270 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第29章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (276 行)</summary><div class="code-block"><pre><span class="s">"""
 第29章：Multi-Modal Agent —— 让 Agent 看懂世界
 ================================================
 
@@ -598,6 +604,12 @@ Tool Calling + 多模态：
 
 29.3 图片分析 Agent 实现
 ━━━━━━━━━━━━━━━━━━━━━━━━
+
+下面实现一个 ImageAnalysisAgent 类，模拟多模态 Agent 的完整决策流程。
+虽然这里用规则模拟替代了真实 GPT-4o Vision 调用，但保留了核心的三步
+Pipeline：视觉理解 → 工具决策 → 生成回答。这套 Pipeline 的架构和真实
+多模态 Agent 完全相同，你可以直接把 _detect_objects / _extract_text 替换
+为 GPT-4o / Claude Vision API 调用。
 """</span>
 
 <span class="k">import</span> base64

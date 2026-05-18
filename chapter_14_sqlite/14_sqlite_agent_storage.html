@@ -469,7 +469,11 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
         CREATE INDEX IF NOT EXISTS idx_tool_logs_name
             ON tool_logs(tool_name, created_at);
         """</span>)
-    <span class="b">print</span>(<span class="s">"  ✅ 数据库已初始化（WAL模式 + 5张表 + 6个索引）"</span>)</pre></div></details></div><div class="lecture"><h2>14.3 Agent 存储层 API</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (355 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">create_user</span><span class="code-badge code-badge-func">get_user</span><span class="code-badge code-badge-func">check_quota</span><span class="code-badge code-badge-func">consume_quota</span><span class="code-badge code-badge-func">create_session</span><span class="code-badge code-badge-func">get_session</span><span class="code-badge code-badge-func">list_user_sessions</span><span class="code-badge code-badge-func">pause_session</span><span class="code-badge code-badge-func">resume_session</span><span class="code-badge code-badge-func">save_message</span><span class="code-badge code-badge-func">get_conversation_history</span><span class="code-badge code-badge-func">log_tool_call</span><span class="code-badge code-badge-func">create_task</span><span class="code-badge code-badge-func">update_task_status</span><span class="code-badge code-badge-func">get_usage_stats</span><span class="code-badge code-badge-class">AgentStorage</span></div><div class="code-block"><pre><span class="k">import</span> os
+    <span class="b">print</span>(<span class="s">"  ✅ 数据库已初始化（WAL模式 + 5张表 + 6个索引）"</span>)</pre></div></details></div><div class="lecture"><h2>14.3 Agent 存储层 API</h2>
+<p>&nbsp;</p>
+<p>这里封装一个 SQLiteAgentStore 类，提供 5 张表的 CRUD 操作。</p>
+<p>设计思路：每个 Agent 交互环节（会话、任务、消息、工具调用、用户）都有独立表。</p>
+<p>使用 WAL 模式保证高并发下的读写不阻塞，所有写操作都有审计时间戳。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (355 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">create_user</span><span class="code-badge code-badge-func">get_user</span><span class="code-badge code-badge-func">check_quota</span><span class="code-badge code-badge-func">consume_quota</span><span class="code-badge code-badge-func">create_session</span><span class="code-badge code-badge-func">get_session</span><span class="code-badge code-badge-func">list_user_sessions</span><span class="code-badge code-badge-func">pause_session</span><span class="code-badge code-badge-func">resume_session</span><span class="code-badge code-badge-func">save_message</span><span class="code-badge code-badge-func">get_conversation_history</span><span class="code-badge code-badge-func">log_tool_call</span><span class="code-badge code-badge-func">create_task</span><span class="code-badge code-badge-func">update_task_status</span><span class="code-badge code-badge-func">get_usage_stats</span><span class="code-badge code-badge-class">AgentStorage</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -1054,7 +1058,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
     <span class="b">print</span>(f<span class="s">"\n  💾 数据库文件: {DB_PATH}"</span>)
     <span class="b">print</span>(f<span class="s">"  📏 文件大小: {os.path.getsize(DB_PATH):,} bytes"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第14章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (822 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第14章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (826 行)</summary><div class="code-block"><pre><span class="s">"""
 第14章：SQLite + Agent 持久化存储
 ==================================
 
@@ -1298,6 +1302,10 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 14.3 Agent 存储层 API
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+这里封装一个 SQLiteAgentStore 类，提供 5 张表的 CRUD 操作。
+设计思路：每个 Agent 交互环节（会话、任务、消息、工具调用、用户）都有独立表。
+使用 WAL 模式保证高并发下的读写不阻塞，所有写操作都有审计时间戳。
 """</span>
 
 

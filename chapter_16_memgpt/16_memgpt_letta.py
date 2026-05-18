@@ -185,6 +185,14 @@ MemGPT v2 的创新（2025年）。
 
 16.6 MemGPT 架构的简化实现
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+下面实现一套 MemGPT 风格的 Agent 记忆管理模拟器，核心三组件：
+  1. CoreMemoryBlock —— 存储 Agent 的核心身份信息（人类/角色）
+  2. Heartbeat —— 定时触发反思，模拟 Sleep-Time Compute
+  3. MemoryManager —— 统一的记忆读写接口
+
+这套架构的精髓在于：Agent 不是被动地被调用，而是像操作系统一样持续运行，
+定期自我审视和整理记忆。
 """
 
 from typing import Optional

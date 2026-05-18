@@ -570,7 +570,13 @@ body {
         <span class="b">print</span>(f<span class="s">"    [{r['score']:.3f}] {r['text']}..."</span>)
 
     <span class="h"># 存储统计</span>
-    <span class="b">print</span>(f<span class="s">"\n  📊 存储统计: {json.dumps(store.stats(), indent=2)}"</span>)</pre></div></details></div><div class="lecture"><h2>25.4 Embedding 维度实验</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_embedding_dimension_tradeoff</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+    <span class="b">print</span>(f<span class="s">"\n  📊 存储统计: {json.dumps(store.stats(), indent=2)}"</span>)</pre></div></details></div><div class="lecture"><h2>25.4 Embedding 维度实验</h2>
+<p>&nbsp;</p>
+<p>接下来用一个对比实验直观展示维度选择的影响。我们用不同的低维投影模拟</p>
+<p>不同 Embedding 模型的检索效果差异。核心结论：维度从 384 提升到 1024，</p>
+<p>语义精度显著提升（+20% 左右），但从 1024 提升到 3072，提升非常有限</p>
+<p>（+3-5%），而存储和计算成本翻倍。这就是工业界选择 512-1024 维度的</p>
+<p>数据支撑。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_embedding_dimension_tradeoff</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -660,7 +666,7 @@ body {
         <span class="s">"已有PG/Redis → pgvector"</span>,
     ]:
         <span class="b">print</span>(f<span class="s">"  {item}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第25章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (407 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第25章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (413 行)</summary><div class="code-block"><pre><span class="s">"""
 第25章：向量数据库选型与实战 —— Agent 记忆与 RAG 的底座
 ============================================================
 
@@ -976,6 +982,12 @@ body {
 <span class="s">"""
 25.4 Embedding 维度实验
 ━━━━━━━━━━━━━━━━━━━━━━━
+
+接下来用一个对比实验直观展示维度选择的影响。我们用不同的低维投影模拟
+不同 Embedding 模型的检索效果差异。核心结论：维度从 384 提升到 1024，
+语义精度显著提升（+20% 左右），但从 1024 提升到 3072，提升非常有限
+（+3-5%），而存储和计算成本翻倍。这就是工业界选择 512-1024 维度的
+数据支撑。
 """</span>
 
 

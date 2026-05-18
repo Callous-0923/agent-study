@@ -327,7 +327,18 @@ body {
 <span class="k">from</span> fastapi.middleware.cors <span class="k">import</span> CORSMiddleware
 <span class="k">from</span> pydantic <span class="k">import</span> BaseModel, Field
 
-load_dotenv()</pre></div></details></div><div class="lecture"><h2>13.2 数据模型定义（Pydantic v2）</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (47 行)</summary><div class="code-badges"><span class="code-badge code-badge-class">AgentRequest</span><span class="code-badge code-badge-class">AgentResponse</span><span class="code-badge code-badge-class">SSEEvent</span></div><div class="code-block"><pre><span class="k">import</span> os
+load_dotenv()</pre></div></details></div><div class="lecture"><h2>13.2 数据模型定义（Pydantic v2）</h2>
+<p>&nbsp;</p>
+<p>用 Pydantic v2 来定义 Agent 服务的请求和响应结构体。</p>
+<p>选择 Pydantic 的理由：</p>
+<li>FastAPI 原生集成，自动生成 OpenAPI / Swagger 文档</li>
+<li>Field 描述直接变成 API 文档中的参数说明</li>
+<li>请求校验零代码——不合法的参数自动返回 422</li>
+<li>支持嵌套模型（Agent 的 tool_call 是嵌套结构）</li>
+<p>&nbsp;</p>
+<p>这里定义两个核心模型：</p>
+<li>AgentRequest：用户发来的任务请求</li>
+<li>AgentStep：Agent 执行过程中每步的状态</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (47 行)</summary><div class="code-badges"><span class="code-badge code-badge-class">AgentRequest</span><span class="code-badge code-badge-class">AgentResponse</span><span class="code-badge code-badge-class">SSEEvent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> sqlite3
@@ -373,7 +384,19 @@ load_dotenv()
 <span class="k">class</span> <span class="f">SSEEvent</span>(BaseModel):
     <span class="s">"""SSE 事件格式。"""</span>
     event: <span class="b">str</span>                      <span class="h"># "thinking" | "tool_call" | "tool_result" | "done" | "error"</span>
-    data: <span class="b">str</span>                       <span class="h"># JSON 字符串</span></pre></div></details></div><div class="lecture"><h2>13.3 模拟 Agent 引擎（不依赖外部 API）</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (85 行)</summary><div class="code-badges"><span class="code-badge code-badge-class">SimulatedAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
+    data: <span class="b">str</span>                       <span class="h"># JSON 字符串</span></pre></div></details></div><div class="lecture"><h2>13.3 模拟 Agent 引擎（不依赖外部 API）</h2>
+<p>&nbsp;</p>
+<p>这里实现一个 MockAgentEngine：不依赖任何外部 LLM API，用模拟步骤</p>
+<p>来演示 Agent 的执行流程。为什么这样做？</p>
+<p>&nbsp;</p>
+<li>可离线测试——不需要配置 API Key 也能跑通整个 HTTP 服务</li>
+<li>展示架构分层——Agent 引擎和服务框架是解耦的</li>
+<li>真实项目中的做法——先用 Mock 验证 API 设计，再接入真实 LLM</li>
+<p>&nbsp;</p>
+<p>MockAgentEngine 的核心：</p>
+<li>execute() 是异步的，返回 async generator（每步一个事件）</li>
+<li>模拟了「思考→计划→工具调用→总结」4 步流程</li>
+<li>用 asyncio.sleep() 模拟 LLM 调用的延迟，方便测试超时机制</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (85 行)</summary><div class="code-badges"><span class="code-badge code-badge-class">SimulatedAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> sqlite3
@@ -457,7 +480,18 @@ load_dotenv()
         <span class="k">else</span>:
             answer = f<span class="s">"您好！您的问题「{message}」已收到。这是一个模拟 Agent 回复。"</span>
 
-        <span class="k">yield</span> {<span class="s">"event"</span>: <span class="s">"done"</span>, <span class="s">"data"</span>: answer, <span class="s">"tool_calls_made"</span>: <span class="b">len</span>(steps)}</pre></div></details></div><div class="lecture"><h2>13.4 FastAPI 应用主体</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (205 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+        <span class="k">yield</span> {<span class="s">"event"</span>: <span class="s">"done"</span>, <span class="s">"data"</span>: answer, <span class="s">"tool_calls_made"</span>: <span class="b">len</span>(steps)}</pre></div></details></div><div class="lecture"><h2>13.4 FastAPI 应用主体</h2>
+<p>&nbsp;</p>
+<p>这是整个 Agent 服务的入口。FastAPI app 拆分为 6 个端点：</p>
+<p>&nbsp;</p>
+<p>POST /agent/task —— 提交一个 Agent 任务（同步等待结果）</p>
+<p>GET  /agent/task/{task_id}/stream —— SSE 流式获取执行过程</p>
+<p>WS   /agent/task/{task_id}/ws —— WebSocket 双向通信</p>
+<p>GET  /agent/task/{task_id} —— 查询任务状态</p>
+<p>GET  /health —— 健康检查</p>
+<p>GET  / —— Swagger 文档页面</p>
+<p>&nbsp;</p>
+<p>加上 CORS 中间件（允许前端跨域调用）和应用生命周期管理。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (205 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> sqlite3
@@ -774,7 +808,7 @@ load_dotenv()
     <span class="b">print</span>()
 
     <span class="h"># 非阻塞启动（不调用外部 API，可独立运行）</span>
-    uvicorn.run(app, host=<span class="s">"0.0.0.0"</span>, port=<span class="n">8000</span>, log_level=<span class="s">"info"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (487 行)</summary><div class="code-block"><pre><span class="s">"""
+    uvicorn.run(app, host=<span class="s">"0.0.0.0"</span>, port=<span class="n">8000</span>, log_level=<span class="s">"info"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (521 行)</summary><div class="code-block"><pre><span class="s">"""
 第13章：FastAPI + Agent 服务化部署
 ===================================
 
@@ -838,6 +872,17 @@ load_dotenv()
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 13.2 数据模型定义（Pydantic v2）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+用 Pydantic v2 来定义 Agent 服务的请求和响应结构体。
+选择 Pydantic 的理由：
+  - FastAPI 原生集成，自动生成 OpenAPI / Swagger 文档
+  - Field 描述直接变成 API 文档中的参数说明
+  - 请求校验零代码——不合法的参数自动返回 422
+  - 支持嵌套模型（Agent 的 tool_call 是嵌套结构）
+
+这里定义两个核心模型：
+  - AgentRequest：用户发来的任务请求
+  - AgentStep：Agent 执行过程中每步的状态
 """</span>
 
 
@@ -876,6 +921,18 @@ load_dotenv()
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 13.3 模拟 Agent 引擎（不依赖外部 API）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+这里实现一个 MockAgentEngine：不依赖任何外部 LLM API，用模拟步骤
+来演示 Agent 的执行流程。为什么这样做？
+
+  1. 可离线测试——不需要配置 API Key 也能跑通整个 HTTP 服务
+  2. 展示架构分层——Agent 引擎和服务框架是解耦的
+  3. 真实项目中的做法——先用 Mock 验证 API 设计，再接入真实 LLM
+
+MockAgentEngine 的核心：
+  - execute() 是异步的，返回 async generator（每步一个事件）
+  - 模拟了「思考→计划→工具调用→总结」4 步流程
+  - 用 asyncio.sleep() 模拟 LLM 调用的延迟，方便测试超时机制
 """</span>
 
 
@@ -952,6 +1009,17 @@ load_dotenv()
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 13.4 FastAPI 应用主体
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+这是整个 Agent 服务的入口。FastAPI app 拆分为 6 个端点：
+
+  POST /agent/task —— 提交一个 Agent 任务（同步等待结果）
+  GET  /agent/task/{task_id}/stream —— SSE 流式获取执行过程
+  WS   /agent/task/{task_id}/ws —— WebSocket 双向通信
+  GET  /agent/task/{task_id} —— 查询任务状态
+  GET  /health —— 健康检查
+  GET  / —— Swagger 文档页面
+
+加上 CORS 中间件（允许前端跨域调用）和应用生命周期管理。
 """</span>
 
 <span class="h"># 应用生命周期管理</span>

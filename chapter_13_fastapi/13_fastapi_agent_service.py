@@ -62,6 +62,17 @@ load_dotenv()
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 13.2 数据模型定义（Pydantic v2）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+用 Pydantic v2 来定义 Agent 服务的请求和响应结构体。
+选择 Pydantic 的理由：
+  - FastAPI 原生集成，自动生成 OpenAPI / Swagger 文档
+  - Field 描述直接变成 API 文档中的参数说明
+  - 请求校验零代码——不合法的参数自动返回 422
+  - 支持嵌套模型（Agent 的 tool_call 是嵌套结构）
+
+这里定义两个核心模型：
+  - AgentRequest：用户发来的任务请求
+  - AgentStep：Agent 执行过程中每步的状态
 """
 
 
@@ -100,6 +111,18 @@ class SSEEvent(BaseModel):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 13.3 模拟 Agent 引擎（不依赖外部 API）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+这里实现一个 MockAgentEngine：不依赖任何外部 LLM API，用模拟步骤
+来演示 Agent 的执行流程。为什么这样做？
+
+  1. 可离线测试——不需要配置 API Key 也能跑通整个 HTTP 服务
+  2. 展示架构分层——Agent 引擎和服务框架是解耦的
+  3. 真实项目中的做法——先用 Mock 验证 API 设计，再接入真实 LLM
+
+MockAgentEngine 的核心：
+  - execute() 是异步的，返回 async generator（每步一个事件）
+  - 模拟了「思考→计划→工具调用→总结」4 步流程
+  - 用 asyncio.sleep() 模拟 LLM 调用的延迟，方便测试超时机制
 """
 
 
@@ -176,6 +199,17 @@ class SimulatedAgent:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 13.4 FastAPI 应用主体
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+这是整个 Agent 服务的入口。FastAPI app 拆分为 6 个端点：
+
+  POST /agent/task —— 提交一个 Agent 任务（同步等待结果）
+  GET  /agent/task/{task_id}/stream —— SSE 流式获取执行过程
+  WS   /agent/task/{task_id}/ws —— WebSocket 双向通信
+  GET  /agent/task/{task_id} —— 查询任务状态
+  GET  /health —— 健康检查
+  GET  / —— Swagger 文档页面
+
+加上 CORS 中间件（允许前端跨域调用）和应用生命周期管理。
 """
 
 # 应用生命周期管理

@@ -321,7 +321,16 @@ body {
 <li>GAIA: 通用 AI 助手评测</li>
 <li>τ-Bench: 工具使用评测</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (3 行)</summary><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
-<span class="k">from</span> typing <span class="k">import</span> Callable</pre></div></details></div><div class="lecture"><h2>6.2 Agent 评测框架（可运行）</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (200 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">evaluate</span><span class="code-badge code-badge-func">summary</span><span class="code-badge code-badge-func">demo_evaluation</span><span class="code-badge code-badge-func">mock_agent</span><span class="code-badge code-badge-class">AgentEvaluator</span></div><div class="code-block"><pre><span class="k">import</span> json
+<span class="k">from</span> typing <span class="k">import</span> Callable</pre></div></details></div><div class="lecture"><h2>6.2 Agent 评测框架（可运行）</h2>
+<p>&nbsp;</p>
+<p>下面实现一个 AgentEval 评测框架，围绕 5 个核心维度：</p>
+<li>任务完成率 —— Agent 是否成功完成了用户的请求？</li>
+<li>工具选择准确率 —— Function Calling 选对工具了吗？</li>
+<li>参数提取准确率 —— 传给工具的 JSON 参数是否正确？</li>
+<li>Token 效率 —— 完成任务用了多少 Token？</li>
+<li>延迟 —— 从用户提问到最终回答花了多久？</li>
+<p>&nbsp;</p>
+<p>这套框架会跑测试用例、自动打分、生成报告。你可以直接用于自己的 Agent 项目。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (200 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">evaluate</span><span class="code-badge code-badge-func">summary</span><span class="code-badge code-badge-func">demo_evaluation</span><span class="code-badge code-badge-func">mock_agent</span><span class="code-badge code-badge-class">AgentEvaluator</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">from</span> typing <span class="k">import</span> Callable
 
@@ -627,7 +636,7 @@ body {
     <span class="k">for</span> c <span class="k">in</span> checks:
         <span class="b">print</span>(f<span class="s">"  {c}"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第6章完成！接下来进入第7章：求职面试准备。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (392 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第6章完成！接下来进入第7章：求职面试准备。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (401 行)</summary><div class="code-block"><pre><span class="s">"""
 第6章：Agent 评估、测试与生产最佳实践
 =====================================
 
@@ -692,6 +701,15 @@ body {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 6.2 Agent 评测框架（可运行）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+下面实现一个 AgentEval 评测框架，围绕 5 个核心维度：
+  1. 任务完成率 —— Agent 是否成功完成了用户的请求？
+  2. 工具选择准确率 —— Function Calling 选对工具了吗？
+  3. 参数提取准确率 —— 传给工具的 JSON 参数是否正确？
+  4. Token 效率 —— 完成任务用了多少 Token？
+  5. 延迟 —— 从用户提问到最终回答花了多久？
+
+这套框架会跑测试用例、自动打分、生成报告。你可以直接用于自己的 Agent 项目。
 """</span>
 
 

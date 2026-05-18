@@ -381,7 +381,21 @@ client = OpenAI(
         <span class="s">'depends_on 表示该步骤依赖哪些步骤（填写步骤号）。'</span>
     )
     prompt = f<span class="s">"任务：{task}\n请制定执行计划。"</span>
-    <span class="k">return</span> call_llm_with_json(prompt, system_msg)</pre></div></details></div><div class="lecture"><h3>2.1.2 Reflexion 反思器实战</h3></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (40 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">reflexion_review</span></div><div class="code-block"><pre><span class="k">import</span> os
+    <span class="k">return</span> call_llm_with_json(prompt, system_msg)</pre></div></details></div><div class="lecture"><h3>2.1.2 Reflexion 反思器实战</h3>
+<p>&nbsp;</p>
+<p>Reflexion 是 ReAct 基础上叠加了一层「自我审视」机制。它的工作方式是：</p>
+<p>第1轮：Agent 正常推理 → 产生回答 A</p>
+<p>第2轮：Agent 把 A 交给同一个 LLM，问它「这个回答哪里不好？怎么改进？」</p>
+<p>第3轮：Agent 根据批评意见重新推理 → 产生改进后的回答 A'</p>
+<p>&nbsp;</p>
+<p>这和 Plan-Execute 的区别在哪？</p>
+<li>Plan-Execute 是「预先规划」——做之前想好全部步骤</li>
+<li>Reflexion 是「事后反思」——做完了回头看哪里不好</li>
+<li>两者可以结合：Plan-Execute 制定大计划，每步执行完后用 Reflexion 审查</li>
+<p>&nbsp;</p>
+<p>面试官常问：「Reflexion 的额外开销是多少？」</p>
+<p>→ 每轮推理多 1 次 LLM 调用（反思步骤），成本 +50%，但质量提升显著</p>
+<p>→ 适用于对正确性要求高的场景（代码审查、法律文书、医疗建议）</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (40 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">reflexion_review</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -761,7 +775,7 @@ client = OpenAI(
         run_full_demo()
     <span class="k">except</span> Exception <span class="k">as</span> e:
         <span class="b">print</span>(f<span class="s">"\n⚠️ 综合演示需要 API Key，错误信息: {e}"</span>)
-        <span class="b">print</span>(<span class="s">"请确保 .env 文件配置正确后重试。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (493 行)</summary><div class="code-block"><pre><span class="s">"""
+        <span class="b">print</span>(<span class="s">"请确保 .env 文件配置正确后重试。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (507 行)</summary><div class="code-block"><pre><span class="s">"""
 第2章：Agent 核心组件深度解析
 =====================================
 
@@ -879,6 +893,20 @@ client = OpenAI(
 
 <span class="s">"""
 2.1.2 Reflexion 反思器实战
+
+Reflexion 是 ReAct 基础上叠加了一层「自我审视」机制。它的工作方式是：
+  第1轮：Agent 正常推理 → 产生回答 A
+  第2轮：Agent 把 A 交给同一个 LLM，问它「这个回答哪里不好？怎么改进？」
+  第3轮：Agent 根据批评意见重新推理 → 产生改进后的回答 A'
+
+这和 Plan-Execute 的区别在哪？
+  - Plan-Execute 是「预先规划」——做之前想好全部步骤
+  - Reflexion 是「事后反思」——做完了回头看哪里不好
+  - 两者可以结合：Plan-Execute 制定大计划，每步执行完后用 Reflexion 审查
+
+面试官常问：「Reflexion 的额外开销是多少？」
+  → 每轮推理多 1 次 LLM 调用（反思步骤），成本 +50%，但质量提升显著
+  → 适用于对正确性要求高的场景（代码审查、法律文书、医疗建议）
 """</span>
 
 

@@ -116,6 +116,20 @@ def plan_execute(task: str) -> dict:
 
 """
 2.1.2 Reflexion 反思器实战
+
+Reflexion 是 ReAct 基础上叠加了一层「自我审视」机制。它的工作方式是：
+  第1轮：Agent 正常推理 → 产生回答 A
+  第2轮：Agent 把 A 交给同一个 LLM，问它「这个回答哪里不好？怎么改进？」
+  第3轮：Agent 根据批评意见重新推理 → 产生改进后的回答 A'
+
+这和 Plan-Execute 的区别在哪？
+  - Plan-Execute 是「预先规划」——做之前想好全部步骤
+  - Reflexion 是「事后反思」——做完了回头看哪里不好
+  - 两者可以结合：Plan-Execute 制定大计划，每步执行完后用 Reflexion 审查
+
+面试官常问：「Reflexion 的额外开销是多少？」
+  → 每轮推理多 1 次 LLM 调用（反思步骤），成本 +50%，但质量提升显著
+  → 适用于对正确性要求高的场景（代码审查、法律文书、医疗建议）
 """
 
 

@@ -67,6 +67,12 @@ Tool Calling + 多模态：
 
 29.3 图片分析 Agent 实现
 ━━━━━━━━━━━━━━━━━━━━━━━━
+
+下面实现一个 ImageAnalysisAgent 类，模拟多模态 Agent 的完整决策流程。
+虽然这里用规则模拟替代了真实 GPT-4o Vision 调用，但保留了核心的三步
+Pipeline：视觉理解 → 工具决策 → 生成回答。这套 Pipeline 的架构和真实
+多模态 Agent 完全相同，你可以直接把 _detect_objects / _extract_text 替换
+为 GPT-4o / Claude Vision API 调用。
 """
 
 import base64

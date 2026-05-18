@@ -437,7 +437,12 @@ body {
 <p>Never run with admin privileges."</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>17.6 模拟 Computer Use Agent</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (211 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_element</span><span class="code-badge code-badge-func">find_element_at</span><span class="code-badge code-badge-func">describe</span><span class="code-badge code-badge-func">analyze_screen</span><span class="code-badge code-badge-func">decide_action</span><span class="code-badge code-badge-func">execute_action</span><span class="code-badge code-badge-func">run_task</span><span class="code-badge code-badge-func">demo_computer_use</span><span class="code-badge code-badge-class">VirtualScreen</span><span class="code-badge code-badge-class">ComputerUseAgent</span></div><div class="code-block"><pre><span class="k">import</span> time
+<h2>17.6 模拟 Computer Use Agent</h2>
+<p>&nbsp;</p>
+<p>下面实现一个 ComputerUseAgent 模拟器，模拟 Claude 的「截图→分析→动作」</p>
+<p>核心循环。真实的 Computer Use 每次迭代需要传入 desktop screenshot 的 base64</p>
+<p>给 Claude Vision，这里用描述文字替代。关键保留了三阶段：环境感知、动作决策、</p>
+<p>执行反馈，以及坐标计算的容错逻辑。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (211 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_element</span><span class="code-badge code-badge-func">find_element_at</span><span class="code-badge code-badge-func">describe</span><span class="code-badge code-badge-func">analyze_screen</span><span class="code-badge code-badge-func">decide_action</span><span class="code-badge code-badge-func">execute_action</span><span class="code-badge code-badge-func">run_task</span><span class="code-badge code-badge-func">demo_computer_use</span><span class="code-badge code-badge-class">VirtualScreen</span><span class="code-badge code-badge-class">ComputerUseAgent</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
@@ -706,7 +711,7 @@ body {
     <span class="k">for</span> dim, a, o <span class="k">in</span> comparisons:
         <span class="b">print</span>(f<span class="s">"  {dim:10s}  {a:30s}  {o}"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第17章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (464 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第17章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (469 行)</summary><div class="code-block"><pre><span class="s">"""
 第17章：Computer Use + GUI Agent —— AI 操控电脑
 ==================================================
 
@@ -892,6 +897,11 @@ Anthropic 官方建议：
 
 17.6 模拟 Computer Use Agent
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+下面实现一个 ComputerUseAgent 模拟器，模拟 Claude 的「截图→分析→动作」
+核心循环。真实的 Computer Use 每次迭代需要传入 desktop screenshot 的 base64
+给 Claude Vision，这里用描述文字替代。关键保留了三阶段：环境感知、动作决策、
+执行反馈，以及坐标计算的容错逻辑。
 """</span>
 
 <span class="k">import</span> time

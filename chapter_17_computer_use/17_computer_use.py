@@ -184,6 +184,11 @@ Anthropic 官方建议：
 
 17.6 模拟 Computer Use Agent
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+下面实现一个 ComputerUseAgent 模拟器，模拟 Claude 的「截图→分析→动作」
+核心循环。真实的 Computer Use 每次迭代需要传入 desktop screenshot 的 base64
+给 Claude Vision，这里用描述文字替代。关键保留了三阶段：环境感知、动作决策、
+执行反馈，以及坐标计算的容错逻辑。
 """
 
 import time

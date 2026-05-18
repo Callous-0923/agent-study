@@ -454,7 +454,15 @@ body {
 <p>而不是记忆工具的复杂度。文件系统 + 好用工具 = 最佳记忆方案。"</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>16.6 MemGPT 架构的简化实现</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (260 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">core_memory_append</span><span class="code-badge code-badge-func">core_memory_replace</span><span class="code-badge code-badge-func">archival_memory_insert</span><span class="code-badge code-badge-func">archival_memory_search</span><span class="code-badge code-badge-func">compact_conversation</span><span class="code-badge code-badge-func">heartbeat_should_continue</span><span class="code-badge code-badge-func">demo_memgpt_workflow</span><span class="code-badge code-badge-class">MemGPTAgent</span></div><div class="code-block"><pre><span class="k">from</span> typing <span class="k">import</span> Optional
+<h2>16.6 MemGPT 架构的简化实现</h2>
+<p>&nbsp;</p>
+<p>下面实现一套 MemGPT 风格的 Agent 记忆管理模拟器，核心三组件：</p>
+<li>CoreMemoryBlock —— 存储 Agent 的核心身份信息（人类/角色）</li>
+<li>Heartbeat —— 定时触发反思，模拟 Sleep-Time Compute</li>
+<li>MemoryManager —— 统一的记忆读写接口</li>
+<p>&nbsp;</p>
+<p>这套架构的精髓在于：Agent 不是被动地被调用，而是像操作系统一样持续运行，</p>
+<p>定期自我审视和整理记忆。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (260 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">core_memory_append</span><span class="code-badge code-badge-func">core_memory_replace</span><span class="code-badge code-badge-func">archival_memory_insert</span><span class="code-badge code-badge-func">archival_memory_search</span><span class="code-badge code-badge-func">compact_conversation</span><span class="code-badge code-badge-func">heartbeat_should_continue</span><span class="code-badge code-badge-func">demo_memgpt_workflow</span><span class="code-badge code-badge-class">MemGPTAgent</span></div><div class="code-block"><pre><span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -764,7 +772,7 @@ body {
     <span class="k">for</span> mem, os, desc <span class="k">in</span> layers:
         <span class="b">print</span>(f<span class="s">"  {mem:18s} ↔ {os:6s} → {desc}"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第16章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (505 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第16章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (513 行)</summary><div class="code-block"><pre><span class="s">"""
 第16章：MemGPT / Letta —— Agent 记忆的「操作系统」
 =====================================================
 
@@ -951,6 +959,14 @@ MemGPT v2 的创新（2025年）。
 
 16.6 MemGPT 架构的简化实现
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+下面实现一套 MemGPT 风格的 Agent 记忆管理模拟器，核心三组件：
+  1. CoreMemoryBlock —— 存储 Agent 的核心身份信息（人类/角色）
+  2. Heartbeat —— 定时触发反思，模拟 Sleep-Time Compute
+  3. MemoryManager —— 统一的记忆读写接口
+
+这套架构的精髓在于：Agent 不是被动地被调用，而是像操作系统一样持续运行，
+定期自我审视和整理记忆。
 """</span>
 
 <span class="k">from</span> typing <span class="k">import</span> Optional

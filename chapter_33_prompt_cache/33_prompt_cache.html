@@ -298,6 +298,9 @@ body {
 <p>&nbsp;</p>
 <h2>33.1 缓存的三层体系</h2>
 <p>&nbsp;</p>
+<p>下面这张表总结了 Agent 场景中三种不同粒度的缓存技术。从 L1 到 L3，</p>
+<p>成本节省递减、命中率递增、延迟递增。实际项目中三者叠加使用效果最佳。</p>
+<p>&nbsp;</p>
 <table><tr><th>层</th><th>原理</th><th>命中率</th><th>节省幅度</th></tr><tr><td>L1: 语义缓存</td><td>相似查询匹配</td><td>30-50%</td><td>100%</td></tr><tr><td>L2: Prompt Caching</td><td>相同前缀重用</td><td>60-90%</td><td>90%</td></tr><tr><td>L3: KV-Cache 共享</td><td>跨请求共享状态</td><td>取决于场景</td><td>50-80%</td></tr></table>
 <p>&nbsp;</p>
 <h2>33.2 Anthropic Prompt Caching —— 90% 节省的秘密</h2>
@@ -475,7 +478,7 @@ body {
         (<span class="s">"L3 KV-Cache 共享"</span>, <span class="s">"跨请求状态共享，50-80% 节省"</span>),
     ]:
         <span class="b">print</span>(f<span class="s">"  {name:18s} → {benefit}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第33章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (221 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第33章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (224 行)</summary><div class="code-block"><pre><span class="s">"""
 第33章：Prompt Caching &amp; 推理优化 —— 省钱的工程手段
 =====================================================
 
@@ -497,6 +500,9 @@ body {
 
 33.1 缓存的三层体系
 ━━━━━━━━━━━━━━━━━━
+
+下面这张表总结了 Agent 场景中三种不同粒度的缓存技术。从 L1 到 L3，
+成本节省递减、命中率递增、延迟递增。实际项目中三者叠加使用效果最佳。
 
 ┌──────────────────┬──────────────┬──────────┬──────────┐
 │ 层                │     原理      │  命中率   │ 节省幅度  │
