@@ -70,11 +70,9 @@
     • 2025.04: Google 联合 50+ 企业发布 A2A 协议（Agent ↔ Agent）
     • 2025.09: Anthropic 发布 Claude Agent SDK（通用 Agent 框架）
     • 2025.10: Anthropic Computer Use 正式发布（production-ready）
-    • 2025.11: OpenClaw (原 Clawdbot) 开源，145K+ GitHub Stars
     • 2025.12: OpenAI 发布 CUA (Computer Using Agent)
 
   ── 2026: Agent 基础设施成熟 ──
-    • 2026.02: Harness 在 Harness-Bench 上达到 100% 评分
     • 2026.03: Letta 发布 Filesystem Memory 方案（LoCoMo 74.0%）
     • 2026: MCP / A2A 成为行业标准，Agent 中间件生态涌现
 

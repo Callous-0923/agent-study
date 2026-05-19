@@ -248,7 +248,7 @@ class ToolDescriptionOptimizer:
         scores = {
             "has_description": len(desc) > 10,
             "has_use_case": any(w in desc for w in ["适用于", "用于", "当你", "when"]),
-            "has_boundary": any(w in desc for w in ["不支持", "不支持", "不适用于"]),
+            "has_boundary": any(w in desc for w in ["不支持", "不适用", "不适用于"]),
             "has_example": any(w in desc for w in ["示例", "example", "e.g."]),
             "has_enum": any("enum" in p for p in params.values()),
             "has_param_desc": all(

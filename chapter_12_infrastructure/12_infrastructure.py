@@ -17,17 +17,17 @@
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-12.1 OpenClaw —— 145K Star 的现象级开源 Agent
+12.1 Gateway 中心化架构 —— Agent 生产化设计模式
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-OpenClaw 的故事：
-  2025年11月：奥地利开发者 Peter Steinberger 发布 Clawdbot
-  2025年12月：更名为 Moltbot
-  2026年初：再次更名为 OpenClaw，GitHub Star 数突破 145K
-  背书方：Cloudflare、DigitalOcean、IBM
+本节我们设计一个「假设的」生产级 Agent 架构，命名为 OpenClaw。
+它不是一个真实存在的开源项目，而是一个用于教学的参考设计。
+核心设计理念：「不是一个 Agent 框架，而是 Agent 本身」
+—— 这条定位把它和 LangChain/crewAI 等框架区隔开来。
 
-它「不是一个 Agent 框架」，它「就是 Agent 本身」。
-—— 这条定位把它和 LangChain/crewAI 区隔开来。
+设计目标：
+  一个中心化的 Gateway（Node.js 控制平面），
+  统一管理多条消息渠道 + 多个 LLM Provider + 持久化记忆。
 
 OpenClaw 的 Gateway 中心化架构：
 
@@ -106,12 +106,12 @@ ClawHub：
 12.3 Harness (OpenHarness) —— 开源编码 Agent 黑马
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Harness 是 2026 年崛起的开源编码 Agent。
+Harness 是一个假设的编码 Agent 参考设计。
 
 核心亮点：
   - CLI + SDK 双模式（既可以命令行用，也可以嵌入代码）
   - 支持任意 LLM（Claude、GPT、Gemini、Ollama 等）
-  - 在 Harness-Bench 上获得 100%
+  - 内置评测框架（持续集成友好的工具调用验证）
   - 多提供商兼容（一个命令切换模型）
 
 Harness 的 REPL 命令体系：
@@ -332,17 +332,16 @@ class AgentProductionChecklist:
 
 核心要点回顾：
 
-1. OpenClaw
+1. Gateway 架构（本章的 OpenClaw 假设设计）
    - Gateway 中心化架构（Node.js 控制平面）
    - 多 Channel 接入（WhatsApp/Telegram/Discord）
    - AgentSkills + ClawHub 插件生态
-   - 定位：「是 Agent，不是框架」
+   - 设计定位：「是 Agent，不是框架」
 
-2. Harness (OpenHarness)
+2. 编码 Agent 参考设计（本章的 Harness 假设设计）
    - CLI + SDK 双模式
    - 支持任意 LLM + 本地模型
    - /team 命令实现并行 Multi-Agent
-   - Alpha 阶段，但增长速度惊人
 
 3. Agent 评测基础设施
    - MultiAgentEval：企业级评测框架
@@ -377,8 +376,7 @@ if __name__ == "__main__":
         "多 Channel 接入：WhatsApp / Telegram / Discord / Slack",
         "LLM Provider 抽象：Claude / GPT / Gemini / Ollama",
         "持久化记忆存储：用户偏好 + 对话历史",
-        "AgentSkills + ClawHub：Agent 技能生态",
-        "145K+ GitHub Stars",
+        "AgentSkills + ClawHub：Agent 技能生态（假设设计）",
     ]
     for f in oc_features:
         print(f"  • {f}")
@@ -395,7 +393,6 @@ if __name__ == "__main__":
     h_features = [
         "CLI + SDK 双模式",
         "支持任意 LLM（Claude/GPT/Gemini/Ollama）",
-        "Harness-Bench 100% 评分",
         "/plan /review /team /status /cost 命令",
         "Bypass 模式（CI/CD 友好）",
     ]

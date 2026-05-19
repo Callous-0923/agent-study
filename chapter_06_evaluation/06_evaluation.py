@@ -253,7 +253,7 @@ def demo_evaluation():
         },
         {
             "input": "帮我算一下 123 + 456 等于多少",
-            "expected_keywords": ["579", "579"],
+            "expected_keywords": ["579", "计算结果"],
             "weight": 1.0,
         },
         {

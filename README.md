@@ -291,8 +291,6 @@ agent-study/
 - [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) (Anthropic, 2024)
 - [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) (Anthropic, 2025)
 - [Claude Code 逆向分析](https://github.com/shareAI-lab/analysis_claude_code) (Community, 2025)
-- [OpenClaw](https://github.com/openclaw/openclaw) (Peter Steinberger, 2025)
-- [Harness (OpenHarness)](https://github.com/AgentBoardTT/openharness) (2026)
 
 ---
 

@@ -253,8 +253,8 @@ body {
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_07_interview/07_interview_prep.html">Ch7 求职面试准备</a>
 <div class="sidebar-layer">第3层 深度技术</div>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html">Ch8 Claude Code 架构</a>
-<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html">Ch9 RAG 深度剖析</a>
-<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html">Ch10 MCP 协议详解</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html">Ch9 RAG 深度解析</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html">Ch10 MCP 深度解析</a>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html">Ch11 Tool Calling 底层</a>
 <a class="sidebar-link active" href="https://callous-0923.github.io/agent-study/chapter_12_infrastructure/12_infrastructure.html">Ch12 Agent 生产基础设施</a>
 <div class="sidebar-layer">第4层 工程化前沿</div>
@@ -294,16 +294,16 @@ body {
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>12.1 OpenClaw —— 145K Star 的现象级开源 Agent</h2>
+<h2>12.1 Gateway 中心化架构 —— Agent 生产化设计模式</h2>
 <p>&nbsp;</p>
-<p>OpenClaw 的故事：</p>
-<p>2025年11月：奥地利开发者 Peter Steinberger 发布 Clawdbot</p>
-<p>2025年12月：更名为 Moltbot</p>
-<p>2026年初：再次更名为 OpenClaw，GitHub Star 数突破 145K</p>
-<p>背书方：Cloudflare、DigitalOcean、IBM</p>
+<p>本节我们设计一个「假设的」生产级 Agent 架构，命名为 OpenClaw。</p>
+<p>它不是一个真实存在的开源项目，而是一个用于教学的参考设计。</p>
+<p>核心设计理念：「不是一个 Agent 框架，而是 Agent 本身」</p>
+<p>—— 这条定位把它和 LangChain/crewAI 等框架区隔开来。</p>
 <p>&nbsp;</p>
-<p>它「不是一个 Agent 框架」，它「就是 Agent 本身」。</p>
-<p>—— 这条定位把它和 LangChain/crewAI 区隔开来。</p>
+<p>设计目标：</p>
+<p>一个中心化的 Gateway（Node.js 控制平面），</p>
+<p>统一管理多条消息渠道 + 多个 LLM Provider + 持久化记忆。</p>
 <p>&nbsp;</p>
 <p>OpenClaw 的 Gateway 中心化架构：</p>
 <p>&nbsp;</p>
@@ -380,12 +380,12 @@ body {
 <p>&nbsp;</p>
 <h2>12.3 Harness (OpenHarness) —— 开源编码 Agent 黑马</h2>
 <p>&nbsp;</p>
-<p>Harness 是 2026 年崛起的开源编码 Agent。</p>
+<p>Harness 是一个假设的编码 Agent 参考设计。</p>
 <p>&nbsp;</p>
 <p>核心亮点：</p>
 <li>CLI + SDK 双模式（既可以命令行用，也可以嵌入代码）</li>
 <li>支持任意 LLM（Claude、GPT、Gemini、Ollama 等）</li>
-<li>在 Harness-Bench 上获得 100%</li>
+<li>内置评测框架（持续集成友好的工具调用验证）</li>
 <li>多提供商兼容（一个命令切换模型）</li>
 <p>&nbsp;</p>
 <p>Harness 的 REPL 命令体系：</p>
@@ -540,17 +540,16 @@ body {
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
-<li>OpenClaw</li>
+<li>Gateway 架构（本章的 OpenClaw 假设设计）</li>
 <li>Gateway 中心化架构（Node.js 控制平面）</li>
 <li>多 Channel 接入（WhatsApp/Telegram/Discord）</li>
 <li>AgentSkills + ClawHub 插件生态</li>
-<li>定位：「是 Agent，不是框架」</li>
+<li>设计定位：「是 Agent，不是框架」</li>
 <p>&nbsp;</p>
-<li>Harness (OpenHarness)</li>
+<li>编码 Agent 参考设计（本章的 Harness 假设设计）</li>
 <li>CLI + SDK 双模式</li>
 <li>支持任意 LLM + 本地模型</li>
 <li>/team 命令实现并行 Multi-Agent</li>
-<li>Alpha 阶段，但增长速度惊人</li>
 <p>&nbsp;</p>
 <li>Agent 评测基础设施</li>
 <li>MultiAgentEval：企业级评测框架</li>
@@ -568,7 +567,7 @@ body {
 <p>"Agent 怎么上生产？"</p>
 <p>→ 可观测性 + 评测体系 + 安全防护 + 成本控制 + 可靠性</p>
 <p>→ 每个环节都可以展开讲具体方案</p>
-<p>→ 关键在于「工程化思维」而非「Demo 思维」</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (64 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+<p>→ 关键在于「工程化思维」而非「Demo 思维」</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (62 行)</summary><div class="code-block"><pre><span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
     <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
     <span class="b">print</span>(<span class="s">"║  第12章：OpenClaw / Harness 与 Agent 生产基础设施      ║"</span>)
     <span class="b">print</span>(<span class="s">"║  Gateway架构 · AgentSkills · 评测 · 生产Checklist    ║"</span>)
@@ -581,8 +580,7 @@ body {
         <span class="s">"多 Channel 接入：WhatsApp / Telegram / Discord / Slack"</span>,
         <span class="s">"LLM Provider 抽象：Claude / GPT / Gemini / Ollama"</span>,
         <span class="s">"持久化记忆存储：用户偏好 + 对话历史"</span>,
-        <span class="s">"AgentSkills + ClawHub：Agent 技能生态"</span>,
-        <span class="s">"145K+ GitHub Stars"</span>,
+        <span class="s">"AgentSkills + ClawHub：Agent 技能生态（假设设计）"</span>,
     ]
     <span class="k">for</span> f <span class="k">in</span> oc_features:
         <span class="b">print</span>(f<span class="s">"  • {f}"</span>)
@@ -599,7 +597,6 @@ body {
     h_features = [
         <span class="s">"CLI + SDK 双模式"</span>,
         <span class="s">"支持任意 LLM（Claude/GPT/Gemini/Ollama）"</span>,
-        <span class="s">"Harness-Bench 100% 评分"</span>,
         <span class="s">"/plan /review /team /status /cost 命令"</span>,
         <span class="s">"Bypass 模式（CI/CD 友好）"</span>,
     ]
@@ -631,7 +628,7 @@ body {
     <span class="b">print</span>(<span class="s">"  从 Agent 基础到 Claude Code 逆向分析"</span>)
     <span class="b">print</span>(<span class="s">"  从 RAG 到 MCP 到 Tool Calling 底层原理"</span>)
     <span class="b">print</span>(<span class="s">"  你现在已经具备了成为顶级 Agent 工程师的所有知识"</span>)
-    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (431 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (428 行)</summary><div class="code-block"><pre><span class="s">"""
 第12章：OpenClaw / Harness 与 Agent 生产基础设施
 ================================================
 
@@ -650,17 +647,17 @@ body {
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-12.1 OpenClaw —— 145K Star 的现象级开源 Agent
+12.1 Gateway 中心化架构 —— Agent 生产化设计模式
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-OpenClaw 的故事：
-  2025年11月：奥地利开发者 Peter Steinberger 发布 Clawdbot
-  2025年12月：更名为 Moltbot
-  2026年初：再次更名为 OpenClaw，GitHub Star 数突破 145K
-  背书方：Cloudflare、DigitalOcean、IBM
+本节我们设计一个「假设的」生产级 Agent 架构，命名为 OpenClaw。
+它不是一个真实存在的开源项目，而是一个用于教学的参考设计。
+核心设计理念：「不是一个 Agent 框架，而是 Agent 本身」
+—— 这条定位把它和 LangChain/crewAI 等框架区隔开来。
 
-它「不是一个 Agent 框架」，它「就是 Agent 本身」。
-—— 这条定位把它和 LangChain/crewAI 区隔开来。
+设计目标：
+  一个中心化的 Gateway（Node.js 控制平面），
+  统一管理多条消息渠道 + 多个 LLM Provider + 持久化记忆。
 
 OpenClaw 的 Gateway 中心化架构：
 
@@ -739,12 +736,12 @@ ClawHub：
 12.3 Harness (OpenHarness) —— 开源编码 Agent 黑马
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Harness 是 2026 年崛起的开源编码 Agent。
+Harness 是一个假设的编码 Agent 参考设计。
 
 核心亮点：
   - CLI + SDK 双模式（既可以命令行用，也可以嵌入代码）
   - 支持任意 LLM（Claude、GPT、Gemini、Ollama 等）
-  - 在 Harness-Bench 上获得 100%
+  - 内置评测框架（持续集成友好的工具调用验证）
   - 多提供商兼容（一个命令切换模型）
 
 Harness 的 REPL 命令体系：
@@ -965,17 +962,16 @@ MultiAgentEval 是一个企业级的 Agent 评测框架。
 
 核心要点回顾：
 
-1. OpenClaw
+1. Gateway 架构（本章的 OpenClaw 假设设计）
    - Gateway 中心化架构（Node.js 控制平面）
    - 多 Channel 接入（WhatsApp/Telegram/Discord）
    - AgentSkills + ClawHub 插件生态
-   - 定位：「是 Agent，不是框架」
+   - 设计定位：「是 Agent，不是框架」
 
-2. Harness (OpenHarness)
+2. 编码 Agent 参考设计（本章的 Harness 假设设计）
    - CLI + SDK 双模式
    - 支持任意 LLM + 本地模型
    - /team 命令实现并行 Multi-Agent
-   - Alpha 阶段，但增长速度惊人
 
 3. Agent 评测基础设施
    - MultiAgentEval：企业级评测框架
@@ -1010,8 +1006,7 @@ MultiAgentEval 是一个企业级的 Agent 评测框架。
         <span class="s">"多 Channel 接入：WhatsApp / Telegram / Discord / Slack"</span>,
         <span class="s">"LLM Provider 抽象：Claude / GPT / Gemini / Ollama"</span>,
         <span class="s">"持久化记忆存储：用户偏好 + 对话历史"</span>,
-        <span class="s">"AgentSkills + ClawHub：Agent 技能生态"</span>,
-        <span class="s">"145K+ GitHub Stars"</span>,
+        <span class="s">"AgentSkills + ClawHub：Agent 技能生态（假设设计）"</span>,
     ]
     <span class="k">for</span> f <span class="k">in</span> oc_features:
         <span class="b">print</span>(f<span class="s">"  • {f}"</span>)
@@ -1028,7 +1023,6 @@ MultiAgentEval 是一个企业级的 Agent 评测框架。
     h_features = [
         <span class="s">"CLI + SDK 双模式"</span>,
         <span class="s">"支持任意 LLM（Claude/GPT/Gemini/Ollama）"</span>,
-        <span class="s">"Harness-Bench 100% 评分"</span>,
         <span class="s">"/plan /review /team /status /cost 命令"</span>,
         <span class="s">"Bypass 模式（CI/CD 友好）"</span>,
     ]
