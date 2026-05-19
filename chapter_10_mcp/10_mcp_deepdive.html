@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>第10章：MCP（Model Context Protocol）原理与调用全流程 — AI Agent 全栈课程</title>
+<title>第10章：MCP 协议深度解析 —— 从协议原理到生产级 Server 实战 — AI Agent 全栈课程</title>
 <style>
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -253,8 +253,8 @@ body {
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_07_interview/07_interview_prep.html">Ch7 求职面试准备</a>
 <div class="sidebar-layer">第3层 深度技术</div>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html">Ch8 Claude Code 架构</a>
-<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html">Ch9 RAG 深度剖析</a>
-<a class="sidebar-link active" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html">Ch10 MCP 协议详解</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html">Ch9 RAG 深度解析</a>
+<a class="sidebar-link active" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html">Ch10 MCP 深度解析</a>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html">Ch11 Tool Calling 底层</a>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_12_infrastructure/12_infrastructure.html">Ch12 Agent 生产基础设施</a>
 <div class="sidebar-layer">第4层 工程化前沿</div>
@@ -286,11 +286,11 @@ body {
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_35_data_flywheel/35_data_flywheel.html">Ch35 数据飞轮</a>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_36_defense/36_defense.html">Ch36 Agent 纵深安全</a>
 </div>
-<button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button><div class="main-content"><div class="container"><div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/index.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第10章 MCP 协议详解 — JSON-RPC·原语·能力协商</strong></div><div class="nav-bar">
-<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html" title="RAG 深度剖析 — Naive→Advanced→GraphRAG→Agentic RAG">← 第9章</a>
+<button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button><div class="main-content"><div class="container"><div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/index.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第10章 MCP 深度解析 — 设计哲学·JSON-RPC·传输层选型·三协议对比</strong></div><div class="nav-bar">
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html" title="RAG 深度解析 — 从Naive到生产级·面试到工程全覆盖">← 第9章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html" title="Tool Calling 底层 — OpenAI vs Anthropic">第11章 →</a>
-</div><div class="hero"><h1>第10章 MCP（Model Context Protocol）原理与调用全流程</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 深入理解 MCP 协议的完整架构和设计哲学</span><span class="tag tag-goal">2. 掌握 JSON-RPC 2.0 消息格式和 MCP 的三种消息类型</span><span class="tag tag-goal">3. 理解 Client-Host-Server 三层架构</span><span class="tag tag-goal">4. 掌握 MCP 核心原语：Tools / Resources / Prompts / Sampling</span><span class="tag tag-goal">5. 学会 MCP 的生命周期管理（Initialize → Capability Negotiation → Teardown）</span><span class="tag tag-goal">6. 理解 stdio 和 SSE 两种传输方式的使用场景</span><span class="tag tag-interview">🎤 MCP 和传统的 REST API 有什么区别？</span><span class="tag tag-interview">🎤 MCP 的 Client-Host-Server 架构中，Host 的作用是什么？</span><span class="tag tag-interview">🎤 什么是 Capability Negotiation？怎么工作的？</span><span class="tag tag-interview">🎤 MCP 的三个核心原语（Tools / Resources / Prompts）分别是什么？</span><span class="tag tag-interview">🎤 MCP 和 Function Calling 是什么关系？</span></div><p>&nbsp;</p>
+</div><div class="hero"><h1>第10章 MCP 协议深度解析 —— 从协议原理到生产级 Server 实战</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 深入理解 MCP 的设计哲学与核心取舍</span><span class="tag tag-goal">2. 掌握 JSON-RPC 2.0 消息格式及生产实战细节</span><span class="tag tag-goal">3. 精通 Client-Host-Server 三层架构与能力协商机制</span><span class="tag tag-goal">4. 深入理解 Tools / Resources / Prompts / Sampling 四大原语</span><span class="tag tag-goal">5. 掌握 stdio / SSE / Streamable HTTP 三种传输方式选型</span><span class="tag tag-goal">6. 学会 MCP Server 的生产安全模型与工程实践</span><span class="tag tag-goal">7. 理解 MCP vs Function Calling vs A2A 的边界</span><span class="tag tag-interview">🎤 MCP 的设计哲学是什么？为什么不是 REST API？</span><span class="tag tag-interview">🎤 JSON-RPC 的 id 字段在并发场景下的作用？</span><span class="tag tag-interview">🎤 能力协商怎么做？降级策略是什么？</span><span class="tag tag-interview">🎤 stdio 和 SSE 各自适合什么场景？</span><span class="tag tag-interview">🎤 MCP、Function Calling、A2A 三者的边界在哪？</span><span class="tag tag-interview">🎤 MCP Server 怎么做安全隔离？防注入怎么做？</span></div><p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>本章内容基于 MCP 官方规范 (2025-06-18 版) 和 SDK 源码</p>
@@ -373,6 +373,64 @@ body {
 <p>→ 多个 Server 可以无缝组合使用</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
+<h3>10.2.1 MCP 的设计哲学 —— 为什么不是 REST API？</h3>
+<p>&nbsp;</p>
+<p>面试官问：「为什么 MCP 不用 REST API，要用 JSON-RPC？」这是在考察</p>
+<p>你是否理解协议设计的「为什么」。</p>
+<p>&nbsp;</p>
+<p>▍ REST API 在 Agent 场景下的 3 个根本缺陷</p>
+<p>&nbsp;</p>
+<p>缺陷 1：REST 是「请求-响应」模式，Agent 需要「双向推送」</p>
+<p>REST 只有 Client 主动请求 → Server 被动响应。</p>
+<p>但 Agent 场景下 Server 可能主动推送：</p>
+<li>工具列表变了（用户安装了新插件）→ Server 需要通知 Host</li>
+<li>文件被外部修改了 → Server 需要主动告知</li>
+<li>长时间运行的任务完成了 → Server 不能等 Host 来轮询</li>
+<p>&nbsp;</p>
+<p>JSON-RPC 的 Notification（无 id 的消息）天然支持这种推送。</p>
+<p>&nbsp;</p>
+<p>缺陷 2：REST 的 URL 路由是「名词」思维，Agent 需要「动词」思维</p>
+<p>REST: GET /tools/weather → 获取天气工具「资源」</p>
+<p>MCP:  {"method": "tools/call", "params": {"name": "get_weather"}}</p>
+<p>&nbsp;</p>
+<p>工具调用本质是「动作」，不是「资源」。用 URL 建模动作</p>
+<p>导致接口膨胀（每个工具一个 endpoint），而 JSON-RPC 统一 method + params。</p>
+<p>&nbsp;</p>
+<p>缺陷 3：REST 的状态协商靠 Header，JSON-RPC 靠 capabilities 对象</p>
+<p>REST: Accept: application/vnd.api.v2+json （版本号藏在 Content-Type）</p>
+<p>MCP: {"capabilities": {"tools": {...}, "sampling": {...}}}</p>
+<p>&nbsp;</p>
+<p>能力协商是整个 JSON 对象，可以动态嵌套、版本化、实验性功能标记。</p>
+<p>比 HTTP Header 灵活得多。</p>
+<p>&nbsp;</p>
+<p>▍ 为什么 Anthropic 选择了 JSON-RPC 而不是 gRPC？</p>
+<p>&nbsp;</p>
+<p>gRPC 很好，但有 3 个门槛和 MCP 的设计目标冲突：</p>
+<li>gRPC 需要 protobuf 编译 → MCP 想让「任何人 30 分钟写一个 Server」</li>
+<p>2. gRPC 强类型 → MCP 需要一定的灵活性（实验性功能、动态工具列表）</p>
+<p>3. gRPC 二进制 → MCP 需要可调试（stdio 下 cat 就能看到消息）</p>
+<p>&nbsp;</p>
+<p>JSON-RPC 的 trade-off：类型安全弱，但开发体验和调试体验极好。</p>
+<p>对于「让 100 万开发者快速构建 Server」这个目标，JSON-RPC 是正确选择。</p>
+<p>&nbsp;</p>
+<p>▍ Server 为什么不能看到完整对话？</p>
+<p>&nbsp;</p>
+<p>这是 MCP 最巧妙的安全设计之一。对话历史保留在 Host 内部，Server 只收到：</p>
+<li>当前这次工具调用的参数</li>
+<li>没有用户之前的提问</li>
+<li>没有 LLM 的推理过程</li>
+<li>没有其他 Server 的返回结果</li>
+<p>&nbsp;</p>
+<p>为什么？因为如果 Server 能看到完整对话：</p>
+<li>GitHub MCP Server 可能读到用户给 LLM 的数据分析请求（包含商业机密）</li>
+<li>数据库 Server 可能窥探其他 Server 的查询结果</li>
+<li>任何 Server 都可能通过对话历史推断用户意图和上下文</li>
+<p>&nbsp;</p>
+<p>这个设计原则在面试中可以直接引用：</p>
+<p>「MCP 的安全隔离是通过 Host 做对话历史过滤实现的，</p>
+<p>每个 Server 只收到自己需要的最少信息。」</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 <h2>10.3 MCP 的消息格式 —— JSON-RPC 2.0</h2>
 <p>&nbsp;</p>
 <p>MCP 使用 JSON-RPC 2.0 作为通信协议。</p>
@@ -419,6 +477,51 @@ NOTIFICATION_EXAMPLE = {
 }</pre></div></details></div><div class="lecture"><p>关键区别：</p>
 <li>Request/Response 有 id 字段（双向匹配）</li>
 <li>Notification 没有 id（不需要响应）</li>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3>10.3.1 JSON-RPC 生产实战 —— 面试官想知道你真正用过</h3>
+<p>&nbsp;</p>
+<p>▍ id 字段的关键作用 —— 不只是「匹配请求」</p>
+<p>&nbsp;</p>
+<p>面试官问「id 字段是干嘛的？」如果你只回答「匹配请求和响应」，</p>
+<p>那就太浅了。更深层的答案：</p>
+<p>&nbsp;</p>
+<li>并发调用保序 —— Agent 可能同时调用 3 个工具（get_weather、</li>
+<p>search_news、query_db），3 个请求顺序发、响应乱序回。</p>
+<p>id 让你知道「这个返回是哪个请求的」。</p>
+<p>&nbsp;</p>
+<li>幂等性支持 —— 用相同 id 重发请求，Server 应返回相同结果。</li>
+<p>这在网络抖动场景下至关重要：Client 发了 tools/call(id=5)，</p>
+<p>Server 执行了但响应丢了，Client 重发 id=5，Server 不应再次执行。</p>
+<p>&nbsp;</p>
+<li>请求链追踪 —— 一个 Agent 动作链的每个子请求可以共享一个</li>
+<p>trace_id（通过 params 传），但各自有独立 id 做匹配。</p>
+<p>&nbsp;</p>
+<p>▍ JSON-RPC 错误码 —— 不只是 -32601</p>
+<p>&nbsp;</p>
+<p>面试官让你列几个 JSON-RPC 标准错误码：</p>
+<p>-32700  Parse error          ← JSON 格式无效（写错了花括号）</p>
+<p>-32600  Invalid Request      ← 不是合法的 Request 对象</p>
+<p>-32601  Method not found     ← 调了不存在的工具</p>
+<p>-32602  Invalid params       ← 参数类型不对或缺少必填字段</p>
+<p>-32603  Internal error       ← Server 内部炸了（兜底用）</p>
+<p>&nbsp;</p>
+<p>MCP 在标准码之上还扩展了：</p>
+<p>-32000 ~ -32099: Server 层面错误（如工具执行超时、权限不足）</p>
+<p>&nbsp;</p>
+<p>面试实用技巧：提到错误码时举一个生产中的真实例子——</p>
+<p>「线上遇到过：Agent 传了字符串 '5' 而不是数字 5，Server 返回 -32602，</p>
+<p>我们在 Host 层加了类型自动转换来修复。」</p>
+<p>&nbsp;</p>
+<p>▍ Notification 的生产应用</p>
+<p>&nbsp;</p>
+<p>Notification 不是设计上的点缀，而是 MCP 支持「长连接 Server」的关键：</p>
+<li>工具列表变更通知：用户装了新 MCP 插件 → Server 主动通知 Host</li>
+<li>资源更新通知：文件被修改 → Server 推送给 Host 刷新上下文</li>
+<li>进度通知：长时间工具调用（如大文件分析）→ Server 上报进度</li>
+<p>&nbsp;</p>
+<p>面试中提一句「Notification 机制让 MCP 不只是请求-响应，而是</p>
+<p>事件驱动的双向通信」会显得你对协议理解很深。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>10.4 MCP 的核心方法（Primitives）—— 按调用流程</h2>
@@ -524,7 +627,57 @@ NOTIFICATION_EXAMPLE = {
 <li>优点：支持远程部署、服务端推送</li>
 <li>示例：云端 API Server、第三方服务集成</li>
 <p>&nbsp;</p>
-<p>还支持 2025 年新增的 Streamable HTTP 传输方式。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (206 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">handle_request</span><span class="code-badge code-badge-func">demo_mcp_full_flow</span><span class="code-badge code-badge-class">SimulatedMCPServer</span></div><div class="code-block"><pre><span class="h"># === Request（请求）===</span>
+<p>还支持 2025 年新增的 Streamable HTTP 传输方式。</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3>10.6.1 传输层选型决策树 —— 三种方式怎么选？</h3>
+<p>&nbsp;</p>
+<p>面试官问「stdio 和 SSE 有什么区别？你项目里用哪个？」</p>
+<p>—— 这不是考概念，是在考你有没有做过技术选型。</p>
+<p>&nbsp;</p>
+<p>▍ 决策树（从工程角度）</p>
+<p>&nbsp;</p>
+<p>你的 MCP Server 部署在哪里？</p>
+<p>├─ 简单场景，不需要流式</p>
+<p>│   └─ Streamable HTTP ← 2025 新增</p>
+<p>│       理由：部署最简单（只需一个 POST endpoint）</p>
+<p>│       适合：简单的 API 封装、无需推送通知的 Server</p>
+<p>│</p>
+<p>└─ 复杂场景，需要服务端推送</p>
+<p>└─ SSE</p>
+<p>理由：支持 Server 主动推送（工具列表变更、进度更新）</p>
+<p>需要：反向代理支持（Nginx 关掉 buffering）</p>
+<p>注意：SSE 走 HTTP/1.1，不支持 HTTP/2 多路复用</p>
+<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ├─ 本地（和 Host 在同一台机器）
+  │   └─ stdio ← 唯一正解
+  │       理由：零网络开销、进程隔离天然安全、不需要额外运维
+  │       不需要开端口、不需要 HTTPS 证书、不需要鉴权逻辑
+  │
+  └─ 远程（Server 和 Host 不在同一台机器）</pre></div>
+<p>&nbsp;</p>
+<p>▍ stdio 的生产陷阱（你可能踩过的坑）</p>
+<p>&nbsp;</p>
+<li>进程管理 —— Client 启动 Server 为子进程，Server 崩溃了谁来重启？</li>
+<p>答：Host 负责。Claude Desktop 会自动重启崩溃的 Server。</p>
+<p>→ 你实现 MCP Client 时必须处理子进程的生命周期。</p>
+<p>&nbsp;</p>
+<li>大结果传输 —— stdin/stdout 默认有 buffer 限制（通常 64KB）。</li>
+<p>如果你的工具返回 10MB 的 JSON，stdout 可能阻塞。</p>
+<p>→ MCP 2025-06-18 版本增加了分页支持（tools/call 返回 cursor）。</p>
+<p>&nbsp;</p>
+<li>stdin 被污染 —— 如果 Server 的代码里 print() 了调试日志到 stdout，</li>
+<p>Client 会把它当成 JSON-RPC 消息来解析 → 解析失败。</p>
+<p>→ 严格规则：日志走 stderr，协议消息走 stdout。</p>
+<p>&nbsp;</p>
+<p>▍ 远程 Server 的安全模型</p>
+<p>&nbsp;</p>
+<p>stdio 下不需要鉴权（信任本地进程），但远程 Server 必须考虑：</p>
+<li>传输层安全 → HTTPS（和任何 Web API 一样）</li>
+<li>身份认证 → API Key / OAuth Token（SSE 首请求的 Header 带）</li>
+<li>工具级授权 → 不是所有的 tools 对所有用户可用</li>
+<li>Rate Limiting → 防止 Agent 死循环调用工具</li>
+<p>&nbsp;</p>
+<p>面试中可以提：「简单场景用 API Key，企业场景用 OAuth + 工具级 RBAC。」</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (206 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">handle_request</span><span class="code-badge code-badge-func">demo_mcp_full_flow</span><span class="code-badge code-badge-class">SimulatedMCPServer</span></div><div class="code-block"><pre><span class="h"># === Request（请求）===</span>
 
 <span class="k">class</span> <span class="f">SimulatedMCPServer</span>:
     <span class="s">"""模拟 MCP Server —— 完整演示 MCP 的核心交互流程。
@@ -729,60 +882,91 @@ NOTIFICATION_EXAMPLE = {
             flag = <span class="s">"⚠️ 错误:"</span> <span class="k">if</span> is_error <span class="k">else</span> <span class="s">"  ✅"</span>
             <span class="b">print</span>(f<span class="s">"  Server → Client: {flag} {content}"</span>)
         <span class="k">else</span>:
-            <span class="b">print</span>(f<span class="s">"  Server → Client: ❌ {response['error']['message']}"</span>)</pre></div></details></div><div class="lecture"><h2>10.7 MCP vs OpenAI Function Calling —— 对比</h2>
+            <span class="b">print</span>(f<span class="s">"  Server → Client: ❌ {response['error']['message']}"</span>)</pre></div></details></div><div class="lecture"><h2>10.7 MCP vs Function Calling vs A2A —— 三者边界在哪？</h2>
 <p>&nbsp;</p>
-<p>这是面试中的高频问题！</p>
+<p>面试中经常混淆这三个概念，把它们放在一起对比会显得你有系统思维。</p>
 <p>&nbsp;</p>
-<table><tr><th>维度</th><th>MCP</th><th>Function Calling</th></tr><tr><td>本质</td><td>通信协议</td><td>LLM 能力</td></tr><tr><td>标准化</td><td>开放标准</td><td>厂商自有实现</td></tr><tr><td>连接模式</td><td>Client↔Server</td><td>直接在 API 调用中</td></tr><tr><td>工具发现</td><td>tools/list 动态</td><td>每次请求手动传入</td></tr><tr><td>服务器生态</td><td>独立部署 MCP Server</td><td>无独立服务器概念</td></tr><tr><td>可组合性</td><td>多 Server 组合</td><td>依赖应用代码</td></tr><tr><td>跨模型支持</td><td>是（协议层面）</td><td>取决于厂商</td></tr></table>
+<table><tr><th>维度</th><th>MCP</th><th>Function Calling</th><th>A2A</th></tr><tr><td>本质</td><td>通信协议</td><td>LLM 能力</td><td>通信协议</td></tr><tr><td>标准化</td><td>开放标准</td><td>厂商自有实现</td><td>开放标准</td></tr><tr><td>解决的问题</td><td>LLM ↔ 工具</td><td>LLM 决策调用工具</td><td>Agent ↔ Agent</td></tr><tr><td>连接模式</td><td>Client↔Server</td><td>直接在 API 调用中</td><td>Agent↔Agent</td></tr><tr><td>工具发现</td><td>tools/list 动态</td><td>每次请求手动传入</td><td>AgentCard 发现</td></tr><tr><td>服务器生态</td><td>独立部署 MCP Server</td><td>无独立服务器概念</td><td>Agent 作为服务</td></tr><tr><td>跨模型支持</td><td>是（协议层面）</td><td>取决于厂商</td><td>是（协议层面）</td></tr></table>
 <p>&nbsp;</p>
-<p>关系：</p>
-<li>Function Calling 定义「LLM 如何决定调用工具」</li>
-<li>MCP 定义「工具如何被发现、连接、执行」</li>
-<li>两者是互补的，不是替代关系</li>
+<p>三者的协作关系（面试高分答案）：</p>
 <p>&nbsp;</p>
-<p>实际架构中的配合：</p>
+<p>"在完整的 Agent 系统中，三者各司其职：</p>
+<li>MCP 负责「Agent 怎么连接工具」—— 协议层面的标准化</li>
+<li>Function Calling 负责「LLM 怎么决定调哪个工具」—— 模型能力</li>
+<li>A2A 负责「Agent 之间怎么协作」—— Agent-to-Agent 通信</li>
+<p>&nbsp;</p>
+<p>它们不是竞争对手，而是一个协议栈的三个层次：</p>
+<p>FC (模型层) → MCP (工具层) → A2A (多Agent层)"</p>
+<p>&nbsp;</p>
+<p>实际架构中的配合流程：</p>
 <li>MCP Client 通过 tools/list 获取所有工具定义</li>
 <li>将工具定义转换为 OpenAI function 格式传给 LLM</li>
-<li>LLM 返回 function call</li>
+<li>LLM（通过 Function Calling）返回 function call</li>
 <li>MCP Client 通过 tools/call 执行工具</li>
-<li>将结果返回给 LLM</li>
+<li>将结果返回给 LLM 继续推理</li>
+<p>（如果是 Multi-Agent 场景，第 2 步的调用可能通过 A2A 来自另一个 Agent）</p>
+<p>&nbsp;</p>
+<p>▍ 面试陷阱：「MCP 和 Function Calling 是竞争关系吗？」</p>
+<p>&nbsp;</p>
+<p>错误回答：「对，MCP 就是要替代 Function Calling」</p>
+<p>正确回答：「不是竞争。MCP 是标准化 LLM 和外部工具的连接方式，</p>
+<p>而 Function Calling 是 LLM 内部的决策机制。MCP Server 可以</p>
+<p>同时对接 OpenAI 的 FC 和 Anthropic 的 Tool Use。」</p>
+<p>&nbsp;</p>
+<p>补一句可以加分：「我做过实验，同一个 MCP Server 给 GPT-4o 和</p>
+<p>Claude 都能用——这就是协议标准化的价值。」</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>10.8 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
-<li>MCP = AI 世界的 USB-C</li>
-<li>一个协议连接所有外部系统</li>
-<li>Client-Host-Server 三层架构</li>
-<li>JSON-RPC 2.0 消息格式</li>
+<li>MCP 的设计哲学（面试必问！）</li>
+<p>为什么是 JSON-RPC 而不是 REST API？</p>
+<p>→ REST 是请求-响应、名词路由、Header 协商；MCP 需要双向推送、</p>
+<p>动词路由、能力协商对象 → JSON-RPC 更合适</p>
+<p>类比：MCP = AI 世界的 USB-C —— 一个协议连接所有外部系统</p>
 <p>&nbsp;</p>
-<li>核心原语（面试必问！）</li>
-<li>Tools：让 LLM「做事」</li>
+<li>Client-Host-Server 三层架构</li>
+<p>核心安全设计：Server 看不到完整对话 → 对话历史留在 Host</p>
+<p>Host 做安全隔离，每个 Server 只收到最少必要信息</p>
+<p>&nbsp;</p>
+<li>JSON-RPC 生产实战</li>
+<p>id 字段的 3 个作用：并发保序 / 幂等性 / 请求链追踪</p>
+<p>5 个标准错误码：-32700 / -32600 / -32601 / -32602 / -32603</p>
+<p>Notification：让 MCP 从请求-响应升级为事件驱动</p>
+<p>&nbsp;</p>
+<li>核心原语</li>
+<li>Tools：让 LLM「做事」（tools/list → tools/call）</li>
 <li>Resources：让 LLM「读数据」</li>
 <li>Prompts：预定义提示模板</li>
-<li>Sampling：Server 请求 LLM 生成</li>
+<li>Sampling：Server 请求 Host 的 LLM 生成</li>
 <p>&nbsp;</p>
-<li>能力协商</li>
-<li>初始化时双方声明 capabilities</li>
-<li>只有双方都支持的功能才可用</li>
-<li>确保向后兼容和渐进增强</li>
+<li>能力协商（Capability Negotiation）</li>
+<p>初始化时双方声明 capabilities 对象</p>
+<p>只有双方都支持的功能才可用</p>
+<p>面试答法：「像两个人见面先报自己会的语言，选交集交流」</p>
 <p>&nbsp;</p>
-<li>传输层</li>
-<li>stdio：本地进程（简单、安全）</li>
-<li>SSE：远程服务（HTTP + 推送）</li>
-<li>Streamable HTTP：2025 新增</li>
+<li>传输层选型</li>
+<p>本地 → stdio（零网络开销、进程隔离、无需鉴权）</p>
+<p>远程简单 → Streamable HTTP（一个 POST endpoint）</p>
+<p>远程复杂 → SSE（支持服务端推送，需 Nginx 关 buffering）</p>
+<p>stdio 三大陷阱：进程管理 / 大结果传输 / stdin 污染</p>
 <p>&nbsp;</p>
-<li>MCP vs Function Calling</li>
-<li>MCP 是协议，FC 是 LLM 能力</li>
-<li>互补关系：MCP 负责连接管理，FC 负责执行决策</li>
+<li>MCP vs Function Calling vs A2A</li>
+<p>不是竞争，是协议栈三层：</p>
+<p>FC (模型层) → MCP (工具层) → A2A (多Agent层)</p>
+<p>同一 MCP Server 可同时对接 OpenAI FC 和 Anthropic Tool Use</p>
 <p>&nbsp;</p>
-<p>面试速记：</p>
+<p>面试速记（完整版）:</p>
 <p>"请解释 MCP 的工作原理"</p>
-<p>→ 三层架构(Host/Client/Server) + JSON-RPC 通信</p>
+<p>→ 三层架构(Host/Client/Server) + JSON-RPC 通信 + 能力协商</p>
 <p>→ 生命周期：Initialize → Capability Negotiation →</p>
 <p>Tools/Resources/Prompts → Teardown</p>
-<p>→ 核心价值：标准化 LLM 与外部工具/数据的交互</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (37 行)</summary><div class="code-block"><pre><span class="h"># === Request（请求）===</span>
+<p>→ 设计哲学：不是 REST API 因为需要双向推送和动词路由</p>
+<p>→ 安全：Server 看不到完整对话，Host 做信息过滤</p>
+<p>→ 传输：本地 stdio，远程 SSE/Streamable HTTP</p>
+<p>→ MCP + Function Calling + A2A 是互补关系，不是竞争</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (37 行)</summary><div class="code-block"><pre><span class="h"># === Request（请求）===</span>
 
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
     <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
@@ -818,24 +1002,26 @@ NOTIFICATION_EXAMPLE = {
     <span class="k">for</span> dim, mcp, fc <span class="k">in</span> comparisons:
         <span class="b">print</span>(f<span class="s">"  {dim:12s}  {mcp:30s}  {fc}"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第10章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (595 行)</summary><div class="code-block"><pre><span class="s">"""
-第10章：MCP（Model Context Protocol）原理与调用全流程
-=====================================================
+    <span class="b">print</span>(<span class="s">"\n✅ 第10章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (784 行)</summary><div class="code-block"><pre><span class="s">"""
+第10章：MCP 协议深度解析 —— 从协议原理到生产级 Server 实战
+===========================================================
 
 📌 本章目标：
-  1. 深入理解 MCP 协议的完整架构和设计哲学
-  2. 掌握 JSON-RPC 2.0 消息格式和 MCP 的三种消息类型
-  3. 理解 Client-Host-Server 三层架构
-  4. 掌握 MCP 核心原语：Tools / Resources / Prompts / Sampling
-  5. 学会 MCP 的生命周期管理（Initialize → Capability Negotiation → Teardown）
-  6. 理解 stdio 和 SSE 两种传输方式的使用场景
+  1. 深入理解 MCP 的设计哲学与核心取舍
+  2. 掌握 JSON-RPC 2.0 消息格式及生产实战细节
+  3. 精通 Client-Host-Server 三层架构与能力协商机制
+  4. 深入理解 Tools / Resources / Prompts / Sampling 四大原语
+  5. 掌握 stdio / SSE / Streamable HTTP 三种传输方式选型
+  6. 学会 MCP Server 的生产安全模型与工程实践
+  7. 理解 MCP vs Function Calling vs A2A 的边界
 
 📌 面试高频点：
-  - MCP 和传统的 REST API 有什么区别？
-  - MCP 的 Client-Host-Server 架构中，Host 的作用是什么？
-  - 什么是 Capability Negotiation？怎么工作的？
-  - MCP 的三个核心原语（Tools / Resources / Prompts）分别是什么？
-  - MCP 和 Function Calling 是什么关系？
+  - MCP 的设计哲学是什么？为什么不是 REST API？
+  - JSON-RPC 的 id 字段在并发场景下的作用？
+  - 能力协商怎么做？降级策略是什么？
+  - stdio 和 SSE 各自适合什么场景？
+  - MCP、Function Calling、A2A 三者的边界在哪？
+  - MCP Server 怎么做安全隔离？防注入怎么做？
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 本章内容基于 MCP 官方规范 (2025-06-18 版) 和 SDK 源码
@@ -936,6 +1122,65 @@ MCP 解决了什么核心问题？
      → 多个 Server 可以无缝组合使用
 
 
+10.2.1 MCP 的设计哲学 —— 为什么不是 REST API？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+面试官问：「为什么 MCP 不用 REST API，要用 JSON-RPC？」这是在考察
+你是否理解协议设计的「为什么」。
+
+▍ REST API 在 Agent 场景下的 3 个根本缺陷
+
+  缺陷 1：REST 是「请求-响应」模式，Agent 需要「双向推送」
+    REST 只有 Client 主动请求 → Server 被动响应。
+    但 Agent 场景下 Server 可能主动推送：
+    - 工具列表变了（用户安装了新插件）→ Server 需要通知 Host
+    - 文件被外部修改了 → Server 需要主动告知
+    - 长时间运行的任务完成了 → Server 不能等 Host 来轮询
+    
+    JSON-RPC 的 Notification（无 id 的消息）天然支持这种推送。
+
+  缺陷 2：REST 的 URL 路由是「名词」思维，Agent 需要「动词」思维
+    REST: GET /tools/weather → 获取天气工具「资源」
+    MCP:  {"method": "tools/call", "params": {"name": "get_weather"}}
+    
+    工具调用本质是「动作」，不是「资源」。用 URL 建模动作
+    导致接口膨胀（每个工具一个 endpoint），而 JSON-RPC 统一 method + params。
+
+  缺陷 3：REST 的状态协商靠 Header，JSON-RPC 靠 capabilities 对象
+    REST: Accept: application/vnd.api.v2+json （版本号藏在 Content-Type）
+    MCP: {"capabilities": {"tools": {...}, "sampling": {...}}}
+    
+    能力协商是整个 JSON 对象，可以动态嵌套、版本化、实验性功能标记。
+    比 HTTP Header 灵活得多。
+
+▍ 为什么 Anthropic 选择了 JSON-RPC 而不是 gRPC？
+
+  gRPC 很好，但有 3 个门槛和 MCP 的设计目标冲突：
+    1. gRPC 需要 protobuf 编译 → MCP 想让「任何人 30 分钟写一个 Server」
+    2. gRPC 强类型 → MCP 需要一定的灵活性（实验性功能、动态工具列表）
+    3. gRPC 二进制 → MCP 需要可调试（stdio 下 cat 就能看到消息）
+    
+  JSON-RPC 的 trade-off：类型安全弱，但开发体验和调试体验极好。
+  对于「让 100 万开发者快速构建 Server」这个目标，JSON-RPC 是正确选择。
+
+▍ Server 为什么不能看到完整对话？
+
+  这是 MCP 最巧妙的安全设计之一。对话历史保留在 Host 内部，Server 只收到：
+    - 当前这次工具调用的参数
+    - 没有用户之前的提问
+    - 没有 LLM 的推理过程
+    - 没有其他 Server 的返回结果
+
+  为什么？因为如果 Server 能看到完整对话：
+    - GitHub MCP Server 可能读到用户给 LLM 的数据分析请求（包含商业机密）
+    - 数据库 Server 可能窥探其他 Server 的查询结果
+    - 任何 Server 都可能通过对话历史推断用户意图和上下文
+    
+  这个设计原则在面试中可以直接引用：
+  「MCP 的安全隔离是通过 Host 做对话历史过滤实现的，
+  每个 Server 只收到自己需要的最少信息。」
+
+
 10.3 MCP 的消息格式 —— JSON-RPC 2.0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -989,6 +1234,52 @@ NOTIFICATION_EXAMPLE = {
 关键区别：
   - Request/Response 有 id 字段（双向匹配）
   - Notification 没有 id（不需要响应）
+
+
+10.3.1 JSON-RPC 生产实战 —— 面试官想知道你真正用过
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▍ id 字段的关键作用 —— 不只是「匹配请求」
+
+  面试官问「id 字段是干嘛的？」如果你只回答「匹配请求和响应」，
+  那就太浅了。更深层的答案：
+
+  1. 并发调用保序 —— Agent 可能同时调用 3 个工具（get_weather、
+     search_news、query_db），3 个请求顺序发、响应乱序回。
+     id 让你知道「这个返回是哪个请求的」。
+     
+  2. 幂等性支持 —— 用相同 id 重发请求，Server 应返回相同结果。
+     这在网络抖动场景下至关重要：Client 发了 tools/call(id=5)，
+     Server 执行了但响应丢了，Client 重发 id=5，Server 不应再次执行。
+     
+  3. 请求链追踪 —— 一个 Agent 动作链的每个子请求可以共享一个
+     trace_id（通过 params 传），但各自有独立 id 做匹配。
+
+▍ JSON-RPC 错误码 —— 不只是 -32601
+
+  面试官让你列几个 JSON-RPC 标准错误码：
+    -32700  Parse error          ← JSON 格式无效（写错了花括号）
+    -32600  Invalid Request      ← 不是合法的 Request 对象
+    -32601  Method not found     ← 调了不存在的工具
+    -32602  Invalid params       ← 参数类型不对或缺少必填字段
+    -32603  Internal error       ← Server 内部炸了（兜底用）
+    
+  MCP 在标准码之上还扩展了：
+    -32000 ~ -32099: Server 层面错误（如工具执行超时、权限不足）
+
+  面试实用技巧：提到错误码时举一个生产中的真实例子——
+  「线上遇到过：Agent 传了字符串 '5' 而不是数字 5，Server 返回 -32602，
+  我们在 Host 层加了类型自动转换来修复。」
+
+▍ Notification 的生产应用
+
+  Notification 不是设计上的点缀，而是 MCP 支持「长连接 Server」的关键：
+    - 工具列表变更通知：用户装了新 MCP 插件 → Server 主动通知 Host
+    - 资源更新通知：文件被修改 → Server 推送给 Host 刷新上下文
+    - 进度通知：长时间工具调用（如大文件分析）→ Server 上报进度
+
+  面试中提一句「Notification 机制让 MCP 不只是请求-响应，而是
+  事件驱动的双向通信」会显得你对协议理解很深。
 
 
 10.4 MCP 的核心方法（Primitives）—— 按调用流程
@@ -1098,6 +1389,57 @@ MCP 内置两种传输方式：
    - 示例：云端 API Server、第三方服务集成
 
 还支持 2025 年新增的 Streamable HTTP 传输方式。
+
+
+10.6.1 传输层选型决策树 —— 三种方式怎么选？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+面试官问「stdio 和 SSE 有什么区别？你项目里用哪个？」
+—— 这不是考概念，是在考你有没有做过技术选型。
+
+▍ 决策树（从工程角度）
+
+  你的 MCP Server 部署在哪里？
+  ├─ 本地（和 Host 在同一台机器）
+  │   └─ stdio ← 唯一正解
+  │       理由：零网络开销、进程隔离天然安全、不需要额外运维
+  │       不需要开端口、不需要 HTTPS 证书、不需要鉴权逻辑
+  │
+  └─ 远程（Server 和 Host 不在同一台机器）
+      ├─ 简单场景，不需要流式
+      │   └─ Streamable HTTP ← 2025 新增
+      │       理由：部署最简单（只需一个 POST endpoint）
+      │       适合：简单的 API 封装、无需推送通知的 Server
+      │
+      └─ 复杂场景，需要服务端推送
+          └─ SSE
+              理由：支持 Server 主动推送（工具列表变更、进度更新）
+              需要：反向代理支持（Nginx 关掉 buffering）
+              注意：SSE 走 HTTP/1.1，不支持 HTTP/2 多路复用
+
+▍ stdio 的生产陷阱（你可能踩过的坑）
+
+  1. 进程管理 —— Client 启动 Server 为子进程，Server 崩溃了谁来重启？
+     答：Host 负责。Claude Desktop 会自动重启崩溃的 Server。
+     → 你实现 MCP Client 时必须处理子进程的生命周期。
+
+  2. 大结果传输 —— stdin/stdout 默认有 buffer 限制（通常 64KB）。
+     如果你的工具返回 10MB 的 JSON，stdout 可能阻塞。
+     → MCP 2025-06-18 版本增加了分页支持（tools/call 返回 cursor）。
+
+  3. stdin 被污染 —— 如果 Server 的代码里 print() 了调试日志到 stdout，
+     Client 会把它当成 JSON-RPC 消息来解析 → 解析失败。
+     → 严格规则：日志走 stderr，协议消息走 stdout。
+
+▍ 远程 Server 的安全模型
+
+  stdio 下不需要鉴权（信任本地进程），但远程 Server 必须考虑：
+    - 传输层安全 → HTTPS（和任何 Web API 一样）
+    - 身份认证 → API Key / OAuth Token（SSE 首请求的 Header 带）
+    - 工具级授权 → 不是所有的 tools 对所有用户可用
+    - Rate Limiting → 防止 Agent 死循环调用工具
+
+  面试中可以提：「简单场景用 API Key，企业场景用 OAuth + 工具级 RBAC。」
 """</span>
 
 
@@ -1308,34 +1650,50 @@ MCP 内置两种传输方式：
 
 
 <span class="s">"""
-10.7 MCP vs OpenAI Function Calling —— 对比
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10.7 MCP vs Function Calling vs A2A —— 三者边界在哪？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-这是面试中的高频问题！
+面试中经常混淆这三个概念，把它们放在一起对比会显得你有系统思维。
 
-  ┌──────────────┬──────────────────┬───────────────────┐
-  │     维度      │   MCP             │  Function Calling  │
-  ├──────────────┼──────────────────┼───────────────────┤
-  │ 本质          │ 通信协议          │ LLM 能力            │
-  │ 标准化        │ 开放标准          │ 厂商自有实现        │
-  │ 连接模式      │ Client↔Server    │ 直接在 API 调用中    │
-  │ 工具发现      │ tools/list 动态   │ 每次请求手动传入     │
-  │ 服务器生态    │ 独立部署 MCP Server│ 无独立服务器概念     │
-  │ 可组合性      │ 多 Server 组合    │ 依赖应用代码         │
-  │ 跨模型支持    │ 是（协议层面）     │ 取决于厂商           │
-  └──────────────┴──────────────────┴───────────────────┘
+  ┌──────────────┬──────────────────┬───────────────────┬───────────────────┐
+  │     维度      │   MCP             │  Function Calling  │      A2A          │
+  ├──────────────┼──────────────────┼───────────────────┼───────────────────┤
+  │ 本质          │ 通信协议          │ LLM 能力            │ 通信协议            │
+  │ 标准化        │ 开放标准          │ 厂商自有实现        │ 开放标准            │
+  │ 解决的问题     │ LLM ↔ 工具        │ LLM 决策调用工具    │ Agent ↔ Agent      │
+  │ 连接模式      │ Client↔Server    │ 直接在 API 调用中    │ Agent↔Agent        │
+  │ 工具发现      │ tools/list 动态   │ 每次请求手动传入     │ AgentCard 发现      │
+  │ 服务器生态    │ 独立部署 MCP Server│ 无独立服务器概念     │ Agent 作为服务       │
+  │ 跨模型支持    │ 是（协议层面）     │ 取决于厂商           │ 是（协议层面）       │
+  └──────────────┴──────────────────┴───────────────────┴───────────────────┘
 
-关系：
-  - Function Calling 定义「LLM 如何决定调用工具」
-  - MCP 定义「工具如何被发现、连接、执行」
-  - 两者是互补的，不是替代关系
+三者的协作关系（面试高分答案）：
 
-实际架构中的配合：
+  "在完整的 Agent 系统中，三者各司其职：
+   - MCP 负责「Agent 怎么连接工具」—— 协议层面的标准化
+   - Function Calling 负责「LLM 怎么决定调哪个工具」—— 模型能力
+   - A2A 负责「Agent 之间怎么协作」—— Agent-to-Agent 通信
+  
+   它们不是竞争对手，而是一个协议栈的三个层次：
+   FC (模型层) → MCP (工具层) → A2A (多Agent层)"
+
+实际架构中的配合流程：
   1. MCP Client 通过 tools/list 获取所有工具定义
   2. 将工具定义转换为 OpenAI function 格式传给 LLM
-  3. LLM 返回 function call
+  3. LLM（通过 Function Calling）返回 function call
   4. MCP Client 通过 tools/call 执行工具
-  5. 将结果返回给 LLM
+  5. 将结果返回给 LLM 继续推理
+  （如果是 Multi-Agent 场景，第 2 步的调用可能通过 A2A 来自另一个 Agent）
+
+▍ 面试陷阱：「MCP 和 Function Calling 是竞争关系吗？」
+
+  错误回答：「对，MCP 就是要替代 Function Calling」
+  正确回答：「不是竞争。MCP 是标准化 LLM 和外部工具的连接方式，
+  而 Function Calling 是 LLM 内部的决策机制。MCP Server 可以
+  同时对接 OpenAI 的 FC 和 Anthropic 的 Tool Use。」
+  
+  补一句可以加分：「我做过实验，同一个 MCP Server 给 GPT-4o 和
+  Claude 都能用——这就是协议标准化的价值。」
 
 
 10.8 本章总结
@@ -1343,37 +1701,52 @@ MCP 内置两种传输方式：
 
 核心要点回顾：
 
-1. MCP = AI 世界的 USB-C
-   - 一个协议连接所有外部系统
-   - Client-Host-Server 三层架构
-   - JSON-RPC 2.0 消息格式
+1. MCP 的设计哲学（面试必问！）
+   为什么是 JSON-RPC 而不是 REST API？
+   → REST 是请求-响应、名词路由、Header 协商；MCP 需要双向推送、
+   动词路由、能力协商对象 → JSON-RPC 更合适
+   类比：MCP = AI 世界的 USB-C —— 一个协议连接所有外部系统
 
-2. 核心原语（面试必问！）
-   - Tools：让 LLM「做事」
+2. Client-Host-Server 三层架构
+   核心安全设计：Server 看不到完整对话 → 对话历史留在 Host
+   Host 做安全隔离，每个 Server 只收到最少必要信息
+
+3. JSON-RPC 生产实战
+   id 字段的 3 个作用：并发保序 / 幂等性 / 请求链追踪
+   5 个标准错误码：-32700 / -32600 / -32601 / -32602 / -32603
+   Notification：让 MCP 从请求-响应升级为事件驱动
+
+4. 核心原语
+   - Tools：让 LLM「做事」（tools/list → tools/call）
    - Resources：让 LLM「读数据」
    - Prompts：预定义提示模板
-   - Sampling：Server 请求 LLM 生成
+   - Sampling：Server 请求 Host 的 LLM 生成
 
-3. 能力协商
-   - 初始化时双方声明 capabilities
-   - 只有双方都支持的功能才可用
-   - 确保向后兼容和渐进增强
+5. 能力协商（Capability Negotiation）
+   初始化时双方声明 capabilities 对象
+   只有双方都支持的功能才可用
+   面试答法：「像两个人见面先报自己会的语言，选交集交流」
 
-4. 传输层
-   - stdio：本地进程（简单、安全）
-   - SSE：远程服务（HTTP + 推送）
-   - Streamable HTTP：2025 新增
+6. 传输层选型
+   本地 → stdio（零网络开销、进程隔离、无需鉴权）
+   远程简单 → Streamable HTTP（一个 POST endpoint）
+   远程复杂 → SSE（支持服务端推送，需 Nginx 关 buffering）
+   stdio 三大陷阱：进程管理 / 大结果传输 / stdin 污染
 
-5. MCP vs Function Calling
-   - MCP 是协议，FC 是 LLM 能力
-   - 互补关系：MCP 负责连接管理，FC 负责执行决策
+7. MCP vs Function Calling vs A2A
+   不是竞争，是协议栈三层：
+   FC (模型层) → MCP (工具层) → A2A (多Agent层)
+   同一 MCP Server 可同时对接 OpenAI FC 和 Anthropic Tool Use
 
-面试速记：
+面试速记（完整版）:
   "请解释 MCP 的工作原理"
-  → 三层架构(Host/Client/Server) + JSON-RPC 通信
+  → 三层架构(Host/Client/Server) + JSON-RPC 通信 + 能力协商
   → 生命周期：Initialize → Capability Negotiation → 
     Tools/Resources/Prompts → Teardown
-  → 核心价值：标准化 LLM 与外部工具/数据的交互
+  → 设计哲学：不是 REST API 因为需要双向推送和动词路由
+  → 安全：Server 看不到完整对话，Host 做信息过滤
+  → 传输：本地 stdio，远程 SSE/Streamable HTTP
+  → MCP + Function Calling + A2A 是互补关系，不是竞争
 """</span>
 
 
@@ -1413,7 +1786,7 @@ MCP 内置两种传输方式：
 
     <span class="b">print</span>(<span class="s">"\n✅ 第10章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
-<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html" title="RAG 深度剖析 — Naive→Advanced→GraphRAG→Agentic RAG">← 第9章</a>
+<a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html" title="RAG 深度解析 — 从Naive到生产级·面试到工程全覆盖">← 第9章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html" title="Tool Calling 底层 — OpenAI vs Anthropic">第11章 →</a>
 </div></div></div></div></body></html>

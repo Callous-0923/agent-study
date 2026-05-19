@@ -29,7 +29,7 @@ CHAPTERS = {
     7:  ("chapter_07_interview",     "07_interview_prep.html",           "求职面试准备 — 20 道高频题·项目指南"),
     8:  ("chapter_08_claude_code",   "08_claude_code_architecture.html", "Claude Code 架构 — nO·h2A·压缩·SubAgent"),
     9:  ("chapter_09_rag_deepdive",  "09_rag_deepdive.html",             "RAG 深度解析 — 从Naive到生产级·面试到工程全覆盖"),
-    10: ("chapter_10_mcp",           "10_mcp_deepdive.html",             "MCP 协议详解 — JSON-RPC·原语·能力协商"),
+    10: ("chapter_10_mcp",           "10_mcp_deepdive.html",             "MCP 深度解析 — 设计哲学·JSON-RPC·传输层选型·三协议对比"),
     11: ("chapter_11_tool_calling",  "11_tool_calling_deepdive.html",    "Tool Calling 底层 — OpenAI vs Anthropic"),
     12: ("chapter_12_infrastructure","12_infrastructure.html",           "Agent 生产基础设施 — OpenClaw·Harness·Checklist"),
     13: ("chapter_13_fastapi",       "13_fastapi_agent_service.html",    "FastAPI 服务化 — REST·SSE·WebSocket"),
