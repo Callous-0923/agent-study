@@ -15,7 +15,20 @@
 
 ---
 
-## 📖 项目简介
+## � 快速入口
+
+<p align="center">
+  <a href="https://agent-study-ruddy.vercel.app/"><img src="https://img.shields.io/badge/🌐-在线站点-Vercel?style=for-the-badge&logo=vercel&logoColor=white&labelColor=000000&color=6366F1" alt="在线站点"></a>
+  <a href="https://github.com/Callous-0923/agent-study"><img src="https://img.shields.io/badge/⭐-GitHub_仓库-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+  <a href="https://agent-study-ruddy.vercel.app/chapter_09_rag_deepdive/09_rag_deepdive.html"><img src="https://img.shields.io/badge/🔍-RAG_深度解析-FF6B6B?style=for-the-badge" alt="RAG 深度解析"></a>
+  <a href="https://agent-study-ruddy.vercel.app/chapter_10_mcp/10_mcp_deepdive.html"><img src="https://img.shields.io/badge/🔌-MCP_协议详解-10B981?style=for-the-badge" alt="MCP 协议详解"></a>
+</p>
+
+> **🌐 无需安装，浏览器直接看**：[agent-study-ruddy.vercel.app](https://agent-study-ruddy.vercel.app/) · 36 章完整内容 · 深色蓝图风格 · 手机/电脑自适应
+
+---
+
+## �📖 项目简介
 
 这是一套**面向求职**的 AI Agent 全栈学习课程，从 Agent 基础理论到 Claude Code 逆向工程、从 RAG 到 MCP/A2A 协议、从 DSPy 到生产可观测性，覆盖 **28 个主题、7 个层次**。每个章节都是 **可独立运行的 `.py` 文件**，既是完整讲义，又是可执行代码。
 
