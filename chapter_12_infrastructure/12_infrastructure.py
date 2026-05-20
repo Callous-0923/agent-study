@@ -103,6 +103,41 @@ ClawHub：
   - 两者是协议层和功能层的关系
 
 
+12.2.1 Gateway 模式为什么适合 Agent？—— 工程取舍分析
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+面试官问：「Agent 为什么用 Gateway 模式，不用微服务+API Gateway？」
+
+▍ Gateway vs 微服务的核心差异
+
+  传统微服务 → 每个服务独立部署、独立数据库、独立运维
+  Agent 的 Gateway → 集中式控制平面 + 可插拔的 Channel/Provider/AgentSkill
+
+  为什么 Agent 架构不适合微服务模式？
+
+  1. 成本共享问题 —— Agent 的「状态」不是无状态的
+     微服务推崇 stateless → 但 Agent 的对话上下文必须共享
+     → 每个请求都重建上下文 = 前 20 条消息重新计费 = 成本爆炸
+     → Gateway 模式下对话历史存在控制平面，无需跨服务传递
+
+  2. LLM Provider 的切换频率 —— 应该是运行时切换，不是部署时
+     微服务要换模型 → 改代码 → 重新部署 → 全量回归测试
+     Gateway 换模型 → /model gpt-4o → 即刻生效，零部署
+
+  3. AgentSkill 的安装卸载 —— 需要运行时热插拔
+     微服务下装新 Skill → 部署新服务 → 配 Service Discovery
+     Gateway 下装新 Skill → install agent-skill/weather → 即刻生效
+
+▍ Gateway 模式的设计取舍（面试可以主动分析）
+
+  优点：集中式状态管理、运行时热切换 Provider/模型、单点安全审计
+  代价：Gateway 成为单点瓶颈（需要水平扩展 + 队列）
+  解决：Gateway 本身可以是多实例 + 共享存储的
+
+  类比：Gateway 模式像「OS 内核」—— 管理所有资源，
+  但允许动态加载驱动（AgentSkill）和切换硬件（LLM Provider）
+
+
 12.3 Harness (OpenHarness) —— 开源编码 Agent 黑马
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

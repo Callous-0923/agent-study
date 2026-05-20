@@ -545,6 +545,54 @@ def demo_a2a_ecosystem():
    通过 A2A 把复杂子任务委派给其他专业的 Agent。"
 
 
+15.5.1 A2A 的工程挑战 —— 理论很好，生产中要注意什么？
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▍ Task 生命周期的边界情况（面试高分点）
+
+  面试官问：「Task 状态机有哪些 tricky 的地方？」
+
+  A2A Task 有 6 个状态：pending → working → input-required →
+  completed/failed/cancelled。看起来简单，但真实工程中有很多边界：
+
+  1. 取消正在 working 的 Task —— 不是「通知一下」就完了
+     Server 需要：停止当前执行 → 回滚已做的操作 → 返回 cancelled
+     （如果不回滚，Agent 可能已经把数据写到数据库了）
+
+  2. input-required 状态下的超时 —— Client 不回应怎么办？
+     A2A 规范没有规定超时行为 → 需要 Server 自己实现 timeout
+     → 超时后自动 fail/cancel，避免资源泄漏
+
+  3. 重复提交幂等性 —— 网络抖动导致 Client 发了 2 次 tasks/send
+     → Server 需要根据 idempotency_key 去重
+     → A2A 规范未强制要求幂等性，但生产环境必须实现
+
+  4. Task 的「僵尸状态」—— working 状态但 Server 已崩溃
+     → Client 无法获知 Server 崩溃了还是还在跑
+     → 需要 heartbeat 机制：Server 定期更新 Task 的 last_heartbeat
+     → Client 发现超时无 heartbeat → 判定失败
+
+▍ Artifact 的大型文件传输问题
+
+  A2A 的 Artifact 可以包含文件，但协议没有规定文件传输方式。
+  
+  小文件（< 10MB）：放在 Artifact 的 data URL 中（base64）
+  大文件（> 10MB）：不应该 base64（膨胀 33%），应该传 URL
+  → Agent A 把文件存到共享存储 → 在 Artifact 中放下载 URL
+  → 这就是 MCP + A2A 的实际配合方式
+
+▍ 安全模型 —— 跨组织 Agent 怎么互信？
+
+  当前 A2A 的安全模型主要在「AgentCard 层面」：
+    - AgentCard 声明需要什么认证（API Key / OAuth）
+    - 但权限粒度不够 → 无法声明「这个 Task 需要什么权限」
+  
+  生产中的补救：
+    - 在 Task payload 中自定义 auth_context 字段
+    - 使用 OAuth Token Exchange（RFC 8693）做委托授权
+    - Server 端做 Task 级别的权限校验
+
+
 15.6 本章总结
 ━━━━━━━━━━━━━
 
@@ -559,12 +607,18 @@ def demo_a2a_ecosystem():
    - Task: 工作单元（pending→working→completed/failed）
    - Artifact: 跨 Agent 的成果物封装
 
-3. A2A vs MCP —— 分工明确
+3. A2A 工程边界（面试进阶分）
+   - Task 取消需要回滚已执行的操作
+   - input-required 状态必须有超时兜底
+   - 生产环境必须实现幂等键去重
+   - heartbeat 机制防僵尸任务
+
+4. A2A vs MCP —— 分工明确
    - MCP: Agent ↔ 工具/数据（Anthropic 发布）
    - A2A: Agent ↔ Agent（Google 发布）
    - 互补关系，不是竞争
 
-4. 典型交互流程
+5. 典型交互流程
    - 发现 (GET AgentCard)
    - 委派 (POST tasks/send)
    - 查询 (POST tasks/get，或 SSE 推送)
@@ -575,6 +629,7 @@ def demo_a2a_ecosystem():
   → AgentCard 声明能力 → Client 按需发现 → Task 委派
   → SSE/轮询跟踪进度 → 获取 Artifact
   → MCP 管工具，A2A 管 Agent 间协作
+  → 生产注意：取消回滚、幂等键、heartbeat 超时
 """
 
 

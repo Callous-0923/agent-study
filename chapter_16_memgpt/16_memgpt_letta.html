@@ -253,8 +253,8 @@ body {
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_07_interview/07_interview_prep.html">Ch7 求职面试准备</a>
 <div class="sidebar-layer">第3层 深度技术</div>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html">Ch8 Claude Code 架构</a>
-<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html">Ch9 RAG 深度剖析</a>
-<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html">Ch10 MCP 协议详解</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html">Ch9 RAG 深度解析</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html">Ch10 MCP 深度解析</a>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html">Ch11 Tool Calling 底层</a>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_12_infrastructure/12_infrastructure.html">Ch12 Agent 生产基础设施</a>
 <div class="sidebar-layer">第4层 工程化前沿</div>
@@ -452,6 +452,58 @@ body {
 <p>核心启示（面试金句！）：</p>
 <p>"Agent 的记忆质量取决于 Agent 管理上下文的能力，</p>
 <p>而不是记忆工具的复杂度。文件系统 + 好用工具 = 最佳记忆方案。"</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h3>16.5.1 Heartbeat 与 Sleep-Time 的工程实现 —— 不只是「定时器」</h3>
+<p>&nbsp;</p>
+<p>▍ Heartbeat 的成本计算 —— 「自我纠错」要花多少钱？</p>
+<p>&nbsp;</p>
+<p>面试官问：「Heartbeat 每次都要多调一次 LLM，成本怎么控制？」</p>
+<p>&nbsp;</p>
+<p>每次 Heartbeat 触发时，Agent 要把「当前状态 + 工具结果」发给 LLM，</p>
+<p>让 LLM 判断是否需要进一步行动。这确实增加了成本。</p>
+<p>&nbsp;</p>
+<p>控制策略：</p>
+<p>a) 选择性 Heartbeat —— 不是每个工具都请求心跳，</p>
+<p>只在「关键工具」（数据库写入、API 调用）执行后触发</p>
+<p>b) 使用廉价模型做 Heartbeat —— Heartbeat 判断是「是否需要继续」，</p>
+<p>不要求深度推理 → 用 gpt-4o-mini 就够</p>
+<p>c) Heartbeat 超时限制 —— 最多触发 3 次心跳，避免死循环</p>
+<p>d) Token 预算驱动 —— 累计消耗超过阈值 → 停止心跳，直接总结</p>
+<p>&nbsp;</p>
+<p>经验数据：合理的 Heartbeat 机制增加 15-25% 的额外成本，</p>
+<p>但减少 30-50% 的错误率 → ROI 是正的。</p>
+<p>&nbsp;</p>
+<p>▍ Sleep-Time Compute 的调度设计</p>
+<p>&nbsp;</p>
+<p>Letta 的 Sleep-Time Compute 不是简单的 cron 任务。它需要判断：</p>
+<li>什么时候触发？（用户 5 分钟无交互？1 小时？）</li>
+<li>处理哪些记忆？（最近 10 轮对话？所有对话？）</li>
+<li>用什么模型？（整理记忆不需要 GPT-4o，小模型够用）</li>
+<p>&nbsp;</p>
+<p>工程实现建议：</p>
+<li>用户交互结束后启动一个 30 秒的倒计时</li>
+<li>倒计时内用户再次交互 → 取消倒计时</li>
+<li>倒计时结束 → 启动 Sleep-Time Agent（用廉价模型）</li>
+<li>Sleep-Time Agent 扫描本轮对话 → 提取要点 → 更新 Core Memory</li>
+<li>完成后 Agent 回到待机状态</li>
+<p>&nbsp;</p>
+<p>注意：Sleep-Time Compute 不是实时需求 → 可以异步执行，</p>
+<p>不阻塞用户的下一次交互。这也是为什么 Letta 使用后台 Agent 的原因。</p>
+<p>&nbsp;</p>
+<p>▍ 记忆压缩的工程权衡 —— 保留什么，丢弃什么？</p>
+<p>&nbsp;</p>
+<p>MemGPT 记忆管理最核心的决策：「什么信息值得进入 Core Memory？」</p>
+<p>&nbsp;</p>
+<p>面试可以主动分析：</p>
+<p>值得保留 → 用户偏好（「我喜欢简洁回答」）、事实信息（「我是北京人」）、</p>
+<p>任务上下文（「正在做税务报表，已完成 Q1-Q3」）</p>
+<p>可以丢弃 → 临时搜索词、失败的尝试、已过时的数据、</p>
+<p>与当前任务无关的闲聊内容</p>
+<p>&nbsp;</p>
+<p>工业界的经验法则：Core Memory 控制在 2000 tokens 以内</p>
+<p>（留给对话历史足够的空间）。超过上限 → 触发记忆整理</p>
+<p>（合并相似、删除过时、归档低频）</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>16.6 MemGPT 架构的简化实现</h2>
@@ -772,7 +824,7 @@ body {
     <span class="k">for</span> mem, os, desc <span class="k">in</span> layers:
         <span class="b">print</span>(f<span class="s">"  {mem:18s} ↔ {os:6s} → {desc}"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第16章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (513 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第16章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (566 行)</summary><div class="code-block"><pre><span class="s">"""
 第16章：MemGPT / Letta —— Agent 记忆的「操作系统」
 =====================================================
 
@@ -955,6 +1007,59 @@ MemGPT v2 的创新（2025年）。
 核心启示（面试金句！）：
   "Agent 的记忆质量取决于 Agent 管理上下文的能力，
    而不是记忆工具的复杂度。文件系统 + 好用工具 = 最佳记忆方案。"
+
+
+16.5.1 Heartbeat 与 Sleep-Time 的工程实现 —— 不只是「定时器」
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▍ Heartbeat 的成本计算 —— 「自我纠错」要花多少钱？
+
+  面试官问：「Heartbeat 每次都要多调一次 LLM，成本怎么控制？」
+
+  每次 Heartbeat 触发时，Agent 要把「当前状态 + 工具结果」发给 LLM，
+  让 LLM 判断是否需要进一步行动。这确实增加了成本。
+
+  控制策略：
+    a) 选择性 Heartbeat —— 不是每个工具都请求心跳，
+       只在「关键工具」（数据库写入、API 调用）执行后触发
+    b) 使用廉价模型做 Heartbeat —— Heartbeat 判断是「是否需要继续」，
+       不要求深度推理 → 用 gpt-4o-mini 就够
+    c) Heartbeat 超时限制 —— 最多触发 3 次心跳，避免死循环
+    d) Token 预算驱动 —— 累计消耗超过阈值 → 停止心跳，直接总结
+
+  经验数据：合理的 Heartbeat 机制增加 15-25% 的额外成本，
+  但减少 30-50% 的错误率 → ROI 是正的。
+
+▍ Sleep-Time Compute 的调度设计
+
+  Letta 的 Sleep-Time Compute 不是简单的 cron 任务。它需要判断：
+    - 什么时候触发？（用户 5 分钟无交互？1 小时？）
+    - 处理哪些记忆？（最近 10 轮对话？所有对话？）
+    - 用什么模型？（整理记忆不需要 GPT-4o，小模型够用）
+
+  工程实现建议：
+    - 用户交互结束后启动一个 30 秒的倒计时
+    - 倒计时内用户再次交互 → 取消倒计时
+    - 倒计时结束 → 启动 Sleep-Time Agent（用廉价模型）
+    - Sleep-Time Agent 扫描本轮对话 → 提取要点 → 更新 Core Memory
+    - 完成后 Agent 回到待机状态
+
+  注意：Sleep-Time Compute 不是实时需求 → 可以异步执行，
+  不阻塞用户的下一次交互。这也是为什么 Letta 使用后台 Agent 的原因。
+
+▍ 记忆压缩的工程权衡 —— 保留什么，丢弃什么？
+
+  MemGPT 记忆管理最核心的决策：「什么信息值得进入 Core Memory？」
+
+  面试可以主动分析：
+    值得保留 → 用户偏好（「我喜欢简洁回答」）、事实信息（「我是北京人」）、
+              任务上下文（「正在做税务报表，已完成 Q1-Q3」）
+    可以丢弃 → 临时搜索词、失败的尝试、已过时的数据、
+              与当前任务无关的闲聊内容
+
+  工业界的经验法则：Core Memory 控制在 2000 tokens 以内
+  （留给对话历史足够的空间）。超过上限 → 触发记忆整理
+  （合并相似、删除过时、归档低频）
 
 
 16.6 MemGPT 架构的简化实现

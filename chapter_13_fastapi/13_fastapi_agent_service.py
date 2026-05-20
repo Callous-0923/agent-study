@@ -468,6 +468,71 @@ Agent 场景推荐：
   - 实时对话（用户可中途介入）→ WebSocket /agent/ws
 
 
+13.6.1 SSE 生产陷阱 —— 面试官想听你踩过的坑
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▍ Nginx 反向代理下的 SSE —— 最容易被忽视的配置
+
+  SSE 依赖 HTTP 长连接持续推送数据。但 Nginx 默认会「缓冲」响应：
+  等后端把整个 Response 生成完，一次性发给客户端。
+
+  这对 SSE 是致命的：用户等 30 秒才能看到第一步的思考过程。
+
+  必须在 Nginx 中显式禁用缓冲：
+    proxy_buffering off;
+    proxy_cache off;
+    chunked_transfer_encoding on;
+    proxy_read_timeout 300s;  # 足够长，否则 SSE 会被超时断开
+
+  面试可以提：「Agent 的 SSE 输出必须过 Nginx 的 proxy_buffering off，
+  否则用户看不到逐步的思考过程——这是我们线上踩过的坑。」
+
+▍ 连接断开与恢复 —— EventSource 的秘密武器
+
+  SSE 比 WebSocket 好的一点：浏览器 EventSource API 内置自动重连。
+  EventSource 在连接断开后会每隔几秒自动重试，发一个新的 GET 请求。
+
+  但这对 Agent 场景有一个问题：Agent 的流式过程是「有状态的」——
+  重连后无法从原来的断点继续。
+
+  解决方案：
+    a) 客户端带 last_event_id 参数重连 → 服务端从断点重放
+    b) 更实用的做法：SSE 只推送「进度指示」，最终结果走单独 API 拉取
+    c) 在 event data 中嵌入 checkpoint_id，断连后可续传
+
+▍ 背压控制 —— Agent 推太快，客户端来不及消费
+
+  当 Agent 快速产出 token（如 GPT-4o 的 100 tokens/s），而
+  客户端网络慢时，会出现「背压」——数据在缓冲区堆叠，内存暴涨。
+
+  应对：
+    a) 限制 Agent 的 generate 速度（用 asyncio.sleep 间歇等待）
+    b) 检查 write buffer 大小，超过阈值暂停 SSE 推送
+    c) 合并小事件（多个 thinking 事件合成一个）
+
+
+13.6.2 WebSocket 的生产实践经验
+
+  WebSocket 的诱惑：真正的双向通信，用户可以随时插话。
+
+  但 WebSocket 在 Agent 场景下的 3 个工程挑战：
+
+  1. 连接管理复杂性 —— HTTP 请求用完即弃，WebSocket 需要维护连接状态
+     → 单进程只能维持 1000-10000 个 WebSocket（取决于内存）
+     → 需要连接池 + 心跳检测（ping/pong）
+
+  2. 重连逻辑需手写 —— 手机切网络、电脑休眠唤醒 → 连接都会断
+     → 需要手动实现 exponential backoff 重连
+     → 需要处理重连期间的消息丢失
+
+  3. 中间件穿透 —— 某些企业代理不支持 WebSocket Upgrade
+     → 需要有降级到 SSE 长轮询的备选方案
+
+  什么时候值得用 WebSocket？
+    → 用户需要中途介入（「等一下，我改一下之前的条件」）
+    → 实时协作场景（两个用户 + 一个 Agent 同时交互）
+
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 13.7 本章总结
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -479,7 +544,16 @@ Agent 场景推荐：
    - 自动文档生成
    - SSE / WebSocket 开箱即用
 
-2. 三种通信模式各有适用场景
+2. SSE 生产三要素
+   - Nginx 必须 proxy_buffering off
+   - 利用 EventSource 自动重连（带 last_event_id）
+   - 需要背压控制机制
+
+3. WebSocket 使用场景
+   - 用户需要中途介入的实时双向对话
+   - 权衡：复杂度比 SSE 高 3 倍，只在确实需要双向通信时用
+
+4. 三种通信模式各有适用场景
    - REST API: 简单问答 → 一次请求一次响应
    - SSE: 流式输出 → 展示 Agent 思考过程
    - WebSocket: 实时双向 → 用户可中途介入

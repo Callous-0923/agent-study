@@ -246,11 +246,103 @@ ANTHROPIC_TOOL = {
   3. 可能同时收到多个 tool_call 的流（用 index 区分）
 
 
+11.5.1 Streaming 组装实战 —— 面试官想知道你处理过脏数据
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▍ 状态机设计 —— 不只是「拼接字符串」
+
+  面试常问：「Streaming 模式下怎么组装 tool_call？」
+
+  简单回答是「用 index 区分 + 累积 arguments 字符串」。但真实项目中
+  需要处理至少 5 种异常状态：
+
+  异常 1：丢包乱序 —— 网络抖动导致 chunk_5 先到、chunk_3 后到
+    对策：按 index + sequence_number（如果有）排序重组
+    
+  异常 2：中断恢复 —— 流中断后重新连接，tool_call 拼接了一半
+    对策：保存中间状态，重连后从断点继续
+    
+  异常 3：JSON 解析失败 —— arguments 拼接完成但是无效 JSON
+    对策：regex 修复常见错误（尾逗号、单引号）→ 重试 → 放弃
+    
+  异常 4：并行 tool_call 的流交错 —— 3 个 tool_call 同时流式到达
+    对策：用 index 分桶，各自独立组装，互不干扰
+    
+  异常 5：空参数 —— LLM 某些情况下返回没有 arguments 的 tool_call
+    对策：加默认空对象 {}，不 crash
+
+▍ Anthropic 的 content_block 设计为什么更优雅？
+
+  Anthropic 用 content_block_start/delta/stop 三阶段模型：
+    - start → 声明「一个 tool_use block 开始了」，type + id 已知
+    - delta → 流式传输 input_json_delta（只传增量 JSON）
+    - stop → 声明这个 block 结束
+    
+  比 OpenAI 的 index 模式好在哪里？
+    - 不需要 index 来区分并行调用（不同的 content_block 就是不同的）
+    - 生命周期明确 → 你在 stop 事件时可以确认「完整了」
+    - 可以处理非 JSON 的 block 类型（如文本 block + 工具 block 交替）
+
+  面试可以提：「Anthropic 的 content_block 流式模型给每个 tool_call
+  分配了明确的生命周期，避免了 OpenAI index 模式下的并行组装复杂度。」
+
+▍ 生产中的 Token 陷阱 —— tools 定义在「吃」你的预算
+
+  很多人不知道 tools 定义每次请求都会重复计费。一个 Agent 如果有
+  15 个工具，每个工具 300 tokens 的定义 → 4500 tokens/次的前缀开销。
+  
+  优化策略：
+    a) 动态工具集 —— 第一轮不带 tools，让 LLM 说「我需要什么」
+       → 第二轮只带 2-3 个相关工具
+    b) 工具描述瘦身 —— description 越短越好（Anthropic 建议 < 200 字）
+    c) Schema 惰性加载 —— 只在 LLM 选择了某个工具后才传完整 Schema
+    d) 缓存工具列表 —— 使用 Prompt Caching（Ch33）缓存不变的 tools 前缀
+
+
 11.6 Strict Function Calling —— 严格模式
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 OpenAI 在 2024 年推出了 strict 模式：
   设置 strict: true 时，LLM 保证输出的参数 100% 符合 JSON Schema。
+
+▍ Strict 模式的代价 —— 面试官想听你说「限制」
+
+  面试常见陷阱：「你用 strict 模式了吗？」→ 如果你只说「用了，保证格式」，
+  就太浅了。正确的深度回答应当包含 strict 模式的限制：
+
+  1. 所有参数必须定义在顶层 object —— 不支持嵌套的 anyOf/oneOf
+  2. 所有字段必须显式声明 type + 是否 nullable
+  3. 不支持动态 Schema —— 「根据上一个参数决定这个参数的类型」
+     这种场景 Strict 做不了
+  4. 可选字段必须声明 default 或 nullable，否则 LLM 可能不生成
+  5. 额外限制：顶层必须为 object 类型，数组类型参数需包装在 object 内
+
+  面试可以提：「Strict 模式适合 API 网关类的确定性工具，
+  但对需要 LLM 灵活输出结构（如图表配置、动态查询）的场景
+  反而会限制表达能力。我通常按工具类型分：确定性工具用 strict，
+  创造性工具不用。」
+
+▍ 为什么 Anthropic 没有 Strict 模式？
+  
+  因为 Anthropic 的设计哲学不同：不是靠 Schema 约束，而是
+  通过训练让模型「学会」输出正确格式的 JSON。Claude 3.5+
+  在工具调用格式正确率上已经非常接近 100%（非 strict 条件下）。
+  
+  实践中：Claude 的 tool_use 返回的 input 字段已经是解析好的
+  JSON 对象（不是字符串），这本身减少了一半的格式错误。
+
+
+11.6.1 Tool Calling 生产 Checklist
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  你上线前应该检查：
+  ✅ 每个工具的 description < 200 字（Anthropic 建议）
+  ✅ 动态加载工具，不是一次传 20 个
+  ✅ 参数有明确的 type + default + nullable 声明
+  ✅ 工具返回有 max_length 限制（避免 10MB JSON 爆上下文）
+  ✅ 工具超时设置（>10s 的工具调异步模式）
+  ✅ 幂等性保证（相同参数多次调用 = 相同结果或安全重试）
+  ✅ 错误返回统一格式（{"error": "...", "retryable": true/false}）
 
 如何使用：
   - 所有参数必须定义为 object 类型

@@ -667,6 +667,59 @@ class AgentStorage:
   conn.execute("VACUUM INTO 'agent_store_backup.db'")
 
 
+14.5.1 SQLite 连接池与并发 —— 生产中的真实问题
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+▍ 连接池不是 PostgreSQL 才需要的
+
+  SQLite 的 WAL 模式支持「无限读 + 1 写」，但前提是正确管理连接。
+  
+  很多人直接用 `sqlite3.connect()` 每次都新建连接，这在低并发下
+  没问题，但在 FastAPI + 异步 + Agent 场景下会导致：
+    - 频繁打开/关闭文件 → 延迟抖动（P99 可达 100ms+）
+    - 连接数无法控制 → 超出文件描述符限制
+
+  最佳实践：使用连接池
+    - WAL 模式下可以安全地复用连接
+    - 写操作需要排队（WAL 只允许 1 个写事务并发）
+    - 读操作可以无限并发
+
+  推荐工具：
+    - Python: `sqlite3` + `WAL` + `BusyHandler`（设置 timeout）
+    - 进阶: `aiosqlite`（异步 SQLite）
+    - 不建议: SQLAlchemy + SQLite（ORM 的 JOIN 难以控制）
+
+▍ BusyHandler —— SQLite 的隐藏「并发锁」
+
+  WAL 模式下，写事务被另一个写事务阻塞时会立即返回 SQLITE_BUSY。
+  默认行为是崩溃/抛异常。这会导致高并发写场景下大量失败。
+
+  修复：
+    conn.execute("PRAGMA busy_timeout = 5000")  # 等 5 秒
+
+  设置后，SQLite 会内部重试，而不是一冲突就报错。
+  这个设置是 SQLite 生产化的「第一行配置」。
+
+▍ 什么时候真的需要迁移到 PostgreSQL？
+
+  面试官问：「SQLite 扛不住了你怎么办？」不要说「直接换 PostgreSQL」，
+  要先说 SQLite 的极限在哪：
+
+  SQLite 真正扛不住的信号：
+    ✗ 写操作 QPS > 200（WAL 的单写瓶颈）
+    ✗ 数据库文件 > 10GB（VACUUM 耗时 > 1 分钟）
+    ✗ 需要多副本高可用（SQLite 不支持主从复制）
+    ✗ 需要行级权限控制（SQLite 的权限是文件级别的）
+
+  如果没有遇到以上 4 条中的任何一条 → SQLite 完全够用。
+  遇到任意一条 → 考虑 PostgreSQL / Turso（分布式 SQLite）
+
+  迁移策略：
+    不是「重写所有代码」，而是「抽象一个 Storage 接口，
+    SQLite 实现 → PostgreSQL 实现互换」。Ch14 的 APIStore 类
+    就是这个思想的第一步。
+
+
 14.6 本章总结
 ━━━━━━━━━━━━━
 
