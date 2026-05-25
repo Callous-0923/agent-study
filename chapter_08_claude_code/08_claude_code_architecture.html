@@ -235,7 +235,18 @@ body {
 }
 @media (max-width: 768px) { .sidebar-toggle { display: flex; align-items: center; justify-content: center; } }
 
+/* 浏览量统计徽章 */
+.goatcounter-badge {
+  text-align: center; margin: 28px 0 16px;
+  padding: 12px 20px; background: white; border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,.05);
+  font-size: .88em; color: #64748b;
+}
+.goatcounter-label { margin-right: 8px; }
+.goatcounter-count { font-weight: 700; color: #667eea; font-size: 1.05em; }
+
 </style>
+<script data-goatcounter="https://agent-study.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <div class="page-wrapper">
@@ -253,8 +264,8 @@ body {
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_07_interview/07_interview_prep.html">Ch7 求职面试准备</a>
 <div class="sidebar-layer">第3层 深度技术</div>
 <a class="sidebar-link active" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html">Ch8 Claude Code 架构</a>
-<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html">Ch9 RAG 深度剖析</a>
-<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html">Ch10 MCP 协议详解</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html">Ch9 RAG 深度解析</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html">Ch10 MCP 深度解析</a>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html">Ch11 Tool Calling 底层</a>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_12_infrastructure/12_infrastructure.html">Ch12 Agent 生产基础设施</a>
 <div class="sidebar-layer">第4层 工程化前沿</div>
@@ -289,7 +300,7 @@ body {
 <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button><div class="main-content"><div class="container"><div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/index.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第8章 Claude Code 架构 — nO·h2A·压缩·SubAgent</strong></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_07_interview/07_interview_prep.html" title="求职面试准备 — 20 道高频题·项目指南">← 第7章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
-<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html" title="RAG 深度剖析 — Naive→Advanced→GraphRAG→Agentic RAG">第9章 →</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html" title="RAG 深度解析 — 从Naive到生产级·面试到工程全覆盖">第9章 →</a>
 </div><div class="hero"><h1>第8章 Claude Code 架构深度剖析 —— 工业级 Agent 的标杆实现</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 深入理解 Claude Code 的完整系统架构（4层结构）</span><span class="tag tag-goal">2. 掌握主 Agent 循环 (nO) 的设计哲学 —— 「用简单对抗复杂」</span><span class="tag tag-goal">3. 理解 h2A 实时 Steering 机制的工作原理</span><span class="tag tag-goal">4. 掌握分层 Multi-Agent 架构：Task 工具 → SubAgent 创建 → 并发调度</span><span class="tag tag-goal">5. 理解 Context Compaction（上下文压缩）的触发与执行机制</span><span class="tag tag-goal">6. 了解 Claude Agent SDK（原 Claude Code SDK）的设计理念</span><span class="tag tag-interview">🎤 Claude Code 的 Agent 循环和 LangChain 的 ReAct 循环有何不同？</span><span class="tag tag-interview">🎤 h2A 异步双缓冲队列是如何实现「中途介入」的？</span><span class="tag tag-interview">🎤 为什么 Claude Code 选择单线程主循环而非并行多 Agent？</span><span class="tag tag-interview">🎤 Context Compaction 在什么时机触发？具体做了什么？</span><span class="tag tag-interview">🎤 SubAgent 和主 Agent 之间的隔离是如何实现的？</span></div><p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -1262,5 +1273,6 @@ SDK 的 Agent 循环设计：
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_07_interview/07_interview_prep.html" title="求职面试准备 — 20 道高频题·项目指南">← 第7章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
-<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html" title="RAG 深度剖析 — Naive→Advanced→GraphRAG→Agentic RAG">第9章 →</a>
-</div></div></div></div></body></html>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html" title="RAG 深度解析 — 从Naive到生产级·面试到工程全覆盖">第9章 →</a>
+</div><div class="goatcounter-badge">  <span class="goatcounter-label">📊 全站浏览量</span>  <span class="goatcounter-count" id="gc-total">加载中...</span></div><script>  fetch("https://agent-study.goatcounter.com/counter/TOTAL.json")    .then(r => r.json())    .then(d => {      let el = document.getElementById("gc-total");      if (el && d.count !== undefined) {        el.textContent = Number(d.count).toLocaleString() + " 次";      }    })    .catch(() => {      document.getElementById("gc-total").textContent = "统计中...";    });</script>
+</div></div></div></body></html>

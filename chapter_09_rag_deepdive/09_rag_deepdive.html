@@ -235,7 +235,18 @@ body {
 }
 @media (max-width: 768px) { .sidebar-toggle { display: flex; align-items: center; justify-content: center; } }
 
+/* 浏览量统计徽章 */
+.goatcounter-badge {
+  text-align: center; margin: 28px 0 16px;
+  padding: 12px 20px; background: white; border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,.05);
+  font-size: .88em; color: #64748b;
+}
+.goatcounter-label { margin-right: 8px; }
+.goatcounter-count { font-weight: 700; color: #667eea; font-size: 1.05em; }
+
 </style>
+<script data-goatcounter="https://agent-study.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <div class="page-wrapper">
@@ -253,8 +264,8 @@ body {
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_07_interview/07_interview_prep.html">Ch7 求职面试准备</a>
 <div class="sidebar-layer">第3层 深度技术</div>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html">Ch8 Claude Code 架构</a>
-<a class="sidebar-link active" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html">Ch9 RAG 深度剖析</a>
-<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html">Ch10 MCP 协议详解</a>
+<a class="sidebar-link active" href="https://callous-0923.github.io/agent-study/chapter_09_rag_deepdive/09_rag_deepdive.html">Ch9 RAG 深度解析</a>
+<a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html">Ch10 MCP 深度解析</a>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_11_tool_calling/11_tool_calling_deepdive.html">Ch11 Tool Calling 底层</a>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_12_infrastructure/12_infrastructure.html">Ch12 Agent 生产基础设施</a>
 <div class="sidebar-layer">第4层 工程化前沿</div>
@@ -286,10 +297,10 @@ body {
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_35_data_flywheel/35_data_flywheel.html">Ch35 数据飞轮</a>
 <a class="sidebar-link" href="https://callous-0923.github.io/agent-study/chapter_36_defense/36_defense.html">Ch36 Agent 纵深安全</a>
 </div>
-<button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button><div class="main-content"><div class="container"><div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/index.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第9章 RAG 深度剖析 — Naive→Advanced→GraphRAG→Agentic RAG</strong></div><div class="nav-bar">
+<button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button><div class="main-content"><div class="container"><div class="breadcrumb"><a href="https://callous-0923.github.io/agent-study/index.html">📖 AI Agent 全栈课程</a> &raquo; <strong>第9章 RAG 深度解析 — 从Naive到生产级·面试到工程全覆盖</strong></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html" title="Claude Code 架构 — nO·h2A·压缩·SubAgent">← 第8章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
-<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html" title="MCP 协议详解 — JSON-RPC·原语·能力协商">第10章 →</a>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html" title="MCP 深度解析 — 设计哲学·JSON-RPC·传输层选型·三协议对比">第10章 →</a>
 </div><div class="hero"><h1>第9章 RAG 深度解析 —— 从 Naive 到生产级，面试到工程全覆盖</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 RAG 的完整技术演进路线（Naive → Advanced → GraphRAG → Agentic）</span><span class="tag tag-goal">2. 掌握 Chunk 切分策略的工程选型（固定/语义/递归 + chunk_size 最佳实践）</span><span class="tag tag-goal">3. 精通 Embedding 模型选型与维度选择的量化依据</span><span class="tag tag-goal">4. 深入理解混合检索 RRF 融合算法和 Cross-Encoder 重排序原理</span><span class="tag tag-goal">5. 实现可运行的 Advanced RAG 和 GraphRAG 系统</span><span class="tag tag-goal">6. 掌握 RAGAS 评估体系和 4 种生产失败模式的应对策略</span><span class="tag tag-interview">🎤 Chunk 怎么切分？为什么这个大小？（本章核心深度！）</span><span class="tag tag-interview">🎤 Embedding 模型怎么选？维度怎么定？</span><span class="tag tag-interview">🎤 为什么混合检索比纯向量好？RRF 怎么做？</span><span class="tag tag-interview">🎤 Bi-Encoder 和 Cross-Encoder 的本质区别？</span><span class="tag tag-interview">🎤 GraphRAG 解决了什么纯向量 RAG 解决不了的问题？</span><span class="tag tag-interview">🎤 Agentic RAG 和传统 RAG 的本质区别</span><span class="tag tag-interview">🎤 RAG 上线后最常见的 4 种失败模式及对策</span></div><p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -2198,5 +2209,6 @@ RAGAS (RAG Assessment) 是最流行的 RAG 评估框架，但你不需要把所�
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html" title="Claude Code 架构 — nO·h2A·压缩·SubAgent">← 第8章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
-<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html" title="MCP 协议详解 — JSON-RPC·原语·能力协商">第10章 →</a>
-</div></div></div></div></body></html>
+<a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html" title="MCP 深度解析 — 设计哲学·JSON-RPC·传输层选型·三协议对比">第10章 →</a>
+</div><div class="goatcounter-badge">  <span class="goatcounter-label">📊 全站浏览量</span>  <span class="goatcounter-count" id="gc-total">加载中...</span></div><script>  fetch("https://agent-study.goatcounter.com/counter/TOTAL.json")    .then(r => r.json())    .then(d => {      let el = document.getElementById("gc-total");      if (el && d.count !== undefined) {        el.textContent = Number(d.count).toLocaleString() + " 次";      }    })    .catch(() => {      document.getElementById("gc-total").textContent = "统计中...";    });</script>
+</div></div></div></body></html>

@@ -62,7 +62,18 @@ body {
   .hero { padding: 36px 18px; }
   .container { padding: 20px 10px 60px; }
 }
+
+/* 浏览量统计徽章 */
+.goatcounter-badge {
+  text-align: center; margin: 28px 0 16px;
+  padding: 12px 20px; background: white; border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,.05);
+  font-size: .88em; color: #64748b;
+}
+.goatcounter-label { margin-right: 8px; }
+.goatcounter-count { font-weight: 700; color: #667eea; font-size: 1.05em; }
 </style>
+<script data-goatcounter="https://agent-study.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 
@@ -167,6 +178,24 @@ body {
 <div class="footer">
   <p>⭐ <a href="https://github.com/Callous-0923/agent-study">GitHub</a> · MIT License · 持续更新中</p>
 </div>
+
+<div class="goatcounter-badge">
+  <span class="goatcounter-label">📊 全站浏览量</span>
+  <span class="goatcounter-count" id="gc-total">加载中...</span>
+</div>
+<script>
+  fetch("https://agent-study.goatcounter.com/counter/TOTAL.json")
+    .then(r => r.json())
+    .then(d => {
+      let el = document.getElementById("gc-total");
+      if (el && d.count !== undefined) {
+        el.textContent = Number(d.count).toLocaleString() + " 次";
+      }
+    })
+    .catch(() => {
+      document.getElementById("gc-total").textContent = "统计中...";
+    });
+</script>
 
 </div>
 </body>
