@@ -236,17 +236,18 @@ body {
 @media (max-width: 768px) { .sidebar-toggle { display: flex; align-items: center; justify-content: center; } }
 
 /* 浏览量统计徽章 */
-.goatcounter-badge {
+.busuanzi-badge {
   text-align: center; margin: 28px 0 16px;
-  padding: 12px 20px; background: white; border-radius: 10px;
+  padding: 14px 24px; background: white; border-radius: 10px;
   box-shadow: 0 1px 6px rgba(0,0,0,.05);
-  font-size: .88em; color: #64748b;
+  font-size: .88em; color: #64748b; display: flex;
+  justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;
 }
-.goatcounter-label { margin-right: 8px; }
-.goatcounter-count { font-weight: 700; color: #667eea; font-size: 1.05em; }
+.busuanzi-item strong { color: #667eea; font-size: 1.05em; }
+.busuanzi-sep { color: #ddd; }
 
 </style>
-<script data-goatcounter="https://agent-study.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </head>
 <body>
 <div class="page-wrapper">
@@ -867,5 +868,5 @@ body {
 <span class="nav-link nav-disabled">← 已是第一章</span>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_01_fundamentals/01_hello_agent.html" title="第一个 Agent — 裸写 ReAct 循环">第1章 →</a>
-</div><div class="goatcounter-badge">  <span class="goatcounter-label">📊 全站浏览量</span>  <span class="goatcounter-count" id="gc-total">加载中...</span></div><script>  fetch("https://agent-study.goatcounter.com/counter/TOTAL.json")    .then(r => r.json())    .then(d => {      let el = document.getElementById("gc-total");      if (el && d.count !== undefined) {        el.textContent = Number(d.count).toLocaleString() + " 次";      }    })    .catch(() => {      document.getElementById("gc-total").textContent = "统计中...";    });</script>
+</div><div class="busuanzi-badge">  <span class="busuanzi-item">    👀 全站总访问 <strong id="busuanzi_value_site_pv">--</strong> 次  </span>  <span class="busuanzi-sep">|</span>  <span class="busuanzi-item">    🧑 全站访客 <strong id="busuanzi_value_site_uv">--</strong> 人  </span>  <span class="busuanzi-sep">|</span>  <span class="busuanzi-item">    📄 本页阅读 <strong id="busuanzi_value_page_pv">--</strong> 次  </span></div>
 </div></div></div></body></html>

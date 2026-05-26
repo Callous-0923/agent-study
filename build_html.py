@@ -18,37 +18,27 @@ import os
 
 BASE_URL = "https://callous-0923.github.io/agent-study"
 
-# GoatCounter 统计配置
-# 1. 前往 https://www.goatcounter.com/ 注册（免费，GitHub 登录）
-# 2. 创建站点，填入你的域名（agent-study-ruddy.vercel.app）
-# 3. 将下面的 GOATCOUNTER_CODE 改为你注册的站点代码
-GOATCOUNTER_CODE = "agent-study"
-
-# GoatCounter 计数脚本（放在 <head> 中）
-GOATCOUNTER_SCRIPT = (
-    f'<script data-goatcounter="https://{GOATCOUNTER_CODE}.goatcounter.com/count"'
-    f' async src="//gc.zgo.at/count.js"></script>'
+# 不蒜子 (busuanzi) 统计 — 无需注册、极简一行脚本
+BUSUANZI_SCRIPT = (
+    '<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">'
+    '</script>'
 )
 
-# GoatCounter 底部可见计数器（放在 </body> 前）
-GOATCOUNTER_BADGE = (
-    '<div class="goatcounter-badge">'
-    f'  <span class="goatcounter-label">📊 全站浏览量</span>'
-    f'  <span class="goatcounter-count" id="gc-total">加载中...</span>'
+# 不蒜子底部统计徽章
+BUSUANZI_BADGE = (
+    '<div class="busuanzi-badge">'
+    '  <span class="busuanzi-item">'
+    '    👀 全站总访问 <strong id="busuanzi_value_site_pv">--</strong> 次'
+    '  </span>'
+    '  <span class="busuanzi-sep">|</span>'
+    '  <span class="busuanzi-item">'
+    '    🧑 全站访客 <strong id="busuanzi_value_site_uv">--</strong> 人'
+    '  </span>'
+    '  <span class="busuanzi-sep">|</span>'
+    '  <span class="busuanzi-item">'
+    '    📄 本页阅读 <strong id="busuanzi_value_page_pv">--</strong> 次'
+    '  </span>'
     '</div>'
-    '<script>'
-    f'  fetch("https://{GOATCOUNTER_CODE}.goatcounter.com/counter/TOTAL.json")'
-    '    .then(r => r.json())'
-    '    .then(d => {'
-    '      let el = document.getElementById("gc-total");'
-    '      if (el && d.count !== undefined) {'
-    '        el.textContent = Number(d.count).toLocaleString() + " 次";'
-    '      }'
-    '    })'
-    '    .catch(() => {'
-    '      document.getElementById("gc-total").textContent = "统计中...";'
-    '    });'
-    '</script>'
 )
 
 CHAPTERS = {
@@ -323,14 +313,15 @@ body {
 @media (max-width: 768px) { .sidebar-toggle { display: flex; align-items: center; justify-content: center; } }
 
 /* 浏览量统计徽章 */
-.goatcounter-badge {
+.busuanzi-badge {
   text-align: center; margin: 28px 0 16px;
-  padding: 12px 20px; background: white; border-radius: 10px;
+  padding: 14px 24px; background: white; border-radius: 10px;
   box-shadow: 0 1px 6px rgba(0,0,0,.05);
-  font-size: .88em; color: #64748b;
+  font-size: .88em; color: #64748b; display: flex;
+  justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;
 }
-.goatcounter-label { margin-right: 8px; }
-.goatcounter-count { font-weight: 700; color: #667eea; font-size: 1.05em; }
+.busuanzi-item strong { color: #667eea; font-size: 1.05em; }
+.busuanzi-sep { color: #ddd; }
 """
 
 HEADER = """<!DOCTYPE html>
@@ -342,13 +333,13 @@ HEADER = """<!DOCTYPE html>
 <style>
 {css}
 </style>
-{goatcounter_script}
+{busuanzi_script}
 </head>
 <body>
 <div class="page-wrapper">
 """
 
-FOOTER = "{goatcounter_badge}\n</div></div></div></body></html>"
+FOOTER = "{busuanzi_badge}\n</div></div></div></body></html>"
 
 
 SIDEBAR_LAYERS = [
@@ -511,7 +502,7 @@ def build_html(filepath: str, output_path: str = None):
     html = HEADER.format(
         title=f"第{ch_num}章：{title} — AI Agent 全栈课程",
         css=CSS,
-        goatcounter_script=GOATCOUNTER_SCRIPT,
+        busuanzi_script=BUSUANZI_SCRIPT,
     )
 
     # 面包屑 + 导航 + hero
@@ -589,7 +580,7 @@ def build_html(filepath: str, output_path: str = None):
     html += f'</details></div>'
 
     html += _make_nav(ch_num)
-    html += FOOTER.format(goatcounter_badge=GOATCOUNTER_BADGE)
+    html += FOOTER.format(busuanzi_badge=BUSUANZI_BADGE)
 
     if output_path is None:
         base = os.path.splitext(os.path.basename(filepath))[0]
