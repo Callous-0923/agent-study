@@ -100,17 +100,16 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 / 流程图 */
-.diagram-box {
-  background: #1a1e2b; border-radius: 10px;
-  margin: 18px 0; border: 1px solid #2a3045;
-  box-shadow: 0 4px 20px rgba(0,0,0,.12);
-}
-.diagram-header {
+/* 架构图 / 流程图 — 与代码块相同的 pre 渲染方式 */
+.diagram-label {
+  font-size: .85em; font-weight: 600; color: #8ab4f8;
   background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
-  color: #8ab4f8; font-size: .85em; font-weight: 600;
-  padding: 8px 18px; letter-spacing: .5px;
-  border-bottom: 1px solid #3a4a6a;
+  padding: 8px 18px; letter-spacing: .5px; margin: 18px 0 0 0;
+  border-radius: 10px 10px 0 0; border: 1px solid #3a4a6a; border-bottom: none;
+}
+.diagram-pre {
+  border-radius: 0 0 10px 10px; margin: 0 0 18px 0;
+  border-top: none; border: 1px solid #2a3045;
 }
 .ascii-art {
   background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
@@ -540,7 +539,7 @@ NOTIFICATION_EXAMPLE = {
 <p>&nbsp;</p>
 <p>完整的 MCP 调用生命周期：</p>
 <p>&nbsp;</p>
-<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌────────────────────────────────────────────┐
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌────────────────────────────────────────────┐
   │  Phase 1: 初始化 (Initialize)              │
   │  ┌──────────────────────────────────────┐  │
   │  │ Client                    Server     │  │
@@ -565,7 +564,7 @@ NOTIFICATION_EXAMPLE = {
   │  ┌──────────────────────────────────────┐  │
   │  │   │── 关闭连接 ─────────────→│        │  │
   │  └──────────────────────────────────────┘  │
-  └────────────────────────────────────────────┘</pre></div>
+  └────────────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>MCP 的三大核心原语（Server 能力）：</p>
 <p>&nbsp;</p>
@@ -660,12 +659,12 @@ NOTIFICATION_EXAMPLE = {
 <p>理由：支持 Server 主动推送（工具列表变更、进度更新）</p>
 <p>需要：反向代理支持（Nginx 关掉 buffering）</p>
 <p>注意：SSE 走 HTTP/1.1，不支持 HTTP/2 多路复用</p>
-<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ├─ 本地（和 Host 在同一台机器）
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ├─ 本地（和 Host 在同一台机器）
   │   └─ stdio ← 唯一正解
   │       理由：零网络开销、进程隔离天然安全、不需要额外运维
   │       不需要开端口、不需要 HTTPS 证书、不需要鉴权逻辑
   │
-  └─ 远程（Server 和 Host 不在同一台机器）</pre></div>
+  └─ 远程（Server 和 Host 不在同一台机器）</pre>
 <p>&nbsp;</p>
 <p>▍ stdio 的生产陷阱（你可能踩过的坑）</p>
 <p>&nbsp;</p>

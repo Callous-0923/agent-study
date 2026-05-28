@@ -100,17 +100,16 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 / 流程图 */
-.diagram-box {
-  background: #1a1e2b; border-radius: 10px;
-  margin: 18px 0; border: 1px solid #2a3045;
-  box-shadow: 0 4px 20px rgba(0,0,0,.12);
-}
-.diagram-header {
+/* 架构图 / 流程图 — 与代码块相同的 pre 渲染方式 */
+.diagram-label {
+  font-size: .85em; font-weight: 600; color: #8ab4f8;
   background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
-  color: #8ab4f8; font-size: .85em; font-weight: 600;
-  padding: 8px 18px; letter-spacing: .5px;
-  border-bottom: 1px solid #3a4a6a;
+  padding: 8px 18px; letter-spacing: .5px; margin: 18px 0 0 0;
+  border-radius: 10px 10px 0 0; border: 1px solid #3a4a6a; border-bottom: none;
+}
+.diagram-pre {
+  border-radius: 0 0 10px 10px; margin: 0 0 18px 0;
+  border-top: none; border: 1px solid #2a3045;
 }
 .ascii-art {
   background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
@@ -346,7 +345,7 @@ body {
 <p>&nbsp;</p>
 <p>Trace 的核心数据结构：Span</p>
 <p>&nbsp;</p>
-<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌──────────────────────────────────────────────┐
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────────────────────────────────────┐
   │                  Trace (根)                    │
   │  ├── Span: Agent 步骤 1 (thinking)            │
   │  │   ├── Span: LLM 调用                       │
@@ -361,7 +360,7 @@ body {
   │  │       └── latency_ms: 350                 │
   │  ├── Span: Agent 步骤 2 (tool_call)           │
   │  └── Span: Agent 步骤 3 (done)                │
-  └──────────────────────────────────────────────┘</pre></div></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (298 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">latency_ms</span><span class="code-badge code-badge-func">start_trace</span><span class="code-badge code-badge-func">span</span><span class="code-badge code-badge-func">log_llm_call</span><span class="code-badge code-badge-func">log_tool_call</span><span class="code-badge code-badge-func">get_trace</span><span class="code-badge code-badge-func">get_metrics</span><span class="code-badge code-badge-func">print_trace_tree</span><span class="code-badge code-badge-func">print_dashboard</span><span class="code-badge code-badge-func">demo_agent_tracing</span><span class="code-badge code-badge-class">TraceSpan</span><span class="code-badge code-badge-class">AgentTracer</span></div><div class="code-block"><pre><span class="k">import</span> time
+  └──────────────────────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (298 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">latency_ms</span><span class="code-badge code-badge-func">start_trace</span><span class="code-badge code-badge-func">span</span><span class="code-badge code-badge-func">log_llm_call</span><span class="code-badge code-badge-func">log_tool_call</span><span class="code-badge code-badge-func">get_trace</span><span class="code-badge code-badge-func">get_metrics</span><span class="code-badge code-badge-func">print_trace_tree</span><span class="code-badge code-badge-func">print_dashboard</span><span class="code-badge code-badge-func">demo_agent_tracing</span><span class="code-badge code-badge-class">TraceSpan</span><span class="code-badge code-badge-class">AgentTracer</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> json
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional

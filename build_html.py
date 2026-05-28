@@ -177,17 +177,16 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 / 流程图 */
-.diagram-box {
-  background: #1a1e2b; border-radius: 10px;
-  margin: 18px 0; border: 1px solid #2a3045;
-  box-shadow: 0 4px 20px rgba(0,0,0,.12);
-}
-.diagram-header {
+/* 架构图 / 流程图 — 与代码块相同的 pre 渲染方式 */
+.diagram-label {
+  font-size: .85em; font-weight: 600; color: #8ab4f8;
   background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
-  color: #8ab4f8; font-size: .85em; font-weight: 600;
-  padding: 8px 18px; letter-spacing: .5px;
-  border-bottom: 1px solid #3a4a6a;
+  padding: 8px 18px; letter-spacing: .5px; margin: 18px 0 0 0;
+  border-radius: 10px 10px 0 0; border: 1px solid #3a4a6a; border-bottom: none;
+}
+.diagram-pre {
+  border-radius: 0 0 10px 10px; margin: 0 0 18px 0;
+  border-top: none; border: 1px solid #2a3045;
 }
 .ascii-art {
   background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
@@ -656,10 +655,8 @@ def _render_block(block: list[str]) -> str:
     if _is_likely_diagram(block):
         inner = "\n".join(block)
         return (
-            '<div class="diagram-box">'
-            '<div class="diagram-header">📊 架构示意</div>'
-            f'<pre class="ascii-art">{inner}</pre>'
-            '</div>'
+            '<p class="diagram-label">📊 架构示意</p>'
+            f'<pre class="ascii-art diagram-pre">{inner}</pre>'
         )
     return '<pre class="ascii-art">' + "\n".join(block) + "</pre>"
 

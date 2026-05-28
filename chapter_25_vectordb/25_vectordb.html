@@ -100,17 +100,16 @@ body {
 .lecture table tr:hover td { background: #f4f4ff; }
 .lecture hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
 
-/* 架构图 / 流程图 */
-.diagram-box {
-  background: #1a1e2b; border-radius: 10px;
-  margin: 18px 0; border: 1px solid #2a3045;
-  box-shadow: 0 4px 20px rgba(0,0,0,.12);
-}
-.diagram-header {
+/* 架构图 / 流程图 — 与代码块相同的 pre 渲染方式 */
+.diagram-label {
+  font-size: .85em; font-weight: 600; color: #8ab4f8;
   background: linear-gradient(135deg, #2d3a5c 0%, #1e2d4a 100%);
-  color: #8ab4f8; font-size: .85em; font-weight: 600;
-  padding: 8px 18px; letter-spacing: .5px;
-  border-bottom: 1px solid #3a4a6a;
+  padding: 8px 18px; letter-spacing: .5px; margin: 18px 0 0 0;
+  border-radius: 10px 10px 0 0; border: 1px solid #3a4a6a; border-bottom: none;
+}
+.diagram-pre {
+  border-radius: 0 0 10px 10px; margin: 0 0 18px 0;
+  border-top: none; border: 1px solid #2a3045;
 }
 .ascii-art {
   background: #1a1e2b; color: #c0caf5; border-radius: 0 0 10px 10px;
@@ -310,7 +309,7 @@ body {
 <p>&nbsp;</p>
 <h2>25.1 向量数据库在 Agent 架构中的位置</h2>
 <p>&nbsp;</p>
-<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ┌────────────────────────────────────────────────────┐
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌────────────────────────────────────────────────────┐
   │                  Agent 记忆系统                       │
   │                                                      │
   │  Ch14 SQLite ──────→ 结构化数据（会话/用户/任务）     │
@@ -321,7 +320,7 @@ body {
   │    SQLite 存「关系型数据」                            │
   │    向量库 存「非结构化语义」                          │
   │    MemGPT 策略 决定「什么数据存在哪里」                │
-  └────────────────────────────────────────────────────┘</pre></div>
+  └────────────────────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>25.2 5 大向量数据库对比</h2>
@@ -331,12 +330,12 @@ body {
 <p>选型决策树（面试必备！）：</p>
 <p>&nbsp;</p>
 <p>你的需求是什么？</p>
-<div class="diagram-box"><div class="diagram-header">📊 架构示意</div><pre class="ascii-art">  ├─ 快速原型/学习 → Chroma（pip install 搞定）
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ├─ 快速原型/学习 → Chroma（pip install 搞定）
   ├─ 不想管运维 → Pinecone（全托管，但付费）
   ├─ 千万级以上 + 生产环境 → Qdrant 或 Milvus
   │   ├─ 需要分布式 → Milvus
   │   └─ 追求单机极致性能 → Qdrant
-  └─ 已有 Postgres/Redis → pgvector / Redis Stack</pre></div>
+  └─ 已有 Postgres/Redis → pgvector / Redis Stack</pre>
 <p>&nbsp;</p>
 <p>面试回答框架：</p>
 <p>「我选择 XX 向量库，原因是：</p>
