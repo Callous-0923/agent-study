@@ -518,14 +518,28 @@ body {
 <p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌────────────────────┬────────────────────────────────────┐
   │       章节          │            需要的依赖               │
   ├────────────────────┼────────────────────────────────────┤
+  │ Ch0 环境检查       │ 标准库（无需额外安装）              │
   │ Ch1-3 基础理论     │ openai, python-dotenv              │
   │ Ch4-5 框架         │ langchain, langchain-openai,      │
   │                    │ langgraph                         │
+  │ Ch6-7 评测+面试    │ 无需额外依赖                       │
   │ Ch8-12 深度技术    │ pydantic, httpx, tiktoken         │
   │ Ch13 FastAPI       │ fastapi, uvicorn                  │
   │ Ch14 SQLite        │ 标准库（无需额外安装）              │
-  │ Ch15-18 其他       │ 无需额外依赖                       │
-  └────────────────────┴────────────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (83 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check_python_version</span><span class="code-badge code-badge-func">install_dependencies</span><span class="code-badge code-badge-func">show_env_setup_guide</span></div><div class="code-block"><pre><span class="k">import</span> subprocess
+  │ Ch15-18 协议/安全  │ 无需额外依赖（标准库）              │
+  │ Ch19-21 架构流式   │ 标准库（无需额外安装）              │
+  │ Ch22-24 优化可观测  │ 标准库（无需额外安装）              │
+  │ Ch25 向量数据库    │ numpy（演示用）                    │
+  │ Ch26-28 路由/缓存  │ 标准库（无需额外安装）              │
+  │ Ch29-36 专家进阶   │ 标准库（无需额外安装）              │
+  └────────────────────┴────────────────────────────────────┘</pre>
+<p>&nbsp;</p>
+<p>⚡ 核心依赖一行安装（Ch1-18 必需）：</p>
+<p>pip install openai python-dotenv langchain langchain-openai \</p>
+<p>langgraph pydantic httpx tiktoken fastapi uvicorn numpy</p>
+<p>&nbsp;</p>
+<p>💡 大部分章节（Ch8-36）仅使用 Python 标准库</p>
+<p>（sqlite3 / asyncio / hashlib / json / time），无需额外安装即可运行。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (84 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check_python_version</span><span class="code-badge code-badge-func">install_dependencies</span><span class="code-badge code-badge-func">show_env_setup_guide</span></div><div class="code-block"><pre><span class="k">import</span> subprocess
 <span class="k">import</span> sys
 
 
@@ -552,6 +566,7 @@ body {
         <span class="s">"tiktoken"</span>,                <span class="h"># Token 计数</span>
         <span class="s">"fastapi"</span>,                 <span class="h"># Web 框架 (Ch13)</span>
         <span class="s">"uvicorn"</span>,                 <span class="h"># ASGI 服务器 (Ch13)</span>
+        <span class="s">"numpy"</span>,                   <span class="h"># 数值计算 (Ch25 向量数据库演示)</span>
     ]
     <span class="k">for</span> pkg <span class="k">in</span> packages:
         <span class="b">print</span>(f<span class="s">"正在安装 {pkg}..."</span>)
@@ -607,7 +622,7 @@ body {
     <span class="k">if</span> install:
         install_dependencies()
 
-    show_env_setup_guide()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (337 行)</summary><div class="code-block"><pre><span class="s">"""
+    show_env_setup_guide()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (352 行)</summary><div class="code-block"><pre><span class="s">"""
 第0章：AI Agent 课程概览与前置知识
 ===================================
 
@@ -850,14 +865,28 @@ body {
   ┌────────────────────┬────────────────────────────────────┐
   │       章节          │            需要的依赖               │
   ├────────────────────┼────────────────────────────────────┤
+  │ Ch0 环境检查       │ 标准库（无需额外安装）              │
   │ Ch1-3 基础理论     │ openai, python-dotenv              │
   │ Ch4-5 框架         │ langchain, langchain-openai,      │
   │                    │ langgraph                         │
+  │ Ch6-7 评测+面试    │ 无需额外依赖                       │
   │ Ch8-12 深度技术    │ pydantic, httpx, tiktoken         │
   │ Ch13 FastAPI       │ fastapi, uvicorn                  │
   │ Ch14 SQLite        │ 标准库（无需额外安装）              │
-  │ Ch15-18 其他       │ 无需额外依赖                       │
+  │ Ch15-18 协议/安全  │ 无需额外依赖（标准库）              │
+  │ Ch19-21 架构流式   │ 标准库（无需额外安装）              │
+  │ Ch22-24 优化可观测  │ 标准库（无需额外安装）              │
+  │ Ch25 向量数据库    │ numpy（演示用）                    │
+  │ Ch26-28 路由/缓存  │ 标准库（无需额外安装）              │
+  │ Ch29-36 专家进阶   │ 标准库（无需额外安装）              │
   └────────────────────┴────────────────────────────────────┘
+
+  ⚡ 核心依赖一行安装（Ch1-18 必需）：
+    pip install openai python-dotenv langchain langchain-openai \
+                langgraph pydantic httpx tiktoken fastapi uvicorn numpy
+
+  💡 大部分章节（Ch8-36）仅使用 Python 标准库
+     （sqlite3 / asyncio / hashlib / json / time），无需额外安装即可运行。
 """</span>
 
 <span class="k">import</span> subprocess
@@ -887,6 +916,7 @@ body {
         <span class="s">"tiktoken"</span>,                <span class="h"># Token 计数</span>
         <span class="s">"fastapi"</span>,                 <span class="h"># Web 框架 (Ch13)</span>
         <span class="s">"uvicorn"</span>,                 <span class="h"># ASGI 服务器 (Ch13)</span>
+        <span class="s">"numpy"</span>,                   <span class="h"># 数值计算 (Ch25 向量数据库演示)</span>
     ]
     <span class="k">for</span> pkg <span class="k">in</span> packages:
         <span class="b">print</span>(f<span class="s">"正在安装 {pkg}..."</span>)

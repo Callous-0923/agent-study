@@ -241,14 +241,28 @@
   ┌────────────────────┬────────────────────────────────────┐
   │       章节          │            需要的依赖               │
   ├────────────────────┼────────────────────────────────────┤
+  │ Ch0 环境检查       │ 标准库（无需额外安装）              │
   │ Ch1-3 基础理论     │ openai, python-dotenv              │
   │ Ch4-5 框架         │ langchain, langchain-openai,      │
   │                    │ langgraph                         │
+  │ Ch6-7 评测+面试    │ 无需额外依赖                       │
   │ Ch8-12 深度技术    │ pydantic, httpx, tiktoken         │
   │ Ch13 FastAPI       │ fastapi, uvicorn                  │
   │ Ch14 SQLite        │ 标准库（无需额外安装）              │
-  │ Ch15-18 其他       │ 无需额外依赖                       │
+  │ Ch15-18 协议/安全  │ 无需额外依赖（标准库）              │
+  │ Ch19-21 架构流式   │ 标准库（无需额外安装）              │
+  │ Ch22-24 优化可观测  │ 标准库（无需额外安装）              │
+  │ Ch25 向量数据库    │ numpy（演示用）                    │
+  │ Ch26-28 路由/缓存  │ 标准库（无需额外安装）              │
+  │ Ch29-36 专家进阶   │ 标准库（无需额外安装）              │
   └────────────────────┴────────────────────────────────────┘
+
+  ⚡ 核心依赖一行安装（Ch1-18 必需）：
+    pip install openai python-dotenv langchain langchain-openai \
+                langgraph pydantic httpx tiktoken fastapi uvicorn numpy
+
+  💡 大部分章节（Ch8-36）仅使用 Python 标准库
+     （sqlite3 / asyncio / hashlib / json / time），无需额外安装即可运行。
 """
 
 import subprocess
@@ -278,6 +292,7 @@ def install_dependencies():
         "tiktoken",                # Token 计数
         "fastapi",                 # Web 框架 (Ch13)
         "uvicorn",                 # ASGI 服务器 (Ch13)
+        "numpy",                   # 数值计算 (Ch25 向量数据库演示)
     ]
     for pkg in packages:
         print(f"正在安装 {pkg}...")
