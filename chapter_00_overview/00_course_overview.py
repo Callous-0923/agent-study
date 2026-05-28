@@ -119,12 +119,14 @@
 0.4 全套学习路线图（36章七层递进）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-本课程按「理论 → 实践 → 深度 → 工程 → 架构 → 补强 → 专家」七层递进。
+本课程按「理论 → 实践 → 深度 → 工程 → 架构 → 补强 → 专家」七层递进，
+共 36 章（Ch0-Ch36），每章既是完整讲义也是可运行代码。
 
   ┌─────────────────────────────────────────────────────────────┐
-  │ 第1层：Agent 理论基础（Ch1-3）                                │
+  │ 第1层：Agent 理论基础（Ch0-3）                                │
   │ ┌──────────────┬──────────────────────────────────────────┐ │
-  │ │ Ch1 基础概念  │ Agent 定义、LLM 调用、手写第一个 Agent    │ │
+  │ │ Ch0 课程概览  │ 学习路线图、环境搭建、API Key 配置        │ │
+  │ │ Ch1 第一个Agent│ 裸写 ReAct 循环、Function Calling 原理   │ │
   │ │ Ch2 核心组件  │ 规划器 + 记忆系统 + 工具设计黄金法则       │ │
   │ │ Ch3 类型分类  │ ReAct / Plan-Execute / Reflexion 对比    │ │
   │ └──────────────┴──────────────────────────────────────────┘ │
@@ -132,37 +134,70 @@
   │ 第2层：工程实践与框架（Ch4-7）                                │
   │ ┌──────────────┬──────────────────────────────────────────┐ │
   │ │ Ch4 主流框架  │ LangChain Agent + LangGraph 状态机实战    │ │
-  │ │ Ch5 多智能体  │ 协作式/分层式 Multi-Agent 架构            │ │
-  │ │ Ch6 评估测试  │ 评测框架 + 测试策略 + 生产 Checklist       │ │
+  │ │ Ch5 多智能体  │ Multi-Agent 协作、Writer+Reviewer 模式    │ │
+  │ │ Ch6 评估测试  │ 评测框架 + LLM-as-Judge + 生产 Checklist   │ │
   │ │ Ch7 求职面试  │ 20道高频面试题 + 项目指南 + 面试流程       │ │
   │ └──────────────┴──────────────────────────────────────────┘ │
   ├─────────────────────────────────────────────────────────────┤
   │ 第3层：深度技术剖析（Ch8-12）                                │
   │ ┌──────────────┬──────────────────────────────────────────┐ │
-  │ │ Ch8 ClaudeCode│ nO主循环/h2A实时Steering/上下文压缩/SubAgent│
-  │ │ Ch9 RAG深度   │ Naive→Advanced→GraphRAG→Agentic RAG      │
-  │ │ Ch10 MCP协议  │ JSON-RPC/原语/能力协商/stdio/SSE          │
-  │ │ Ch11 ToolCall │ OpenAI vs Anthropic/Streaming/Strict     │
-  │ │ Ch12 基础设施  │ OpenClaw架构/Harness/Agent生产化Checklist │
+  │ │ Ch8 ClaudeCode│ nO主循环·h2A实时Steering·上下文压缩·SubAgent│
+  │ │ Ch9 RAG深度   │ 从Naive到生产级·Chunk·Embedding·RRF     │
+  │ │ Ch10 MCP协议  │ JSON-RPC·原语·能力协商·stdio/SSE传输层   │
+  │ │ Ch11 ToolCall │ OpenAI vs Anthropic·Streaming·Strict模式 │
+  │ │ Ch12 基础设施  │ OpenClaw架构·Harness·Agent生产化Checklist │
   │ └──────────────┴──────────────────────────────────────────┘ │
   ├─────────────────────────────────────────────────────────────┤
   │ 第4层：工程化与前沿（Ch13-18）                                │
   │ ┌──────────────┬──────────────────────────────────────────┐ │
-  │ │ Ch13 FastAPI  │ REST/SSE/WebSocket Agent 服务化部署      │
-  │ │ Ch14 SQLite   │ 5表Schema + WAL + 会话/任务/用户管理     │
-  │ │ Ch15 A2A协议   │ AgentCard/Task/Artifact + 多Agent协作    │
-  │ │ Ch16 MemGPT   │ Core Memory/Heartbeat/Sleep-Time/FS记忆  │
-  │ │ Ch17 CompUse  │ Screenshot-Action Loop/坐标/安全沙箱     │
-  │ │ Ch18 安全防护  │ Prompt Injection/权限分级/审计/4层防御   │
+  │ │ Ch13 FastAPI  │ REST API·SSE·WebSocket·生产部署架构      │
+  │ │ Ch14 SQLite   │ 5表Schema·WAL模式·会话/任务/用户管理     │
+  │ │ Ch15 A2A协议   │ AgentCard·Task·Artifact·多Agent协作      │
+  │ │ Ch16 MemGPT   │ Core Memory·Heartbeat·Sleep-Time·FS记忆  │
+  │ │ Ch17 CompUse  │ Screenshot-Action Loop·坐标计算·安全沙箱 │
+  │ │ Ch18 安全防护  │ Prompt Injection攻防·权限分级·4层防御    │
+  │ └──────────────┴──────────────────────────────────────────┘ │
+  ├─────────────────────────────────────────────────────────────┤
+  │ 第5层：高级架构与优化（Ch19-24）                              │
+  │ ┌──────────────┬──────────────────────────────────────────┐ │
+  │ │ Ch19 Workflow │ Reflection·Routing·Orchestrator等7种模式 │
+  │ │ Ch20 Context  │ Context Rot·预算管理·XML结构化Prompt     │
+  │ │ Ch21 Streaming│ EventBus·动态中断·背压控制               │
+  │ │ Ch22 DSPy    │ Signature→Module→Optimizer 自动优化       │
+  │ │ Ch23 CodeAgent│ CodeAct·ACI·Plan-Execute·SWE-bench横评   │
+  │ │ Ch24 可观测   │ Tracing Span树·LangSmith vs LangFuse     │
+  │ └──────────────┴──────────────────────────────────────────┘ │
+  ├─────────────────────────────────────────────────────────────┤
+  │ 第6层：基础能力补强（Ch25-28）                                │
+  │ ┌──────────────┬──────────────────────────────────────────┐ │
+  │ │ Ch25 向量库   │ Chroma·Pinecone·Milvus·Qdrant对比·Embedding│
+  │ │ Ch26 模型路由  │ Threshold·Cascade·Semantic·Cost-Aware 4种 │
+  │ │ Ch27 Prompt   │ System Prompt 6模块模板·工具描述评分卡   │
+  │ │ Ch28 语义缓存  │ 三级缓存(Exact→Semantic→LLM)·Token预算   │
+  │ └──────────────┴──────────────────────────────────────────┘ │
+  ├─────────────────────────────────────────────────────────────┤
+  │ 第7层：专家级进阶（Ch29-36）                                  │
+  │ ┌──────────────┬──────────────────────────────────────────┐ │
+  │ │ Ch29 多模态   │ 视觉+文本联合推理·多模态Tool Calling     │
+  │ │ Ch30 可靠性   │ 熔断器·指数退避重试·幂等性·降级策略     │
+  │ │ Ch31 评测体系  │ GAIA·AgentBench·WebArena·tau-bench      │
+  │ │ Ch32 自改进   │ Bad Case收集→自动改Prompt→评测验证      │
+  │ │ Ch33 Cache   │ Anthropic Cache·推测解码·KV共享          │
+  │ │ Ch34 微调     │ LoRA微调·数据准备·成本收益对比           │
+  │ │ Ch35 数据飞轮  │ 交互采集→Bad Case识别→自动触发改进     │
+  │ │ Ch36 纵深安全  │ Canary Token·分层隔离·行为沙箱          │
   │ └──────────────┴──────────────────────────────────────────┘ │
   └─────────────────────────────────────────────────────────────┘
 
 学习建议：
-  1. 如果你是 Agent 新手：按 Ch1→Ch18 顺序学习
-  2. 如果你已有基础：直接跳到 Ch8 开始深度技术
-  3. 如果你要准备面试：Ch7(面试题) + Ch8(Claude Code) + Ch10(MCP)
-                       + Ch11(ToolCall) + Ch15(A2A) + Ch18(安全)
-  4. 如果你要构建产品：Ch13(FastAPI) + Ch14(SQLite) + Ch12(生产)
+  1. 新手入门：按 Ch0 → Ch36 顺序学习，每章 1-2 小时
+  2. 有基础者：直接跳到 Ch8 开始深度技术
+  3. 面试突击（重点章节）：
+     Ch7(面试20问) + Ch8(Claude Code) + Ch9(RAG) + Ch10(MCP)
+     + Ch11(ToolCall) + Ch15(A2A) + Ch18(安全) + Ch19(Workflow)
+  4. 构建产品：Ch13(FastAPI) + Ch14(SQLite) + Ch24(可观测)
+     + Ch26(模型路由) + Ch28(语义缓存)
+  5. 降本增效：Ch26(路由节省94%) + Ch28(缓存) + Ch33(Prompt Cache)
 
 ---
 
