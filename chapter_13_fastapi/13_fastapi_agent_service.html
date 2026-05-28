@@ -750,7 +750,18 @@ agent = SimulatedAgent()
 <p>&nbsp;</p>
 <h2>13.6 SSE vs WebSocket vs 普通 HTTP —— 该怎么选？</h2>
 <p>&nbsp;</p>
-<table><tr><th>特性</th><th>普通 HTTP</th><th>SSE</th><th>WebSocket</th></tr><tr><td>通信方向</td><td>请求→响应</td><td>服务器→客户端</td><td>双向</td></tr><tr><td>协议</td><td>HTTP</td><td>HTTP</td><td>WS (升级HTTP)</td></tr><tr><td>浏览器支持</td><td>✅</td><td>✅ (EventSource)</td><td>✅</td></tr><tr><td>自动重连</td><td>无</td><td>✅ (内置)</td><td>需手动实现</td></tr><tr><td>二进制数据</td><td>✅</td><td>❌ (仅文本)</td><td>✅</td></tr><tr><td>穿透防火墙</td><td>✅</td><td>✅</td><td>可能被拦截</td></tr><tr><td>Agent 场景</td><td>简单问答</td><td>流式输出</td><td>实时双向对话</td></tr><tr><td>实现复杂度</td><td>⭐</td><td>⭐⭐</td><td>⭐⭐⭐</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">┌──────────────┬───────────────┬───────────────┬────────────────┐
+│     特性      │  普通 HTTP     │     SSE        │   WebSocket    │
+├──────────────┼───────────────┼───────────────┼────────────────┤
+│ 通信方向      │ 请求→响应      │ 服务器→客户端   │ 双向           │
+│ 协议          │ HTTP          │ HTTP           │ WS (升级HTTP)  │
+│ 浏览器支持    │ ✅            │ ✅ (EventSource)│ ✅             │
+│ 自动重连      │ 无            │ ✅ (内置)       │ 需手动实现      │
+│ 二进制数据    │ ✅            │ ❌ (仅文本)     │ ✅             │
+│ 穿透防火墙    │ ✅            │ ✅             │ 可能被拦截      │
+│ Agent 场景    │ 简单问答       │ 流式输出        │ 实时双向对话    │
+│ 实现复杂度    │ ⭐            │ ⭐⭐           │ ⭐⭐⭐          │
+└──────────────┴───────────────┴───────────────┴────────────────┘</pre>
 <p>&nbsp;</p>
 <p>Agent 场景推荐：</p>
 <li>简单问答 → POST /agent/chat（普通 HTTP）</li>

@@ -374,7 +374,19 @@ body {
 <p>&nbsp;</p>
 <h2>17.3 Anthropic Computer Use vs OpenAI CUA</h2>
 <p>&nbsp;</p>
-<table><tr><th>维度</th><th>Anthropic Computer Use</th><th>OpenAI CUA</th></tr><tr><td>发布时间</td><td>2024.10 (API)</td><td>2025.01 (Operator)</td></tr><tr><td></td><td>2025.10 (正式发布)</td><td></td></tr><tr><td>操作范围</td><td>整个操作系统</td><td>浏览器内（虚拟浏览器）</td></tr><tr><td>模型</td><td>Claude 3.5+ Sonnet</td><td>GPT-4o (CUA 微调版)</td></tr><tr><td>环境</td><td>用户真实桌面/Docker</td><td>安全的虚拟浏览器环境</td></tr><tr><td>安全性</td><td>依赖使用者自行沙箱</td><td>平台内置安全隔离</td></tr><tr><td>动作类型</td><td>鼠标+键盘+截图</td><td>浏览器操作（点击/输入/滚动）</td></tr><tr><td>成本</td><td>截图Token昂贵</td><td>浏览器操作Token消耗较低</td></tr><tr><td>Benchmark</td><td>OSWorld 14.9%</td><td>未公布独立评分</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">┌──────────────┬─────────────────────────┬─────────────────────────┐
+│     维度      │  Anthropic Computer Use  │   OpenAI CUA            │
+├──────────────┼─────────────────────────┼─────────────────────────┤
+│ 发布时间      │ 2024.10 (API)            │ 2025.01 (Operator)       │
+│             │ 2025.10 (正式发布)        │                         │
+│ 操作范围      │ 整个操作系统              │ 浏览器内（虚拟浏览器）    │
+│ 模型          │ Claude 3.5+ Sonnet      │ GPT-4o (CUA 微调版)     │
+│ 环境          │ 用户真实桌面/Docker      │ 安全的虚拟浏览器环境      │
+│ 安全性        │ 依赖使用者自行沙箱         │ 平台内置安全隔离         │
+│ 动作类型      │ 鼠标+键盘+截图            │ 浏览器操作（点击/输入/滚动）│
+│ 成本          │ 截图Token昂贵            │ 浏览器操作Token消耗较低   │
+│ Benchmark    │ OSWorld 14.9%            │ 未公布独立评分           │
+└──────────────┴─────────────────────────┴─────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>Anthropic 的设计哲学：</p>
 <p>「给 Claude 真实的电脑，让它按人类的方式工作」</p>
@@ -391,7 +403,13 @@ body {
 <h2>17.4 性能数据与局限</h2>
 <p>&nbsp;</p>
 <p>OSWorld Benchmark 成绩：</p>
-<table><tr><th>系统</th><th>得分</th></tr><tr><td>人类</td><td>75.0%</td></tr><tr><td>Claude 3.5 Sonnet</td><td>14.9%</td></tr><tr><td>GPT-4V</td><td>7.8%</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────────┬───────────┐
+  │      系统         │   得分     │
+  ├──────────────────┼───────────┤
+  │ 人类              │   75.0%   │
+  │ Claude 3.5 Sonnet │   14.9%   │
+  │ GPT-4V            │    7.8%   │
+  └──────────────────┴───────────┘</pre>
 <p>&nbsp;</p>
 <p>→ Claude 翻倍了前最好成绩，但离人类还很远</p>
 <p>&nbsp;</p>

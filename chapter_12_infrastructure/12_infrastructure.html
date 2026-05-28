@@ -435,7 +435,18 @@ body {
 <p>&nbsp;</p>
 <p>Harness 的 REPL 命令体系：</p>
 <p>&nbsp;</p>
-<table><tr><th>命令</th><th>功能</th></tr><tr><td>/help</td><td>帮助和提示</td></tr><tr><td>/connect</td><td>配置 API Key</td></tr><tr><td>/model</td><td>切换模型（/model gpt-5.2）</td></tr><tr><td>/plan</td><td>用只读 Agent 规划实现方案</td></tr><tr><td>/review</td><td>审查代码变更</td></tr><tr><td>/team</td><td>分解任务并并行执行多个 Agent</td></tr><tr><td>/status</td><td>显示提供商、模型、会话、成本</td></tr><tr><td>/cost</td><td>显示 Token 使用量和费用</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌────────────────┬──────────────────────────────────────┐
+  │     命令        │               功能                    │
+  ├────────────────┼──────────────────────────────────────┤
+  │ /help          │ 帮助和提示                            │
+  │ /connect       │ 配置 API Key                         │
+  │ /model         │ 切换模型（/model gpt-5.2）            │
+  │ /plan          │ 用只读 Agent 规划实现方案              │
+  │ /review        │ 审查代码变更                          │
+  │ /team          │ 分解任务并并行执行多个 Agent           │
+  │ /status        │ 显示提供商、模型、会话、成本           │
+  │ /cost          │ 显示 Token 使用量和费用               │
+  └────────────────┴──────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>Harness 的权限模式：</p>
 <li>默认模式：每个工具调用需要用户确认</li>
@@ -447,7 +458,16 @@ body {
 <p>harness -p ollama -m llama3.3 "Write unit tests for utils.py"</p>
 <p>&nbsp;</p>
 <p>与 Claude Code 的对比：</p>
-<table><tr><th>维度</th><th>Harness</th><th>Claude Code</th></tr><tr><td>源</td><td>开源</td><td>闭源（但可逆向）</td></tr><tr><td>模型绑定</td><td>任何模型</td><td>Claude 系列</td></tr><tr><td>本地模型</td><td>支持 (Ollama)</td><td>不支持</td></tr><tr><td>多Agent</td><td>/team 命令</td><td>Task 工具</td></tr><tr><td>成熟度</td><td>Alpha 阶段</td><td>生产级别</td></tr><tr><td>社区</td><td>快速发展中</td><td>官方支持</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────┬────────────────────┬───────────────────┐
+  │     维度      │      Harness        │    Claude Code     │
+  ├──────────────┼────────────────────┼───────────────────┤
+  │ 源           │ 开源                │ 闭源（但可逆向）    │
+  │ 模型绑定      │ 任何模型            │ Claude 系列        │
+  │ 本地模型      │ 支持 (Ollama)       │ 不支持             │
+  │ 多Agent      │ /team 命令          │ Task 工具          │
+  │ 成熟度        │ Alpha 阶段          │ 生产级别            │
+  │ 社区          │ 快速发展中          │ 官方支持            │
+  └──────────────┴────────────────────┴───────────────────┘</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>12.4 Agent 评测基础设施 —— MultiAgentEval</h2>
@@ -498,7 +518,25 @@ body {
 <p>&nbsp;</p>
 <p>一个生产级 Agent 系统需要以下基础设施：</p>
 <p>&nbsp;</p>
-<table><tr><th>可观测性</th><th>评测</th><th>安全</th></tr><tr><td>─────────────</td><td>─────────────</td><td>─────────────────────</td></tr><tr><td>• LangSmith</td><td>• MultiAgentEval</td><td>• Prompt Injection防护</td></tr><tr><td>• LangFuse</td><td>• RAGAS</td><td>• 权限最小化</td></tr><tr><td>• OpenTelemetry</td><td>• AgentBench</td><td>• 审计日志</td></tr><tr><td>• 自定义 Tracing</td><td>• SWE-bench</td><td>• 数据脱敏</td></tr><tr><td>• 日志聚合</td><td>• 自定义评测集</td><td>• Rate Limiting</td></tr><tr><td>成本控制</td><td>部署</td><td>可靠性</td></tr><tr><td>─────────────</td><td>─────────────</td><td>─────────────────────</td></tr><tr><td>• 模型分层</td><td>• Docker/K8s</td><td>• 重试机制</td></tr><tr><td>• 语义缓存</td><td>• Serverless</td><td>• 超时控制</td></tr><tr><td>• Token 预算</td><td>• 负载均衡</td><td>• 熔断器</td></tr><tr><td>• 批处理</td><td>• 蓝绿部署</td><td>• 降级策略</td></tr><tr><td>• 使用配额</td><td>• Feature Flag</td><td>• 健康检查</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">┌─────────────────────────────────────────────────────────────┐
+│                      生产基础设施全景                          │
+├─────────────────┬─────────────────┬─────────────────────────┤
+│   可观测性       │      评测        │        安全              │
+│  ─────────────  │  ─────────────  │  ─────────────────────  │
+│  • LangSmith     │  • MultiAgentEval│  • Prompt Injection防护 │
+│  • LangFuse      │  • RAGAS        │  • 权限最小化            │
+│  • OpenTelemetry │  • AgentBench   │  • 审计日志              │
+│  • 自定义 Tracing│  • SWE-bench    │  • 数据脱敏              │
+│  • 日志聚合      │  • 自定义评测集   │  • Rate Limiting       │
+├─────────────────┼─────────────────┼─────────────────────────┤
+│   成本控制       │      部署        │        可靠性            │
+│  ─────────────  │  ─────────────  │  ─────────────────────  │
+│  • 模型分层      │  • Docker/K8s    │  • 重试机制              │
+│  • 语义缓存      │  • Serverless    │  • 超时控制              │
+│  • Token 预算    │  • 负载均衡      │  • 熔断器                │
+│  • 批处理        │  • 蓝绿部署      │  • 降级策略              │
+│  • 使用配额      │  • Feature Flag  │  • 健康检查              │
+└─────────────────┴─────────────────┴─────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>可观测性（最重要！）：</p>
 <li>每次 LLM 调用：model + input_tokens + output_tokens + latency</li>
@@ -581,7 +619,18 @@ body {
 <p>✓ Agent 的生产化 Checklist</p>
 <p>&nbsp;</p>
 <p>核心能力矩阵：</p>
-<table><tr><th>能力</th><th>覆盖章节</th><th>深度</th></tr><tr><td>Agent 基础理论</td><td>Ch1, Ch2, Ch3</td><td>⭐⭐⭐</td></tr><tr><td>框架上手</td><td>Ch4, Ch5</td><td>⭐⭐⭐</td></tr><tr><td>RAG 技术栈</td><td>Ch9</td><td>⭐⭐⭐⭐</td></tr><tr><td>MCP 协议</td><td>Ch10</td><td>⭐⭐⭐⭐</td></tr><tr><td>Tool Calling</td><td>Ch11</td><td>⭐⭐⭐⭐⭐</td></tr><tr><td>Claude Code 架构</td><td>Ch8</td><td>⭐⭐⭐⭐⭐</td></tr><tr><td>生产基础设施</td><td>Ch6, Ch12</td><td>⭐⭐⭐</td></tr><tr><td>面试准备</td><td>Ch7</td><td>⭐⭐⭐⭐</td></tr></table></div><div class="lecture"><h2>12.7 本章总结</h2>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">┌──────────────────┬──────────────────────────┬─────────┐
+│      能力         │         覆盖章节          │  深度    │
+├──────────────────┼──────────────────────────┼─────────┤
+│ Agent 基础理论    │ Ch1, Ch2, Ch3            │  ⭐⭐⭐  │
+│ 框架上手          │ Ch4, Ch5                 │  ⭐⭐⭐  │
+│ RAG 技术栈        │ Ch9                      │  ⭐⭐⭐⭐ │
+│ MCP 协议          │ Ch10                     │  ⭐⭐⭐⭐ │
+│ Tool Calling     │ Ch11                     │  ⭐⭐⭐⭐⭐│
+│ Claude Code 架构  │ Ch8                      │  ⭐⭐⭐⭐⭐│
+│ 生产基础设施      │ Ch6, Ch12                │  ⭐⭐⭐  │
+│ 面试准备          │ Ch7                      │  ⭐⭐⭐⭐ │
+└──────────────────┴──────────────────────────┴─────────┘</pre></div><div class="lecture"><h2>12.7 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>

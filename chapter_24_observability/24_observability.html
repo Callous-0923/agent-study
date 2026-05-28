@@ -321,7 +321,14 @@ body {
 <p>&nbsp;</p>
 <p>Agent 可观测性的 4 大支柱：</p>
 <p>&nbsp;</p>
-<table><tr><th>支柱</th><th>需要回答的问题</th></tr><tr><td>1. Tracing</td><td>Agent 执行了哪些步骤？每个步骤耗时？</td></tr><tr><td>2. Metrics</td><td>整体成功率？P50/P99 延迟？Token消耗？</td></tr><tr><td>3. Evaluation</td><td>输出质量如何？是否满足用户需求？</td></tr><tr><td>4. Alerts</td><td>什么情况需要人工介入？</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────┬──────────────────────────────────────┐
+  │    支柱        │              需要回答的问题            │
+  ├──────────────┼──────────────────────────────────────┤
+  │ 1. Tracing   │ Agent 执行了哪些步骤？每个步骤耗时？    │
+  │ 2. Metrics   │ 整体成功率？P50/P99 延迟？Token消耗？   │
+  │ 3. Evaluation │ 输出质量如何？是否满足用户需求？        │
+  │ 4. Alerts    │ 什么情况需要人工介入？                  │
+  └──────────────┴──────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>24.2 Tracing —— 看见 Agent 的「每一根神经」</h2>
@@ -659,7 +666,17 @@ body {
     <span class="b">print</span>(f<span class="s">"\n"</span>)
     tracer.print_dashboard()</pre></div></details></div><div class="lecture"><h2>24.3 LangSmith vs LangFuse —— 两大平台对比</h2>
 <p>&nbsp;</p>
-<table><tr><th>维度</th><th>LangSmith</th><th>LangFuse</th></tr><tr><td>开发者</td><td>LangChain 公司</td><td>独立开源社区</td></tr><tr><td>开源</td><td>部分开源</td><td>完全开源 (MIT)</td></tr><tr><td>部署</td><td>SaaS (托管)</td><td>SaaS + 自托管 (Docker/K8s)</td></tr><tr><td>LangChain集成</td><td>原生（环境变量开箱）</td><td>通过回调集成</td></tr><tr><td>定价</td><td>免费层 + Pro/Enterprise</td><td>免费层 + Cloud/Enterprise</td></tr><tr><td>特色功能</td><td>Hub (Prompt共享)</td><td>Prompt Management</td></tr><tr><td>评测</td><td>LLM-as-Judge 评测</td><td>Dataset Runs 评测</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────┬─────────────────────┬─────────────────────┐
+  │     维度      │      LangSmith       │      LangFuse        │
+  ├──────────────┼─────────────────────┼─────────────────────┤
+  │ 开发者        │ LangChain 公司       │ 独立开源社区         │
+  │ 开源          │ 部分开源             │ 完全开源 (MIT)       │
+  │ 部署          │ SaaS (托管)          │ SaaS + 自托管 (Docker/K8s)│
+  │ LangChain集成 │ 原生（环境变量开箱）   │ 通过回调集成         │
+  │ 定价          │ 免费层 + Pro/Enterprise│ 免费层 + Cloud/Enterprise│
+  │ 特色功能       │ Hub (Prompt共享)     │ Prompt Management    │
+  │ 评测          │ LLM-as-Judge 评测     │ Dataset Runs 评测    │
+  └──────────────┴─────────────────────┴─────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>选型建议：</p>
 <li>重度用 LangChain/LangGraph → LangSmith（原生集成）</li>

@@ -628,7 +628,15 @@ def create_subagent(task_description: str, task_prompt: str,
     # 4. 将结果返回主 Agent
     return {"sub_agent_result": result}</pre>
 <p>Comparision with crewAI:</p>
-<table><tr><th>特性</th><th>Claude Code</th><th>crewAI</th></tr><tr><td>SubAgent 创建</td><td>Task 工具动态创建</td><td>预定义 Agent 角色</td></tr><tr><td>上下文隔离</td><td>完全独立</td><td>共享部分上下文</td></tr><tr><td>状态管理</td><td>无状态（单次执行）</td><td>有状态（多次交互）</td></tr><tr><td>并发</td><td>受控（有限并发）</td><td>自由并发</td></tr><tr><td>适用场景</td><td>编程、搜索、分析</td><td>内容创作、多角色协作</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────────┬───────────────────┬──────────────────────┐
+  │      特性         │    Claude Code     │       crewAI          │
+  ├──────────────────┼───────────────────┼──────────────────────┤
+  │ SubAgent 创建     │ Task 工具动态创建  │ 预定义 Agent 角色      │
+  │ 上下文隔离        │ 完全独立           │ 共享部分上下文         │
+  │ 状态管理          │ 无状态（单次执行）  │ 有状态（多次交互）     │
+  │ 并发              │ 受控（有限并发）    │ 自由并发              │
+  │ 适用场景          │ 编程、搜索、分析    │ 内容创作、多角色协作   │
+  └──────────────────┴───────────────────┴──────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>8.6 Claude Agent SDK —— Agent 开发的新范式</h2>
@@ -653,7 +661,12 @@ def create_subagent(task_description: str, task_prompt: str,
 <p>↑                                        │</p>
 <p>└────────────────────────────────────────┘</p>
 <p>循环直到完成</p>
-<table><tr><th>收集上下文</th><th>────→</th><th>执行行动</th><th>────→</th><th>验证结果</th></tr><tr><td>- 搜索文件</td><td></td><td>- 编辑/写入</td><td></td><td>- 运行测试</td></tr><tr><td>- 读取代码</td><td></td><td>- 运行命令</td><td></td><td>- 检查 lint</td></tr><tr><td>- 查询历史</td><td></td><td>- 调用 API</td><td></td><td>- 审查 diff</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+  │ 收集上下文    │────→│  执行行动     │────→│  验证结果     │
+  │ - 搜索文件    │     │ - 编辑/写入   │     │ - 运行测试    │
+  │ - 读取代码    │     │ - 运行命令    │     │ - 检查 lint   │
+  │ - 查询历史    │     │ - 调用 API    │     │ - 审查 diff   │
+  └──────────────┘     └──────────────┘     └──────────────┘</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>8.7 Claude Code 的设计原则总结</h2>

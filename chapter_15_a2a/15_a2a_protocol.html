@@ -319,7 +319,17 @@ body {
 <p>&nbsp;</p>
 <p>对比 MCP vs A2A（面试必问！）：</p>
 <p>&nbsp;</p>
-<table><tr><th>维度</th><th>MCP</th><th>A2A</th></tr><tr><td>解决什么</td><td>Agent ↔ 工具/数据</td><td>Agent ↔ Agent</td></tr><tr><td>发布方</td><td>Anthropic (2024.11)</td><td>Google (2025.04)</td></tr><tr><td>架构</td><td>Client-Host-Server</td><td>Client-Server</td></tr><tr><td>核心概念</td><td>Tools/Resources/Prompts</td><td>AgentCard/Task/Artifact</td></tr><tr><td>通信协议</td><td>JSON-RPC 2.0</td><td>JSON-RPC 2.0 + HTTP</td></tr><tr><td>传输方式</td><td>stdio / SSE</td><td>HTTP / SSE</td></tr><tr><td>典型场景</td><td>查数据库/调API</td><td>多Agent协作/委派任务</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────┬─────────────────────┬─────────────────────┐
+  │     维度      │        MCP           │        A2A           │
+  ├──────────────┼─────────────────────┼─────────────────────┤
+  │ 解决什么      │ Agent ↔ 工具/数据     │ Agent ↔ Agent       │
+  │ 发布方        │ Anthropic (2024.11)  │ Google (2025.04)    │
+  │ 架构          │ Client-Host-Server   │ Client-Server       │
+  │ 核心概念      │ Tools/Resources/Prompts│ AgentCard/Task/Artifact│
+  │ 通信协议      │ JSON-RPC 2.0         │ JSON-RPC 2.0 + HTTP │
+  │ 传输方式      │ stdio / SSE          │ HTTP / SSE          │
+  │ 典型场景      │ 查数据库/调API       │ 多Agent协作/委派任务 │
+  └──────────────┴─────────────────────┴─────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>配合使用的示例（面试可以这样描述）：</p>
 <li>用户 Agent 收到任务「预订去北京的出差行程」</li>

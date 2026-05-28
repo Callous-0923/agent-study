@@ -342,7 +342,43 @@ body {
 <p>&nbsp;</p>
 <p>核心表设计（5 张表）：</p>
 <p>&nbsp;</p>
-<table><tr><th></th><th>sessions</th><th></th><th>messages</th><th></th></tr><tr><td></td><td>─────────</td><td></td><td>────────────</td><td></td></tr><tr><td></td><td>id (PK)</td><td></td><td>id (PK)</td><td></td></tr><tr><td></td><td>user_id</td><td>──</td><td>session_id (FK)</td><td></td></tr><tr><td></td><td>title</td><td></td><td>role</td><td></td></tr><tr><td></td><td>status</td><td></td><td>content</td><td></td></tr><tr><td></td><td>created_at</td><td></td><td>tool_calls_json</td><td></td></tr><tr><td></td><td>updated_at</td><td></td><td>token_count</td><td></td></tr><tr><td></td><td>tasks</td><td></td><td>tool_logs</td><td></td></tr><tr><td></td><td>─────────</td><td></td><td>────────────</td><td></td></tr><tr><td></td><td>id (PK)</td><td></td><td>id (PK)</td><td></td></tr><tr><td></td><td>session_id</td><td></td><td>session_id</td><td></td></tr><tr><td></td><td>type</td><td></td><td>tool_name</td><td></td></tr><tr><td></td><td>payload</td><td></td><td>input_json</td><td></td></tr><tr><td></td><td>status</td><td></td><td>output_json</td><td></td></tr><tr><td></td><td>result</td><td></td><td>elapsed_ms</td><td></td></tr><tr><td></td><td>created_at</td><td></td><td>success</td><td></td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌────────────────────────────────────────────────────┐
+  │                    SQLite 数据库                     │
+  │                                                      │
+  │  ┌─────────────┐  ┌──────────────────┐             │
+  │  │   sessions   │  │    messages       │             │
+  │  │  ─────────  │  │   ────────────   │             │
+  │  │  id (PK)    │  │   id (PK)         │             │
+  │  │  user_id    │──│   session_id (FK) │             │
+  │  │  title      │  │   role            │             │
+  │  │  status     │  │   content         │             │
+  │  │  created_at │  │   tool_calls_json │             │
+  │  │  updated_at │  │   token_count     │             │
+  │  └─────────────┘  │   created_at      │             │
+  │                    └──────────────────┘             │
+  │                                                      │
+  │  ┌─────────────┐  ┌──────────────────┐             │
+  │  │    tasks     │  │    tool_logs      │             │
+  │  │  ─────────  │  │   ────────────   │             │
+  │  │  id (PK)    │  │   id (PK)         │             │
+  │  │  session_id │  │   session_id      │             │
+  │  │  type       │  │   tool_name       │             │
+  │  │  payload    │  │   input_json      │             │
+  │  │  status     │  │   output_json     │             │
+  │  │  result     │  │   elapsed_ms      │             │
+  │  │  created_at │  │   success         │             │
+  │  └─────────────┘  │   created_at      │             │
+  │                    └──────────────────┘             │
+  │                                                      │
+  │  ┌─────────────┐                                    │
+  │  │    users     │  ← 扩展用（配额/权限/偏好）        │
+  │  │  ─────────  │                                    │
+  │  │  id (PK)    │                                    │
+  │  │  name       │                                    │
+  │  │  quota_total│                                    │
+  │  │  quota_used │                                    │
+  │  └─────────────┘                                    │
+  └────────────────────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>设计要点（面试重点！）：</p>
 <li>sessions 和 messages 是 1:N 关系</li>

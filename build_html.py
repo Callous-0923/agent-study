@@ -594,6 +594,10 @@ def _parse_ascii_table(block_lines: list[str]) -> str:
     # 将 ASCII 表格块转换为 HTML <table>
     # 关键：排除架构图（架构图中 │ 是嵌套框而非列分隔符）
     BOX_RE = re.compile(r'[┌└├┐┘┤┬┴═]')
+    # 早期排除：任何一行存在框线字符 → 架构图，不是纯表格
+    for line in block_lines:
+        if BOX_RE.search(line):
+            return ""
     data_rows = []
     for line in block_lines:
         stripped = line.strip()

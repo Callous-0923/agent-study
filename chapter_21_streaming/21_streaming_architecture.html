@@ -345,7 +345,20 @@ body {
 <p>&nbsp;</p>
 <p>Agent 的关键事件类型：</p>
 <p>&nbsp;</p>
-<table><tr><th>事件类型</th><th>说明</th></tr><tr><td>user_input</td><td>用户发送消息</td></tr><tr><td>thinking</td><td>Agent 思考中</td></tr><tr><td>token_stream</td><td>LLM 流式输出的一个 token</td></tr><tr><td>tool_call</td><td>Agent 决定调用工具</td></tr><tr><td>tool_result</td><td>工具执行完成</td></tr><tr><td>interrupt</td><td>用户中途介入/停止</td></tr><tr><td>error</td><td>发生错误</td></tr><tr><td>done</td><td>Agent 任务完成</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌─────────────────────────────────────────────┐
+  │              Agent 事件体系                   │
+  ├──────────────┬──────────────────────────────┤
+  │ 事件类型       │         说明                 │
+  ├──────────────┼──────────────────────────────┤
+  │ user_input   │ 用户发送消息                   │
+  │ thinking     │ Agent 思考中                   │
+  │ token_stream │ LLM 流式输出的一个 token       │
+  │ tool_call    │ Agent 决定调用工具              │
+  │ tool_result  │ 工具执行完成                    │
+  │ interrupt    │ 用户中途介入/停止              │
+  │ error        │ 发生错误                        │
+  │ done         │ Agent 任务完成                  │
+  └──────────────┴──────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>关键组件：</p>
 <p>EventBus：事件总线，所有组件通过它通信</p>

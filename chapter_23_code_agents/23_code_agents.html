@@ -309,12 +309,47 @@ body {
 <p>&nbsp;</p>
 <h2>23.1 代码 Agent 生态全景图</h2>
 <p>&nbsp;</p>
-<table><tr><th></th><th>Claude Code</th><th></th><th>OpenHands</th><th></th></tr><tr><td></td><td>(Anthropic)</td><td></td><td>(原 OpenDevin)</td><td></td></tr><tr><td></td><td>闭源·生产级</td><td></td><td>开源·企业级</td><td></td></tr><tr><td></td><td>Devin</td><td></td><td>SWE-Agent</td><td></td></tr><tr><td></td><td>(Cognition)</td><td></td><td>(Princeton)</td><td></td></tr><tr><td></td><td>闭源·端到端</td><td></td><td>开源·研究导向</td><td></td></tr><tr><td></td><td>Cursor Agent</td><td></td><td>Aider</td><td></td></tr><tr><td></td><td>(Anysphere)</td><td></td><td>开源·终端优先</td><td></td></tr><tr><td></td><td>GitHub Copilot</td><td></td><td>开源·VS Code插件</td><td></td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────────────────────────────────────────────┐
+  │              代码 Agent 生态 (2025-2026)              │
+  │                                                       │
+  │  第一梯队（商业/闭源）     第二梯队（开源）             │
+  │  ┌──────────────────┐  ┌──────────────────┐         │
+  │  │ Claude Code      │  │ OpenHands        │         │
+  │  │ (Anthropic)      │  │ (原 OpenDevin)   │         │
+  │  │ 闭源·生产级       │  │ 开源·企业级       │         │
+  │  ├──────────────────┤  ├──────────────────┤         │
+  │  │ Devin            │  │ SWE-Agent        │         │
+  │  │ (Cognition)      │  │ (Princeton)      │         │
+  │  │ 闭源·端到端       │  │ 开源·研究导向     │         │
+  │  ├──────────────────┤  ├──────────────────┤         │
+  │  │ Cursor Agent     │  │ Aider            │         │
+  │  │ (Anysphere)      │  │ 开源·终端优先     │         │
+  │  │ 闭源·IDE集成      │  ├──────────────────┤         │
+  │  ├──────────────────┤  │ Cline/Roo Code   │         │
+  │  │ GitHub Copilot   │  │ 开源·VS Code插件  │         │
+  │  │ Agent Mode       │  └──────────────────┘         │
+  │  │ (Microsoft)      │                                │
+  │  └──────────────────┘                                │
+  └──────────────────────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>23.2 四种核心架构模式</h2>
 <p>&nbsp;</p>
-<table><tr><th>架构</th><th>代表</th><th>核心思想</th></tr><tr><td>Code-as-Action</td><td>OpenHands (CodeAct)</td><td>用代码本身作为工具接口</td></tr><tr><td>(CodeAct)</td><td></td><td>不预定义工具，写脚本执行</td></tr><tr><td>Agent-Computer</td><td>SWE-Agent</td><td>为 LLM 设计专用交互界面</td></tr><tr><td>Interface (ACI)</td><td></td><td>像 HCI，但针对 AI 优化</td></tr><tr><td>Plan-and-Execute</td><td>Devin, Plandex</td><td>先制定计划，人工审核后执行</td></tr><tr><td></td><td></td><td>安全优先，可审计</td></tr><tr><td>React-and-Iterate</td><td>Claude Code, Aider</td><td>观察→推理→行动→观察</td></tr><tr><td></td><td>Cline, Roo Code</td><td>最像人类的开发流程</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">┌─────────────────┬─────────────────────┬──────────────────────┐
+│    架构          │      代表            │       核心思想         │
+├─────────────────┼─────────────────────┼──────────────────────┤
+│ Code-as-Action  │ OpenHands (CodeAct) │ 用代码本身作为工具接口   │
+│ (CodeAct)       │                     │ 不预定义工具，写脚本执行  │
+├─────────────────┼─────────────────────┼──────────────────────┤
+│ Agent-Computer  │ SWE-Agent           │ 为 LLM 设计专用交互界面  │
+│ Interface (ACI) │                     │ 像 HCI，但针对 AI 优化   │
+├─────────────────┼─────────────────────┼──────────────────────┤
+│ Plan-and-Execute│ Devin, Plandex      │ 先制定计划，人工审核后执行│
+│                 │                     │ 安全优先，可审计         │
+├─────────────────┼─────────────────────┼──────────────────────┤
+│ React-and-Iterate│ Claude Code, Aider │ 观察→推理→行动→观察    │
+│                 │ Cline, Roo Code     │ 最像人类的开发流程      │
+└─────────────────┴─────────────────────┴──────────────────────┘</pre>
 <p>&nbsp;</p>
 <li>Code-as-Action (CodeAct)</li>
 <p>&nbsp;</p>
@@ -378,7 +413,15 @@ body {
 <p>&nbsp;</p>
 <p>SWE-bench Verified 成绩对比 (2025 数据)：</p>
 <p>&nbsp;</p>
-<table><tr><th>Agent</th><th>解决率</th><th>成本</th></tr><tr><td>Claude Code (Sonnet 4)</td><td>~72%</td><td>~$5/任务</td></tr><tr><td>OpenHands</td><td>~72%</td><td>~$3/任务</td></tr><tr><td>SWE-Agent</td><td>~45%</td><td>~$1/任务</td></tr><tr><td>Agentless (无 Agent!)</td><td>~32%</td><td>$0.70</td></tr><tr><td>Devin</td><td>未公开</td><td>订阅制</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────────────┬───────────┬──────────┐
+  │ Agent                 │ 解决率     │  成本     │
+  ├──────────────────────┼───────────┼──────────┤
+  │ Claude Code (Sonnet 4)│  ~72%     │  ~$5/任务 │
+  │ OpenHands             │  ~72%     │  ~$3/任务 │
+  │ SWE-Agent             │  ~45%     │  ~$1/任务 │
+  │ Agentless (无 Agent!)  │  ~32%     │  $0.70    │
+  │ Devin                 │  未公开    │  订阅制    │
+  └──────────────────────┴───────────┴──────────┘</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>23.4 Agentless 的颠覆性发现</h2>
@@ -556,7 +599,17 @@ body {
         status = <span class="s">"✅ 成功"</span> <span class="k">if</span> result[<span class="s">"success"</span>] <span class="k">else</span> <span class="s">"❌ 失败"</span>
         <span class="b">print</span>(f<span class="s">"  {status} | 迭代: {result['iterations']} | 步骤: {result['steps']}"</span>)</pre></div></details></div><div class="lecture"><h2>23.6 选型指南</h2>
 <p>&nbsp;</p>
-<table><tr><th>场景</th><th>推荐</th></tr><tr><td>个人开发者日常</td><td>Claude Code / Aider</td></tr><tr><td>企业级代码审查</td><td>OpenHands (企业版)</td></tr><tr><td>安全关键系统</td><td>Plan-and-Execute (人工审核)</td></tr><tr><td>研究和实验</td><td>SWE-Agent (ACI 研究)</td></tr><tr><td>定制化 CI/CD</td><td>自建 (参考 Agentless 简洁方案)</td></tr><tr><td>IDE 深度集成</td><td>Cursor Agent / GitHub Copilot Agent</td></tr><tr><td>多文件重构</td><td>Claude Code / OpenHands</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌───────────────────┬────────────────────────────────────┐
+  │       场景         │              推荐                    │
+  ├───────────────────┼────────────────────────────────────┤
+  │ 个人开发者日常     │ Claude Code / Aider                 │
+  │ 企业级代码审查     │ OpenHands (企业版)                  │
+  │ 安全关键系统       │ Plan-and-Execute (人工审核)         │
+  │ 研究和实验         │ SWE-Agent (ACI 研究)               │
+  │ 定制化 CI/CD      │ 自建 (参考 Agentless 简洁方案)       │
+  │ IDE 深度集成      │ Cursor Agent / GitHub Copilot Agent  │
+  │ 多文件重构         │ Claude Code / OpenHands             │
+  └───────────────────┴────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <h2>23.7 本章总结</h2>
 <p>&nbsp;</p>

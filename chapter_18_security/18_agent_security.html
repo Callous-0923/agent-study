@@ -372,7 +372,19 @@ body {
 <p>&nbsp;</p>
 <h2>18.3 工具调用安全分级</h2>
 <p>&nbsp;</p>
-<table><tr><th>权限级别</th><th>操作类型</th><th>确认要求</th></tr><tr><td>READ (只读)</td><td>search, get_weather</td><td>自动执行</td></tr><tr><td></td><td>read_file, grep</td><td>无需确认</td></tr><tr><td>WRITE (写入)</td><td>write_file, send_email</td><td>用户确认</td></tr><tr><td></td><td>create_issue</td><td>⚠️ 弹窗二次确认</td></tr><tr><td>DANGEROUS</td><td>delete_file</td><td>双重确认</td></tr><tr><td>(危险)</td><td>execute_sql</td><td>⚠️⚠️ 需验证码</td></tr><tr><td></td><td>run_bash_command</td><td>+ 人工审核</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">┌──────────────┬──────────────────────┬──────────────────┐
+│    权限级别    │       操作类型         │     确认要求      │
+├──────────────┼──────────────────────┼──────────────────┤
+│ READ (只读)   │ search, get_weather   │ 自动执行          │
+│              │ read_file, grep       │ 无需确认          │
+├──────────────┼──────────────────────┼──────────────────┤
+│ WRITE (写入)  │ write_file, send_email│ 用户确认          │
+│              │ create_issue          │ ⚠️ 弹窗二次确认    │
+├──────────────┼──────────────────────┼──────────────────┤
+│ DANGEROUS    │ delete_file           │ 双重确认          │
+│ (危险)       │ execute_sql           │ ⚠️⚠️ 需验证码       │
+│              │ run_bash_command      │ + 人工审核        │
+└──────────────┴──────────────────────┴──────────────────┘</pre>
 <p>&nbsp;</p>
 <p>实现模式：</p>
 <p>&nbsp;</p>

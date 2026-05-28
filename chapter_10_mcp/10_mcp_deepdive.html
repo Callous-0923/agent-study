@@ -354,7 +354,22 @@ body {
 <p>MCP协议  │           MCP协议  │</p>
 <p>(JSON-RPC)│          (JSON-RPC)│</p>
 <p>▼                    ▼</p>
-<table><tr><th>MCP Server 1</th><th></th><th>MCP Server 2</th></tr><tr><td>文件系统 & Git</td><td></td><td>数据库</td></tr><tr><td>• read_file()</td><td></td><td>• query()</td></tr><tr><td>• write_file()</td><td></td><td>• insert()</td></tr><tr><td>• git_status()</td><td></td><td>• schema()</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────────────────────────────────────────────────┐
+  │                     Host Application                      │
+  │  ┌─────────────────┐  ┌─────────────────┐                │
+  │  │   MCP Client 1   │  │   MCP Client 2  │  ...          │
+  │  │  (1:1 连接)     │  │  (1:1 连接)     │                │
+  │  └────────┬────────┘  └────────┬────────┘                │
+  │           │                    │                          │
+  └───────────┼────────────────────┼──────────────────────────┘
+  ┌──────────────────┐  ┌──────────────────┐
+  │   MCP Server 1    │  │   MCP Server 2    │
+  │   文件系统 & Git   │  │     数据库        │
+  │                   │  │                   │
+  │  • read_file()    │  │  • query()        │
+  │  • write_file()   │  │  • insert()       │
+  │  • git_status()   │  │  • schema()       │
+  └──────────────────┘  └──────────────────┘</pre>
 <p>&nbsp;</p>
 <p>三个角色的职责：</p>
 <p>&nbsp;</p>
@@ -897,7 +912,17 @@ NOTIFICATION_EXAMPLE = {
 <p>&nbsp;</p>
 <p>面试中经常混淆这三个概念，把它们放在一起对比会显得你有系统思维。</p>
 <p>&nbsp;</p>
-<table><tr><th>维度</th><th>MCP</th><th>Function Calling</th><th>A2A</th></tr><tr><td>本质</td><td>通信协议</td><td>LLM 能力</td><td>通信协议</td></tr><tr><td>标准化</td><td>开放标准</td><td>厂商自有实现</td><td>开放标准</td></tr><tr><td>解决的问题</td><td>LLM ↔ 工具</td><td>LLM 决策调用工具</td><td>Agent ↔ Agent</td></tr><tr><td>连接模式</td><td>Client↔Server</td><td>直接在 API 调用中</td><td>Agent↔Agent</td></tr><tr><td>工具发现</td><td>tools/list 动态</td><td>每次请求手动传入</td><td>AgentCard 发现</td></tr><tr><td>服务器生态</td><td>独立部署 MCP Server</td><td>无独立服务器概念</td><td>Agent 作为服务</td></tr><tr><td>跨模型支持</td><td>是（协议层面）</td><td>取决于厂商</td><td>是（协议层面）</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────┬──────────────────┬───────────────────┬───────────────────┐
+  │     维度      │   MCP             │  Function Calling  │      A2A          │
+  ├──────────────┼──────────────────┼───────────────────┼───────────────────┤
+  │ 本质          │ 通信协议          │ LLM 能力            │ 通信协议            │
+  │ 标准化        │ 开放标准          │ 厂商自有实现        │ 开放标准            │
+  │ 解决的问题     │ LLM ↔ 工具        │ LLM 决策调用工具    │ Agent ↔ Agent      │
+  │ 连接模式      │ Client↔Server    │ 直接在 API 调用中    │ Agent↔Agent        │
+  │ 工具发现      │ tools/list 动态   │ 每次请求手动传入     │ AgentCard 发现      │
+  │ 服务器生态    │ 独立部署 MCP Server│ 无独立服务器概念     │ Agent 作为服务       │
+  │ 跨模型支持    │ 是（协议层面）     │ 取决于厂商           │ 是（协议层面）       │
+  └──────────────┴──────────────────┴───────────────────┴───────────────────┘</pre>
 <p>&nbsp;</p>
 <p>三者的协作关系（面试高分答案）：</p>
 <p>&nbsp;</p>

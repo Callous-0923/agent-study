@@ -325,7 +325,17 @@ body {
 <p>&nbsp;</p>
 <h2>25.2 5 大向量数据库对比</h2>
 <p>&nbsp;</p>
-<table><tr><th></th><th>Chroma</th><th>Pinecone</th><th>Milvus</th><th>Qdrant</th></tr><tr><td>类型</td><td>开源轻量</td><td>商业托管</td><td>开源分布式</td><td>开源高性能</td></tr><tr><td>上手难度</td><td>⭐(30min)</td><td>⭐(30min)</td><td>⭐⭐⭐</td><td>⭐⭐</td></tr><tr><td>数据规模</td><td><100万</td><td>不限</td><td>10亿+</td><td>10亿</td></tr><tr><td>延迟(P99)</td><td>~200ms</td><td><50ms</td><td><50ms</td><td><80ms</td></tr><tr><td>部署</td><td>pip install</td><td>SaaS</td><td>K8s/Helm</td><td>Docker</td></tr><tr><td>适合</td><td>原型/MVP</td><td>企业快速上线</td><td>大规模生产</td><td>性能优先</td></tr><tr><td>成本</td><td>免费</td><td>$$$</td><td>运维成本</td><td>运维成本</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────┬──────────┬──────────┬──────────┬──────────┐
+  │          │  Chroma  │ Pinecone │  Milvus  │  Qdrant  │
+  ├──────────┼──────────┼──────────┼──────────┼──────────┤
+  │ 类型      │ 开源轻量  │ 商业托管  │ 开源分布式│ 开源高性能 │
+  │ 上手难度  │ ⭐(30min)│ ⭐(30min)│ ⭐⭐⭐    │ ⭐⭐      │
+  │ 数据规模  │ <100万   │ 不限      │ 10亿+     │ 10亿      │
+  │ 延迟(P99) │ ~200ms  │ <50ms    │ <50ms    │ <80ms    │
+  │ 部署       │ pip install│ SaaS    │ K8s/Helm │ Docker   │
+  │ 适合       │ 原型/MVP  │ 企业快速上线│ 大规模生产│ 性能优先  │
+  │ 成本       │ 免费      │ $$$      │ 运维成本  │ 运维成本  │
+  └──────────┴──────────┴──────────┴──────────┴──────────┘</pre>
 <p>&nbsp;</p>
 <p>选型决策树（面试必备！）：</p>
 <p>&nbsp;</p>

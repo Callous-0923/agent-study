@@ -418,7 +418,15 @@ body {
 <p>&nbsp;</p>
 <p>内置 Module 类型：</p>
 <p>&nbsp;</p>
-<table><tr><th>Module</th><th>作用</th></tr><tr><td>dspy.Predict</td><td>最基本的单步 LLM 调用</td></tr><tr><td>dspy.ChainOfThought</td><td>带推理链的 LM 调用</td></tr><tr><td>dspy.ReAct</td><td>ReAct Agent 循环</td></tr><tr><td>dspy.MultiChain</td><td>多链并行 + 投票</td></tr><tr><td>dspy.ProgramOfThought</td><td>用代码辅助推理</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────────┬──────────────────────────────────┐
+  │ Module            │        作用                       │
+  ├──────────────────┼──────────────────────────────────┤
+  │ dspy.Predict      │ 最基本的单步 LLM 调用             │
+  │ dspy.ChainOfThought│ 带推理链的 LM 调用               │
+  │ dspy.ReAct        │ ReAct Agent 循环                 │
+  │ dspy.MultiChain   │ 多链并行 + 投票                  │
+  │ dspy.ProgramOfThought│ 用代码辅助推理                │
+  └──────────────────┴──────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>类比 LangChain：</p>
 <p>LangChain Chain ≈ DSPy Module</p>
@@ -491,7 +499,14 @@ body {
 <p>&nbsp;</p>
 <p>DSPy 的 Optimizer 类型：</p>
 <p>&nbsp;</p>
-<table><tr><th>Optimizer</th><th>做什么</th></tr><tr><td>BootstrapFewShot</td><td>自动找出最佳少样本示例</td></tr><tr><td>MIPROv2</td><td>自动探索最优指令 + 示例组合</td></tr><tr><td>BootstrapFinetune</td><td>为每个 Module 自动微调小模型</td></tr><tr><td>BetterTogether</td><td>组合多个 Optimizer 级联优化</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌─────────────────────┬──────────────────────────────────┐
+  │ Optimizer            │         做什么                    │
+  ├─────────────────────┼──────────────────────────────────┤
+  │ BootstrapFewShot    │ 自动找出最佳少样本示例              │
+  │ MIPROv2             │ 自动探索最优指令 + 示例组合         │
+  │ BootstrapFinetune   │ 为每个 Module 自动微调小模型        │
+  │ BetterTogether      │ 组合多个 Optimizer 级联优化         │
+  └─────────────────────┴──────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>工作流程（MIPROv2 为例）：</p>
 <p>&nbsp;</p>

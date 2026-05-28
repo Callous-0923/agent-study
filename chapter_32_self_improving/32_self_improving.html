@@ -342,7 +342,13 @@ body {
 <p>&nbsp;</p>
 <h2>32.2 Self-Improving vs Reflection vs Fine-tuning</h2>
 <p>&nbsp;</p>
-<table><tr><th>方式</th><th>机制</th><th>成本</th></tr><tr><td>Reflection</td><td>单次任务内自我审查</td><td>低（多一次 LLM 调用）</td></tr><tr><td>Self-Improving</td><td>跨任务的持续改进</td><td>中（定期跑优化流程）</td></tr><tr><td>Fine-tuning</td><td>重新训练模型权重</td><td>高（GPU + 数据标注）</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">┌────────────────┬────────────────────┬─────────────────────┐
+│ 方式             │       机制          │        成本          │
+├────────────────┼────────────────────┼─────────────────────┤
+│ Reflection     │ 单次任务内自我审查    │ 低（多一次 LLM 调用）  │
+│ Self-Improving │ 跨任务的持续改进       │ 中（定期跑优化流程）    │
+│ Fine-tuning    │ 重新训练模型权重       │ 高（GPU + 数据标注）   │
+└────────────────┴────────────────────┴─────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>Reflection（Ch3/Ch19）：一次任务内的自我批评</p>
 <p>Self-Improving（本章）：横跨多次任务的持续改进</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (164 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">execute</span><span class="code-badge code-badge-func">collect_result</span><span class="code-badge code-badge-func">improve</span><span class="code-badge code-badge-func">demo_self_improving</span><span class="code-badge code-badge-func">exact_metric</span><span class="code-badge code-badge-class">SelfImprovingAgent</span></div><div class="code-block"><pre><span class="k">import</span> json

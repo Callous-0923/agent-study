@@ -331,7 +331,18 @@ body {
 <p>&nbsp;</p>
 <p>三种经典架构：</p>
 <p>&nbsp;</p>
-<table><tr><th>架构</th><th>核心思想</th></tr><tr><td>协作式</td><td>多个 Agent 平等对话，共同决策</td></tr><tr><td>(Horizontal)</td><td>典型：AutoGen 的 GroupChat</td></tr><tr><td>分层式</td><td>上级 Agent 委派任务给下级 Agent</td></tr><tr><td>(Vertical)</td><td>典型：crewAI 的 Crew + Task 模型</td></tr><tr><td>竞争式</td><td>多个 Agent 各自生成方案，择优选用</td></tr><tr><td>(Competitive)</td><td>典型：辩论式 Agent / Self-Play</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (15 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">┌──────────────┬───────────────────────────────────────┐
+│    架构       │               核心思想                  │
+├──────────────┼───────────────────────────────────────┤
+│ 协作式        │ 多个 Agent 平等对话，共同决策            │
+│ (Horizontal) │ 典型：AutoGen 的 GroupChat              │
+├──────────────┼───────────────────────────────────────┤
+│ 分层式        │ 上级 Agent 委派任务给下级 Agent          │
+│ (Vertical)   │ 典型：crewAI 的 Crew + Task 模型        │
+├──────────────┼───────────────────────────────────────┤
+│ 竞争式        │ 多个 Agent 各自生成方案，择优选用         │
+│ (Competitive)│ 典型：辩论式 Agent / Self-Play          │
+└──────────────┴───────────────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (15 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> typing <span class="k">import</span> Annotated, TypedDict, Literal, Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv

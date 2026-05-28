@@ -403,7 +403,72 @@ body {
 <p>本课程按「理论 → 实践 → 深度 → 工程 → 架构 → 补强 → 专家」七层递进，</p>
 <p>共 36 章（Ch0-Ch36），每章既是完整讲义也是可运行代码。</p>
 <p>&nbsp;</p>
-<table><tr><th></th><th>Ch8 ClaudeCode</th><th>nO主循环·h2A实时Steering·上下文压缩·SubAgent</th></tr><tr><td></td><td>Ch9 RAG深度</td><td>从Naive到生产级·Chunk·Embedding·RRF</td></tr><tr><td></td><td>Ch10 MCP协议</td><td>JSON-RPC·原语·能力协商·stdio/SSE传输层</td></tr><tr><td></td><td>Ch11 ToolCall</td><td>OpenAI vs Anthropic·Streaming·Strict模式</td></tr><tr><td></td><td>Ch12 基础设施</td><td>OpenClaw架构·Harness·Agent生产化Checklist</td></tr><tr><td></td><td>Ch13 FastAPI</td><td>REST API·SSE·WebSocket·生产部署架构</td></tr><tr><td></td><td>Ch14 SQLite</td><td>5表Schema·WAL模式·会话/任务/用户管理</td></tr><tr><td></td><td>Ch15 A2A协议</td><td>AgentCard·Task·Artifact·多Agent协作</td></tr><tr><td></td><td>Ch16 MemGPT</td><td>Core Memory·Heartbeat·Sleep-Time·FS记忆</td></tr><tr><td></td><td>Ch17 CompUse</td><td>Screenshot-Action Loop·坐标计算·安全沙箱</td></tr><tr><td></td><td>Ch18 安全防护</td><td>Prompt Injection攻防·权限分级·4层防御</td></tr><tr><td></td><td>Ch19 Workflow</td><td>Reflection·Routing·Orchestrator等7种模式</td></tr><tr><td></td><td>Ch20 Context</td><td>Context Rot·预算管理·XML结构化Prompt</td></tr><tr><td></td><td>Ch21 Streaming</td><td>EventBus·动态中断·背压控制</td></tr><tr><td></td><td>Ch22 DSPy</td><td>Signature→Module→Optimizer 自动优化</td></tr><tr><td></td><td>Ch23 CodeAgent</td><td>CodeAct·ACI·Plan-Execute·SWE-bench横评</td></tr><tr><td></td><td>Ch24 可观测</td><td>Tracing Span树·LangSmith vs LangFuse</td></tr><tr><td></td><td>Ch25 向量库</td><td>Chroma·Pinecone·Milvus·Qdrant对比·Embedding</td></tr><tr><td></td><td>Ch26 模型路由</td><td>Threshold·Cascade·Semantic·Cost-Aware 4种</td></tr><tr><td></td><td>Ch27 Prompt</td><td>System Prompt 6模块模板·工具描述评分卡</td></tr><tr><td></td><td>Ch28 语义缓存</td><td>三级缓存(Exact→Semantic→LLM)·Token预算</td></tr><tr><td></td><td>Ch29 多模态</td><td>视觉+文本联合推理·多模态Tool Calling</td></tr><tr><td></td><td>Ch30 可靠性</td><td>熔断器·指数退避重试·幂等性·降级策略</td></tr><tr><td></td><td>Ch31 评测体系</td><td>GAIA·AgentBench·WebArena·tau-bench</td></tr><tr><td></td><td>Ch32 自改进</td><td>Bad Case收集→自动改Prompt→评测验证</td></tr><tr><td></td><td>Ch33 Cache</td><td>Anthropic Cache·推测解码·KV共享</td></tr><tr><td></td><td>Ch34 微调</td><td>LoRA微调·数据准备·成本收益对比</td></tr><tr><td></td><td>Ch35 数据飞轮</td><td>交互采集→Bad Case识别→自动触发改进</td></tr><tr><td></td><td>Ch36 纵深安全</td><td>Canary Token·分层隔离·行为沙箱</td></tr></table>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌─────────────────────────────────────────────────────────────┐
+  │ 第1层：Agent 理论基础（Ch0-3）                                │
+  │ ┌──────────────┬──────────────────────────────────────────┐ │
+  │ │ Ch0 课程概览  │ 学习路线图、环境搭建、API Key 配置        │ │
+  │ │ Ch1 第一个Agent│ 裸写 ReAct 循环、Function Calling 原理   │ │
+  │ │ Ch2 核心组件  │ 规划器 + 记忆系统 + 工具设计黄金法则       │ │
+  │ │ Ch3 类型分类  │ ReAct / Plan-Execute / Reflexion 对比    │ │
+  │ └──────────────┴──────────────────────────────────────────┘ │
+  ├─────────────────────────────────────────────────────────────┤
+  │ 第2层：工程实践与框架（Ch4-7）                                │
+  │ ┌──────────────┬──────────────────────────────────────────┐ │
+  │ │ Ch4 主流框架  │ LangChain Agent + LangGraph 状态机实战    │ │
+  │ │ Ch5 多智能体  │ Multi-Agent 协作、Writer+Reviewer 模式    │ │
+  │ │ Ch6 评估测试  │ 评测框架 + LLM-as-Judge + 生产 Checklist   │ │
+  │ │ Ch7 求职面试  │ 20道高频面试题 + 项目指南 + 面试流程       │ │
+  │ └──────────────┴──────────────────────────────────────────┘ │
+  ├─────────────────────────────────────────────────────────────┤
+  │ 第3层：深度技术剖析（Ch8-12）                                │
+  │ ┌──────────────┬──────────────────────────────────────────┐ │
+  │ │ Ch8 ClaudeCode│ nO主循环·h2A实时Steering·上下文压缩·SubAgent│
+  │ │ Ch9 RAG深度   │ 从Naive到生产级·Chunk·Embedding·RRF     │
+  │ │ Ch10 MCP协议  │ JSON-RPC·原语·能力协商·stdio/SSE传输层   │
+  │ │ Ch11 ToolCall │ OpenAI vs Anthropic·Streaming·Strict模式 │
+  │ │ Ch12 基础设施  │ OpenClaw架构·Harness·Agent生产化Checklist │
+  │ └──────────────┴──────────────────────────────────────────┘ │
+  ├─────────────────────────────────────────────────────────────┤
+  │ 第4层：工程化与前沿（Ch13-18）                                │
+  │ ┌──────────────┬──────────────────────────────────────────┐ │
+  │ │ Ch13 FastAPI  │ REST API·SSE·WebSocket·生产部署架构      │
+  │ │ Ch14 SQLite   │ 5表Schema·WAL模式·会话/任务/用户管理     │
+  │ │ Ch15 A2A协议   │ AgentCard·Task·Artifact·多Agent协作      │
+  │ │ Ch16 MemGPT   │ Core Memory·Heartbeat·Sleep-Time·FS记忆  │
+  │ │ Ch17 CompUse  │ Screenshot-Action Loop·坐标计算·安全沙箱 │
+  │ │ Ch18 安全防护  │ Prompt Injection攻防·权限分级·4层防御    │
+  │ └──────────────┴──────────────────────────────────────────┘ │
+  ├─────────────────────────────────────────────────────────────┤
+  │ 第5层：高级架构与优化（Ch19-24）                              │
+  │ ┌──────────────┬──────────────────────────────────────────┐ │
+  │ │ Ch19 Workflow │ Reflection·Routing·Orchestrator等7种模式 │
+  │ │ Ch20 Context  │ Context Rot·预算管理·XML结构化Prompt     │
+  │ │ Ch21 Streaming│ EventBus·动态中断·背压控制               │
+  │ │ Ch22 DSPy    │ Signature→Module→Optimizer 自动优化       │
+  │ │ Ch23 CodeAgent│ CodeAct·ACI·Plan-Execute·SWE-bench横评   │
+  │ │ Ch24 可观测   │ Tracing Span树·LangSmith vs LangFuse     │
+  │ └──────────────┴──────────────────────────────────────────┘ │
+  ├─────────────────────────────────────────────────────────────┤
+  │ 第6层：基础能力补强（Ch25-28）                                │
+  │ ┌──────────────┬──────────────────────────────────────────┐ │
+  │ │ Ch25 向量库   │ Chroma·Pinecone·Milvus·Qdrant对比·Embedding│
+  │ │ Ch26 模型路由  │ Threshold·Cascade·Semantic·Cost-Aware 4种 │
+  │ │ Ch27 Prompt   │ System Prompt 6模块模板·工具描述评分卡   │
+  │ │ Ch28 语义缓存  │ 三级缓存(Exact→Semantic→LLM)·Token预算   │
+  │ └──────────────┴──────────────────────────────────────────┘ │
+  ├─────────────────────────────────────────────────────────────┤
+  │ 第7层：专家级进阶（Ch29-36）                                  │
+  │ ┌──────────────┬──────────────────────────────────────────┐ │
+  │ │ Ch29 多模态   │ 视觉+文本联合推理·多模态Tool Calling     │
+  │ │ Ch30 可靠性   │ 熔断器·指数退避重试·幂等性·降级策略     │
+  │ │ Ch31 评测体系  │ GAIA·AgentBench·WebArena·tau-bench      │
+  │ │ Ch32 自改进   │ Bad Case收集→自动改Prompt→评测验证      │
+  │ │ Ch33 Cache   │ Anthropic Cache·推测解码·KV共享          │
+  │ │ Ch34 微调     │ LoRA微调·数据准备·成本收益对比           │
+  │ │ Ch35 数据飞轮  │ 交互采集→Bad Case识别→自动触发改进     │
+  │ │ Ch36 纵深安全  │ Canary Token·分层隔离·行为沙箱          │
+  │ └──────────────┴──────────────────────────────────────────┘ │
+  └─────────────────────────────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>学习建议：</p>
 <li>新手入门：按 Ch0 → Ch36 顺序学习，每章 1-2 小时</li>
@@ -450,7 +515,17 @@ body {
 <p>下面是一键安装脚本，运行本文件即可检查环境。</p>
 <p>如需运行后续章节的 Agent 代码，需要安装如下依赖：</p>
 <p>&nbsp;</p>
-<table><tr><th>章节</th><th>需要的依赖</th></tr><tr><td>Ch1-3 基础理论</td><td>openai, python-dotenv</td></tr><tr><td>Ch4-5 框架</td><td>langchain, langchain-openai,</td></tr><tr><td></td><td>langgraph</td></tr><tr><td>Ch8-12 深度技术</td><td>pydantic, httpx, tiktoken</td></tr><tr><td>Ch13 FastAPI</td><td>fastapi, uvicorn</td></tr><tr><td>Ch14 SQLite</td><td>标准库（无需额外安装）</td></tr><tr><td>Ch15-18 其他</td><td>无需额外依赖</td></tr></table></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (83 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check_python_version</span><span class="code-badge code-badge-func">install_dependencies</span><span class="code-badge code-badge-func">show_env_setup_guide</span></div><div class="code-block"><pre><span class="k">import</span> subprocess
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌────────────────────┬────────────────────────────────────┐
+  │       章节          │            需要的依赖               │
+  ├────────────────────┼────────────────────────────────────┤
+  │ Ch1-3 基础理论     │ openai, python-dotenv              │
+  │ Ch4-5 框架         │ langchain, langchain-openai,      │
+  │                    │ langgraph                         │
+  │ Ch8-12 深度技术    │ pydantic, httpx, tiktoken         │
+  │ Ch13 FastAPI       │ fastapi, uvicorn                  │
+  │ Ch14 SQLite        │ 标准库（无需额外安装）              │
+  │ Ch15-18 其他       │ 无需额外依赖                       │
+  └────────────────────┴────────────────────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (83 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check_python_version</span><span class="code-badge code-badge-func">install_dependencies</span><span class="code-badge code-badge-func">show_env_setup_guide</span></div><div class="code-block"><pre><span class="k">import</span> subprocess
 <span class="k">import</span> sys
 
 
