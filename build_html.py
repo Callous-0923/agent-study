@@ -179,7 +179,7 @@ body {
 
 /* 架构图 / 流程图 */
 .diagram-box {
-  background: #1a1e2b; border-radius: 10px; overflow: hidden;
+  background: #1a1e2b; border-radius: 10px;
   margin: 18px 0; border: 1px solid #2a3045;
   box-shadow: 0 4px 20px rgba(0,0,0,.12);
 }
