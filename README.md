@@ -11,6 +11,10 @@
   <img src="https://img.shields.io/badge/章节-36-green" alt="Chapters">
   <img src="https://img.shields.io/badge/许可-MIT-yellow" alt="License">
   <img src="https://img.shields.io/badge/更新-2026.05-brightgreen" alt="Update">
+
+  <br>
+
+  <a href="README_EN.md">🇺🇸 English README</a>
 </p>
 
 ---
