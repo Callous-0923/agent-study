@@ -115,7 +115,7 @@
 |------|------|----------|
 | **[Ch29](https://callous-0923.github.io/agent-study/chapter_29_multimodal/29_multimodal.html)** | Multi-Modal Agent | 视觉+文本联合推理、多模态 Tool Calling |
 | **[Ch30](https://callous-0923.github.io/agent-study/chapter_30_reliability/30_reliability.html)** | Agent 可靠性工程 | 熔断器、指数退避重试、幂等性、降级策略 |
-| **[Ch31](https://callous-0923.github.io/agent-study/chapter_31_benchmarks/31_benchmarks.html)** | Agent 评测体系深度 | GAIA / AgentBench / WebArena / tau-bench 五大评测 |
+| **[Ch31](https://callous-0923.github.io/agent-study/chapter_31_benchmarks/31_benchmarks.html)** | Agent 评测体系深度 | GAIA / AgentBench / WebArena / ClawBench / tau-bench / SWE-bench 六大评测 |
 | **[Ch32](https://callous-0923.github.io/agent-study/chapter_32_self_improving/32_self_improving.html)** | Self-Improving Agent | Bad Case 收集→自动改 Prompt→评测验证 |
 | **[Ch33](https://callous-0923.github.io/agent-study/chapter_33_prompt_cache/33_prompt_cache.html)** | Prompt Caching & 推理优化 | Anthropic Cache、KV共享、推测解码 |
 | **[Ch34](https://callous-0923.github.io/agent-study/chapter_34_finetune/34_finetune.html)** | 模型微调 for Function Calling | LoRA、微调数据准备、成本收益对比 |
