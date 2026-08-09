@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:2eebb4e138f145c72c447efb04047d56983253425a9cb199e7b0c84426a99c62 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -301,11 +302,14 @@ body {
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_00_overview/00_course_overview.html" title="课程概览与环境搭建">← 第0章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_02_components/02_agent_components.html" title="Agent 核心组件 — 规划器·记忆·工具设计">第2章 →</a>
-</div><div class="hero"><h1>第1章 AI Agent 基础概念 —— 从 LLM 调用到第一个 Agent</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 Agent 的 4 要素：LLM / 规划 / 记忆 / 工具</span><span class="tag tag-goal">2. 掌握 LLM API 调用的基本方式</span><span class="tag tag-goal">3. 手写一个最简 Agent（无框架，理解底层原理）</span><span class="tag tag-goal">4. 运行本文件，见到你的第一个 Agent 输出</span><span class="tag tag-interview">🎤 Agent 循环（Perceive → Think → Act → Observe）的执行流程</span><span class="tag tag-interview">🎤 Agent 和普通 LLM 调用的本质区别</span><span class="tag tag-interview">🎤 什么是 Function Calling，为什么它是 Agent 的基石</span></div><p>&nbsp;</p>
+</div><div class="hero"><h1>第1章 AI Agent 基础概念 —— 从 LLM 调用到第一个 Agent</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 Agent 的 4 要素：LLM / 规划 / 记忆 / 工具</span><span class="tag tag-goal">2. 掌握 OpenAI Responses API 的基本方式</span><span class="tag tag-goal">3. 手写一个最简 Agent（无框架，理解底层原理）</span><span class="tag tag-goal">4. 运行本文件，见到你的第一个 Agent 输出</span><span class="tag tag-interview">🎤 Agent 循环（Perceive → Think → Act → Observe）的执行流程</span><span class="tag tag-interview">🎤 Agent 和普通 LLM 调用的本质区别</span><span class="tag tag-interview">🎤 什么是 Function Calling，为什么它是 Agent 的基石</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>1.1 从最基础的 LLM 调用开始</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (32 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">call_llm</span></div><div class="code-block"><pre><span class="k">import</span> os
+<p>&nbsp;</p>
+<h2>1.1 从最基础的 LLM 调用开始</h2></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (31 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">call_llm</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -330,13 +334,12 @@ client = OpenAI(
     Returns:
         LLM 生成的回复文本。
     """</span>
-    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
-    response = client.chat.completions.create(
+    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>)
+    response = client.responses.create(
         model=model,
-        messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
-        temperature=<span class="n">0.7</span>,
+        <span class="b">input</span>=prompt,
     )
-    <span class="k">return</span> response.choices[<span class="n">0</span>].message.content</pre></div></details></div><div class="lecture"><h2>1.2 Function Calling —— Agent 的「手」</h2>
+    <span class="k">return</span> response.output_text</pre></div></details></div><div class="lecture"><h2>1.2 Function Calling —— Agent 的「手」</h2>
 <p>&nbsp;</p>
 <p>Function Calling 是 Agent 的核心机制。LLM 不只是生成文本，</p>
 <p>它还能「决定」调用哪个函数、传什么参数。</p>
@@ -353,7 +356,7 @@ client = OpenAI(
 <p>把结果返回给 LLM，LLM 组织成自然语言回答用户</p>
 <p>&nbsp;</p>
 <p>类比：LLM 像一位「盲人指挥家」，他能决定需要什么信息，</p>
-<p>但必须由我们（代码）去执行实际的工具调用。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (135 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get_weather</span><span class="code-badge code-badge-func">search_web</span><span class="code-badge code-badge-func">calculate</span><span class="code-badge code-badge-const">TOOLS</span><span class="code-badge code-badge-const">TOOL_MAP</span></div><div class="code-block"><pre><span class="k">import</span> os
+<p>但必须由我们（代码）去执行实际的工具调用。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (136 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get_weather</span><span class="code-badge code-badge-func">search_web</span><span class="code-badge code-badge-func">calculate</span><span class="code-badge code-badge-const">TOOLS</span><span class="code-badge code-badge-const">TOOL_MAP</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -362,58 +365,59 @@ load_dotenv()
 
 client = OpenAI(
 
-<span class="h"># 定义工具列表 —— 告诉 LLM 它有哪些"技能"可以使用</span>
+<span class="h"># Responses API 的函数工具使用扁平 schema，而不是旧 Chat Completions 的</span>
+<span class="h"># {"type": "function", "function": {...}} 包装。</span>
 TOOLS = [
     {
         <span class="s">"type"</span>: <span class="s">"function"</span>,
-        <span class="s">"function"</span>: {
-            <span class="s">"name"</span>: <span class="s">"get_weather"</span>,
-            <span class="s">"description"</span>: <span class="s">"查询指定城市的天气信息。"</span>,
-            <span class="s">"parameters"</span>: {
-                <span class="s">"type"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {
-                    <span class="s">"city"</span>: {
-                        <span class="s">"type"</span>: <span class="s">"string"</span>,
-                        <span class="s">"description"</span>: <span class="s">"城市名称，如 '北京'、'上海'"</span>,
-                    }
-                },
-                <span class="s">"required"</span>: [<span class="s">"city"</span>],
+        <span class="s">"name"</span>: <span class="s">"get_weather"</span>,
+        <span class="s">"description"</span>: <span class="s">"查询指定城市的天气信息。课程中返回模拟数据。"</span>,
+        <span class="s">"parameters"</span>: {
+            <span class="s">"type"</span>: <span class="s">"object"</span>,
+            <span class="s">"properties"</span>: {
+                <span class="s">"city"</span>: {
+                    <span class="s">"type"</span>: <span class="s">"string"</span>,
+                    <span class="s">"description"</span>: <span class="s">"城市名称，如 '北京'、'上海'"</span>,
+                }
             },
+            <span class="s">"required"</span>: [<span class="s">"city"</span>],
+            <span class="s">"additionalProperties"</span>: <span class="k">False</span>,
         },
+        <span class="s">"strict"</span>: <span class="k">True</span>,
     },
     {
         <span class="s">"type"</span>: <span class="s">"function"</span>,
-        <span class="s">"function"</span>: {
-            <span class="s">"name"</span>: <span class="s">"search_web"</span>,
-            <span class="s">"description"</span>: <span class="s">"在网上搜索信息，返回搜索结果。"</span>,
-            <span class="s">"parameters"</span>: {
-                <span class="s">"type"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {
-                    <span class="s">"query"</span>: {
-                        <span class="s">"type"</span>: <span class="s">"string"</span>,
-                        <span class="s">"description"</span>: <span class="s">"搜索关键词"</span>,
-                    }
-                },
-                <span class="s">"required"</span>: [<span class="s">"query"</span>],
+        <span class="s">"name"</span>: <span class="s">"search_web"</span>,
+        <span class="s">"description"</span>: <span class="s">"搜索信息。课程中返回模拟结果，不会访问互联网。"</span>,
+        <span class="s">"parameters"</span>: {
+            <span class="s">"type"</span>: <span class="s">"object"</span>,
+            <span class="s">"properties"</span>: {
+                <span class="s">"query"</span>: {
+                    <span class="s">"type"</span>: <span class="s">"string"</span>,
+                    <span class="s">"description"</span>: <span class="s">"搜索关键词"</span>,
+                }
             },
+            <span class="s">"required"</span>: [<span class="s">"query"</span>],
+            <span class="s">"additionalProperties"</span>: <span class="k">False</span>,
         },
+        <span class="s">"strict"</span>: <span class="k">True</span>,
     },
     {
         <span class="s">"type"</span>: <span class="s">"function"</span>,
-        <span class="s">"function"</span>: {
-            <span class="s">"name"</span>: <span class="s">"calculate"</span>,
-            <span class="s">"description"</span>: <span class="s">"执行数学计算。"</span>,
-            <span class="s">"parameters"</span>: {
-                <span class="s">"type"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {
-                    <span class="s">"expression"</span>: {
-                        <span class="s">"type"</span>: <span class="s">"string"</span>,
-                        <span class="s">"description"</span>: <span class="s">"数学表达式，如 '2 + 3 * 4'"</span>,
-                    }
-                },
-                <span class="s">"required"</span>: [<span class="s">"expression"</span>],
+        <span class="s">"name"</span>: <span class="s">"calculate"</span>,
+        <span class="s">"description"</span>: <span class="s">"执行只包含基础运算符的数学计算。"</span>,
+        <span class="s">"parameters"</span>: {
+            <span class="s">"type"</span>: <span class="s">"object"</span>,
+            <span class="s">"properties"</span>: {
+                <span class="s">"expression"</span>: {
+                    <span class="s">"type"</span>: <span class="s">"string"</span>,
+                    <span class="s">"description"</span>: <span class="s">"数学表达式，如 '2 + 3 * 4'"</span>,
+                }
             },
+            <span class="s">"required"</span>: [<span class="s">"expression"</span>],
+            <span class="s">"additionalProperties"</span>: <span class="k">False</span>,
         },
+        <span class="s">"strict"</span>: <span class="k">True</span>,
     },
 ]
 
@@ -498,12 +502,12 @@ TOOL_MAP = {
 <p>但别被术语吓到，它做的事情非常简单：</p>
 <p>&nbsp;</p>
 <p>循环的 4 个步骤：</p>
-<li>把用户消息发给 LLM（Think 阶段）</li>
-<li>LLM 判断：直接回答？还是需要调用工具？</li>
+<li>1. 把用户消息发给 LLM（Think 阶段）</li>
+<li>2. LLM 判断：直接回答？还是需要调用工具？</li>
 <p>→ 如果需要工具：进入第 3 步</p>
 <p>→ 如果可以回答：进入第 4 步</p>
-<li>执行工具调用（Act 阶段）→ 把结果发回给 LLM → 回到步骤 1</li>
-<li>输出最终答案，结束循环</li>
+<li>3. 执行工具调用（Act 阶段）→ 把结果发回给 LLM → 回到步骤 1</li>
+<li>4. 输出最终答案，结束循环</li>
 <p>&nbsp;</p>
 <p>为什么需要一个循环？因为 LLM 可能需要调用多次工具：</p>
 <p>「北京和深圳哪个更热？」这个看似简单的问题，Agent 需要：</p>
@@ -516,7 +520,7 @@ TOOL_MAP = {
 <p>&nbsp;</p>
 <p>面试速记：</p>
 <p>ReAct = Reasoning + Acting</p>
-<p>本质 = 一个 while 循环，每轮 LLM 决定「说什么」还是「调什么工具」</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (92 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run_agent</span></div><div class="code-block"><pre><span class="k">import</span> os
+<p>本质 = 一个 while 循环，每轮 LLM 决定「说什么」还是「调什么工具」</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (94 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run_agent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -539,8 +543,8 @@ client = OpenAI(
     Returns:
         Agent 的最终回答。
     """</span>
-    <span class="h"># 对话历史 —— Agent 的「短期记忆」</span>
-    messages = [
+    <span class="h"># Responses 输入项 —— Agent 的「短期记忆」</span>
+    input_items = [
         {<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: <span class="s">"你是一个有用的 AI 助手。当需要获取最新信息或执行计算时，请使用提供的工具。"</span>},
         {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_message},
     ]
@@ -551,30 +555,32 @@ client = OpenAI(
 
     <span class="k">for</span> iteration <span class="k">in</span> <span class="b">range</span>(max_iterations):
         <span class="h"># ===== 第 1 步：调用 LLM（Think 阶段）=====</span>
-        model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
-        response = client.chat.completions.create(
+        model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>)
+        response = client.responses.create(
             model=model,
-            messages=messages,
+            <span class="b">input</span>=input_items,
             tools=TOOLS,
             tool_choice=<span class="s">"auto"</span>,
         )
 
-        assistant_message = response.choices[<span class="n">0</span>].message
+        function_calls = [
+            item <span class="k">for</span> item <span class="k">in</span> response.output <span class="k">if</span> item.<span class="b">type</span> == <span class="s">"function_call"</span>
+        ]
 
         <span class="h"># ===== 第 2 步：检查 LLM 是否需要调用工具 =====</span>
-        <span class="k">if</span> assistant_message.tool_calls <span class="k">is</span> <span class="k">None</span>:
+        <span class="k">if</span> <span class="k">not</span> function_calls:
             <span class="h"># LLM 决定直接回答（不需要工具）→ 循环结束</span>
-            final_answer = assistant_message.content
+            final_answer = response.output_text
             <span class="b">print</span>(f<span class="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
             <span class="k">return</span> final_answer
 
         <span class="h"># ===== 第 3 步：执行工具调用（Act 阶段）=====</span>
-        <span class="h"># 将 LLM 的回复（含 tool_calls）加入对话历史</span>
-        messages.append(assistant_message)
+        <span class="h"># 保留模型输出项；下一轮需要它们与 function_call_output 对应。</span>
+        input_items.extend(response.output)
 
-        <span class="k">for</span> tool_call <span class="k">in</span> assistant_message.tool_calls:
-            func_name = tool_call.function.name
-            func_args = json.loads(tool_call.function.arguments)
+        <span class="k">for</span> tool_call <span class="k">in</span> function_calls:
+            func_name = tool_call.name
+            func_args = json.loads(tool_call.arguments)
 
             <span class="b">print</span>(f<span class="s">"\n🔧 第 {iteration + 1} 轮 - 调用工具: {func_name}({func_args})"</span>)
 
@@ -588,24 +594,24 @@ client = OpenAI(
             <span class="b">print</span>(f<span class="s">"📊 工具返回: {result}"</span>)
 
             <span class="h"># 将工具执行结果加入对话历史（Observe 阶段）</span>
-            messages.append({
-                <span class="s">"role"</span>: <span class="s">"tool"</span>,
-                <span class="s">"tool_call_id"</span>: tool_call.<span class="b">id</span>,
-                <span class="s">"content"</span>: result,
+            input_items.append({
+                <span class="s">"type"</span>: <span class="s">"function_call_output"</span>,
+                <span class="s">"call_id"</span>: tool_call.call_id,
+                <span class="s">"output"</span>: result,
             })
 
     <span class="h"># 达到最大迭代次数，强制 LLM 给出最终回答</span>
     <span class="b">print</span>(<span class="s">"\n⚠️ 达到最大迭代次数，要求 LLM 给出最终回答..."</span>)
-    messages.append({
+    input_items.append({
         <span class="s">"role"</span>: <span class="s">"user"</span>,
         <span class="s">"content"</span>: <span class="s">"请基于已有的工具调用结果，给出最终回答。"</span>
     })
-    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
-    final_response = client.chat.completions.create(
+    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>)
+    final_response = client.responses.create(
         model=model,
-        messages=messages,
+        <span class="b">input</span>=input_items,
     )
-    final_answer = final_response.choices[<span class="n">0</span>].message.content
+    final_answer = final_response.output_text
     <span class="b">print</span>(f<span class="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
     <span class="k">return</span> final_answer</pre></div></details></div><div class="lecture"><h2>1.4 运行测试 —— 见证你的第一个 Agent</h2>
 <p>&nbsp;</p>
@@ -674,13 +680,16 @@ TEST_CASES = [
 
 
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
-    main()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (393 行)</summary><div class="code-block"><pre><span class="s">"""
+    main()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (398 行)</summary><div class="code-block"><pre><span class="s">"""
 第1章：AI Agent 基础概念 —— 从 LLM 调用到第一个 Agent
 =====================================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 理解 Agent 的 4 要素：LLM / 规划 / 记忆 / 工具
-  2. 掌握 LLM API 调用的基本方式
+  2. 掌握 OpenAI Responses API 的基本方式
   3. 手写一个最简 Agent（无框架，理解底层原理）
   4. 运行本文件，见到你的第一个 Agent 输出
 
@@ -720,13 +729,12 @@ client = OpenAI(
     Returns:
         LLM 生成的回复文本。
     """</span>
-    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
-    response = client.chat.completions.create(
+    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>)
+    response = client.responses.create(
         model=model,
-        messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
-        temperature=<span class="n">0.7</span>,
+        <span class="b">input</span>=prompt,
     )
-    <span class="k">return</span> response.choices[<span class="n">0</span>].message.content
+    <span class="k">return</span> response.output_text
 
 
 <span class="s">"""
@@ -752,58 +760,59 @@ Function Calling 是 Agent 的核心机制。LLM 不只是生成文本，
 但必须由我们（代码）去执行实际的工具调用。
 """</span>
 
-<span class="h"># 定义工具列表 —— 告诉 LLM 它有哪些"技能"可以使用</span>
+<span class="h"># Responses API 的函数工具使用扁平 schema，而不是旧 Chat Completions 的</span>
+<span class="h"># {"type": "function", "function": {...}} 包装。</span>
 TOOLS = [
     {
         <span class="s">"type"</span>: <span class="s">"function"</span>,
-        <span class="s">"function"</span>: {
-            <span class="s">"name"</span>: <span class="s">"get_weather"</span>,
-            <span class="s">"description"</span>: <span class="s">"查询指定城市的天气信息。"</span>,
-            <span class="s">"parameters"</span>: {
-                <span class="s">"type"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {
-                    <span class="s">"city"</span>: {
-                        <span class="s">"type"</span>: <span class="s">"string"</span>,
-                        <span class="s">"description"</span>: <span class="s">"城市名称，如 '北京'、'上海'"</span>,
-                    }
-                },
-                <span class="s">"required"</span>: [<span class="s">"city"</span>],
+        <span class="s">"name"</span>: <span class="s">"get_weather"</span>,
+        <span class="s">"description"</span>: <span class="s">"查询指定城市的天气信息。课程中返回模拟数据。"</span>,
+        <span class="s">"parameters"</span>: {
+            <span class="s">"type"</span>: <span class="s">"object"</span>,
+            <span class="s">"properties"</span>: {
+                <span class="s">"city"</span>: {
+                    <span class="s">"type"</span>: <span class="s">"string"</span>,
+                    <span class="s">"description"</span>: <span class="s">"城市名称，如 '北京'、'上海'"</span>,
+                }
             },
+            <span class="s">"required"</span>: [<span class="s">"city"</span>],
+            <span class="s">"additionalProperties"</span>: <span class="k">False</span>,
         },
+        <span class="s">"strict"</span>: <span class="k">True</span>,
     },
     {
         <span class="s">"type"</span>: <span class="s">"function"</span>,
-        <span class="s">"function"</span>: {
-            <span class="s">"name"</span>: <span class="s">"search_web"</span>,
-            <span class="s">"description"</span>: <span class="s">"在网上搜索信息，返回搜索结果。"</span>,
-            <span class="s">"parameters"</span>: {
-                <span class="s">"type"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {
-                    <span class="s">"query"</span>: {
-                        <span class="s">"type"</span>: <span class="s">"string"</span>,
-                        <span class="s">"description"</span>: <span class="s">"搜索关键词"</span>,
-                    }
-                },
-                <span class="s">"required"</span>: [<span class="s">"query"</span>],
+        <span class="s">"name"</span>: <span class="s">"search_web"</span>,
+        <span class="s">"description"</span>: <span class="s">"搜索信息。课程中返回模拟结果，不会访问互联网。"</span>,
+        <span class="s">"parameters"</span>: {
+            <span class="s">"type"</span>: <span class="s">"object"</span>,
+            <span class="s">"properties"</span>: {
+                <span class="s">"query"</span>: {
+                    <span class="s">"type"</span>: <span class="s">"string"</span>,
+                    <span class="s">"description"</span>: <span class="s">"搜索关键词"</span>,
+                }
             },
+            <span class="s">"required"</span>: [<span class="s">"query"</span>],
+            <span class="s">"additionalProperties"</span>: <span class="k">False</span>,
         },
+        <span class="s">"strict"</span>: <span class="k">True</span>,
     },
     {
         <span class="s">"type"</span>: <span class="s">"function"</span>,
-        <span class="s">"function"</span>: {
-            <span class="s">"name"</span>: <span class="s">"calculate"</span>,
-            <span class="s">"description"</span>: <span class="s">"执行数学计算。"</span>,
-            <span class="s">"parameters"</span>: {
-                <span class="s">"type"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {
-                    <span class="s">"expression"</span>: {
-                        <span class="s">"type"</span>: <span class="s">"string"</span>,
-                        <span class="s">"description"</span>: <span class="s">"数学表达式，如 '2 + 3 * 4'"</span>,
-                    }
-                },
-                <span class="s">"required"</span>: [<span class="s">"expression"</span>],
+        <span class="s">"name"</span>: <span class="s">"calculate"</span>,
+        <span class="s">"description"</span>: <span class="s">"执行只包含基础运算符的数学计算。"</span>,
+        <span class="s">"parameters"</span>: {
+            <span class="s">"type"</span>: <span class="s">"object"</span>,
+            <span class="s">"properties"</span>: {
+                <span class="s">"expression"</span>: {
+                    <span class="s">"type"</span>: <span class="s">"string"</span>,
+                    <span class="s">"description"</span>: <span class="s">"数学表达式，如 '2 + 3 * 4'"</span>,
+                }
             },
+            <span class="s">"required"</span>: [<span class="s">"expression"</span>],
+            <span class="s">"additionalProperties"</span>: <span class="k">False</span>,
         },
+        <span class="s">"strict"</span>: <span class="k">True</span>,
     },
 ]
 
@@ -930,8 +939,8 @@ TOOL_MAP = {
     Returns:
         Agent 的最终回答。
     """</span>
-    <span class="h"># 对话历史 —— Agent 的「短期记忆」</span>
-    messages = [
+    <span class="h"># Responses 输入项 —— Agent 的「短期记忆」</span>
+    input_items = [
         {<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: <span class="s">"你是一个有用的 AI 助手。当需要获取最新信息或执行计算时，请使用提供的工具。"</span>},
         {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_message},
     ]
@@ -942,30 +951,32 @@ TOOL_MAP = {
 
     <span class="k">for</span> iteration <span class="k">in</span> <span class="b">range</span>(max_iterations):
         <span class="h"># ===== 第 1 步：调用 LLM（Think 阶段）=====</span>
-        model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
-        response = client.chat.completions.create(
+        model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>)
+        response = client.responses.create(
             model=model,
-            messages=messages,
+            <span class="b">input</span>=input_items,
             tools=TOOLS,
             tool_choice=<span class="s">"auto"</span>,
         )
 
-        assistant_message = response.choices[<span class="n">0</span>].message
+        function_calls = [
+            item <span class="k">for</span> item <span class="k">in</span> response.output <span class="k">if</span> item.<span class="b">type</span> == <span class="s">"function_call"</span>
+        ]
 
         <span class="h"># ===== 第 2 步：检查 LLM 是否需要调用工具 =====</span>
-        <span class="k">if</span> assistant_message.tool_calls <span class="k">is</span> <span class="k">None</span>:
+        <span class="k">if</span> <span class="k">not</span> function_calls:
             <span class="h"># LLM 决定直接回答（不需要工具）→ 循环结束</span>
-            final_answer = assistant_message.content
+            final_answer = response.output_text
             <span class="b">print</span>(f<span class="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
             <span class="k">return</span> final_answer
 
         <span class="h"># ===== 第 3 步：执行工具调用（Act 阶段）=====</span>
-        <span class="h"># 将 LLM 的回复（含 tool_calls）加入对话历史</span>
-        messages.append(assistant_message)
+        <span class="h"># 保留模型输出项；下一轮需要它们与 function_call_output 对应。</span>
+        input_items.extend(response.output)
 
-        <span class="k">for</span> tool_call <span class="k">in</span> assistant_message.tool_calls:
-            func_name = tool_call.function.name
-            func_args = json.loads(tool_call.function.arguments)
+        <span class="k">for</span> tool_call <span class="k">in</span> function_calls:
+            func_name = tool_call.name
+            func_args = json.loads(tool_call.arguments)
 
             <span class="b">print</span>(f<span class="s">"\n🔧 第 {iteration + 1} 轮 - 调用工具: {func_name}({func_args})"</span>)
 
@@ -979,24 +990,24 @@ TOOL_MAP = {
             <span class="b">print</span>(f<span class="s">"📊 工具返回: {result}"</span>)
 
             <span class="h"># 将工具执行结果加入对话历史（Observe 阶段）</span>
-            messages.append({
-                <span class="s">"role"</span>: <span class="s">"tool"</span>,
-                <span class="s">"tool_call_id"</span>: tool_call.<span class="b">id</span>,
-                <span class="s">"content"</span>: result,
+            input_items.append({
+                <span class="s">"type"</span>: <span class="s">"function_call_output"</span>,
+                <span class="s">"call_id"</span>: tool_call.call_id,
+                <span class="s">"output"</span>: result,
             })
 
     <span class="h"># 达到最大迭代次数，强制 LLM 给出最终回答</span>
     <span class="b">print</span>(<span class="s">"\n⚠️ 达到最大迭代次数，要求 LLM 给出最终回答..."</span>)
-    messages.append({
+    input_items.append({
         <span class="s">"role"</span>: <span class="s">"user"</span>,
         <span class="s">"content"</span>: <span class="s">"请基于已有的工具调用结果，给出最终回答。"</span>
     })
-    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
-    final_response = client.chat.completions.create(
+    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>)
+    final_response = client.responses.create(
         model=model,
-        messages=messages,
+        <span class="b">input</span>=input_items,
     )
-    final_answer = final_response.choices[<span class="n">0</span>].message.content
+    final_answer = final_response.output_text
     <span class="b">print</span>(f<span class="s">"\n🎯 Agent 最终回答:\n{final_answer}"</span>)
     <span class="k">return</span> final_answer
 

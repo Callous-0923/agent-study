@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>第35章：数据飞轮 —— 让 Agent 越用越好 — AI Agent 全栈课程</title>
+<title>第35章：数据飞轮——以评测和治理驱动持续改进 — AI Agent 全栈课程</title>
 <style>
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:820cc5d336c6b0329557e08bf7cafc097b7775e6c706076c276f1a877794cf85 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -301,44 +302,36 @@ body {
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_34_finetune/34_finetune.html" title="模型微调 for Function Calling — LoRA·成本收益对比">← 第34章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_36_defense/36_defense.html" title="Agent 纵深安全 — Canary Token·分层隔离·行为沙箱">第36章 →</a>
-</div><div class="hero"><h1>第35章 数据飞轮 —— 让 Agent 越用越好</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解数据飞轮在 Agent 系统中的核心价值</span><span class="tag tag-goal">2. 掌握从交互日志中提取训练数据的 Pipeline</span><span class="tag tag-goal">3. 学会设计「收集→标注→改进→验证」闭环</span><span class="tag tag-goal">4. 了解持续改进的工程实践</span><span class="tag tag-interview">🎤 「你怎么让 Agent 越用越好？」</span><span class="tag tag-interview">🎤 「数据飞轮的具体流程是什么？」</span><span class="tag tag-interview">🎤 「怎么区分好的反馈和噪声？」</span></div><p>&nbsp;</p>
+</div><div class="hero"><h1>第35章 数据飞轮——以评测和治理驱动持续改进</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解数据飞轮在 Agent 系统中的核心价值</span><span class="tag tag-goal">2. 掌握从合规交互数据中提取评测候选样本的 Pipeline</span><span class="tag tag-goal">3. 学会设计「收集→标注→改进→验证」闭环</span><span class="tag tag-goal">4. 了解持续改进的工程实践</span><span class="tag tag-interview">🎤 「你怎么让 Agent 越用越好？」</span><span class="tag tag-interview">🎤 「数据飞轮的具体流程是什么？」</span><span class="tag tag-interview">🎤 「怎么区分好的反馈和噪声？」</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p>数据飞轮 = 今天的数据 → 明天的改进 → 后天更好的数据</p>
+<p>&nbsp;</p>
+<p>数据飞轮 = 可治理的数据 → 候选改进 → 隔离评测 → 受控发布</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>35.1 什么是数据飞轮？—— 和传统开发的本质区别</h2>
 <p>&nbsp;</p>
-<p>传统软件开发是「大爆炸」模式：开发 → 测试 → 发布 → 等反馈 → 手动分析 → 手动改进 → 再发布。一个改进周期可能需要数周甚至数月。</p>
-<p>&nbsp;</p>
-<p>数据飞轮（Data Flywheel）是一种不同的哲学：让系统自己从交互中学习。</p>
-<p>&nbsp;</p>
-<p>飞轮这个名字来自亚马逊的经典理念。在 Agent 语境下它的意思是：</p>
-<p>今天的用户交互数据 → 明天就能驱动系统改进 → 后天产生更好的交互数据</p>
-<p>→ 循环往复，像飞轮一样越转越快</p>
-<p>&nbsp;</p>
-<p>这和传统开发的关键区别在于「谁来做分析」：</p>
-<li>传统：人工看日志 → 人工写改进 → 人工测试 → 人工发布</li>
-<li>飞轮：系统自动采日志 → LLM 自动标注 Bad Case → 自动触发优化</li>
-<p>→ 自动回归评测 → 自动部署</p>
+<p>数据飞轮（Data Flywheel）不是让线上 Agent 无监督地改写自己，而是把生产信号稳定地转化为</p>
+<p>可审计的候选改进。自动化可以帮助采样、聚类、去重和初步标注，但 LLM 评分本身也会有偏差；</p>
+<p>高风险数据和发布决策仍需要人工责任人及明确门禁。</p>
 <p>&nbsp;</p>
 <p>飞轮的四阶段：</p>
-<li>采集 —— 记录每一次用户交互 + 评分 + 反馈文字</li>
-<li>标注 —— LLM 自动判断哪些是 Bad Case、归类问题类型</li>
-<li>改进 —— 触发对应场景的 Prompt 优化或路由调整</li>
-<li>验证 —— 跑回归评测确认改进有效才发布</li>
+<li>1. 采集 —— 依同意、用途和保留期采集必要字段；脱敏、访问控制并记录数据血缘</li>
+<li>2. 标注 —— 聚类 Bad Case，结合用户反馈、规则、模型裁判与人工复核</li>
+<li>3. 改进 —— 生成版本化的 Prompt、检索、工具、路由或训练数据候选</li>
+<li>4. 验证 —— 冻结测试集，执行质量、安全和成本回归，再经审批、canary 与回滚发布</li>
 <p>&nbsp;</p>
 <p>为什么这样做很有价值？因为 Agent 的「质量」不是静态的——</p>
 <p>Prompt 改了、工具变了、用户行为变了，Agent 的表现都可能退化。</p>
-<p>飞轮让质量监控变成自动化、持续化的过程，而不是等用户投诉才知道出问题。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (141 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">log_interaction</span><span class="code-badge code-badge-func">get_stats</span><span class="code-badge code-badge-func">export_bad_cases</span><span class="code-badge code-badge-func">demo_flywheel</span><span class="code-badge code-badge-class">DataFlywheel</span></div><div class="code-block"><pre><span class="k">import</span> json
-<span class="k">import</span> time
+<p>飞轮让质量监控变成持续过程，但“用户给低分”等代理信号不等于真实错误。还要校正选择偏差、</p>
+<p>反馈操纵、隐私泄露、训练与测试污染，以及优化单一指标导致的反常行为。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (139 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">log_interaction</span><span class="code-badge code-badge-func">get_stats</span><span class="code-badge code-badge-func">export_bad_cases</span><span class="code-badge code-badge-func">demo_flywheel</span><span class="code-badge code-badge-class">DataFlywheel</span></div><div class="code-block"><pre><span class="k">import</span> time
 <span class="k">import</span> hashlib
-<span class="k">from</span> collections <span class="k">import</span> defaultdict
-<span class="k">from</span> typing <span class="k">import</span> Optional
 
 
 <span class="k">class</span> <span class="f">DataFlywheel</span>:
-    <span class="s">"""数据飞轮 —— 从日志到改进的自动化 Pipeline。"""</span>
+    <span class="s">"""教学模拟：从已脱敏反馈生成“待评测改进建议”，不会自动修改或部署系统。"""</span>
 
     <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, improvement_threshold: <span class="b">int</span> = <span class="n">10</span>):
         <span class="k">self</span>.logs = []
@@ -368,7 +361,8 @@ body {
         }
         <span class="k">self</span>.logs.append(entry)
 
-        <span class="h"># 检测是否需要触发改进</span>
+        <span class="h"># 真实系统应在写入前完成同意检查、数据最小化和脱敏。</span>
+        <span class="h"># 此处只检测是否需要生成待评测建议。</span>
         <span class="k">if</span> rating <span class="k">is</span> <span class="k">not</span> <span class="k">None</span> <span class="k">and</span> rating &lt;= <span class="n">2</span>:
             <span class="k">self</span>._check_improvement()
 
@@ -383,7 +377,7 @@ body {
             )
 
     <span class="k">def</span> <span class="f">_trigger_improvement</span>(<span class="k">self</span>, reason: <span class="b">str</span>, detail: <span class="b">str</span>):
-        <span class="s">"""触发一次自动改进。"""</span>
+        <span class="s">"""创建一条候选改进建议；不会自动修改 Prompt 或部署。"""</span>
         improvement = {
             <span class="s">"timestamp"</span>: time.time(),
             <span class="s">"reason"</span>: reason,
@@ -406,7 +400,7 @@ body {
             <span class="s">"total_interactions"</span>: <span class="b">len</span>(<span class="k">self</span>.logs),
             <span class="s">"avg_rating"</span>: <span class="b">round</span>(avg_rating, <span class="n">1</span>),
             <span class="s">"low_rated"</span>: <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> r <span class="k">in</span> ratings <span class="k">if</span> r &lt;= <span class="n">2</span>),
-            <span class="s">"improvements_triggered"</span>: <span class="b">len</span>(<span class="k">self</span>.improvements),
+            <span class="s">"improvement_candidates"</span>: <span class="b">len</span>(<span class="k">self</span>.improvements),
             <span class="s">"latest_improvement"</span>: (
                 <span class="k">self</span>.improvements[-<span class="n">1</span>][<span class="s">"reason"</span>]
                 <span class="k">if</span> <span class="k">self</span>.improvements <span class="k">else</span> <span class="s">"暂无"</span>
@@ -444,7 +438,7 @@ body {
         <span class="b">print</span>(f<span class="s">"  [{icon}] {user} → {output[:20]}... "</span>
               + (f<span class="s">"反馈: {fb}"</span> <span class="k">if</span> fb <span class="k">else</span> <span class="s">""</span>))
 
-    stats = fw.stats()
+    stats = fw.get_stats()
     <span class="b">print</span>(f<span class="s">"\n  📊 飞轮统计:"</span>)
     <span class="k">for</span> k, v <span class="k">in</span> stats.items():
         <span class="b">print</span>(f<span class="s">"    {k}: {v}"</span>)
@@ -458,7 +452,7 @@ body {
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
     <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
     <span class="b">print</span>(<span class="s">"║  第35章：数据飞轮                                      ║"</span>)
-    <span class="b">print</span>(<span class="s">"║  交互采集 · Bad Case 识别 · 自动触发改进              ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  合规采集 · Bad Case 识别 · 候选改进 · 受控验证        ║"</span>)
     <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
     demo_flywheel()
     <span class="b">print</span>(<span class="s">"\n▶ 飞轮四阶段"</span>)
@@ -470,13 +464,16 @@ body {
         (<span class="s">"4. 验证"</span>, <span class="s">"回归评测 → 确认改进 → 发布"</span>),
     ]:
         <span class="b">print</span>(f<span class="s">"  {stage:8s} → {desc}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第35章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (189 行)</summary><div class="code-block"><pre><span class="s">"""
-第35章：数据飞轮 —— 让 Agent 越用越好
-======================================
+    <span class="b">print</span>(<span class="s">"\n✅ 第35章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (182 行)</summary><div class="code-block"><pre><span class="s">"""
+第35章：数据飞轮——以评测和治理驱动持续改进
+==========================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 理解数据飞轮在 Agent 系统中的核心价值
-  2. 掌握从交互日志中提取训练数据的 Pipeline
+  2. 掌握从合规交互数据中提取评测候选样本的 Pipeline
   3. 学会设计「收集→标注→改进→验证」闭环
   4. 了解持续改进的工程实践
 
@@ -486,46 +483,35 @@ body {
   - 「怎么区分好的反馈和噪声？」
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-数据飞轮 = 今天的数据 → 明天的改进 → 后天更好的数据
+数据飞轮 = 可治理的数据 → 候选改进 → 隔离评测 → 受控发布
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
 35.1 什么是数据飞轮？—— 和传统开发的本质区别
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-传统软件开发是「大爆炸」模式：开发 → 测试 → 发布 → 等反馈 → 手动分析 → 手动改进 → 再发布。一个改进周期可能需要数周甚至数月。
-
-数据飞轮（Data Flywheel）是一种不同的哲学：让系统自己从交互中学习。
-
-飞轮这个名字来自亚马逊的经典理念。在 Agent 语境下它的意思是：
-  今天的用户交互数据 → 明天就能驱动系统改进 → 后天产生更好的交互数据
-  → 循环往复，像飞轮一样越转越快
-
-这和传统开发的关键区别在于「谁来做分析」：
-  - 传统：人工看日志 → 人工写改进 → 人工测试 → 人工发布
-  - 飞轮：系统自动采日志 → LLM 自动标注 Bad Case → 自动触发优化
-           → 自动回归评测 → 自动部署
+数据飞轮（Data Flywheel）不是让线上 Agent 无监督地改写自己，而是把生产信号稳定地转化为
+可审计的候选改进。自动化可以帮助采样、聚类、去重和初步标注，但 LLM 评分本身也会有偏差；
+高风险数据和发布决策仍需要人工责任人及明确门禁。
 
 飞轮的四阶段：
-  1. 采集 —— 记录每一次用户交互 + 评分 + 反馈文字
-  2. 标注 —— LLM 自动判断哪些是 Bad Case、归类问题类型
-  3. 改进 —— 触发对应场景的 Prompt 优化或路由调整
-  4. 验证 —— 跑回归评测确认改进有效才发布
+  1. 采集 —— 依同意、用途和保留期采集必要字段；脱敏、访问控制并记录数据血缘
+  2. 标注 —— 聚类 Bad Case，结合用户反馈、规则、模型裁判与人工复核
+  3. 改进 —— 生成版本化的 Prompt、检索、工具、路由或训练数据候选
+  4. 验证 —— 冻结测试集，执行质量、安全和成本回归，再经审批、canary 与回滚发布
 
 为什么这样做很有价值？因为 Agent 的「质量」不是静态的——
 Prompt 改了、工具变了、用户行为变了，Agent 的表现都可能退化。
-飞轮让质量监控变成自动化、持续化的过程，而不是等用户投诉才知道出问题。
+飞轮让质量监控变成持续过程，但“用户给低分”等代理信号不等于真实错误。还要校正选择偏差、
+反馈操纵、隐私泄露、训练与测试污染，以及优化单一指标导致的反常行为。
 """</span>
 
-<span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
-<span class="k">from</span> collections <span class="k">import</span> defaultdict
-<span class="k">from</span> typing <span class="k">import</span> Optional
 
 
 <span class="k">class</span> <span class="f">DataFlywheel</span>:
-    <span class="s">"""数据飞轮 —— 从日志到改进的自动化 Pipeline。"""</span>
+    <span class="s">"""教学模拟：从已脱敏反馈生成“待评测改进建议”，不会自动修改或部署系统。"""</span>
 
     <span class="k">def</span> <span class="f">__init__</span>(<span class="k">self</span>, improvement_threshold: <span class="b">int</span> = <span class="n">10</span>):
         <span class="k">self</span>.logs = []
@@ -555,7 +541,8 @@ Prompt 改了、工具变了、用户行为变了，Agent 的表现都可能退�
         }
         <span class="k">self</span>.logs.append(entry)
 
-        <span class="h"># 检测是否需要触发改进</span>
+        <span class="h"># 真实系统应在写入前完成同意检查、数据最小化和脱敏。</span>
+        <span class="h"># 此处只检测是否需要生成待评测建议。</span>
         <span class="k">if</span> rating <span class="k">is</span> <span class="k">not</span> <span class="k">None</span> <span class="k">and</span> rating &lt;= <span class="n">2</span>:
             <span class="k">self</span>._check_improvement()
 
@@ -570,7 +557,7 @@ Prompt 改了、工具变了、用户行为变了，Agent 的表现都可能退�
             )
 
     <span class="k">def</span> <span class="f">_trigger_improvement</span>(<span class="k">self</span>, reason: <span class="b">str</span>, detail: <span class="b">str</span>):
-        <span class="s">"""触发一次自动改进。"""</span>
+        <span class="s">"""创建一条候选改进建议；不会自动修改 Prompt 或部署。"""</span>
         improvement = {
             <span class="s">"timestamp"</span>: time.time(),
             <span class="s">"reason"</span>: reason,
@@ -593,7 +580,7 @@ Prompt 改了、工具变了、用户行为变了，Agent 的表现都可能退�
             <span class="s">"total_interactions"</span>: <span class="b">len</span>(<span class="k">self</span>.logs),
             <span class="s">"avg_rating"</span>: <span class="b">round</span>(avg_rating, <span class="n">1</span>),
             <span class="s">"low_rated"</span>: <span class="b">sum</span>(<span class="n">1</span> <span class="k">for</span> r <span class="k">in</span> ratings <span class="k">if</span> r &lt;= <span class="n">2</span>),
-            <span class="s">"improvements_triggered"</span>: <span class="b">len</span>(<span class="k">self</span>.improvements),
+            <span class="s">"improvement_candidates"</span>: <span class="b">len</span>(<span class="k">self</span>.improvements),
             <span class="s">"latest_improvement"</span>: (
                 <span class="k">self</span>.improvements[-<span class="n">1</span>][<span class="s">"reason"</span>]
                 <span class="k">if</span> <span class="k">self</span>.improvements <span class="k">else</span> <span class="s">"暂无"</span>
@@ -631,7 +618,7 @@ Prompt 改了、工具变了、用户行为变了，Agent 的表现都可能退�
         <span class="b">print</span>(f<span class="s">"  [{icon}] {user} → {output[:20]}... "</span>
               + (f<span class="s">"反馈: {fb}"</span> <span class="k">if</span> fb <span class="k">else</span> <span class="s">""</span>))
 
-    stats = fw.stats()
+    stats = fw.get_stats()
     <span class="b">print</span>(f<span class="s">"\n  📊 飞轮统计:"</span>)
     <span class="k">for</span> k, v <span class="k">in</span> stats.items():
         <span class="b">print</span>(f<span class="s">"    {k}: {v}"</span>)
@@ -645,7 +632,7 @@ Prompt 改了、工具变了、用户行为变了，Agent 的表现都可能退�
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
     <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
     <span class="b">print</span>(<span class="s">"║  第35章：数据飞轮                                      ║"</span>)
-    <span class="b">print</span>(<span class="s">"║  交互采集 · Bad Case 识别 · 自动触发改进              ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  合规采集 · Bad Case 识别 · 候选改进 · 受控验证        ║"</span>)
     <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
     demo_flywheel()
     <span class="b">print</span>(<span class="s">"\n▶ 飞轮四阶段"</span>)

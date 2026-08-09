@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:2810d55ecf322cf335c7490888e65f0909a290485bbadb8b23d59d5ed4a854a1 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -302,9 +303,13 @@ body {
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_26_model_routing/26_model_routing.html" title="模型路由策略 — Threshold·Cascade·Semantic·Cost-Aware">第26章 →</a>
 </div><div class="hero"><h1>第25章 向量数据库选型与实战 —— Agent 记忆与 RAG 的底座</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解向量数据库在 Agent 系统中的定位</span><span class="tag tag-goal">2. 掌握 5 大向量数据库的选型决策框架</span><span class="tag tag-goal">3. 学会 Embedding 策略：模型选择 / 维度权衡 / 批量优化</span><span class="tag tag-goal">4. 实现一个可运行的向量检索系统</span><span class="tag tag-interview">🎤 「Chroma / Pinecone / Milvus / Qdrant 怎么选？」</span><span class="tag tag-interview">🎤 「Embedding 模型的维度对性能有什么影响？」</span><span class="tag tag-interview">🎤 「向量数据库和传统数据库的区别？」</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p>基于 2025 年向量数据库生态全景</p>
+<p>&nbsp;</p>
+<p>产品功能、限额、许可证与价格变化很快；本章产品名是候选示例，所有选型结论</p>
+<p>都应由同一数据集上的容量、召回、延迟、过滤和运维验证产生。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>25.1 向量数据库在 Agent 架构中的位置</h2>
@@ -325,34 +330,26 @@ body {
 <p>&nbsp;</p>
 <h2>25.2 5 大向量数据库对比</h2>
 <p>&nbsp;</p>
-<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────┬──────────┬──────────┬──────────┬──────────┐
-  │          │  Chroma  │ Pinecone │  Milvus  │  Qdrant  │
-  ├──────────┼──────────┼──────────┼──────────┼──────────┤
-  │ 类型      │ 开源轻量  │ 商业托管  │ 开源分布式│ 开源高性能 │
-  │ 上手难度  │ ⭐(30min)│ ⭐(30min)│ ⭐⭐⭐    │ ⭐⭐      │
-  │ 数据规模  │ <100万   │ 不限      │ 10亿+     │ 10亿      │
-  │ 延迟(P99) │ ~200ms  │ <50ms    │ <50ms    │ <80ms    │
-  │ 部署       │ pip install│ SaaS    │ K8s/Helm │ Docker   │
-  │ 适合       │ 原型/MVP  │ 企业快速上线│ 大规模生产│ 性能优先  │
-  │ 成本       │ 免费      │ $$$      │ 运维成本  │ 运维成本  │
-  └──────────┴──────────┴──────────┴──────────┴──────────┘</pre>
+<p>比较 Chroma、Pinecone、Milvus、Qdrant、pgvector 等候选时统一测量：</p>
+<li>数据规模、维度、写入速率、删除/更新频率与多租户隔离</li>
+<li>向量 + metadata filter + 关键词混合查询的 Recall@k / nDCG@k</li>
+<li>预热后 p50/p95/p99 延迟、吞吐、索引构建与恢复时间</li>
+<li>备份、可观测、升级、数据驻留、团队运维与总拥有成本</li>
 <p>&nbsp;</p>
 <p>选型决策树（面试必备！）：</p>
 <p>&nbsp;</p>
 <p>你的需求是什么？</p>
-<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ├─ 快速原型/学习 → Chroma（pip install 搞定）
-  ├─ 不想管运维 → Pinecone（全托管，但付费）
-  ├─ 千万级以上 + 生产环境 → Qdrant 或 Milvus
-  │   ├─ 需要分布式 → Milvus
-  │   └─ 追求单机极致性能 → Qdrant
-  └─ 已有 Postgres/Redis → pgvector / Redis Stack</pre>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ├─ 先做最小原型 → 本地/已有数据库扩展通常更省集成成本
+  ├─ 不想管运维 → 比较多个托管服务的 SLO、数据驻留和退出成本
+  ├─ 需要独立集群 → 用真实规模压测 Milvus / Qdrant 等候选
+  └─ 已有 Postgres/Redis → 先评估 pgvector / Redis，避免过早新增系统</pre>
 <p>&nbsp;</p>
 <p>面试回答框架：</p>
 <p>「我选择 XX 向量库，原因是：</p>
-<li>数据规模：XXX 万条向量</li>
-<li>QPS 要求：XXX</li>
-<li>团队能力：有/无 K8s 运维经验</li>
-<li>预算：可以/不可以接受商业服务费用」</li>
+<li>1. 数据规模：XXX 万条向量</li>
+<li>2. QPS 要求：XXX</li>
+<li>3. 团队能力：有/无 K8s 运维经验</li>
+<li>4. 预算：可以/不可以接受商业服务费用」</li>
 <p>&nbsp;</p>
 <h2>25.3 Embedding 策略 —— 被忽视的关键</h2>
 <p>&nbsp;</p>
@@ -365,33 +362,24 @@ body {
 <p>（维度太低），找书时必然混乱。</p>
 <p>&nbsp;</p>
 <p>维度选择的权衡（面试高频）：</p>
-<p>高维度（1536/3072）：</p>
-<p>优点：更精准的语义表示，能捕捉细微差别</p>
-<p>缺点：存储 > 2x，检索速度慢 2-4x，Embedding API 费用高</p>
+<p>高维度：</p>
+<p>可能保留更多模型信息，但索引更大、内存和距离计算更多</p>
 <p>&nbsp;</p>
-<p>低维度（384/512）：</p>
-<p>优点：存储小，检索快，API 费低</p>
-<p>缺点：语义精度下降，复杂查询可能匹配不准</p>
+<p>低维度：</p>
+<p>存储和计算更小，但是否损失质量取决于模型、压缩方式和语料</p>
 <p>&nbsp;</p>
-<p>→ 工业界的经验法则：RAG 用 512-1024 维度足够；</p>
-<p>极其复杂的语义匹配场景才需要 1536-3072。</p>
-<p>&nbsp;</p>
-<p>为什么？因为实际 RAG 系统里，检索只是第一步，后面还有</p>
-<p>重排序（reranking）和 LLM 生成两个环节来修正检索误差。</p>
-<p>多花 2 倍的成本追求检索完美，不如花在后续环节。</p>
+<p>维度不是可跨模型比较的通用质量旋钮。对同一模型的候选维度，测端到端</p>
+<p>答案质量、Recall@k、索引体积和延迟，再选择满足质量门槛的最小值。</p>
 <p>&nbsp;</p>
 <p>批量优化的工程技巧：</p>
 <p>单个请求发送 Embedding 是最大的浪费。</p>
-<p>text-embedding-3 系列支持一次发送最多 2048 篇文档，</p>
-<p>速度和成本都优化到 1/10。但你需要注意不要超过 API limits。</p>
+<p>按 provider 当前的单请求输入、token 与速率限制做批量，并为 429/5xx 重试；</p>
+<p>批量通常减少网络开销，但不会自动把 token 计费降到固定比例。</p>
 <pre class="ascii-art">  │ Cohere Embed v3       │ 1024     │ 多语言    │ 企业级    │
   └──────────────────────┴──────────┴──────────┴──────────┘</pre>
 <p>&nbsp;</p>
-<p>维度对性能的影响：</p>
-<li>384 维：检索速度快 3x，召回率约 85%</li>
-<li>768 维：平衡点，召回率约 92%</li>
-<li>1536 维：精度最高，召回率约 95%</li>
-<p>→ 代价：维度越高存储越大、检索越慢</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (201 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add</span><span class="code-badge code-badge-func">search</span><span class="code-badge code-badge-func">stats</span><span class="code-badge code-badge-func">demo_vector_db</span><span class="code-badge code-badge-class">SimpleVectorStore</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<p>维度对性能的影响必须在同一 embedding 模型和标注集上测量。下面的哈希向量</p>
+<p>只演示存储与距离计算，不能产生真实 Recall 结论。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (201 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add</span><span class="code-badge code-badge-func">search</span><span class="code-badge code-badge-func">stats</span><span class="code-badge code-badge-func">demo_vector_db</span><span class="code-badge code-badge-class">SimpleVectorStore</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -593,11 +581,10 @@ body {
     <span class="h"># 存储统计</span>
     <span class="b">print</span>(f<span class="s">"\n  📊 存储统计: {json.dumps(store.stats(), indent=2)}"</span>)</pre></div></details></div><div class="lecture"><h2>25.4 Embedding 维度实验</h2>
 <p>&nbsp;</p>
-<p>接下来用一个对比实验直观展示维度选择的影响。我们用不同的低维投影模拟</p>
-<p>不同 Embedding 模型的检索效果差异。核心结论：维度从 384 提升到 1024，</p>
-<p>语义精度显著提升（+20% 左右），但从 1024 提升到 3072，提升非常有限</p>
-<p>（+3-5%），而存储和计算成本翻倍。这就是工业界选择 512-1024 维度的</p>
-<p>数据支撑。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_embedding_dimension_tradeoff</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<p>接下来用一个教学实验直观展示维度如何影响存储和计算。这里的“模拟分数”</p>
+<p>来自哈希向量，不代表真实 Embedding 质量，也不能推出某个维度区间普遍最优。</p>
+<p>生产选型必须固定同一模型、同一数据集和索引参数，比较 Recall@k、端到端答案</p>
+<p>质量、索引体积、构建时间和 p95 查询延迟。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (34 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_embedding_dimension_tradeoff</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -617,7 +604,7 @@ body {
         <span class="s">"Python 是 AI 开发中最流行的编程语言"</span>,
     ]
 
-    <span class="b">print</span>(f<span class="s">"\n  {'维度':&lt;8s} {'检索时间':&lt;12s} {'存储(字节)':&lt;12s} {'召回率':&lt;10s}"</span>)
+    <span class="b">print</span>(f<span class="s">"\n  {'维度':&lt;8s} {'检索时间':&lt;12s} {'存储(字节)':&lt;12s} {'模拟分数':&lt;10s}"</span>)
     <span class="b">print</span>(f<span class="s">"  {'-'*42}"</span>)
 
     <span class="k">for</span> dim <span class="k">in</span> [<span class="n">128</span>, <span class="n">256</span>, <span class="n">384</span>, <span class="n">768</span>, <span class="n">1536</span>]:
@@ -629,24 +616,23 @@ body {
         elapsed = time.time() - t0
 
         storage = <span class="b">sum</span>(v.nbytes <span class="k">for</span> v <span class="k">in</span> store.vectors)
-        recall = <span class="n">1.0</span> <span class="k">if</span> results[<span class="n">0</span>][<span class="s">"score"</span>] &gt; <span class="n">0.1</span> <span class="k">else</span> <span class="n">0.0</span>
-
-        <span class="b">print</span>(f<span class="s">"  {dim:&lt;8d} {elapsed*1000:&lt;12.2f}ms {storage:&lt;12d} {recall:.1%}"</span>)</pre></div></details></div><div class="lecture"><h2>25.5 向量数据库 + Agent 的最佳实践</h2>
+        score = results[<span class="n">0</span>][<span class="s">"score"</span>]
+        <span class="b">print</span>(f<span class="s">"  {dim:&lt;8d} {elapsed*1000:&lt;12.2f}ms {storage:&lt;12d} {score:.3f}"</span>)</pre></div></details></div><div class="lecture"><h2>25.5 向量数据库 + Agent 的最佳实践</h2>
 <p>&nbsp;</p>
-<li>Embedding 缓存</li>
+<li>1. Embedding 缓存</li>
 <p>相同文本不做重复 embedding（省钱 + 省时间）</p>
 <p>&nbsp;</p>
-<li>批量写入</li>
+<li>2. 批量写入</li>
 <p>逐条写入 API 调用开销大，攒 100-200 条一批写入</p>
 <p>&nbsp;</p>
-<li>维度选择</li>
-<p>原型用 384（快），生产用 768-1024（平衡），极致用 1536</p>
+<li>3. 维度选择</li>
+<p>用同一模型和标注集选择满足质量门槛的最小维度</p>
 <p>&nbsp;</p>
-<li>混合检索</li>
+<li>4. 混合检索</li>
 <p>纯向量搜索不够 → 加关键词匹配（BM25）</p>
-<p>混合检索是 2025 年生产标准</p>
+<p>是否启用混合检索由语料、查询类型和离线评测决定</p>
 <p>&nbsp;</p>
-<li>定期重建索引</li>
+<li>5. 定期重建索引</li>
 <p>数据量大后重建索引以保持检索性能</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -654,16 +640,16 @@ body {
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
-<li>向量数据库是 Agent 记忆和 RAG 的底座</li>
-<li>选型 = 规模 + 团队能力 + 预算</li>
-<li>Embedding 维度 = 速度 vs 精度的权衡</li>
-<li>混合检索 = 2025 生产标准</li>
+<li>1. 向量数据库是 Agent 记忆和 RAG 的底座</li>
+<li>2. 选型 = 规模 + 团队能力 + 预算</li>
+<li>3. Embedding 维度 = 速度 vs 精度的权衡</li>
+<li>4. 混合检索是重要候选，但不是无需评测的固定答案</li>
 <p>&nbsp;</p>
 <p>面试速记：</p>
 <p>「向量数据库怎么选？」</p>
-<p>→ 快速原型 Chroma，生产 Milvus/Qdrant，不想运维 Pinecone</p>
-<p>→ 维度权衡：384快 768平衡 1536精</p>
-<p>→ 混合检索是标配：向量 + 关键词 = 最佳召回率</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (25 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<p>→ 用规模、过滤、召回、延迟、恢复和总成本比较候选</p>
+<p>→ 维度只在同一 embedding 模型内做实测权衡</p>
+<p>→ 向量、关键词、重排的组合必须通过消融评测</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (24 行)</summary><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -680,16 +666,18 @@ body {
     <span class="b">print</span>(<span class="s">"\n▶ 选型决策树"</span>)
     <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     <span class="k">for</span> item <span class="k">in</span> [
-        <span class="s">"原型/学习 → Chroma"</span>,
-        <span class="s">"不想运维 → Pinecone"</span>,
-        <span class="s">"千万级+ → Qdrant 或 Milvus"</span>,
-        <span class="s">"需要分布式 → Milvus"</span>,
-        <span class="s">"已有PG/Redis → pgvector"</span>,
+        <span class="s">"本地原型 → 比较 Chroma 与现有数据库扩展"</span>,
+        <span class="s">"托管优先 → 比较 SLO、数据驻留与退出成本"</span>,
+        <span class="s">"独立集群 → 用真实规模压测 Milvus/Qdrant 等候选"</span>,
+        <span class="s">"已有 PostgreSQL → 先验证 pgvector 是否已满足需求"</span>,
     ]:
         <span class="b">print</span>(f<span class="s">"  {item}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第25章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (413 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第25章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (395 行)</summary><div class="code-block"><pre><span class="s">"""
 第25章：向量数据库选型与实战 —— Agent 记忆与 RAG 的底座
 ============================================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 理解向量数据库在 Agent 系统中的定位
@@ -702,9 +690,8 @@ body {
   - 「Embedding 模型的维度对性能有什么影响？」
   - 「向量数据库和传统数据库的区别？」
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-基于 2025 年向量数据库生态全景
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+产品功能、限额、许可证与价格变化很快；本章产品名是候选示例，所有选型结论
+都应由同一数据集上的容量、召回、延迟、过滤和运维验证产生。
 
 
 25.1 向量数据库在 Agent 架构中的位置
@@ -727,27 +714,19 @@ body {
 25.2 5 大向量数据库对比
 ━━━━━━━━━━━━━━━━━━━━━━
 
-  ┌──────────┬──────────┬──────────┬──────────┬──────────┐
-  │          │  Chroma  │ Pinecone │  Milvus  │  Qdrant  │
-  ├──────────┼──────────┼──────────┼──────────┼──────────┤
-  │ 类型      │ 开源轻量  │ 商业托管  │ 开源分布式│ 开源高性能 │
-  │ 上手难度  │ ⭐(30min)│ ⭐(30min)│ ⭐⭐⭐    │ ⭐⭐      │
-  │ 数据规模  │ &lt;100万   │ 不限      │ 10亿+     │ 10亿      │
-  │ 延迟(P99) │ ~200ms  │ &lt;50ms    │ &lt;50ms    │ &lt;80ms    │
-  │ 部署       │ pip install│ SaaS    │ K8s/Helm │ Docker   │
-  │ 适合       │ 原型/MVP  │ 企业快速上线│ 大规模生产│ 性能优先  │
-  │ 成本       │ 免费      │ $$$      │ 运维成本  │ 运维成本  │
-  └──────────┴──────────┴──────────┴──────────┴──────────┘
+比较 Chroma、Pinecone、Milvus、Qdrant、pgvector 等候选时统一测量：
+  - 数据规模、维度、写入速率、删除/更新频率与多租户隔离
+  - 向量 + metadata filter + 关键词混合查询的 Recall@k / nDCG@k
+  - 预热后 p50/p95/p99 延迟、吞吐、索引构建与恢复时间
+  - 备份、可观测、升级、数据驻留、团队运维与总拥有成本
 
 选型决策树（面试必备！）：
 
   你的需求是什么？
-  ├─ 快速原型/学习 → Chroma（pip install 搞定）
-  ├─ 不想管运维 → Pinecone（全托管，但付费）
-  ├─ 千万级以上 + 生产环境 → Qdrant 或 Milvus
-  │   ├─ 需要分布式 → Milvus
-  │   └─ 追求单机极致性能 → Qdrant
-  └─ 已有 Postgres/Redis → pgvector / Redis Stack
+  ├─ 先做最小原型 → 本地/已有数据库扩展通常更省集成成本
+  ├─ 不想管运维 → 比较多个托管服务的 SLO、数据驻留和退出成本
+  ├─ 需要独立集群 → 用真实规模压测 Milvus / Qdrant 等候选
+  └─ 已有 Postgres/Redis → 先评估 pgvector / Redis，避免过早新增系统
 
 面试回答框架：
   「我选择 XX 向量库，原因是：
@@ -768,33 +747,24 @@ body {
 （维度太低），找书时必然混乱。
 
 维度选择的权衡（面试高频）：
-  高维度（1536/3072）：
-    优点：更精准的语义表示，能捕捉细微差别
-    缺点：存储 &gt; 2x，检索速度慢 2-4x，Embedding API 费用高
-    
-  低维度（384/512）：
-    优点：存储小，检索快，API 费低
-    缺点：语义精度下降，复杂查询可能匹配不准
+  高维度：
+    可能保留更多模型信息，但索引更大、内存和距离计算更多
 
-  → 工业界的经验法则：RAG 用 512-1024 维度足够；
-    极其复杂的语义匹配场景才需要 1536-3072。
-    
-  为什么？因为实际 RAG 系统里，检索只是第一步，后面还有
-  重排序（reranking）和 LLM 生成两个环节来修正检索误差。
-  多花 2 倍的成本追求检索完美，不如花在后续环节。
+  低维度：
+    存储和计算更小，但是否损失质量取决于模型、压缩方式和语料
+
+  维度不是可跨模型比较的通用质量旋钮。对同一模型的候选维度，测端到端
+  答案质量、Recall@k、索引体积和延迟，再选择满足质量门槛的最小值。
 
 批量优化的工程技巧：
   单个请求发送 Embedding 是最大的浪费。
-  text-embedding-3 系列支持一次发送最多 2048 篇文档，
-  速度和成本都优化到 1/10。但你需要注意不要超过 API limits。
+  按 provider 当前的单请求输入、token 与速率限制做批量，并为 429/5xx 重试；
+  批量通常减少网络开销，但不会自动把 token 计费降到固定比例。
   │ Cohere Embed v3       │ 1024     │ 多语言    │ 企业级    │
   └──────────────────────┴──────────┴──────────┴──────────┘
 
-维度对性能的影响：
-  - 384 维：检索速度快 3x，召回率约 85%
-  - 768 维：平衡点，召回率约 92%
-  - 1536 维：精度最高，召回率约 95%
-  → 代价：维度越高存储越大、检索越慢
+维度对性能的影响必须在同一 embedding 模型和标注集上测量。下面的哈希向量
+只演示存储与距离计算，不能产生真实 Recall 结论。
 """</span>
 
 <span class="k">import</span> numpy <span class="k">as</span> np
@@ -1004,11 +974,10 @@ body {
 25.4 Embedding 维度实验
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-接下来用一个对比实验直观展示维度选择的影响。我们用不同的低维投影模拟
-不同 Embedding 模型的检索效果差异。核心结论：维度从 384 提升到 1024，
-语义精度显著提升（+20% 左右），但从 1024 提升到 3072，提升非常有限
-（+3-5%），而存储和计算成本翻倍。这就是工业界选择 512-1024 维度的
-数据支撑。
+接下来用一个教学实验直观展示维度如何影响存储和计算。这里的“模拟分数”
+来自哈希向量，不代表真实 Embedding 质量，也不能推出某个维度区间普遍最优。
+生产选型必须固定同一模型、同一数据集和索引参数，比较 Recall@k、端到端答案
+质量、索引体积、构建时间和 p95 查询延迟。
 """</span>
 
 
@@ -1025,7 +994,7 @@ body {
         <span class="s">"Python 是 AI 开发中最流行的编程语言"</span>,
     ]
 
-    <span class="b">print</span>(f<span class="s">"\n  {'维度':&lt;8s} {'检索时间':&lt;12s} {'存储(字节)':&lt;12s} {'召回率':&lt;10s}"</span>)
+    <span class="b">print</span>(f<span class="s">"\n  {'维度':&lt;8s} {'检索时间':&lt;12s} {'存储(字节)':&lt;12s} {'模拟分数':&lt;10s}"</span>)
     <span class="b">print</span>(f<span class="s">"  {'-'*42}"</span>)
 
     <span class="k">for</span> dim <span class="k">in</span> [<span class="n">128</span>, <span class="n">256</span>, <span class="n">384</span>, <span class="n">768</span>, <span class="n">1536</span>]:
@@ -1037,9 +1006,8 @@ body {
         elapsed = time.time() - t0
 
         storage = <span class="b">sum</span>(v.nbytes <span class="k">for</span> v <span class="k">in</span> store.vectors)
-        recall = <span class="n">1.0</span> <span class="k">if</span> results[<span class="n">0</span>][<span class="s">"score"</span>] &gt; <span class="n">0.1</span> <span class="k">else</span> <span class="n">0.0</span>
-
-        <span class="b">print</span>(f<span class="s">"  {dim:&lt;8d} {elapsed*1000:&lt;12.2f}ms {storage:&lt;12d} {recall:.1%}"</span>)
+        score = results[<span class="n">0</span>][<span class="s">"score"</span>]
+        <span class="b">print</span>(f<span class="s">"  {dim:&lt;8d} {elapsed*1000:&lt;12.2f}ms {storage:&lt;12d} {score:.3f}"</span>)
 
 
 <span class="s">"""
@@ -1053,11 +1021,11 @@ body {
    逐条写入 API 调用开销大，攒 100-200 条一批写入
 
 3. 维度选择
-   原型用 384（快），生产用 768-1024（平衡），极致用 1536
+   用同一模型和标注集选择满足质量门槛的最小维度
 
 4. 混合检索
    纯向量搜索不够 → 加关键词匹配（BM25）
-   混合检索是 2025 年生产标准
+   是否启用混合检索由语料、查询类型和离线评测决定
 
 5. 定期重建索引
    数据量大后重建索引以保持检索性能
@@ -1071,13 +1039,13 @@ body {
 1. 向量数据库是 Agent 记忆和 RAG 的底座
 2. 选型 = 规模 + 团队能力 + 预算
 3. Embedding 维度 = 速度 vs 精度的权衡
-4. 混合检索 = 2025 生产标准
+4. 混合检索是重要候选，但不是无需评测的固定答案
 
 面试速记：
   「向量数据库怎么选？」
-  → 快速原型 Chroma，生产 Milvus/Qdrant，不想运维 Pinecone
-  → 维度权衡：384快 768平衡 1536精
-  → 混合检索是标配：向量 + 关键词 = 最佳召回率
+  → 用规模、过滤、召回、延迟、恢复和总成本比较候选
+  → 维度只在同一 embedding 模型内做实测权衡
+  → 向量、关键词、重排的组合必须通过消融评测
 """</span>
 
 
@@ -1091,11 +1059,10 @@ body {
     <span class="b">print</span>(<span class="s">"\n▶ 选型决策树"</span>)
     <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
     <span class="k">for</span> item <span class="k">in</span> [
-        <span class="s">"原型/学习 → Chroma"</span>,
-        <span class="s">"不想运维 → Pinecone"</span>,
-        <span class="s">"千万级+ → Qdrant 或 Milvus"</span>,
-        <span class="s">"需要分布式 → Milvus"</span>,
-        <span class="s">"已有PG/Redis → pgvector"</span>,
+        <span class="s">"本地原型 → 比较 Chroma 与现有数据库扩展"</span>,
+        <span class="s">"托管优先 → 比较 SLO、数据驻留与退出成本"</span>,
+        <span class="s">"独立集群 → 用真实规模压测 Milvus/Qdrant 等候选"</span>,
+        <span class="s">"已有 PostgreSQL → 先验证 pgvector 是否已满足需求"</span>,
     ]:
         <span class="b">print</span>(f<span class="s">"  {item}"</span>)
     <span class="b">print</span>(<span class="s">"\n✅ 第25章完成！"</span>)

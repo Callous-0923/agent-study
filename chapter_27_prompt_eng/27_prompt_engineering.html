@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:181b5000dccf0759c934fe2e30ea94f6619d0cec7b8517ce333ed85143c6fa0b -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -302,6 +303,9 @@ body {
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_28_cache/28_cache.html" title="语义缓存与 Token 优化 — 三级缓存·预算管理">第28章 →</a>
 </div><div class="hero"><h1>第27章 Agent Prompt 工程 —— 工具描述也是 Prompt</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 掌握 Agent System Prompt 的结构化设计模板</span><span class="tag tag-goal">2. 理解「工具描述 = Prompt 工程」的核心理念</span><span class="tag tag-goal">3. 学会 Few-shot 在 Agent 工具调用中的应用</span><span class="tag tag-goal">4. 掌握 Chain-of-Thought 在 Agent 规划中的使用</span><span class="tag tag-interview">🎤 「Agent 的 System Prompt 和普通 LLM 的有什么不同？」</span><span class="tag tag-interview">🎤 「工具描述写得好不好对 Agent 表现有多大影响？」</span><span class="tag tag-interview">🎤 「Few-shot 在 Function Calling 中怎么用？」</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>综合 Anthropic Prompt Engineering Guide + 业界实践</p>
@@ -315,11 +319,11 @@ body {
 <p>普通 LLM Prompt：「请翻译这段文字」——只需要告诉模型输出什么。</p>
 <p>&nbsp;</p>
 <p>Agent Prompt 需要同时回答 5 个问题（缺一个都会翻车）：</p>
-<li>你是谁（角色）——「不能做什么」和「能做什么」同样重要</li>
-<li>你能做什么（工具列表）——格式错误 = LLM 根本不会调工具</li>
-<li>什么时候该做什么（工具选择逻辑）——群发邮件 or 单发？</li>
-<li>什么不该做（边界/安全约束）——不是所有请求都应该执行</li>
-<li>输出格式是什么——JSON? 自然语言? 两者切换?</li>
+<li>1. 你是谁（角色）——「不能做什么」和「能做什么」同样重要</li>
+<li>2. 你能做什么（工具列表）——格式错误 = LLM 根本不会调工具</li>
+<li>3. 什么时候该做什么（工具选择逻辑）——群发邮件 or 单发？</li>
+<li>4. 什么不该做（边界/安全约束）——不是所有请求都应该执行</li>
+<li>5. 输出格式是什么——JSON? 自然语言? 两者切换?</li>
 <p>&nbsp;</p>
 <p>类比：</p>
 <p>普通 Prompt = 给厨师一个菜名（「来一份蛋炒饭」）</p>
@@ -420,9 +424,9 @@ body {
 <p>工具描述不是给开发者看的文档，是给 LLM 看的「使用说明」。</p>
 <p>&nbsp;</p>
 <p>好工具描述的三个要素：</p>
-<li>做什么：准确描述工具的功能</li>
-<li>什么时候用：描述适用的场景</li>
-<li>什么时候不用：描述边界条件</li>
+<li>1. 做什么：准确描述工具的功能</li>
+<li>2. 什么时候用：描述适用的场景</li>
+<li>3. 什么时候不用：描述边界条件</li>
 <p>&nbsp;</p>
 <p>对比（面试金句！）：</p>
 <p>&nbsp;</p>
@@ -574,9 +578,9 @@ body {
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
-<li>Agent Prompt 需要结构化 6 个模块</li>
-<li>工具描述是 Agent Prompt 工程的核心</li>
-<li>好工具描述 = 做什么 + 什么时候用 + 什么时候不用 + 示例</li>
+<li>1. Agent Prompt 需要结构化 6 个模块</li>
+<li>2. 工具描述是 Agent Prompt 工程的核心</li>
+<li>3. 好工具描述 = 做什么 + 什么时候用 + 什么时候不用 + 示例</li>
 <p>&nbsp;</p>
 <p>面试速记：</p>
 <p>「Agent 的 System Prompt 怎么设计？」</p>
@@ -656,9 +660,12 @@ body {
         <span class="s">"✅ 参数有详细描述"</span>,
     ]:
         <span class="b">print</span>(f<span class="s">"  {item}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第27章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (385 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第27章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (388 行)</summary><div class="code-block"><pre><span class="s">"""
 第27章：Agent Prompt 工程 —— 工具描述也是 Prompt
 ===================================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 掌握 Agent System Prompt 的结构化设计模板

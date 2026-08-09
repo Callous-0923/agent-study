@@ -2,12 +2,15 @@
 第12章：OpenClaw / Harness 与 Agent 生产基础设施
 ================================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 深入理解 OpenClaw 的 Gateway 中心化架构
   2. 掌握 AgentSkills 和 ClawHub 的插件生态
-  3. 了解 Harness (OpenHarness) 作为开源编码 Agent 的设计亮点
+  3. 了解 OpenHarness 作为开源 TypeScript Agent SDK 的设计亮点
   4. 理解 Agent 生产基础设施的全景图（Tracing / 评测 / 安全 / 部署）
-  5. 学会 Agent 评测框架 MultiAgentEval 的使用方式
+  5. 学会设计可复用的 Agent 评测 Harness
 
 📌 面试高频点：
   - OpenClaw 和 Claude Code 的架构差异？
@@ -20,10 +23,12 @@
 12.1 Gateway 中心化架构 —— Agent 生产化设计模式
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-本节我们设计一个「假设的」生产级 Agent 架构，命名为 OpenClaw。
-它不是一个真实存在的开源项目，而是一个用于教学的参考设计。
-核心设计理念：「不是一个 Agent 框架，而是 Agent 本身」
-—— 这条定位把它和 LangChain/crewAI 等框架区隔开来。
+OpenClaw 是真实存在的开源、自托管 Agent Gateway，而不是本章虚构的名字。
+官方文档：https://docs.openclaw.ai/
+
+它把聊天渠道、Agent 会话、工具/Skills、自动化和管理控制集中到 Gateway。
+以下内容用于解释这种架构模式；具体配置、支持的渠道和命令可能随版本变化，
+使用时应以官方文档和已安装版本为准。
 
 设计目标：
   一个中心化的 Gateway（Node.js 控制平面），
@@ -122,7 +127,7 @@ ClawHub：
 
   2. LLM Provider 的切换频率 —— 应该是运行时切换，不是部署时
      微服务要换模型 → 改代码 → 重新部署 → 全量回归测试
-     Gateway 换模型 → /model gpt-4o → 即刻生效，零部署
+     Gateway 换模型 → /model gpt-5.6-sol → 即刻生效，零部署
 
   3. AgentSkill 的安装卸载 —— 需要运行时热插拔
      微服务下装新 Skill → 部署新服务 → 配 Service Discovery
@@ -138,58 +143,39 @@ ClawHub：
   但允许动态加载驱动（AgentSkill）和切换硬件（LLM Provider）
 
 
-12.3 Harness (OpenHarness) —— 开源编码 Agent 黑马
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12.3 OpenHarness —— 可嵌入应用的 TypeScript Agent SDK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Harness 是一个假设的编码 Agent 参考设计。
+OpenHarness 也是真实开源项目。它的定位是 code-first TypeScript SDK，
+不是本章旧版描述中的虚构 CLI 编码 Agent。
+官方文档：https://docs.open-harness.dev/
 
-核心亮点：
-  - CLI + SDK 双模式（既可以命令行用，也可以嵌入代码）
-  - 支持任意 LLM（Claude、GPT、Gemini、Ollama 等）
-  - 内置评测框架（持续集成友好的工具调用验证）
-  - 多提供商兼容（一个命令切换模型）
+核心抽象：
+  - Agent：模型、指令、工具和运行策略
+  - Session：保存一段 Agent 交互及其事件
+  - Event stream：应用可逐事件渲染文本、工具调用和状态
+  - Middleware：承载压缩、重试、持久化、hook 等横切能力
+  - Integrations：MCP、Skills、Subagents、Shell/Filesystem 工具和前端辅助
 
-Harness 的 REPL 命令体系：
+最小使用形态（结构示意，安装时检查当前包名与 API）：
 
-  ┌────────────────┬──────────────────────────────────────┐
-  │     命令        │               功能                    │
-  ├────────────────┼──────────────────────────────────────┤
-  │ /help          │ 帮助和提示                            │
-  │ /connect       │ 配置 API Key                         │
-  │ /model         │ 切换模型（/model gpt-5.2）            │
-  │ /plan          │ 用只读 Agent 规划实现方案              │
-  │ /review        │ 审查代码变更                          │
-  │ /team          │ 分解任务并并行执行多个 Agent           │
-  │ /status        │ 显示提供商、模型、会话、成本           │
-  │ /cost          │ 显示 Token 使用量和费用               │
-  └────────────────┴──────────────────────────────────────┘
+  const agent = createAgent({ model, tools })
+  const session = agent.createSession()
+  for await (const event of session.send("List all TypeScript files")) {
+    render(event)
+  }
 
-Harness 的权限模式：
-  - 默认模式：每个工具调用需要用户确认
-  - Bypass 模式：完全自动批准（适合 CI/CD 脚本）
-
-应用场景：
-  harness "Fix the authentication bug in auth.py"
-  harness --permission bypass "Run all tests and fix failures"
-  harness -p ollama -m llama3.3 "Write unit tests for utils.py"
-
-与 Claude Code 的对比：
-  ┌──────────────┬────────────────────┬───────────────────┐
-  │     维度      │      Harness        │    Claude Code     │
-  ├──────────────┼────────────────────┼───────────────────┤
-  │ 源           │ 开源                │ 闭源（但可逆向）    │
-  │ 模型绑定      │ 任何模型            │ Claude 系列        │
-  │ 本地模型      │ 支持 (Ollama)       │ 不支持             │
-  │ 多Agent      │ /team 命令          │ Task 工具          │
-  │ 成熟度        │ Alpha 阶段          │ 生产级别            │
-  │ 社区          │ 快速发展中          │ 官方支持            │
-  └──────────────┴────────────────────┴───────────────────┘
+与“完整编码产品”的边界：
+  SDK 提供可组合的运行时积木；权限 UI、租户隔离、审计、部署和业务状态仍由
+  宿主应用负责。不能把 SDK 支持某个能力，等同于产品已经安全地默认启用它。
 
 
-12.4 Agent 评测基础设施 —— MultiAgentEval
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12.4 Agent 评测基础设施 —— 教学用 Eval Harness
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-MultiAgentEval 是一个企业级的 Agent 评测框架。
+下面的 Scenario → Task → Sandbox → Metrics 是本章总结的教学评测模型，
+不是名为 “MultiAgentEval” 的已验证企业产品或 SDK。真实项目可以把这些
+概念映射到自己的测试框架、OpenTelemetry trace evaluator 或供应商评测服务。
 
 核心概念：
 
@@ -241,8 +227,8 @@ MultiAgentEval 是一个企业级的 Agent 评测框架。
 ├─────────────────┬─────────────────┬─────────────────────────┤
 │   可观测性       │      评测        │        安全              │
 │  ─────────────  │  ─────────────  │  ─────────────────────  │
-│  • LangSmith     │  • MultiAgentEval│  • Prompt Injection防护 │
-│  • LangFuse      │  • RAGAS        │  • 权限最小化            │
+│  • LangSmith     │  • Eval Harness  │  • Prompt Injection防护 │
+│  • Langfuse      │  • RAGAS        │  • 权限最小化            │
 │  • OpenTelemetry │  • AgentBench   │  • 审计日志              │
 │  • 自定义 Tracing│  • SWE-bench    │  • 数据脱敏              │
 │  • 日志聚合      │  • 自定义评测集   │  • Rate Limiting       │
@@ -262,7 +248,7 @@ MultiAgentEval 是一个企业级的 Agent 评测框架。
   - 每个 Agent 步骤：step_number + action + observation
   - 指标看板：成功率、平均延迟、Token 消耗趋势、错误分布
 
-  LangSmith / LangFuse 的使用：
+  LangSmith / Langfuse 的使用：
     ┌──────────┐     ┌──────────────┐     ┌──────────┐
     │ Agent    │────→│ LangSmith    │────→│ 可视化    │
     │ 执行过程  │     │ (Tracing)    │     │ Dashboard │
@@ -294,7 +280,7 @@ class AgentProductionChecklist:
         ("安全", "审计日志：记录所有操作，可追溯"),
         ("安全", "敏感信息脱敏（API Key、用户数据等）"),
         # 成本
-        ("成本", "模型分层：简单任务用小模型 (gpt-4o-mini)"),
+        ("成本", "模型分层：简单任务用小模型 (gpt-5.6-terra)"),
         ("成本", "语义缓存：避免重复查询消耗 Token"),
         ("成本", "Token 预算告警：单用户/单日/单月上限"),
         # 可靠性
@@ -367,19 +353,19 @@ class AgentProductionChecklist:
 
 核心要点回顾：
 
-1. Gateway 架构（本章的 OpenClaw 假设设计）
+1. Gateway 架构（OpenClaw 的真实项目案例）
    - Gateway 中心化架构（Node.js 控制平面）
    - 多 Channel 接入（WhatsApp/Telegram/Discord）
    - AgentSkills + ClawHub 插件生态
    - 设计定位：「是 Agent，不是框架」
 
-2. 编码 Agent 参考设计（本章的 Harness 假设设计）
-   - CLI + SDK 双模式
-   - 支持任意 LLM + 本地模型
-   - /team 命令实现并行 Multi-Agent
+2. 可嵌入 Agent SDK（OpenHarness）
+   - TypeScript 的 Agent / Session / Event 抽象
+   - Middleware、MCP、Skills 与 Subagents 集成
+   - 权限、持久化和 UI 由宿主应用补齐
 
 3. Agent 评测基础设施
-   - MultiAgentEval：企业级评测框架
+   - Eval Harness：本章教学模型，不冒充真实产品
    - 核心概念：Scenario → Task → Sandbox → Metrics
    - 8 种内置评测指标
 
@@ -411,7 +397,7 @@ if __name__ == "__main__":
         "多 Channel 接入：WhatsApp / Telegram / Discord / Slack",
         "LLM Provider 抽象：Claude / GPT / Gemini / Ollama",
         "持久化记忆存储：用户偏好 + 对话历史",
-        "AgentSkills + ClawHub：Agent 技能生态（假设设计）",
+        "AgentSkills + ClawHub：OpenClaw 的技能与插件生态",
     ]
     for f in oc_features:
         print(f"  • {f}")
@@ -426,10 +412,10 @@ if __name__ == "__main__":
     print("\n▶ 12.3 Harness 亮点")
     print("-" * 50)
     h_features = [
-        "CLI + SDK 双模式",
-        "支持任意 LLM（Claude/GPT/Gemini/Ollama）",
-        "/plan /review /team /status /cost 命令",
-        "Bypass 模式（CI/CD 友好）",
+        "TypeScript Agent / Session 抽象",
+        "事件流驱动的宿主应用集成",
+        "Middleware + MCP + Skills + Subagents",
+        "权限、审计和 UI 由宿主应用负责",
     ]
     for f in h_features:
         print(f"  • {f}")

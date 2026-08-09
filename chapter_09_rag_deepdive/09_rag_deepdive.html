@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:663e5f2df5bc87785cfcfc7a00095f1c62d6e6f0d1cb8595bc69f557ad14df63 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -301,7 +302,10 @@ body {
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_08_claude_code/08_claude_code_architecture.html" title="Claude Code 架构 — nO·h2A·压缩·SubAgent">← 第8章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_10_mcp/10_mcp_deepdive.html" title="MCP 深度解析 — 设计哲学·JSON-RPC·传输层选型·三协议对比">第10章 →</a>
-</div><div class="hero"><h1>第9章 RAG 深度解析 —— 从 Naive 到生产级，面试到工程全覆盖</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 RAG 的完整技术演进路线（Naive → Advanced → GraphRAG → Agentic）</span><span class="tag tag-goal">2. 掌握 Chunk 切分策略的工程选型（固定/语义/递归 + chunk_size 最佳实践）</span><span class="tag tag-goal">3. 精通 Embedding 模型选型与维度选择的量化依据</span><span class="tag tag-goal">4. 深入理解混合检索 RRF 融合算法和 Cross-Encoder 重排序原理</span><span class="tag tag-goal">5. 实现可运行的 Advanced RAG 和 GraphRAG 系统</span><span class="tag tag-goal">6. 掌握 RAGAS 评估体系和 4 种生产失败模式的应对策略</span><span class="tag tag-interview">🎤 Chunk 怎么切分？为什么这个大小？（本章核心深度！）</span><span class="tag tag-interview">🎤 Embedding 模型怎么选？维度怎么定？</span><span class="tag tag-interview">🎤 为什么混合检索比纯向量好？RRF 怎么做？</span><span class="tag tag-interview">🎤 Bi-Encoder 和 Cross-Encoder 的本质区别？</span><span class="tag tag-interview">🎤 GraphRAG 解决了什么纯向量 RAG 解决不了的问题？</span><span class="tag tag-interview">🎤 Agentic RAG 和传统 RAG 的本质区别</span><span class="tag tag-interview">🎤 RAG 上线后最常见的 4 种失败模式及对策</span></div><p>&nbsp;</p>
+</div><div class="hero"><h1>第9章 RAG 深度解析 —— 从 Naive 到生产级，面试到工程全覆盖</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解 RAG 的完整技术演进路线（Naive → Advanced → GraphRAG → Agentic）</span><span class="tag tag-goal">2. 掌握 Chunk 切分策略的工程选型（固定/语义/递归 + 评测驱动调参）</span><span class="tag tag-goal">3. 掌握 Embedding 模型与维度的评测方法</span><span class="tag tag-goal">4. 深入理解混合检索 RRF 融合算法和 Cross-Encoder 重排序原理</span><span class="tag tag-goal">5. 实现可运行的 Advanced RAG 和 GraphRAG 系统</span><span class="tag tag-goal">6. 掌握 RAGAS 评估体系和 4 种生产失败模式的应对策略</span><span class="tag tag-interview">🎤 Chunk 怎么切分？为什么这个大小？（本章核心深度！）</span><span class="tag tag-interview">🎤 Embedding 模型怎么选？维度怎么定？</span><span class="tag tag-interview">🎤 为什么混合检索比纯向量好？RRF 怎么做？</span><span class="tag tag-interview">🎤 Bi-Encoder 和 Cross-Encoder 的本质区别？</span><span class="tag tag-interview">🎤 GraphRAG 解决了什么纯向量 RAG 解决不了的问题？</span><span class="tag tag-interview">🎤 Agentic RAG 和传统 RAG 的本质区别</span><span class="tag tag-interview">🎤 RAG 上线后最常见的 4 种失败模式及对策</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -326,10 +330,10 @@ body {
   └──────────────────────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>Naive RAG 的问题（面试常问！）:</p>
-<li>检索不准：语义相似 ≠ 问题相关</li>
-<p>2. 上下文丢失：大块文本导致 LLM 忽略关键信息</p>
-<p>3. 无法处理复杂关系：「A影响了B，B又影响了C」需要多跳推理</p>
-<p>4. 无自检能力：检索到无关内容也不知道</p>
+<li>1. 检索不准：语义相似 ≠ 问题相关</li>
+<li>2. 上下文丢失：大块文本导致 LLM 忽略关键信息</li>
+<li>3. 无法处理复杂关系：「A影响了B，B又影响了C」需要多跳推理</li>
+<li>4. 无自检能力：检索到无关内容也不知道</li>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h3>9.1.1 Chunk 切分策略深度 —— RAG 最被低估的环节</h3>
@@ -366,11 +370,11 @@ body {
 <p>致命问题 → 检索信噪比低，Embedding 向量被稀释</p>
 <p>「大海捞针」现象：关键词匹配到了，但淹没在 2000 字中</p>
 <p>&nbsp;</p>
-<p>经验公式（来自真实项目数据）:</p>
-<p>技术文档 → 512 tokens（代码块通常 20-50 行）</p>
-<p>客服知识库 → 256 tokens（QA 对通常很短）</p>
-<p>法律合同 → 1024 tokens（条款上下文不能断）</p>
-<p>通用 RAG → 500-800 tokens（平衡之选）</p>
+<p>可作为首轮实验的候选值（不是跨项目结论）:</p>
+<p>技术文档 → 先按标题、段落和完整代码块切分</p>
+<p>客服知识库 → 优先保持一组问答完整</p>
+<p>法律合同 → 优先保持条款及其引用关系完整</p>
+<p>通用语料 → 同时测试多个 chunk_size，再按端到端指标选择</p>
 <p>&nbsp;</p>
 <p>▍ chunk_overlap 不是「加越多越好」</p>
 <p>&nbsp;</p>
@@ -382,18 +386,18 @@ body {
 <p>Chunk B: 「CWI 工作时创建的」</p>
 <p>→ 两个 chunk 都丢失了完整语义！</p>
 <p>&nbsp;</p>
-<p>正确做法：overlap = chunk_size × 10-20%</p>
-<p>过大 → 存储膨胀、检索重复</p>
-<p>过小 → 边界信息丢失</p>
+<p>正确做法：把 overlap 当作待评测参数，而不是固定百分比。</p>
+<p>过大 → 存储膨胀、检索重复；过小 → 边界信息丢失。</p>
+<p>记录切分器版本，并同时比较检索召回、重复率、延迟和最终答案质量。</p>
 <p>&nbsp;</p>
 <p>▍ 语义切分（Semantic Chunking）—— 面试中的进阶话题</p>
 <p>&nbsp;</p>
 <p>固定大小切分的根本缺陷：完全无视文档的<strong>自然语义边界</strong>。</p>
 <p>&nbsp;</p>
 <p>语义切分的工作原理：</p>
-<li>把文档按句子拆分</li>
-<p>2. 计算相邻句子的 Embedding 相似度</p>
-<p>3. 在相似度「骤降」处切分 —— 这通常是段落/话题的自然边界</p>
+<li>1. 把文档按句子拆分</li>
+<li>2. 计算相邻句子的 Embedding 相似度</li>
+<li>3. 在相似度「骤降」处切分 —— 这通常是段落/话题的自然边界</li>
 <p>&nbsp;</p>
 <p>为什么更好？因为 Embedding 模型在「同一话题的句子」上相似度高，</p>
 <p>在「话题切换」处相似度骤降。利用这个特性，切出来的每个 chunk</p>
@@ -533,40 +537,37 @@ body {
 <p>▍ OpenAI vs 开源 Embedding：到底怎么选？</p>
 <p>&nbsp;</p>
 <p>text-embedding-3-small（OpenAI）:</p>
-<p>维度: 512（默认）/ 1536（最大）</p>
-<p>费用: $0.02/1M tokens（约 75 万中文字）</p>
+<p>维度: 1536（默认），可通过 dimensions 参数缩短</p>
+<p>费用: 按输入 token 计费，运行前查看官方价格页</p>
 <p>优势: 调试方便、无需部署、中文效果好</p>
-<p>陷阱: 维度越高 API 费用越高（1536 维度是 512 的 3 倍费用）</p>
+<p>权衡: 维度主要影响向量存储、索引内存和检索质量，不直接改变输入 token 数</p>
 <p>&nbsp;</p>
 <p>bge-large-zh-v1.5（智源，开源）:</p>
 <p>维度: 1024</p>
-<p>费用: 免费（本地 GPU 推理）</p>
+<p>费用: 无 API 单价，但需要计算、部署和运维资源</p>
 <p>优势: 中文专用、可微调、无网络依赖</p>
 <p>陷阱: 需要 GPU（4GB VRAM）、部署运维成本</p>
 <p>&nbsp;</p>
 <p>multilingual-e5-large（微软）:</p>
 <p>维度: 1024</p>
-<p>特点: 1024 维一档的综合最佳选择（MTEB 排行榜前 5）</p>
+<p>特点: 多语言检索基线之一；是否适用需在本领域语料上评测</p>
 <p>特殊要求: 查询前必须加 "query: " 前缀，文档前加 "passage: "</p>
 <p>&nbsp;</p>
-<p>▍ 维度选择的工程数据（面试时甩出这些数字）</p>
+<p>▍ 维度选择的工程方法</p>
 <p>&nbsp;</p>
-<p>我做过一个实验，用 10000 条客服知识库对比不同维度的检索 Recall@5：</p>
+<p>在同一模型、同一语料和同一索引参数下，对候选维度测量：</p>
+<li>Recall@k / nDCG@k：是否找到正确文档</li>
+<li>p50 / p95 延迟：索引与网络开销</li>
+<li>索引体积和常驻内存</li>
+<li>生成答案的端到端正确率</li>
 <p>&nbsp;</p>
-<p>384 维 → Recall@5: 78.3%（丢失了 1/5 的相关结果）</p>
-<p>768 维 → Recall@5: 85.7%（性价比最高点）</p>
-<p>1024 维 → Recall@5: 88.2%（精度提升放缓的拐点）</p>
-<p>1536 维 → Recall@5: 89.1%（只比 1024 高 0.9%，但向量存储大 50%）</p>
-<p>&nbsp;</p>
-<p>结论：1024 维是 RAG 的「帕累托最优」—— 再往上投入产出比很差。</p>
-<p>&nbsp;</p>
-<p>为什么 384→1024 提升 10%，而 1024→1536 只有 0.9%？</p>
-<p>→ Embedding 模型把语义「压缩」到固定维度。1024 维已经足够表达</p>
-<p>常规语义差异，多出来的维度主要编码了噪声和冗余信息。</p>
+<p>不存在跨领域通用的「最佳维度」。先确定可接受的质量下限，再选择满足</p>
+<p>下限的最小维度；任何固定 Recall 数字都必须附数据集、切分和随机种子。</p>
 <p>&nbsp;</p>
 <p>▍ 什么时候需要微调 Embedding 模型？</p>
 <p>&nbsp;</p>
-<p>如果你做的是<strong>垂直领域</strong> RAG（医疗、法律、金融），强烈建议微调。</p>
+<p>如果你做的是垂直领域 RAG（医疗、法律、金融），先建立领域评测集，</p>
+<p>只有通用模型未达标时再比较领域模型或微调方案。</p>
 <p>&nbsp;</p>
 <p>原因：通用 Embedding 模型在垂直术语上的表现很差。</p>
 <p>比如 text-embedding-3 对「心梗」和「心肌梗死」算出的相似度可能</p>
@@ -577,15 +578,15 @@ body {
 <li>负例对：(query, 随机文档 chunk) × 同数量</li>
 <li>训练方式：对比学习（Contrastive Learning），不是普通微调</li>
 <p>&nbsp;</p>
-<p>效果数据：金融领域 RAG 微调 Embedding 后 Recall@5 从 72% → 91%。</p>
+<p>效果必须在留出的领域测试集上报告，并与更换模型、混合检索和重排基线比较。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>9.3 Advanced RAG —— 三板斧优化</h2>
 <p>&nbsp;</p>
 <p>Advanced RAG 在 Naive RAG 的基础上加入三大优化：</p>
-<li>查询重写 (Query Rewriting)</li>
-<li>混合检索 (Hybrid Search)</li>
-<li>重排序 (Reranking)</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (145 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">query_rewrite</span><span class="code-badge code-badge-func">add_documents</span><span class="code-badge code-badge-func">hybrid_search</span><span class="code-badge code-badge-func">rerank</span><span class="code-badge code-badge-class">AdvancedRAG</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
+<li>1. 查询重写 (Query Rewriting)</li>
+<li>2. 混合检索 (Hybrid Search)</li>
+<li>3. 重排序 (Reranking)</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (145 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">query_rewrite</span><span class="code-badge code-badge-func">add_documents</span><span class="code-badge code-badge-func">hybrid_search</span><span class="code-badge code-badge-func">rerank</span><span class="code-badge code-badge-class">AdvancedRAG</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
 <span class="k">class</span> <span class="f">AdvancedRAG</span>:
@@ -749,18 +750,18 @@ body {
 <p>RRF_score(d) = Σ 1/(k + rank_i(d))</p>
 <p>&nbsp;</p>
 <p>其中 rank_i(d) 是文档 d 在第 i 个检索器中的排名，</p>
-<p>k 是平滑常数（通常 k=60，来自论文实验）。</p>
+<p>k 是平滑常数；60 是常见起始值，但仍应在自己的验证集上确认。</p>
 <p>&nbsp;</p>
 <p>为什么比加权求和好？</p>
-<li>与分数量纲无关 —— 不管 BM25 返回 0.3 还是 50，只看排名</li>
-<p>2. 自动均衡 —— 排名靠前的文档贡献大（1/61 ≈ 0.016 vs 1/90 ≈ 0.011）</p>
-<p>3. 无需调权重 —— 唯一的超参数 k 对结果不敏感（30-100 都可以）</p>
-<p>4. 可扩展 —— 3 个、5 个检索器随便加，不需要重新配权重</p>
+<li>1. 与分数量纲无关 —— 不管 BM25 返回 0.3 还是 50，只看排名</li>
+<li>2. 自动均衡 —— 排名靠前的文档贡献大（1/61 ≈ 0.016 vs 1/90 ≈ 0.011）</li>
+<li>3. 无需调权重 —— 唯一的超参数 k 对结果不敏感（30-100 都可以）</li>
+<li>4. 可扩展 —— 3 个、5 个检索器随便加，不需要重新配权重</li>
 <p>&nbsp;</p>
 <p>RRF 的一个关键细节：k 值越大，排名的「边际差异」越小。</p>
 <p>k=0 时，排名 1 贡献 1.0，排名 10 贡献 0.1（差异 10 倍）</p>
 <p>k=60 时，排名 1 贡献 0.016，排名 10 贡献 0.014（差异只有 15%）</p>
-<p>→ k=60 让融合更「民主」，不只关注第 1 名</p>
+<p>→ 较大的 k 会让融合更「民主」，不只关注第 1 名</p>
 <p>&nbsp;</p>
 <p>▍ 什么时候混合检索最有价值？</p>
 <p>&nbsp;</p>
@@ -778,8 +779,8 @@ body {
 <p>&nbsp;</p>
 <h3>9.3.2 重排序 (Reranking) 深度 —— Cross-Encoder 到底做了什么</h3>
 <p>&nbsp;</p>
-<p>重排序是 RAG pipeline 中「ROI 最高」的一步：通常只增加 10-20% 的延迟，</p>
-<p>但能提升 5-15% 的 Recall（取决于初始检索质量）。</p>
+<p>重排序经常是值得优先验证的一步，但收益与成本取决于候选集、reranker、</p>
+<p>硬件和数据集。不要引用跨项目固定百分比；用消融实验比较是否启用重排序。</p>
 <p>&nbsp;</p>
 <p>▍ Bi-Encoder vs Cross-Encoder —— 面试必问</p>
 <p>&nbsp;</p>
@@ -807,17 +808,17 @@ body {
 <p>&nbsp;</p>
 <p>▍ 重排序的成本收益计算</p>
 <p>&nbsp;</p>
-<p>假设 RAG pipeline 中有 10000 个文档：</p>
-<p>Stage 1 (Bi-Encoder): 10000 → 100 候选（快，~50ms）</p>
-<p>Stage 2 (Cross-Encoder): 100 → 5 最终结果（慢，~200ms）</p>
-<p>Stage 3 (LLM 生成): 5 篇文档作为上下文 → 回答（~2s）</p>
+<p>假设 RAG pipeline 中有大量文档：</p>
+<p>Stage 1 (Bi-Encoder): 全库 → 一批候选（可预计算向量）</p>
+<p>Stage 2 (Cross-Encoder): 候选 → 少量最终结果（逐对联合编码）</p>
+<p>Stage 3 (LLM 生成): 将最终文档作为上下文 → 回答</p>
 <p>&nbsp;</p>
 <p>如果不加重排序，直接把 Stage 1 的 top-5 喂给 LLM：</p>
-<p>省掉 200ms 的重排序延迟</p>
-<p>但 top-5 中有 1-2 篇是不相关的 → LLM 基于错误上下文生成</p>
-<p>→ 最终回答质量显著下降（实测下降 10-18%）</p>
+<p>会省掉重排序计算，但可能把排序靠前却不真正相关的文档交给 LLM。</p>
+<p>是否影响最终答案、影响多大，只能通过本领域评测集确认。</p>
 <p>&nbsp;</p>
-<p>结论：200ms 的额外延迟换取 10-18% 的质量提升 → 绝对值得。</p>
+<p>结论：同时报告无重排序/有重排序的 Recall@k、答案正确率、p95 延迟与成本，</p>
+<p>达到预先定义的质量门槛后再决定是否上线。</p>
 <p>&nbsp;</p>
 <p>▍ 主流 Reranker 模型选择</p>
 <p>&nbsp;</p>
@@ -825,14 +826,14 @@ body {
 <p>特点: 多语言，中文效果好，免费</p>
 <p>适合: 通用中文 RAG</p>
 <p>&nbsp;</p>
-<p>Cohere Rerank v3:</p>
-<p>特点: API 调用，效果最好（MTEB Reranking 第 1）</p>
-<p>适合: 对质量要求极高的场景</p>
-<p>费用: $2/1000 次搜索</p>
+<p>托管 Rerank API:</p>
+<p>特点: 无需自建推理服务，模型和价格会随版本变化</p>
+<p>适合: 希望快速验证重排序价值的团队</p>
+<p>选型: 查看当前官方模型卡和价格，并在私有验证集上比较</p>
 <p>&nbsp;</p>
 <p>cross-encoder/ms-marco-MiniLM-L-6-v2:</p>
-<p>特点: 极快（~5ms/对），效果中等</p>
-<p>适合: 延迟敏感场景</p>
+<p>特点: 可本地部署的经典轻量基线</p>
+<p>适合: 需要可控部署或建立延迟基线的场景</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>9.4 GraphRAG —— 知识图谱 + RAG</h2>
@@ -856,13 +857,13 @@ body {
 <p>&nbsp;</p>
 <p>GraphRAG 的核心原理：</p>
 <p>&nbsp;</p>
-<li>图构建 (Graph Construction)</li>
+<li>1. 图构建 (Graph Construction)</li>
 <p>从文档中抽取实体和关系，构建知识图谱</p>
 <p>&nbsp;</p>
-<li>混合检索 (Hybrid Retrieval)</li>
+<li>2. 混合检索 (Hybrid Retrieval)</li>
 <p>同时使用向量搜索和图遍历</p>
 <p>&nbsp;</p>
-<li>多跳推理 (Multi-hop Reasoning)</li>
+<li>3. 多跳推理 (Multi-hop Reasoning)</li>
 <p>沿着图谱的边寻找推理路径</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (120 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_relation</span><span class="code-badge code-badge-func">traverse</span><span class="code-badge code-badge-func">find_path</span><span class="code-badge code-badge-func">demo_graphrag</span><span class="code-badge code-badge-class">SimpleKnowledgeGraph</span></div><div class="code-block"><pre><span class="k">import</span> numpy <span class="k">as</span> np
 <span class="k">from</span> typing <span class="k">import</span> Optional
 
@@ -1004,27 +1005,27 @@ body {
 <p>&nbsp;</p>
 <p>Agentic RAG 的工作流程:</p>
 <p>&nbsp;</p>
-<p>用户: "2024年OpenAI的营收比2023年增长了百分之多少？"</p>
+<p>用户: "某公司2024年营收比2023年增长了百分之多少？"</p>
 <p>&nbsp;</p>
 <p>传统 RAG:</p>
-<p>→ 检索「OpenAI 营收」→ 可能找到 2023 和 2024 的数据</p>
+<p>→ 检索「公司营收」→ 可能找到 2023 和 2024 的数据</p>
 <p>→ 但 RAG 不会算百分比，直接给了用户两段数字</p>
 <p>→ 用户还需要自己算</p>
 <p>&nbsp;</p>
 <p>Agentic RAG:</p>
 <p>→ Step 1: 分析问题 → 需要「2023营收」「2024营收」「百分比计算」</p>
-<p>→ Step 2: 搜索「OpenAI 2023年营收」 → 得到 $1.6B</p>
-<p>→ Step 3: 搜索「OpenAI 2024年营收」 → 得到 $3.7B</p>
+<p>→ Step 2: 搜索「公司 2023年营收」 → 假设得到 1.6B</p>
+<p>→ Step 3: 搜索「公司 2024年营收」 → 假设得到 3.7B</p>
 <p>→ Step 4: 计算 (3.7-1.6)/1.6 = 131.25%</p>
 <p>→ Step 5: 回答「增长约 131%」</p>
 <p>&nbsp;</p>
 <p>Agentic RAG 包含了一个 Agent 循环：</p>
 <p>思考需要什么信息 → 检索/计算 → 不满足就继续 → 满足则输出</p>
 <p>&nbsp;</p>
-<p>业内数据（2025年）：</p>
-<li>Agentic RAG 在复杂查询上的准确率比传统 RAG 高 30-50%</li>
-<li>但 90% 的 Agentic RAG 项目在生产中失败！</li>
-<li>失败原因：过度设计、缺少评估、成本失控</li></div><div class="lecture"><h2>9.6 RAG 评估体系 —— 如何衡量 RAG 质量？</h2>
+<p>工程结论：</p>
+<li>Agentic RAG 可能改善需要多步检索、验证或计算的任务</li>
+<li>它也会增加调用次数、延迟和错误路径，不应默认替代固定检索流水线</li>
+<li>用同一测试集比较准确率、总 token、p95 延迟和失败率后再决定是否采用</li></div><div class="lecture"><h2>9.6 RAG 评估体系 —— 如何衡量 RAG 质量？</h2>
 <p>&nbsp;</p>
 <p>RAGAS (RAG Assessment) 是最流行的 RAG 评估框架，但你不需要把所有</p>
 <p>指标都用上。面试时关键是说出「什么场景重点关注哪个指标」。</p>
@@ -1047,17 +1048,18 @@ body {
 <p>&nbsp;</p>
 <p>▍ RAGAS 的实际工程经验</p>
 <p>&nbsp;</p>
-<li>LLM-as-Judge 不是免费的 —— 每次评估调用 GPT-4 要花钱</li>
-<p>100 题 × 5 指标 × GPT-4 = $1-3/次评测。所以要慎用，不要每次 CI 都跑</p>
+<li>1. LLM-as-Judge 会产生调用费用与评审偏差</li>
+<p>在 CI 中运行小型哨兵集，完整评测按计划或模型/提示词变更触发</p>
 <p>&nbsp;</p>
-<li>人工标注 Ground Truth 是必须的 —— LLM 自己评自己会过拟合</li>
-<p>至少对 10% 的问题做人工标注，作为「锚点」来校准 LLM 评分</p>
+<li>2. 人工标注 Ground Truth 是必须的 —— LLM 自己评自己会过拟合</li>
+<p>对覆盖关键风险和典型流量的样本做人工标注，作为「锚点」校准 LLM 评分；</p>
+<p>样本量由误差预算和分层覆盖决定，不使用固定百分比</p>
 <p>&nbsp;</p>
-<li>单次高分不代表上线稳 —— 每周做一次回溯评测，</li>
+<li>3. 单次高分不代表上线稳 —— 按文档、模型和提示词的变更风险触发回溯评测，</li>
 <p>因为你的文档在变、Embedding 模型在更新、用户问法在迁移</p>
 <p>&nbsp;</p>
-<p>2025年评估趋势：</p>
-<li>LLM-as-Judge 成为主流（用 GPT-4 评估 RAG 输出）</li>
+<p>截至 2026-08-01 的评估重点：</p>
+<li>LLM-as-Judge 需要用人工锚点校准，并报告模型与 rubric 版本</li>
 <li>RAGAS 支持在线评估（用户反馈 → 实时指标更新）</li>
 <li>多轮对话评估成为新方向（不只是单轮 QA）</li>
 <p>&nbsp;</p>
@@ -1075,7 +1077,7 @@ body {
 <p>根因：缺乏「拒答机制」——LLM 默认相信检索结果</p>
 <p>&nbsp;</p>
 <p>对策：</p>
-<p>a) 添加 Faithfulness 检查（RAGAS Faithfulness > 0.7 才输出）</p>
+<p>a) 添加 Faithfulness 检查，阈值由人工标注集校准</p>
 <p>b) 在 System Prompt 中明确指示「如果检索到的信息不包含答案，请直接说不知道」</p>
 <p>c) 设置检索分数阈值，低于阈值的 chunk 不传给 LLM</p>
 <p>&nbsp;</p>
@@ -1087,75 +1089,75 @@ body {
 <p>根因：chunk 太小或 overlap 不足</p>
 <p>&nbsp;</p>
 <p>对策：</p>
-<p>a) 增大 chunk_size 到 800+ tokens</p>
+<p>a) 在验证集上比较更大的 chunk 或结构化切分</p>
 <p>b) 使用父文档检索策略（检索小块 → 返回大块邻居）</p>
-<p>c) 保证 overlap ≥ chunk_size × 15%</p>
+<p>c) 调整 overlap，并监控边界遗漏与重复检索</p>
 <p>&nbsp;</p>
 <p>▍ 失败模式 3：RAG 成本失控</p>
 <p>&nbsp;</p>
-<p>现象：一个月后发现 Embedding API 费用比 GPT-4 调用费还高</p>
+<p>现象：一段时间后发现 Embedding 与索引成本高于生成调用</p>
 <p>&nbsp;</p>
 <p>根因：预处理时对全量文档做了 Embedding + 线上每次查询都从头调 Embedding API</p>
 <p>&nbsp;</p>
 <p>对策：</p>
-<p>a) 预处理阶段批量化（100 条一组），不是逐条调 API</p>
+<p>a) 按 provider 当前批处理限制批量化，不逐条调用 API</p>
 <p>b) Embedding 结果缓存到本地（S3 / 本地文件 / 向量库自带的持久化）</p>
-<p>c) 热查询缓存（高频 query → 缓存检索结果，命中率 20-40%）</p>
-<p>d) 用开源 Embedding 模型替代付费 API（对于日均 10 万+ 查询的场景）</p>
+<p>c) 热查询缓存（记录命中率、陈旧率和失效策略）</p>
+<p>d) 比较托管与自部署 Embedding 的总拥有成本，而不只看 API 单价</p>
 <p>&nbsp;</p>
 <p>▍ 失败模式 4：向量库索引腐烂</p>
 <p>&nbsp;</p>
-<p>现象：刚上线时效果很好，3 个月后质量持续下降</p>
+<p>现象：上线一段时间后质量持续下降</p>
 <p>&nbsp;</p>
 <p>根因：知识库更新了，但向量索引没有重建 → 部分 chunk 指向已过时的内容</p>
 <p>&nbsp;</p>
 <p>对策：</p>
 <p>a) 建立文档变更 Hook → 自动重建受影响 chunk 的 Embedding</p>
 <p>b) 给每个 chunk 加版本号和过期时间戳</p>
-<p>c) 定期全量重建（每周凌晨）</p></div><div class="lecture"><h2>9.7 本章总结</h2>
+<p>c) 根据变更量、索引一致性和恢复目标安排全量校验或重建</p></div><div class="lecture"><h2>9.7 本章总结</h2>
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
-<li>Naive RAG = 问 → 检索 → 生成</li>
+<li>1. Naive RAG = 问 → 检索 → 生成</li>
 <p>问题：检索不准、无自检、无法多跳推理</p>
 <p>&nbsp;</p>
-<li>Chunk 切分（面试高频！）</li>
+<li>2. Chunk 切分（面试高频！）</li>
 <p>核心认知：没有「万能 chunk_size」，根据文档类型选择</p>
-<p>面试标准回答：「技术文档 512t / 客服 256t / 法律 1024t / 通用 500-800t」</p>
+<p>面试标准回答：「按文档结构保留语义单元，用验证集比较多个候选大小」</p>
 <p>进阶：语义切分 + 固定大小切分的混合策略</p>
-<p>关键数字：overlap = chunk_size × 10-20%</p>
+<p>overlap 与 chunk_size 都是需要通过检索和端到端评测确定的参数</p>
 <p>&nbsp;</p>
-<li>Embedding 模型选型</li>
-<p>通用场景 → text-embedding-3-small (512 维，性价比最高)</p>
-<p>中文优先 → bge-large-zh-v1.5 (1024 维，免费)</p>
-<p>垂直领域 → 微调 Embedding 模型（Recall 提升 19%）</p>
-<p>维度选择：1024 是帕累托最优，再往上投入产出比很差</p>
+<li>3. Embedding 模型选型</li>
+<p>托管基线 → 当前可用的 Embedding API（记录模型快照和 dimensions）</p>
+<p>中文/本地基线 → 在目标语料上评测合适的开源多语言或中文模型</p>
+<p>垂直领域 → 只有基线达不到质量门槛时再考虑微调</p>
+<p>维度选择：在质量下限内选择存储、延迟和成本合适的最小维度</p>
 <p>&nbsp;</p>
-<li>Advanced RAG = Naive + 查询重写 + 混合检索(RRF) + 重排序(Cross-Encoder)</li>
+<li>4. Advanced RAG = Naive + 查询重写 + 混合检索(RRF) + 重排序(Cross-Encoder)</li>
 <p>面试重点：为什么混合检索比纯向量好？</p>
 <p>→ 向量擅长语义但不擅长关键词精确匹配</p>
 <p>→ 法律/金融领域两者的互补性尤其明显</p>
-<p>→ RRF 是工业界标准融合方案（无需调权重，k=60 即可）</p>
+<p>→ RRF 避免直接混合异构分数，k=60 可作起点但仍要验证</p>
 <p>&nbsp;</p>
-<li>重排序是 ROI 最高的优化</li>
-<p>Cross-Encoder 增加 200ms 延迟，提升 10-18% 质量</p>
+<li>5. 重排序是应优先做消融实验的优化</li>
+<p>Cross-Encoder 的质量收益和额外延迟必须在目标数据与硬件上测量</p>
 <p>面试答法：「我使用 Bi-Encoder 做初筛 + Cross-Encoder 做精排的两阶段检索」</p>
 <p>&nbsp;</p>
-<li>GraphRAG = RAG + 知识图谱</li>
+<li>6. GraphRAG = RAG + 知识图谱</li>
 <p>核心价值：多跳推理能力</p>
 <p>适用场景：关系密集型问题（「A影响了B，B又影响了C」）</p>
 <p>&nbsp;</p>
-<li>Agentic RAG = RAG + Agent 循环</li>
+<li>7. Agentic RAG = RAG + Agent 循环</li>
 <p>核心价值：动态决策 → 自主判断需要什么信息</p>
-<p>注意：90% 的生产失败率 — 从简单开始，逐步迭代</p>
+<p>注意：增加调用、延迟和错误路径 — 从简单基线开始，逐步迭代</p>
 <p>&nbsp;</p>
-<li>RAG 生产 Checklist</li>
+<li>8. RAG 生产 Checklist</li>
 <p>✅ 检索分数阈值 → 拒绝低质量 chunk</p>
-<p>✅ RAGAS Faithfulness > 0.7 检查</p>
+<p>✅ 用人工锚点校准 Faithfulness 阈值</p>
 <p>✅ Embedding 批量预处理 + 持久化缓存</p>
 <p>✅ 文档变更 Hook → 自动增量更新索引</p>
-<p>✅ 热查询缓存 → 节省 20-40% 成本</p>
-<p>✅ 每周全量回溯评测</p>
+<p>✅ 热查询缓存 → 记录命中率、陈旧率和真实成本变化</p>
+<p>✅ 按知识库/模型/提示词变更风险触发回溯评测</p>
 <p>&nbsp;</p>
 <p>面试速记（完整版）:</p>
 <p>"RAG 核心技术栈？"</p>
@@ -1215,9 +1217,9 @@ body {
     <span class="b">print</span>(<span class="s">"  传统RAG: 固定流水线「检索→生成」"</span>)
     <span class="b">print</span>(<span class="s">"  Agentic RAG: 动态决策 「思考→检索→判断→再检索→...」"</span>)
     <span class="b">print</span>(<span class="s">""</span>)
-    <span class="b">print</span>(<span class="s">"2025年行业数据："</span>)
-    <span class="b">print</span>(<span class="s">"  准确率提升 30-50%，但 90% 生产失败率"</span>)
-    <span class="b">print</span>(<span class="s">"  建议：从简单开始，逐步迭代，持续评估"</span>)
+    <span class="b">print</span>(<span class="s">"工程建议："</span>)
+    <span class="b">print</span>(<span class="s">"  用同一评测集比较固定 RAG 与 Agentic RAG 的质量、成本和延迟"</span>)
+    <span class="b">print</span>(<span class="s">"  从简单流水线开始，只有证据支持时才增加 Agent 循环"</span>)
 
     <span class="b">print</span>(<span class="s">"\n▶ 9.6 RAGAS 评估体系"</span>)
     <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
@@ -1230,14 +1232,17 @@ body {
     <span class="k">for</span> name, desc <span class="k">in</span> metrics:
         <span class="b">print</span>(f<span class="s">"  {name}: {desc}"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第9章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (999 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第9章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (1000 行)</summary><div class="code-block"><pre><span class="s">"""
 第9章：RAG 深度解析 —— 从 Naive 到生产级，面试到工程全覆盖
 ===========================================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 理解 RAG 的完整技术演进路线（Naive → Advanced → GraphRAG → Agentic）
-  2. 掌握 Chunk 切分策略的工程选型（固定/语义/递归 + chunk_size 最佳实践）
-  3. 精通 Embedding 模型选型与维度选择的量化依据
+  2. 掌握 Chunk 切分策略的工程选型（固定/语义/递归 + 评测驱动调参）
+  3. 掌握 Embedding 模型与维度的评测方法
   4. 深入理解混合检索 RRF 融合算法和 Cross-Encoder 重排序原理
   5. 实现可运行的 Advanced RAG 和 GraphRAG 系统
   6. 掌握 RAGAS 评估体系和 4 种生产失败模式的应对策略
@@ -1306,45 +1311,45 @@ Chunk 切分是 RAG Pipeline 的**第一步**，也是**最致命的瓶颈**。
   太小（100-200 字符）:
     优点 → 检索精度高，向量信号集中
     致命问题 → 丢失上下文！「Python 在...之后发布了...」只剩半句话
-    
+
   中等（500-1000 字符）:
     RAG 的「甜点区」—— 保持语义完整性的同时控制噪声
     一个 chunk ≈ 一段话，正好是一个完整语义单元
-    
+
   太大（2000+ 字符）:
     优点 → 上下文丰富，LLM 生成质量高
     致命问题 → 检索信噪比低，Embedding 向量被稀释
     「大海捞针」现象：关键词匹配到了，但淹没在 2000 字中
 
-  经验公式（来自真实项目数据）:
-    技术文档 → 512 tokens（代码块通常 20-50 行）
-    客服知识库 → 256 tokens（QA 对通常很短）
-    法律合同 → 1024 tokens（条款上下文不能断）
-    通用 RAG → 500-800 tokens（平衡之选）
+  可作为首轮实验的候选值（不是跨项目结论）:
+    技术文档 → 先按标题、段落和完整代码块切分
+    客服知识库 → 优先保持一组问答完整
+    法律合同 → 优先保持条款及其引用关系完整
+    通用语料 → 同时测试多个 chunk_size，再按端到端指标选择
 
 ▍ chunk_overlap 不是「加越多越好」
 
   overlap = chunk 之间的重叠字符/Token 数。
-  
+
   它的真正作用：防止关键信息恰好落在两个 chunk 的边界处。
   比如「Python 是 Guido van Rossum 在 CWI 工作时创建的」被切成：
-    Chunk A: 「Python 是 Guido van Rossum 在」 
+    Chunk A: 「Python 是 Guido van Rossum 在」
     Chunk B: 「CWI 工作时创建的」
     → 两个 chunk 都丢失了完整语义！
-  
-  正确做法：overlap = chunk_size × 10-20%
-  过大 → 存储膨胀、检索重复
-  过小 → 边界信息丢失
+
+  正确做法：把 overlap 当作待评测参数，而不是固定百分比。
+  过大 → 存储膨胀、检索重复；过小 → 边界信息丢失。
+  记录切分器版本，并同时比较检索召回、重复率、延迟和最终答案质量。
 
 ▍ 语义切分（Semantic Chunking）—— 面试中的进阶话题
 
   固定大小切分的根本缺陷：完全无视文档的**自然语义边界**。
-  
+
   语义切分的工作原理：
     1. 把文档按句子拆分
     2. 计算相邻句子的 Embedding 相似度
     3. 在相似度「骤降」处切分 —— 这通常是段落/话题的自然边界
-    
+
   为什么更好？因为 Embedding 模型在「同一话题的句子」上相似度高，
   在「话题切换」处相似度骤降。利用这个特性，切出来的每个 chunk
   天然是语义自洽的，不需要人工调 chunk_size。
@@ -1493,41 +1498,38 @@ Chunk 切分是 RAG Pipeline 的**第一步**，也是**最致命的瓶颈**。
 ▍ OpenAI vs 开源 Embedding：到底怎么选？
 
   text-embedding-3-small（OpenAI）:
-    维度: 512（默认）/ 1536（最大）
-    费用: $0.02/1M tokens（约 75 万中文字）
+    维度: 1536（默认），可通过 dimensions 参数缩短
+    费用: 按输入 token 计费，运行前查看官方价格页
     优势: 调试方便、无需部署、中文效果好
-    陷阱: 维度越高 API 费用越高（1536 维度是 512 的 3 倍费用）
-    
+    权衡: 维度主要影响向量存储、索引内存和检索质量，不直接改变输入 token 数
+
   bge-large-zh-v1.5（智源，开源）:
     维度: 1024
-    费用: 免费（本地 GPU 推理）
+    费用: 无 API 单价，但需要计算、部署和运维资源
     优势: 中文专用、可微调、无网络依赖
     陷阱: 需要 GPU（4GB VRAM）、部署运维成本
-    
+
   multilingual-e5-large（微软）:
     维度: 1024
-    特点: 1024 维一档的综合最佳选择（MTEB 排行榜前 5）
+    特点: 多语言检索基线之一；是否适用需在本领域语料上评测
     特殊要求: 查询前必须加 "query: " 前缀，文档前加 "passage: "
 
-▍ 维度选择的工程数据（面试时甩出这些数字）
+▍ 维度选择的工程方法
 
-  我做过一个实验，用 10000 条客服知识库对比不同维度的检索 Recall@5：
+  在同一模型、同一语料和同一索引参数下，对候选维度测量：
+    - Recall@k / nDCG@k：是否找到正确文档
+    - p50 / p95 延迟：索引与网络开销
+    - 索引体积和常驻内存
+    - 生成答案的端到端正确率
 
-  384 维 → Recall@5: 78.3%（丢失了 1/5 的相关结果）
-  768 维 → Recall@5: 85.7%（性价比最高点）
-  1024 维 → Recall@5: 88.2%（精度提升放缓的拐点）
-  1536 维 → Recall@5: 89.1%（只比 1024 高 0.9%，但向量存储大 50%）
-
-  结论：1024 维是 RAG 的「帕累托最优」—— 再往上投入产出比很差。
-  
-  为什么 384→1024 提升 10%，而 1024→1536 只有 0.9%？
-  → Embedding 模型把语义「压缩」到固定维度。1024 维已经足够表达
-  常规语义差异，多出来的维度主要编码了噪声和冗余信息。
+  不存在跨领域通用的「最佳维度」。先确定可接受的质量下限，再选择满足
+  下限的最小维度；任何固定 Recall 数字都必须附数据集、切分和随机种子。
 
 ▍ 什么时候需要微调 Embedding 模型？
 
-  如果你做的是**垂直领域** RAG（医疗、法律、金融），强烈建议微调。
-  
+  如果你做的是垂直领域 RAG（医疗、法律、金融），先建立领域评测集，
+  只有通用模型未达标时再比较领域模型或微调方案。
+
   原因：通用 Embedding 模型在垂直术语上的表现很差。
   比如 text-embedding-3 对「心梗」和「心肌梗死」算出的相似度可能
   只有 0.6，但对人类来说这是同一个意思。
@@ -1536,8 +1538,8 @@ Chunk 切分是 RAG Pipeline 的**第一步**，也是**最致命的瓶颈**。
     - 正例对：(query, 正确文档 chunk) × 500-2000 条
     - 负例对：(query, 随机文档 chunk) × 同数量
     - 训练方式：对比学习（Contrastive Learning），不是普通微调
-    
-  效果数据：金融领域 RAG 微调 Embedding 后 Recall@5 从 72% → 91%。
+
+  效果必须在留出的领域测试集上报告，并与更换模型、混合检索和重排基线比较。
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1718,7 +1720,7 @@ Advanced RAG 在 Naive RAG 的基础上加入三大优化：
     RRF_score(d) = Σ 1/(k + rank_i(d))
 
     其中 rank_i(d) 是文档 d 在第 i 个检索器中的排名，
-    k 是平滑常数（通常 k=60，来自论文实验）。
+    k 是平滑常数；60 是常见起始值，但仍应在自己的验证集上确认。
 
   为什么比加权求和好？
     1. 与分数量纲无关 —— 不管 BM25 返回 0.3 还是 50，只看排名
@@ -1729,7 +1731,7 @@ Advanced RAG 在 Naive RAG 的基础上加入三大优化：
   RRF 的一个关键细节：k 值越大，排名的「边际差异」越小。
   k=0 时，排名 1 贡献 1.0，排名 10 贡献 0.1（差异 10 倍）
   k=60 时，排名 1 贡献 0.016，排名 10 贡献 0.014（差异只有 15%）
-  → k=60 让融合更「民主」，不只关注第 1 名
+  → 较大的 k 会让融合更「民主」，不只关注第 1 名
 
 ▍ 什么时候混合检索最有价值？
 
@@ -1739,7 +1741,7 @@ Advanced RAG 在 Naive RAG 的基础上加入三大优化：
   必用混合检索的场景：
     法律合同 → 「不可抗力」和「天灾」语义相同但词不同 → 向量检索救命
     技术文档 → 「API」在不同上下文含义完全不同 → 关键词检索救命
-    
+
   可以只用向量的场景：
     科普文章 → 语义检索已经足够
     纯 FAQ → 用户问法高度集中在 200 个模板 → 关键词就够了
@@ -1749,8 +1751,8 @@ Advanced RAG 在 Naive RAG 的基础上加入三大优化：
 9.3.2 重排序 (Reranking) 深度 —— Cross-Encoder 到底做了什么
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-重排序是 RAG pipeline 中「ROI 最高」的一步：通常只增加 10-20% 的延迟，
-但能提升 5-15% 的 Recall（取决于初始检索质量）。
+重排序经常是值得优先验证的一步，但收益与成本取决于候选集、reranker、
+硬件和数据集。不要引用跨项目固定百分比；用消融实验比较是否启用重排序。
 
 ▍ Bi-Encoder vs Cross-Encoder —— 面试必问
 
@@ -1769,7 +1771,7 @@ Advanced RAG 在 Naive RAG 的基础上加入三大优化：
   类比：
     Bi-Encoder = 分别看两个人的简历 → 猜他们合不合适
     Cross-Encoder = 让两个人坐下来聊 → 真实判断合不合适
-    
+
   Cross-Encoder 能捕捉到的 Bi-Encoder 捕捉不到的东西：
     « 精确匹配 » "Python" 和 "Python语言" → Bi-Encoder 相似度可能只有 0.5
     → Cross-Encoder 看到完整上下文后直接打 0.95
@@ -1778,32 +1780,32 @@ Advanced RAG 在 Naive RAG 的基础上加入三大优化：
 
 ▍ 重排序的成本收益计算
 
-  假设 RAG pipeline 中有 10000 个文档：
-    Stage 1 (Bi-Encoder): 10000 → 100 候选（快，~50ms）
-    Stage 2 (Cross-Encoder): 100 → 5 最终结果（慢，~200ms）
-    Stage 3 (LLM 生成): 5 篇文档作为上下文 → 回答（~2s）
+  假设 RAG pipeline 中有大量文档：
+    Stage 1 (Bi-Encoder): 全库 → 一批候选（可预计算向量）
+    Stage 2 (Cross-Encoder): 候选 → 少量最终结果（逐对联合编码）
+    Stage 3 (LLM 生成): 将最终文档作为上下文 → 回答
 
   如果不加重排序，直接把 Stage 1 的 top-5 喂给 LLM：
-    省掉 200ms 的重排序延迟
-    但 top-5 中有 1-2 篇是不相关的 → LLM 基于错误上下文生成
-    → 最终回答质量显著下降（实测下降 10-18%）
+    会省掉重排序计算，但可能把排序靠前却不真正相关的文档交给 LLM。
+    是否影响最终答案、影响多大，只能通过本领域评测集确认。
 
-  结论：200ms 的额外延迟换取 10-18% 的质量提升 → 绝对值得。
+  结论：同时报告无重排序/有重排序的 Recall@k、答案正确率、p95 延迟与成本，
+  达到预先定义的质量门槛后再决定是否上线。
 
 ▍ 主流 Reranker 模型选择
 
   BGE-Reranker-v2-m3（智源）:
     特点: 多语言，中文效果好，免费
     适合: 通用中文 RAG
-    
-  Cohere Rerank v3:
-    特点: API 调用，效果最好（MTEB Reranking 第 1）
-    适合: 对质量要求极高的场景
-    费用: $2/1000 次搜索
-    
+
+  托管 Rerank API:
+    特点: 无需自建推理服务，模型和价格会随版本变化
+    适合: 希望快速验证重排序价值的团队
+    选型: 查看当前官方模型卡和价格，并在私有验证集上比较
+
   cross-encoder/ms-marco-MiniLM-L-6-v2:
-    特点: 极快（~5ms/对），效果中等
-    适合: 延迟敏感场景
+    特点: 可本地部署的经典轻量基线
+    适合: 需要可控部署或建立延迟基线的场景
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1984,27 +1986,27 @@ Agentic RAG 是有判断力的系统：
 
 Agentic RAG 的工作流程:
 
-  用户: "2024年OpenAI的营收比2023年增长了百分之多少？"
+  用户: "某公司2024年营收比2023年增长了百分之多少？"
 
   传统 RAG:
-    → 检索「OpenAI 营收」→ 可能找到 2023 和 2024 的数据
+    → 检索「公司营收」→ 可能找到 2023 和 2024 的数据
     → 但 RAG 不会算百分比，直接给了用户两段数字
     → 用户还需要自己算
 
   Agentic RAG:
     → Step 1: 分析问题 → 需要「2023营收」「2024营收」「百分比计算」
-    → Step 2: 搜索「OpenAI 2023年营收」 → 得到 $1.6B
-    → Step 3: 搜索「OpenAI 2024年营收」 → 得到 $3.7B
+    → Step 2: 搜索「公司 2023年营收」 → 假设得到 1.6B
+    → Step 3: 搜索「公司 2024年营收」 → 假设得到 3.7B
     → Step 4: 计算 (3.7-1.6)/1.6 = 131.25%
     → Step 5: 回答「增长约 131%」
 
   Agentic RAG 包含了一个 Agent 循环：
     思考需要什么信息 → 检索/计算 → 不满足就继续 → 满足则输出
 
-业内数据（2025年）：
-  - Agentic RAG 在复杂查询上的准确率比传统 RAG 高 30-50%
-  - 但 90% 的 Agentic RAG 项目在生产中失败！
-  - 失败原因：过度设计、缺少评估、成本失控
+工程结论：
+  - Agentic RAG 可能改善需要多步检索、验证或计算的任务
+  - 它也会增加调用次数、延迟和错误路径，不应默认替代固定检索流水线
+  - 用同一测试集比较准确率、总 token、p95 延迟和失败率后再决定是否采用
 """</span>
 
 
@@ -2034,17 +2036,18 @@ RAGAS (RAG Assessment) 是最流行的 RAG 评估框架，但你不需要把所�
 
 ▍ RAGAS 的实际工程经验
 
-  1. LLM-as-Judge 不是免费的 —— 每次评估调用 GPT-4 要花钱
-     100 题 × 5 指标 × GPT-4 = $1-3/次评测。所以要慎用，不要每次 CI 都跑
+  1. LLM-as-Judge 会产生调用费用与评审偏差
+     在 CI 中运行小型哨兵集，完整评测按计划或模型/提示词变更触发
 
   2. 人工标注 Ground Truth 是必须的 —— LLM 自己评自己会过拟合
-     至少对 10% 的问题做人工标注，作为「锚点」来校准 LLM 评分
+     对覆盖关键风险和典型流量的样本做人工标注，作为「锚点」校准 LLM 评分；
+     样本量由误差预算和分层覆盖决定，不使用固定百分比
 
-  3. 单次高分不代表上线稳 —— 每周做一次回溯评测，
+  3. 单次高分不代表上线稳 —— 按文档、模型和提示词的变更风险触发回溯评测，
      因为你的文档在变、Embedding 模型在更新、用户问法在迁移
 
-2025年评估趋势：
-  - LLM-as-Judge 成为主流（用 GPT-4 评估 RAG 输出）
+截至 2026-08-01 的评估重点：
+  - LLM-as-Judge 需要用人工锚点校准，并报告模型与 rubric 版本
   - RAGAS 支持在线评估（用户反馈 → 实时指标更新）
   - 多轮对话评估成为新方向（不只是单轮 QA）
 
@@ -2064,7 +2067,7 @@ RAGAS (RAG Assessment) 是最流行的 RAG 评估框架，但你不需要把所�
   根因：缺乏「拒答机制」——LLM 默认相信检索结果
 
   对策：
-    a) 添加 Faithfulness 检查（RAGAS Faithfulness &gt; 0.7 才输出）
+    a) 添加 Faithfulness 检查，阈值由人工标注集校准
     b) 在 System Prompt 中明确指示「如果检索到的信息不包含答案，请直接说不知道」
     c) 设置检索分数阈值，低于阈值的 chunk 不传给 LLM
 
@@ -2076,32 +2079,32 @@ RAGAS (RAG Assessment) 是最流行的 RAG 评估框架，但你不需要把所�
   根因：chunk 太小或 overlap 不足
 
   对策：
-    a) 增大 chunk_size 到 800+ tokens
+    a) 在验证集上比较更大的 chunk 或结构化切分
     b) 使用父文档检索策略（检索小块 → 返回大块邻居）
-    c) 保证 overlap ≥ chunk_size × 15%
+    c) 调整 overlap，并监控边界遗漏与重复检索
 
 ▍ 失败模式 3：RAG 成本失控
 
-  现象：一个月后发现 Embedding API 费用比 GPT-4 调用费还高
+  现象：一段时间后发现 Embedding 与索引成本高于生成调用
 
   根因：预处理时对全量文档做了 Embedding + 线上每次查询都从头调 Embedding API
 
   对策：
-    a) 预处理阶段批量化（100 条一组），不是逐条调 API
+    a) 按 provider 当前批处理限制批量化，不逐条调用 API
     b) Embedding 结果缓存到本地（S3 / 本地文件 / 向量库自带的持久化）
-    c) 热查询缓存（高频 query → 缓存检索结果，命中率 20-40%）
-    d) 用开源 Embedding 模型替代付费 API（对于日均 10 万+ 查询的场景）
+    c) 热查询缓存（记录命中率、陈旧率和失效策略）
+    d) 比较托管与自部署 Embedding 的总拥有成本，而不只看 API 单价
 
 ▍ 失败模式 4：向量库索引腐烂
 
-  现象：刚上线时效果很好，3 个月后质量持续下降
+  现象：上线一段时间后质量持续下降
 
   根因：知识库更新了，但向量索引没有重建 → 部分 chunk 指向已过时的内容
 
   对策：
     a) 建立文档变更 Hook → 自动重建受影响 chunk 的 Embedding
     b) 给每个 chunk 加版本号和过期时间戳
-    c) 定期全量重建（每周凌晨）
+    c) 根据变更量、索引一致性和恢复目标安排全量校验或重建
 """</span>
 
 
@@ -2117,24 +2120,24 @@ RAGAS (RAG Assessment) 是最流行的 RAG 评估框架，但你不需要把所�
 
 2. Chunk 切分（面试高频！）
    核心认知：没有「万能 chunk_size」，根据文档类型选择
-   面试标准回答：「技术文档 512t / 客服 256t / 法律 1024t / 通用 500-800t」
+   面试标准回答：「按文档结构保留语义单元，用验证集比较多个候选大小」
    进阶：语义切分 + 固定大小切分的混合策略
-   关键数字：overlap = chunk_size × 10-20%
+   overlap 与 chunk_size 都是需要通过检索和端到端评测确定的参数
 
 3. Embedding 模型选型
-   通用场景 → text-embedding-3-small (512 维，性价比最高)
-   中文优先 → bge-large-zh-v1.5 (1024 维，免费)
-   垂直领域 → 微调 Embedding 模型（Recall 提升 19%）
-   维度选择：1024 是帕累托最优，再往上投入产出比很差
+   托管基线 → 当前可用的 Embedding API（记录模型快照和 dimensions）
+   中文/本地基线 → 在目标语料上评测合适的开源多语言或中文模型
+   垂直领域 → 只有基线达不到质量门槛时再考虑微调
+   维度选择：在质量下限内选择存储、延迟和成本合适的最小维度
 
 4. Advanced RAG = Naive + 查询重写 + 混合检索(RRF) + 重排序(Cross-Encoder)
    面试重点：为什么混合检索比纯向量好？
    → 向量擅长语义但不擅长关键词精确匹配
    → 法律/金融领域两者的互补性尤其明显
-   → RRF 是工业界标准融合方案（无需调权重，k=60 即可）
+   → RRF 避免直接混合异构分数，k=60 可作起点但仍要验证
 
-5. 重排序是 ROI 最高的优化
-   Cross-Encoder 增加 200ms 延迟，提升 10-18% 质量
+5. 重排序是应优先做消融实验的优化
+   Cross-Encoder 的质量收益和额外延迟必须在目标数据与硬件上测量
    面试答法：「我使用 Bi-Encoder 做初筛 + Cross-Encoder 做精排的两阶段检索」
 
 6. GraphRAG = RAG + 知识图谱
@@ -2143,15 +2146,15 @@ RAGAS (RAG Assessment) 是最流行的 RAG 评估框架，但你不需要把所�
 
 7. Agentic RAG = RAG + Agent 循环
    核心价值：动态决策 → 自主判断需要什么信息
-   注意：90% 的生产失败率 — 从简单开始，逐步迭代
+   注意：增加调用、延迟和错误路径 — 从简单基线开始，逐步迭代
 
 8. RAG 生产 Checklist
    ✅ 检索分数阈值 → 拒绝低质量 chunk
-   ✅ RAGAS Faithfulness &gt; 0.7 检查
+   ✅ 用人工锚点校准 Faithfulness 阈值
    ✅ Embedding 批量预处理 + 持久化缓存
    ✅ 文档变更 Hook → 自动增量更新索引
-   ✅ 热查询缓存 → 节省 20-40% 成本
-   ✅ 每周全量回溯评测
+   ✅ 热查询缓存 → 记录命中率、陈旧率和真实成本变化
+   ✅ 按知识库/模型/提示词变更风险触发回溯评测
 
 面试速记（完整版）:
   "RAG 核心技术栈？"
@@ -2212,9 +2215,9 @@ RAGAS (RAG Assessment) 是最流行的 RAG 评估框架，但你不需要把所�
     <span class="b">print</span>(<span class="s">"  传统RAG: 固定流水线「检索→生成」"</span>)
     <span class="b">print</span>(<span class="s">"  Agentic RAG: 动态决策 「思考→检索→判断→再检索→...」"</span>)
     <span class="b">print</span>(<span class="s">""</span>)
-    <span class="b">print</span>(<span class="s">"2025年行业数据："</span>)
-    <span class="b">print</span>(<span class="s">"  准确率提升 30-50%，但 90% 生产失败率"</span>)
-    <span class="b">print</span>(<span class="s">"  建议：从简单开始，逐步迭代，持续评估"</span>)
+    <span class="b">print</span>(<span class="s">"工程建议："</span>)
+    <span class="b">print</span>(<span class="s">"  用同一评测集比较固定 RAG 与 Agentic RAG 的质量、成本和延迟"</span>)
+    <span class="b">print</span>(<span class="s">"  从简单流水线开始，只有证据支持时才增加 Agent 循环"</span>)
 
     <span class="b">print</span>(<span class="s">"\n▶ 9.6 RAGAS 评估体系"</span>)
     <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)

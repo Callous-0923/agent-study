@@ -2,6 +2,9 @@
 第2章：Agent 核心组件深度解析
 =====================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 深入理解 Agent 的三大组件：规划器 / 记忆系统 / 工具调用
   2. 理解不同规划策略的优劣（ReAct vs Plan-Execute）
@@ -52,7 +55,7 @@ client = OpenAI(
 
 
 def call_llm_with_json(prompt: str, system_msg: str = "") -> dict:
-    """调用 LLM 并强制返回 JSON 格式。
+    """通过 Responses API 请求 JSON 对象。
 
     在 Agent 开发中，经常需要 LLM 返回结构化数据
     （如规划步骤、实体提取结果等）。
@@ -64,19 +67,14 @@ def call_llm_with_json(prompt: str, system_msg: str = "") -> dict:
     Returns:
         LLM 返回的 JSON 字典。
     """
-    model = os.getenv("LLM_MODEL", "gpt-4o-mini")
-    messages = []
-    if system_msg:
-        messages.append({"role": "system", "content": system_msg})
-    messages.append({"role": "user", "content": prompt})
-
-    response = client.chat.completions.create(
+    model = os.getenv("LLM_MODEL", "gpt-5.6-terra")
+    response = client.responses.create(
         model=model,
-        messages=messages,
-        response_format={"type": "json_object"},
-        temperature=0.3,
+        instructions=system_msg or None,
+        input=prompt,
+        text={"format": {"type": "json_object"}},
     )
-    return json.loads(response.choices[0].message.content)
+    return json.loads(response.output_text)
 
 
 """
@@ -128,7 +126,7 @@ Reflexion 是 ReAct 基础上叠加了一层「自我审视」机制。它的工
   - 两者可以结合：Plan-Execute 制定大计划，每步执行完后用 Reflexion 审查
 
 面试官常问：「Reflexion 的额外开销是多少？」
-  → 每轮推理多 1 次 LLM 调用（反思步骤），成本 +50%，但质量提升显著
+  → 每轮推理会增加一次或多次模型调用；成本与质量变化必须通过任务集实测
   → 适用于对正确性要求高的场景（代码审查、法律文书、医疗建议）
 """
 

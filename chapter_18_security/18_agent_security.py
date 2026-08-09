@@ -2,12 +2,16 @@
 第18章：Agent 安全与护栏（Guardrails）
 =======================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 认识 Agent 特有的安全威胁（Prompt Injection、工具滥用）
   2. 掌握 Prompt Injection 的攻防原理
   3. 学会分级权限管理（读/写/危险操作）
   4. 理解输入消毒、输出审核、审计日志
   5. 建立完整的 Agent 安全 Checklist
+  6. 对齐 OWASP Top 10 for Agentic Applications 2026
 
 📌 面试高频点：
   - Agent 有什么特有的安全风险？
@@ -32,6 +36,21 @@ Agent 应用：
   2. 幻觉导致的误操作 —— LLM 决定调用不存在的工具
   3. 过度授权 —— Agent 能做的事超出了它需要的
   4. 上下文泄露 —— 对话历史可能泄露给第三方
+
+OWASP Agentic Top 10 2026 提供了更完整的威胁地图：
+  ASI01 Agent Goal Hijack
+  ASI02 Tool Misuse & Exploitation
+  ASI03 Identity & Privilege Abuse
+  ASI04 Agentic Supply Chain Vulnerabilities
+  ASI05 Unexpected Code Execution (RCE)
+  ASI06 Memory & Context Poisoning
+  ASI07 Insecure Inter-Agent Communication
+  ASI08 Cascading Failures
+  ASI09 Human-Agent Trust Exploitation
+  ASI10 Rogue Agents
+
+本章的输入、权限和审计示例只覆盖其中一部分；完整系统还要处理身份、供应链、
+跨 Agent 消息、记忆污染、级联失败、运行时隔离和紧急停止。
 
 安全原则：
   「永远不要让 LLM 拥有比它需要的更多的权力」
@@ -65,7 +84,7 @@ Prompt Injection 分为两种：
 
    这种更难防御，因为数据来源是「可信渠道」！
 
-2025年最新防护措施：
+纵深防护措施：
 
   方案1: 结构化分离
     使用特殊标记分隔用户数据和系统指令
@@ -120,10 +139,11 @@ Prompt Injection 分为两种：
       return execute(tool_name, args)
 
 
-18.4 输入消毒 (Input Sanitization)
+18.4 输入检测 (Input Screening)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-这是 Agent 安全的「第一道防线」。
+规则检测可用于告警、分流和阻断已知模式，但无法可靠识别所有提示注入，
+更不能替代最小权限、数据/指令分离、输出验证、沙箱和人工确认。
 
 防御清单：
   ✓ 长度限制（防止 token 耗尽攻击）

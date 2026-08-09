@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:e22829f960a3cd6def023677d2b684b499456c5180731f6cd60fa220d1dd4626 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -302,6 +303,9 @@ body {
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_04_frameworks/04_frameworks.html" title="主流框架实战 — LangChain·LangGraph">第4章 →</a>
 </div><div class="hero"><h1>第3章 Agent 类型分类与设计模式</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 掌握 5 种主流 Agent 类型的设计模式与适用场景</span><span class="tag tag-goal">2. 理解每种模式的执行流程和优劣对比</span><span class="tag tag-goal">3. 能根据任务特征选择合适的 Agent 类型</span><span class="tag tag-goal">4. 实现一个可切换模式的 Agent 实验框架</span><span class="tag tag-interview">🎤 ReAct 的执行流程（面试必问！）</span><span class="tag tag-interview">🎤 Plan-Execute vs ReAct 的取舍</span><span class="tag tag-interview">🎤 Reflexion 的反思机制</span><span class="tag tag-interview">🎤 什么场景用哪种 Agent 类型</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -333,8 +337,10 @@ body {
 <p>"请对比 ReAct 和 Plan-Execute"</p>
 <p>→ ReAct 灵活但费 token，Plan-Execute 高效但不灵活</p>
 <p>→ 大型任务用 Plan-Execute 做顶层规划，ReAct 做每步执行</p>
-<p>→ Google 的 ReAct 论文是 Agent 领域最重要论文之一</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (51 行)</summary><div class="code-badges"><span class="code-badge code-badge-const">MODEL</span><span class="code-badge code-badge-const">TOOLS</span><span class="code-badge code-badge-const">TOOL_MAP</span></div><div class="code-block"><pre><span class="k">import</span> os
+<p>→ Google 的 ReAct 论文是 Agent 领域最重要论文之一</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (88 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">calculate_safely</span><span class="code-badge code-badge-func">evaluate</span><span class="code-badge code-badge-const">MODEL</span><span class="code-badge code-badge-const">TOOLS</span><span class="code-badge code-badge-const">_OPERATORS</span><span class="code-badge code-badge-const">TOOL_MAP</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
+<span class="k">import</span> ast
+<span class="k">import</span> operator
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -346,43 +352,78 @@ client = OpenAI(
     base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
 )
 
-MODEL = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
+MODEL = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>)
 
 <span class="h"># 共享工具集</span>
 TOOLS = [
     {
         <span class="s">"type"</span>: <span class="s">"function"</span>,
-        <span class="s">"function"</span>: {
-            <span class="s">"name"</span>: <span class="s">"search"</span>,
-            <span class="s">"description"</span>: <span class="s">"在互联网上搜索信息。适用于获取实时信息、事实查询等。"</span>,
-            <span class="s">"parameters"</span>: {
-                <span class="s">"type"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {
-                    <span class="s">"query"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>, <span class="s">"description"</span>: <span class="s">"搜索关键词"</span>}
-                },
-                <span class="s">"required"</span>: [<span class="s">"query"</span>],
+        <span class="s">"name"</span>: <span class="s">"search"</span>,
+        <span class="s">"description"</span>: <span class="s">"返回课程内置的模拟搜索结果；不访问互联网。"</span>,
+        <span class="s">"parameters"</span>: {
+            <span class="s">"type"</span>: <span class="s">"object"</span>,
+            <span class="s">"properties"</span>: {
+                <span class="s">"query"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>, <span class="s">"description"</span>: <span class="s">"搜索关键词"</span>}
             },
+            <span class="s">"required"</span>: [<span class="s">"query"</span>],
+            <span class="s">"additionalProperties"</span>: <span class="k">False</span>,
         },
+        <span class="s">"strict"</span>: <span class="k">True</span>,
     },
     {
         <span class="s">"type"</span>: <span class="s">"function"</span>,
-        <span class="s">"function"</span>: {
-            <span class="s">"name"</span>: <span class="s">"calculator"</span>,
-            <span class="s">"description"</span>: <span class="s">"执行数学计算。支持加减乘除、乘方等运算。"</span>,
-            <span class="s">"parameters"</span>: {
-                <span class="s">"type"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {
-                    <span class="s">"expression"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>, <span class="s">"description"</span>: <span class="s">"数学表达式"</span>}
-                },
-                <span class="s">"required"</span>: [<span class="s">"expression"</span>],
+        <span class="s">"name"</span>: <span class="s">"calculator"</span>,
+        <span class="s">"description"</span>: <span class="s">"执行只含基础运算符的数学表达式。"</span>,
+        <span class="s">"parameters"</span>: {
+            <span class="s">"type"</span>: <span class="s">"object"</span>,
+            <span class="s">"properties"</span>: {
+                <span class="s">"expression"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>, <span class="s">"description"</span>: <span class="s">"数学表达式"</span>}
             },
+            <span class="s">"required"</span>: [<span class="s">"expression"</span>],
+            <span class="s">"additionalProperties"</span>: <span class="k">False</span>,
         },
+        <span class="s">"strict"</span>: <span class="k">True</span>,
     },
 ]
 
+
+_OPERATORS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.Mod: operator.mod,
+    ast.Pow: operator.pow,
+    ast.USub: operator.neg,
+    ast.UAdd: operator.pos,
+}
+
+
+<span class="k">def</span> <span class="f">calculate_safely</span>(expression: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+    <span class="s">"""解释一个受限算术 AST，拒绝名称、调用和属性访问。"""</span>
+    <span class="k">if</span> <span class="b">len</span>(expression) &gt; <span class="n">100</span>:
+        <span class="k">return</span> <span class="s">"表达式过长"</span>
+
+    <span class="k">def</span> <span class="f">evaluate</span>(node):
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.Expression):
+            <span class="k">return</span> evaluate(node.body)
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.Constant) <span class="k">and</span> <span class="b">type</span>(node.value) <span class="k">in</span> {<span class="b">int</span>, <span class="b">float</span>}:
+            <span class="k">return</span> node.value
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.BinOp) <span class="k">and</span> <span class="b">type</span>(node.op) <span class="k">in</span> _OPERATORS:
+            <span class="k">return</span> _OPERATORS[<span class="b">type</span>(node.op)](evaluate(node.left), evaluate(node.right))
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.UnaryOp) <span class="k">and</span> <span class="b">type</span>(node.op) <span class="k">in</span> _OPERATORS:
+            <span class="k">return</span> _OPERATORS[<span class="b">type</span>(node.op)](evaluate(node.operand))
+        <span class="k">raise</span> ValueError(<span class="s">"只允许基础算术"</span>)
+
+    <span class="k">try</span>:
+        <span class="k">return</span> <span class="b">str</span>(evaluate(ast.parse(expression, mode=<span class="s">"eval"</span>)))
+    <span class="k">except</span> (SyntaxError, ValueError, TypeError, ZeroDivisionError, OverflowError):
+        <span class="k">return</span> <span class="s">"表达式错误"</span>
+
+
 TOOL_MAP = {
     <span class="s">"search"</span>: <span class="k">lambda</span> query: f<span class="s">"搜索结果(模拟): 关于'{query}'的信息..."</span>,
-    <span class="s">"calculator"</span>: <span class="k">lambda</span> expression: f<span class="s">"计算结果(模拟): {eval(expression) if all(c in '0123456789+-*/().% ' for c in expression) else '表达式错误'}"</span>,
+    <span class="s">"calculator"</span>: <span class="k">lambda</span> expression: f<span class="s">"计算结果: {calculate_safely(expression)}"</span>,
 }</pre></div></details></div><div class="lecture"><h2>3.1 ReAct Agent（面试必问！）</h2>
 <p>&nbsp;</p>
 <p>ReAct = Reasoning + Acting（推理 + 行动）</p>
@@ -391,9 +432,9 @@ TOOL_MAP = {
 <p>Thought → Action → Observation → Thought → Action → ... → Final Answer</p>
 <p>&nbsp;</p>
 <p>每次循环：</p>
-<li>Thought: "我需要知道 X" → 推理</li>
-<li>Action: 调用 search("X") → 行动</li>
-<li>Observation: 收到搜索结果 → 观察</li>
+<li>1. Thought: "我需要知道 X" → 推理</li>
+<li>2. Action: 调用 search("X") → 行动</li>
+<li>3. Observation: 收到搜索结果 → 观察</li>
 <p>→ 基于观察继续思考，直到能给出最终答案</p>
 <p>&nbsp;</p>
 <p>类比：</p>
@@ -404,8 +445,10 @@ TOOL_MAP = {
 <p>&nbsp;</p>
 <p>论文来源：</p>
 <p>Yao et al., "ReAct: Synergizing Reasoning and Acting in Language Models"</p>
-<p>(ICLR 2023) — Agent 领域的奠基性论文</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (75 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-class">ReActAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
+<p>(ICLR 2023) — Agent 领域的奠基性论文</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (77 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-class">ReActAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
+<span class="k">import</span> ast
+<span class="k">import</span> operator
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -448,7 +491,7 @@ client = OpenAI(
         Returns:
             Agent 的最终回答。
         """</span>
-        messages = [
+        input_items = [
             {<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: <span class="k">self</span>.system_prompt},
             {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_message},
         ]
@@ -456,26 +499,26 @@ client = OpenAI(
         <span class="k">for</span> step <span class="k">in</span> <span class="b">range</span>(max_steps):
             <span class="b">print</span>(f<span class="s">"\n  [ReAct 第 {step+1} 步]"</span>)
 
-            response = client.chat.completions.create(
-                model=MODEL, messages=messages,
+            response = client.responses.create(
+                model=MODEL, <span class="b">input</span>=input_items,
                 tools=TOOLS, tool_choice=<span class="s">"auto"</span>,
             )
-            msg = response.choices[<span class="n">0</span>].message
+            calls = [item <span class="k">for</span> item <span class="k">in</span> response.output <span class="k">if</span> item.<span class="b">type</span> == <span class="s">"function_call"</span>]
 
-            <span class="k">if</span> msg.tool_calls <span class="k">is</span> <span class="k">None</span>:
+            <span class="k">if</span> <span class="k">not</span> calls:
                 <span class="b">print</span>(f<span class="s">"  → 最终回答"</span>)
-                <span class="k">return</span> msg.content
+                <span class="k">return</span> response.output_text
 
-            messages.append(msg)
-            <span class="k">for</span> tc <span class="k">in</span> msg.tool_calls:
-                name = tc.function.name
-                args = json.loads(tc.function.arguments)
+            input_items.extend(response.output)
+            <span class="k">for</span> tc <span class="k">in</span> calls:
+                name = tc.name
+                args = json.loads(tc.arguments)
                 <span class="b">print</span>(f<span class="s">"  → 调用: {name}({args})"</span>)
                 result = TOOL_MAP[name](**args)
-                messages.append({
-                    <span class="s">"role"</span>: <span class="s">"tool"</span>,
-                    <span class="s">"tool_call_id"</span>: tc.<span class="b">id</span>,
-                    <span class="s">"content"</span>: result,
+                input_items.append({
+                    <span class="s">"type"</span>: <span class="s">"function_call_output"</span>,
+                    <span class="s">"call_id"</span>: tc.call_id,
+                    <span class="s">"output"</span>: result,
                 })
 
         <span class="k">return</span> <span class="s">"达到最大步数限制，无法完成任务。"</span></pre></div></details></div><div class="lecture"><h2>3.2 Plan-Execute Agent</h2>
@@ -483,16 +526,18 @@ client = OpenAI(
 <p>「先规划，再执行」—— 像项目经理一样工作。</p>
 <p>&nbsp;</p>
 <p>执行流程：</p>
-<li>分析任务 → 制定详细执行计划</li>
-<li>按计划逐步执行每个子任务</li>
-<li>汇总各步骤结果 → 生成最终答案</li>
+<li>1. 分析任务 → 制定详细执行计划</li>
+<li>2. 按计划逐步执行每个子任务</li>
+<li>3. 汇总各步骤结果 → 生成最终答案</li>
 <p>&nbsp;</p>
 <p>适用场景：</p>
 <li>任务步骤明确、有依赖关系</li>
 <li>数据分析报表生成</li>
 <li>代码审查流水线</li>
-<li>工作流自动化</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (81 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-class">PlanExecuteAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
+<li>工作流自动化</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (82 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-class">PlanExecuteAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
+<span class="k">import</span> ast
+<span class="k">import</span> operator
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -523,13 +568,12 @@ client = OpenAI(
             f<span class="s">"\"tool\": \"search|calculator|none\", "</span>
             f<span class="s">"\"tool_input\": \"...\"}}]}}\n\n任务: {task}"</span>
         )
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=MODEL,
-            messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
-            response_format={<span class="s">"type"</span>: <span class="s">"json_object"</span>},
-            temperature=<span class="n">0.3</span>,
+            <span class="b">input</span>=prompt,
+            text={<span class="s">"format"</span>: {<span class="s">"type"</span>: <span class="s">"json_object"</span>}},
         )
-        data = json.loads(response.choices[<span class="n">0</span>].message.content)
+        data = json.loads(response.output_text)
         <span class="k">return</span> data.get(<span class="s">"steps"</span>, [])
 
     <span class="k">def</span> <span class="f">run</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
@@ -567,19 +611,19 @@ client = OpenAI(
             f<span class="s">"执行结果:\n{json.dumps(self.results, ensure_ascii=False)}\n"</span>
             f<span class="s">"请基于以上结果给出最终回答。"</span>
         )
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=MODEL,
-            messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: summary_prompt}],
+            <span class="b">input</span>=summary_prompt,
         )
-        <span class="k">return</span> response.choices[<span class="n">0</span>].message.content</pre></div></details></div><div class="lecture"><h2>3.3 Reflexion Agent</h2>
+        <span class="k">return</span> response.output_text</pre></div></details></div><div class="lecture"><h2>3.3 Reflexion Agent</h2>
 <p>&nbsp;</p>
 <p>「做一遍 → 反思 → 改进 → 再做一遍」—— 自我迭代优化。</p>
 <p>&nbsp;</p>
 <p>执行流程：</p>
-<li>初次执行任务</li>
-<li>自我评估：打分 + 找问题</li>
-<li>基于反馈重新执行</li>
-<li>重复直到满意</li>
+<li>1. 初次执行任务</li>
+<li>2. 自我评估：打分 + 找问题</li>
+<li>3. 基于反馈重新执行</li>
+<li>4. 重复直到满意</li>
 <p>&nbsp;</p>
 <p>核心洞察：</p>
 <p>Reflexion 不改变 Agent 的基础能力，</p>
@@ -588,8 +632,10 @@ client = OpenAI(
 <p>&nbsp;</p>
 <p>论文来源：</p>
 <p>Shinn et al., "Reflexion: Language Agents with Verbal Reinforcement Learning"</p>
-<p>(NeurIPS 2023)</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (98 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-class">ReflexionAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
+<p>(NeurIPS 2023)</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (100 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run</span><span class="code-badge code-badge-class">ReflexionAgent</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
+<span class="k">import</span> ast
+<span class="k">import</span> operator
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -623,15 +669,15 @@ client = OpenAI(
             f<span class="s">"回答: {answer}\n\n"</span>
             f<span class="s">"请从准确性、完整性、清晰度三方面评分(1-10)，"</span>
             f<span class="s">"并指出具体问题。返回 JSON:\n"</span>
-            f<span class="s">'{{ PH12 : 0,  PH13 : 0,  PH14 : 0, '</span>
-            f<span class="s">' PH15 : [ PH16 ]}}'</span>
+            f<span class="s">'{{<span class="s">"accuracy"</span>: 0, <span class="s">"completeness"</span>: 0, <span class="s">"clarity"</span>: 0, '</span>
+            f<span class="s">'<span class="s">"issues"</span>: [<span class="s">"问题1"</span>]}}'</span>
         )
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=MODEL,
-            messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
-            response_format={<span class="s">"type"</span>: <span class="s">"json_object"</span>},
+            <span class="b">input</span>=prompt,
+            text={<span class="s">"format"</span>: {<span class="s">"type"</span>: <span class="s">"json_object"</span>}},
         )
-        <span class="k">return</span> json.loads(response.choices[<span class="n">0</span>].message.content)
+        <span class="k">return</span> json.loads(response.output_text)
 
     <span class="k">def</span> <span class="f">run</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
         <span class="s">"""执行 Reflexion 流程。
@@ -662,11 +708,11 @@ client = OpenAI(
                 prompt = task
 
             <span class="h"># 执行（不调用工具，纯推理）</span>
-            response = client.chat.completions.create(
+            response = client.responses.create(
                 model=MODEL,
-                messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
+                <span class="b">input</span>=prompt,
             )
-            answer = response.choices[<span class="n">0</span>].message.content
+            answer = response.output_text
             <span class="b">print</span>(f<span class="s">"    回答: {answer[:100]}..."</span>)
 
             <span class="h"># 自我评估</span>
@@ -699,8 +745,10 @@ client = OpenAI(
 │ 需要高质量输出、可迭代           │ Reflexion             │
 │ 多角色协作                       │ Multi-Agent           │
 │ 简单问答、不需要工具             │ 直接 LLM 调用即可     │
-└──────────────────────────────────┴──────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (40 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run_agent_by_type</span><span class="code-badge code-badge-const">AGENT_REGISTRY</span></div><div class="code-block"><pre><span class="k">import</span> os
+└──────────────────────────────────┴──────────────────────┘</pre></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (42 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run_agent_by_type</span><span class="code-badge code-badge-const">AGENT_REGISTRY</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
+<span class="k">import</span> ast
+<span class="k">import</span> operator
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -742,30 +790,32 @@ AGENT_REGISTRY = {
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
-<li>ReAct (面试必问！)</li>
+<li>1. ReAct (面试必问！)</li>
 <li>推理 + 行动循环</li>
 <li>最通用、最灵活</li>
 <li>缺点：每步都调用 LLM，token 消耗大</li>
 <p>&nbsp;</p>
-<li>Plan-Execute</li>
+<li>2. Plan-Execute</li>
 <li>先规划后执行</li>
 <li>适合结构化任务</li>
 <li>缺点：计划不合理时需要重来</li>
 <p>&nbsp;</p>
-<li>Reflexion</li>
+<li>3. Reflexion</li>
 <li>自我反思迭代</li>
 <li>适合质量要求高的任务</li>
 <li>缺点：多次 LLC 调用，成本高</li>
 <p>&nbsp;</p>
-<li>实际项目中往往是组合使用</li>
+<li>4. 实际项目中往往是组合使用</li>
 <li>高层 Plan-Execute 做任务分解</li>
 <li>每层 ReAct 做具体执行</li>
 <li>关键步骤加 Reflexion 做质量把关</li>
 <p>&nbsp;</p>
 <p>面试常问：</p>
 <p>"你在项目中用的是什么 Agent 架构？为什么选择它？"</p>
-<p>→ 回答框架：场景特征 → 选型理由 → 实际效果</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (49 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ 回答框架：场景特征 → 选型理由 → 实际效果</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (51 行)</summary><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
+<span class="k">import</span> ast
+<span class="k">import</span> operator
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -812,9 +862,12 @@ client = OpenAI(
     <span class="b">print</span>(<span class="s">"│ 简单问答     │  直接 LLM 调用                        │"</span>)
     <span class="b">print</span>(<span class="s">"└─────────────┴──────────────────────────────────────┘"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第3章完成！接下来进入第4章：主流框架实战。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (530 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第3章完成！接下来进入第4章：主流框架实战。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (569 行)</summary><div class="code-block"><pre><span class="s">"""
 第3章：Agent 类型分类与设计模式
 =================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 掌握 5 种主流 Agent 类型的设计模式与适用场景
@@ -864,6 +917,8 @@ Agent 类型全景图
 
 <span class="k">import</span> os
 <span class="k">import</span> json
+<span class="k">import</span> ast
+<span class="k">import</span> operator
 <span class="k">from</span> typing <span class="k">import</span> Optional
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 <span class="k">from</span> openai <span class="k">import</span> OpenAI
@@ -875,43 +930,78 @@ client = OpenAI(
     base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
 )
 
-MODEL = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
+MODEL = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>)
 
 <span class="h"># 共享工具集</span>
 TOOLS = [
     {
         <span class="s">"type"</span>: <span class="s">"function"</span>,
-        <span class="s">"function"</span>: {
-            <span class="s">"name"</span>: <span class="s">"search"</span>,
-            <span class="s">"description"</span>: <span class="s">"在互联网上搜索信息。适用于获取实时信息、事实查询等。"</span>,
-            <span class="s">"parameters"</span>: {
-                <span class="s">"type"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {
-                    <span class="s">"query"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>, <span class="s">"description"</span>: <span class="s">"搜索关键词"</span>}
-                },
-                <span class="s">"required"</span>: [<span class="s">"query"</span>],
+        <span class="s">"name"</span>: <span class="s">"search"</span>,
+        <span class="s">"description"</span>: <span class="s">"返回课程内置的模拟搜索结果；不访问互联网。"</span>,
+        <span class="s">"parameters"</span>: {
+            <span class="s">"type"</span>: <span class="s">"object"</span>,
+            <span class="s">"properties"</span>: {
+                <span class="s">"query"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>, <span class="s">"description"</span>: <span class="s">"搜索关键词"</span>}
             },
+            <span class="s">"required"</span>: [<span class="s">"query"</span>],
+            <span class="s">"additionalProperties"</span>: <span class="k">False</span>,
         },
+        <span class="s">"strict"</span>: <span class="k">True</span>,
     },
     {
         <span class="s">"type"</span>: <span class="s">"function"</span>,
-        <span class="s">"function"</span>: {
-            <span class="s">"name"</span>: <span class="s">"calculator"</span>,
-            <span class="s">"description"</span>: <span class="s">"执行数学计算。支持加减乘除、乘方等运算。"</span>,
-            <span class="s">"parameters"</span>: {
-                <span class="s">"type"</span>: <span class="s">"object"</span>,
-                <span class="s">"properties"</span>: {
-                    <span class="s">"expression"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>, <span class="s">"description"</span>: <span class="s">"数学表达式"</span>}
-                },
-                <span class="s">"required"</span>: [<span class="s">"expression"</span>],
+        <span class="s">"name"</span>: <span class="s">"calculator"</span>,
+        <span class="s">"description"</span>: <span class="s">"执行只含基础运算符的数学表达式。"</span>,
+        <span class="s">"parameters"</span>: {
+            <span class="s">"type"</span>: <span class="s">"object"</span>,
+            <span class="s">"properties"</span>: {
+                <span class="s">"expression"</span>: {<span class="s">"type"</span>: <span class="s">"string"</span>, <span class="s">"description"</span>: <span class="s">"数学表达式"</span>}
             },
+            <span class="s">"required"</span>: [<span class="s">"expression"</span>],
+            <span class="s">"additionalProperties"</span>: <span class="k">False</span>,
         },
+        <span class="s">"strict"</span>: <span class="k">True</span>,
     },
 ]
 
+
+_OPERATORS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.Mod: operator.mod,
+    ast.Pow: operator.pow,
+    ast.USub: operator.neg,
+    ast.UAdd: operator.pos,
+}
+
+
+<span class="k">def</span> <span class="f">calculate_safely</span>(expression: <span class="b">str</span>) -&gt; <span class="b">str</span>:
+    <span class="s">"""解释一个受限算术 AST，拒绝名称、调用和属性访问。"""</span>
+    <span class="k">if</span> <span class="b">len</span>(expression) &gt; <span class="n">100</span>:
+        <span class="k">return</span> <span class="s">"表达式过长"</span>
+
+    <span class="k">def</span> <span class="f">evaluate</span>(node):
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.Expression):
+            <span class="k">return</span> evaluate(node.body)
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.Constant) <span class="k">and</span> <span class="b">type</span>(node.value) <span class="k">in</span> {<span class="b">int</span>, <span class="b">float</span>}:
+            <span class="k">return</span> node.value
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.BinOp) <span class="k">and</span> <span class="b">type</span>(node.op) <span class="k">in</span> _OPERATORS:
+            <span class="k">return</span> _OPERATORS[<span class="b">type</span>(node.op)](evaluate(node.left), evaluate(node.right))
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.UnaryOp) <span class="k">and</span> <span class="b">type</span>(node.op) <span class="k">in</span> _OPERATORS:
+            <span class="k">return</span> _OPERATORS[<span class="b">type</span>(node.op)](evaluate(node.operand))
+        <span class="k">raise</span> ValueError(<span class="s">"只允许基础算术"</span>)
+
+    <span class="k">try</span>:
+        <span class="k">return</span> <span class="b">str</span>(evaluate(ast.parse(expression, mode=<span class="s">"eval"</span>)))
+    <span class="k">except</span> (SyntaxError, ValueError, TypeError, ZeroDivisionError, OverflowError):
+        <span class="k">return</span> <span class="s">"表达式错误"</span>
+
+
 TOOL_MAP = {
     <span class="s">"search"</span>: <span class="k">lambda</span> query: f<span class="s">"搜索结果(模拟): 关于'{query}'的信息..."</span>,
-    <span class="s">"calculator"</span>: <span class="k">lambda</span> expression: f<span class="s">"计算结果(模拟): {eval(expression) if all(c in '0123456789+-*/().% ' for c in expression) else '表达式错误'}"</span>,
+    <span class="s">"calculator"</span>: <span class="k">lambda</span> expression: f<span class="s">"计算结果: {calculate_safely(expression)}"</span>,
 }
 
 
@@ -977,7 +1067,7 @@ ReAct = Reasoning + Acting（推理 + 行动）
         Returns:
             Agent 的最终回答。
         """</span>
-        messages = [
+        input_items = [
             {<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: <span class="k">self</span>.system_prompt},
             {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: user_message},
         ]
@@ -985,26 +1075,26 @@ ReAct = Reasoning + Acting（推理 + 行动）
         <span class="k">for</span> step <span class="k">in</span> <span class="b">range</span>(max_steps):
             <span class="b">print</span>(f<span class="s">"\n  [ReAct 第 {step+1} 步]"</span>)
 
-            response = client.chat.completions.create(
-                model=MODEL, messages=messages,
+            response = client.responses.create(
+                model=MODEL, <span class="b">input</span>=input_items,
                 tools=TOOLS, tool_choice=<span class="s">"auto"</span>,
             )
-            msg = response.choices[<span class="n">0</span>].message
+            calls = [item <span class="k">for</span> item <span class="k">in</span> response.output <span class="k">if</span> item.<span class="b">type</span> == <span class="s">"function_call"</span>]
 
-            <span class="k">if</span> msg.tool_calls <span class="k">is</span> <span class="k">None</span>:
+            <span class="k">if</span> <span class="k">not</span> calls:
                 <span class="b">print</span>(f<span class="s">"  → 最终回答"</span>)
-                <span class="k">return</span> msg.content
+                <span class="k">return</span> response.output_text
 
-            messages.append(msg)
-            <span class="k">for</span> tc <span class="k">in</span> msg.tool_calls:
-                name = tc.function.name
-                args = json.loads(tc.function.arguments)
+            input_items.extend(response.output)
+            <span class="k">for</span> tc <span class="k">in</span> calls:
+                name = tc.name
+                args = json.loads(tc.arguments)
                 <span class="b">print</span>(f<span class="s">"  → 调用: {name}({args})"</span>)
                 result = TOOL_MAP[name](**args)
-                messages.append({
-                    <span class="s">"role"</span>: <span class="s">"tool"</span>,
-                    <span class="s">"tool_call_id"</span>: tc.<span class="b">id</span>,
-                    <span class="s">"content"</span>: result,
+                input_items.append({
+                    <span class="s">"type"</span>: <span class="s">"function_call_output"</span>,
+                    <span class="s">"call_id"</span>: tc.call_id,
+                    <span class="s">"output"</span>: result,
                 })
 
         <span class="k">return</span> <span class="s">"达到最大步数限制，无法完成任务。"</span>
@@ -1052,13 +1142,12 @@ ReAct = Reasoning + Acting（推理 + 行动）
             f<span class="s">"\"tool\": \"search|calculator|none\", "</span>
             f<span class="s">"\"tool_input\": \"...\"}}]}}\n\n任务: {task}"</span>
         )
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=MODEL,
-            messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
-            response_format={<span class="s">"type"</span>: <span class="s">"json_object"</span>},
-            temperature=<span class="n">0.3</span>,
+            <span class="b">input</span>=prompt,
+            text={<span class="s">"format"</span>: {<span class="s">"type"</span>: <span class="s">"json_object"</span>}},
         )
-        data = json.loads(response.choices[<span class="n">0</span>].message.content)
+        data = json.loads(response.output_text)
         <span class="k">return</span> data.get(<span class="s">"steps"</span>, [])
 
     <span class="k">def</span> <span class="f">run</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
@@ -1096,11 +1185,11 @@ ReAct = Reasoning + Acting（推理 + 行动）
             f<span class="s">"执行结果:\n{json.dumps(self.results, ensure_ascii=False)}\n"</span>
             f<span class="s">"请基于以上结果给出最终回答。"</span>
         )
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=MODEL,
-            messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: summary_prompt}],
+            <span class="b">input</span>=summary_prompt,
         )
-        <span class="k">return</span> response.choices[<span class="n">0</span>].message.content
+        <span class="k">return</span> response.output_text
 
 
 <span class="s">"""
@@ -1152,15 +1241,15 @@ ReAct = Reasoning + Acting（推理 + 行动）
             f<span class="s">"回答: {answer}\n\n"</span>
             f<span class="s">"请从准确性、完整性、清晰度三方面评分(1-10)，"</span>
             f<span class="s">"并指出具体问题。返回 JSON:\n"</span>
-            f<span class="s">'{{ PH117 : 0,  PH118 : 0,  PH119 : 0, '</span>
-            f<span class="s">' PH120 : [ PH121 ]}}'</span>
+            f<span class="s">'{{<span class="s">"accuracy"</span>: 0, <span class="s">"completeness"</span>: 0, <span class="s">"clarity"</span>: 0, '</span>
+            f<span class="s">'<span class="s">"issues"</span>: [<span class="s">"问题1"</span>]}}'</span>
         )
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=MODEL,
-            messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
-            response_format={<span class="s">"type"</span>: <span class="s">"json_object"</span>},
+            <span class="b">input</span>=prompt,
+            text={<span class="s">"format"</span>: {<span class="s">"type"</span>: <span class="s">"json_object"</span>}},
         )
-        <span class="k">return</span> json.loads(response.choices[<span class="n">0</span>].message.content)
+        <span class="k">return</span> json.loads(response.output_text)
 
     <span class="k">def</span> <span class="f">run</span>(<span class="k">self</span>, task: <span class="b">str</span>) -&gt; <span class="b">str</span>:
         <span class="s">"""执行 Reflexion 流程。
@@ -1191,11 +1280,11 @@ ReAct = Reasoning + Acting（推理 + 行动）
                 prompt = task
 
             <span class="h"># 执行（不调用工具，纯推理）</span>
-            response = client.chat.completions.create(
+            response = client.responses.create(
                 model=MODEL,
-                messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt}],
+                <span class="b">input</span>=prompt,
             )
-            answer = response.choices[<span class="n">0</span>].message.content
+            answer = response.output_text
             <span class="b">print</span>(f<span class="s">"    回答: {answer[:100]}..."</span>)
 
             <span class="h"># 自我评估</span>

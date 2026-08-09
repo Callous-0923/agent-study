@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:ce14a64f6150c6e55ed90d57deb8f54441da65d2845ae55555af4cd65b5ee1f2 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -302,6 +303,9 @@ body {
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_31_benchmarks/31_benchmarks.html" title="Agent 评测体系深度 — GAIA·AgentBench·WebArena">第31章 →</a>
 </div><div class="hero"><h1>第30章 Agent 可靠性工程 —— 在生产环境中活下来</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 掌握 Agent 专用的可靠性模式（熔断/舱壁/重试/幂等/Saga）</span><span class="tag tag-goal">2. 理解 Agent 系统特有的故障模式</span><span class="tag tag-goal">3. 实现 Exponential Backoff 重试和熔断器</span><span class="tag tag-goal">4. 学会设计 Agent 的降级策略</span><span class="tag tag-interview">🎤 「Agent 在生产中出错了怎么办？」</span><span class="tag tag-interview">🎤 「什么是熔断器？怎么给 Agent 加熔断？」</span><span class="tag tag-interview">🎤 「幂等性在 Agent 工具调用中怎么保证？」</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>参考：Netflix Hystrix / Resilience4j / 分布式系统可靠性</p>
@@ -317,19 +321,19 @@ body {
 <p>不是「一个请求走完就结束」的模式——它是多轮迭代的思考过程。</p>
 <p>&nbsp;</p>
 <p>Agent 特有的 4 大故障模式（面试必问）：</p>
-<li>LLM 返回幻觉参数 → 工具执行报错</li>
+<li>1. LLM 返回幻觉参数 → 工具执行报错</li>
 <p>例如 LLM 把订单号 "ORD-123" 理解成 "ORD_123"，工具找不到这个订单。</p>
 <p>这在传统 API 中不存在——传统 API 的参数都是程序传入的，不会「猜错」。</p>
 <p>&nbsp;</p>
-<li>Agent 陷入死循环 → 无限消耗 Token</li>
+<li>2. Agent 陷入死循环 → 无限消耗 Token</li>
 <p>例如 LLM 反复调用 search_weather → 每次都说「没找到」→ 再调一遍。</p>
 <p>一个死循环可能几分钟烧掉 $10 的 API 费用。传统 API 不存在「自己调用自己」的循环。</p>
 <p>&nbsp;</p>
-<li>工具调用雪崩 → 一个失败导致后续全部失败</li>
+<li>3. 工具调用雪崩 → 一个失败导致后续全部失败</li>
 <p>Agent 先调 search_db，超时了。LLM 拿到超时结果，又调了另一个搜索工具。</p>
 <p>此时上下文被大量失败信息污染，后续判断全偏了。</p>
 <p>&nbsp;</p>
-<li>上下文爆炸 → 对话历史过长 → LLM 行为异常</li>
+<li>4. 上下文爆炸 → 对话历史过长 → LLM 行为异常</li>
 <p>经过 20 轮工具调用后，messages 数组里堆满了 tool_call 和 tool_result。</p>
 <p>超过 LLM 上下文窗口后，Agent 可能丢失关键信息。</p>
 <p>&nbsp;</p>
@@ -623,9 +627,12 @@ body {
         <span class="s">"超时: LLM 60s / Tool 30s"</span>,
     ]:
         <span class="b">print</span>(f<span class="s">"  ✅ {item}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第30章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (359 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第30章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (362 行)</summary><div class="code-block"><pre><span class="s">"""
 第30章：Agent 可靠性工程 —— 在生产环境中活下来
 ===============================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 掌握 Agent 专用的可靠性模式（熔断/舱壁/重试/幂等/Saga）

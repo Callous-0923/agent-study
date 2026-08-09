@@ -2,6 +2,9 @@
 第21章：Streaming & 实时 Agent 架构 —— 让用户不用等待的 Agent
 ===============================================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 理解 Event-Driven Architecture 在 Agent 系统中的应用
   2. 掌握 Agent 执行中「动态中断」的架构设计
@@ -38,11 +41,11 @@
 
 实时架构的目标：
 
-  用户 → 发送消息 → 实时看到 Agent 的思考过程 →
+  用户 → 发送消息 → 实时看到 Agent 的状态、工具调用和回答 →
          中途可以修正方向 → 最终得到结果
 
 核心能力：
-  1. 流式输出：LLM 每生成一个 token 就推送给用户
+  1. 流式输出：按合适粒度推送文本增量和结构化状态
   2. 中途介入：用户可以在 Agent 执行中途发送消息
   3. 工具调用可见：用户能看到 Agent 在调什么工具
   4. 可中断：用户可以随时停止 Agent 的任务
@@ -407,8 +410,8 @@ class InterruptibleAgent:
      生产者（LLM）→ 队列 → 消费者（前端）
      队列有容量上限，满了暂停生产者
 
-这就是 Claude Code h2A 的「智能背压控制」
-（Ch8 提到：吞吐量 > 10,000 消息/秒 + 智能背压）。
+具体产品如何实现背压属于内部细节；课程只保留可验证的通用模式：
+有界队列、批量合并、取消传播，以及按 p95 延迟与内存水位压测。
 """
 
 
@@ -494,6 +497,41 @@ def demo_event_driven_agent():
 
     # 演示中断
     print(f"\n  ⚡ 中断检测: {state.should_interrupt()}")
+
+
+"""
+21.5.1 前端事件契约、断线恢复与人工审批
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+真正的 Agent UI 不能只把 token 填进聊天气泡。前后端应约定稳定事件：
+
+  run.started / response.delta / tool.requested / tool.completed /
+  approval.required / run.checkpointed / run.completed / run.failed
+
+每个事件至少包含 run_id、event_id、sequence、timestamp 和 payload。前端：
+  - 按 sequence 去重排序，不把网络到达顺序当执行顺序
+  - 保存 last_event_id；断线后请求重放，无法重放时拉取任务快照
+  - 工具输入/输出用结构化卡片展示，敏感字段在服务端脱敏
+  - approval.required 显示动作、资源、影响范围和过期时间；批准必须绑定版本
+  - Cancel 要传播到模型流、工具进程和队列，而不只是隐藏 UI
+
+不要把模型隐藏 reasoning/思维链直接暴露给用户。产品界面展示可审计的状态、
+计划摘要、工具参数、证据和最终答案；“thinking”只作为进度标签。
+
+
+21.5.2 Realtime Voice 是另一条传输栈
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OpenAI 当前模型目录：https://developers.openai.com/api/docs/models
+
+语音 Agent 通常使用 Realtime API，通过 WebRTC、WebSocket 或 SIP 承载音频、
+文本和工具事件。浏览器端优先考虑 WebRTC；服务端代理或电话系统再考虑
+WebSocket/SIP。仍需处理 VAD、打断（barge-in）、回声、工具延迟和敏感动作审批。
+
+Realtime 不是把 SSE 换成音频：会话状态、音频缓冲、取消与工具调用形成独立
+状态机。模型和事件 schema 变化较快，接入时按当前官方文档固定模型快照并做
+端到端语音质量、打断成功率、p95 延迟和人工接管评测。
+"""
 
 
 """

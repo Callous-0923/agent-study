@@ -2,6 +2,9 @@
 第6章：Agent 评估、测试与生产最佳实践
 =====================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 掌握 Agent 评估的核心维度和指标
   2. 了解业界常用的 Agent Benchmark
@@ -319,7 +322,7 @@ def demo_evaluation():
 2. 可观测性
    - 记录每次 LLM 调用的输入/输出/token/耗时
    - 记录每个 tool_call 的参数和结果
-   - 使用 LangSmith / LangFuse 等工具做 Tracing
+   - 使用 LangSmith / Langfuse 等工具做 Tracing
 
 3. 成本控制
    - 用更小更便宜的模型做简单任务（模型分层）
@@ -354,8 +357,9 @@ def demo_evaluation():
 
 1. Agent 评估
    - 多维度：任务完成率、工具准确率、效率、鲁棒性
-   - 主流方法：LLM-as-Judge
-   - 业界 Benchmark：AgentBench、SWE-bench、GAIA
+   - 方法组合：确定性断言、人工标注、LLM-as-Judge、线上反馈
+   - 公开 Benchmark：AgentBench、SWE-bench、GAIA 等只能作为带日期的外部参照
+   - 2026 年应特别检查任务污染、不可复现 harness 和有缺陷的测试用例
 
 2. Agent 测试
    - 分层测试：工具单测 → 行为测试 → 端到端测试 → 回归测试

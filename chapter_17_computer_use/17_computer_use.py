@@ -2,9 +2,12 @@
 第17章：Computer Use + GUI Agent —— AI 操控电脑
 ==================================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 理解 Computer Use / GUI Agent 的核心原理（Screenshot-Action Loop）
-  2. 掌握 Anthropic Computer Use 和 OpenAI CUA 的架构差异
+  2. 掌握 Anthropic 与 OpenAI Computer Use 工具的共同循环与 API 差异
   3. 理解像素坐标的计算与视觉定位机制
   4. 了解 Browser Use 等开源方案
   5. 认识安全沙箱的必要性和实现方式
@@ -12,7 +15,7 @@
 📌 面试高频点：
   - Computer Use 的原理是什么？和传统 API 调用有什么区别？
   - Screenshot-Action Loop 的每一步做了什么？
-  - OpenAI CUA 和 Anthropic Computer Use 的架构差异？
+  - OpenAI 与 Anthropic Computer Use 的 API 与责任边界有何差异？
   - Computer Use 的安全风险有哪些？怎么防护？
 
 
@@ -74,10 +77,8 @@ Computer Use 的突破：
   问题：LLM 需要输出 「点击 (450, 200)」这样的坐标
   但 LLM 是文本模型，不理解像素
 
-  Anthropic 的解决方案（训练阶段）：
-    专门训练 Claude 精确计数像素的能力
-    "Training Claude to count pixels accurately was critical.
-     Without this skill, the model finds it difficult to give mouse commands."
+  模型和运行时需要共同解决视觉定位：模型提出动作，执行器将坐标映射到
+  当前截图/视口，并在执行后重新截图验证状态。
 
   实操中的坐标系统：
     - 截图尺寸通常是 1280x800 或 1920x1080
@@ -85,64 +86,44 @@ Computer Use 的突破：
     - 返回格式：(x_pct, y_pct) 百分比比绝对像素更稳健
 
 
-17.3 Anthropic Computer Use vs OpenAI CUA
+17.3 Anthropic vs OpenAI Computer Use
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ┌──────────────┬─────────────────────────┬─────────────────────────┐
-│     维度      │  Anthropic Computer Use  │   OpenAI CUA            │
+│     维度      │  Anthropic Computer Use  │   OpenAI Computer Use   │
 ├──────────────┼─────────────────────────┼─────────────────────────┤
-│ 发布时间      │ 2024.10 (API)            │ 2025.01 (Operator)       │
-│             │ 2025.10 (正式发布)        │                         │
-│ 操作范围      │ 整个操作系统              │ 浏览器内（虚拟浏览器）    │
-│ 模型          │ Claude 3.5+ Sonnet      │ GPT-4o (CUA 微调版)     │
-│ 环境          │ 用户真实桌面/Docker      │ 安全的虚拟浏览器环境      │
-│ 安全性        │ 依赖使用者自行沙箱         │ 平台内置安全隔离         │
-│ 动作类型      │ 鼠标+键盘+截图            │ 浏览器操作（点击/输入/滚动）│
-│ 成本          │ 截图Token昂贵            │ 浏览器操作Token消耗较低   │
-│ Benchmark    │ OSWorld 14.9%            │ 未公布独立评分           │
+│ 产品状态      │ Beta，需使用 beta header │ Responses 中的 computer  │
+│ 交互模型      │ 返回 computer tool actions│ 返回 computer actions    │
+│ 执行环境      │ 开发者提供并负责隔离       │ 开发者/平台提供受控环境    │
+│ 动作类型      │ 鼠标、键盘、截图等         │ 点击、输入、滚动等        │
+│ 反馈循环      │ 执行动作后回传新截图       │ 执行动作后回传环境输出     │
+│ 风险控制      │ allowlist + 人工确认       │ allowlist + 人工确认      │
 └──────────────┴─────────────────────────┴─────────────────────────┘
 
 Anthropic 的设计哲学：
   「给 Claude 真实的电脑，让它按人类的方式工作」
 
-OpenAI 的设计哲学：
-  「给 GPT-4o 一个安全沙箱，专注于 Web 任务」
+OpenAI 当前新项目使用 Responses API 的 computer 工具；旧的
+`computer-use-preview` 模型/工具路径已进入弃用路线，迁移时应查官方指南。
 
 选型建议：
   - 需要控制桌面软件 → Anthropic Computer Use
-  - 只需要浏览器操作 → OpenAI CUA
-  - 想要完全控制 → Anthropic + Docker 沙箱
+  - 浏览器操作 → 两者都需在受控浏览器中做任务集评测
+  - 桌面操作 → 选择支持目标环境的工具，并由开发者提供强隔离
 
 
-17.4 性能数据与局限
+17.4 性能评测与局限
 ━━━━━━━━━━━━━━━━━━━
 
-OSWorld Benchmark 成绩：
-  ┌──────────────────┬───────────┐
-  │      系统         │   得分     │
-  ├──────────────────┼───────────┤
-  │ 人类              │   75.0%   │
-  │ Claude 3.5 Sonnet │   14.9%   │
-  │ GPT-4V            │    7.8%   │
-  └──────────────────┴───────────┘
+公开 benchmark 分数会随模型、截图分辨率、运行环境和 harness 快速变化。
+上线前至少记录：任务成功率、危险动作拦截率、平均/尾部动作数、p95 延迟、
+输入/输出 token、人工接管率和恢复时间；报告必须带模型与评测日期。
 
-  → Claude 翻倍了前最好成绩，但离人类还很远
-
-延迟：
-  - 每个动作 3-4 秒（截取→分析→执行）
-  - 10步任务 = 30-40秒
-  - 对比 Selenium 的 0.1秒/步，差距巨大
-
-成本：
-  - 每张 1080p 截图消耗约 1500 tokens
-  - 每分钟成本约 $0.10-0.30
-  - 对比 API 调用的 $0.001/分钟，贵 100 倍
-
-当前定位（2025-2026）：
+当前定位（截至 2026-08-01）：
   → 不是 Selenium 的替代品
   → 适合「API 无法覆盖的长尾场景」
   → 适合「快速原型验证」
-  → 生产级自动化仍需传统方案
+  → 两家工具都要求开发者承担沙箱、确认和结果验证责任
 
 
 17.5 安全沙箱 —— 必须学！
@@ -219,10 +200,11 @@ Anthropic 官方建议：
   分辨率越高 → LLM 的坐标越精准 → 但 Token 成本越高
   分辨率越低 → 成本低 → 但可能 LLM 看错按钮
 
-  最佳实践（Anthropic 推荐）:
-    - 日常操作：1024x768 → 约 800 tokens/图
-    - 需要细节：1280x800 → 约 1200 tokens/图
-    - 文本密集（代码、表格）：1920x1080 → 约 2000 tokens/图
+  分辨率策略不能套用跨模型固定 token 表：
+    - 先从满足可读性的较低分辨率开始
+    - OCR、代码或表格识别失败时，再提高分辨率或裁剪重点区域
+    - 从响应 usage 和账单记录每类截图的真实成本
+    - 模型、detail、缩放规则变化后重新测量，不沿用旧估算
 
   动态分辨率策略：
     第一轮 → 低分辨率 1024x768（快速判断页面状态）
@@ -254,11 +236,11 @@ Anthropic 官方建议：
 
   1. 缓存重复截图 —— 同一个页面多次截取 → 对比 hash，相同则复用 LLM 分析结果
   2. 最小化截图区域 —— 不全屏截图，只截需要操作的应用窗口
-  3. 混合自动化 —— 能用 API 的操作用 API（便宜 100 倍），
-     只在 API 无法覆盖时启动 Computer Use
+  3. 混合自动化 —— 能用稳定 API 或 DOM 自动化的操作优先走确定性路径，
+     只在这些路径无法覆盖时启动 Computer Use；成本差异必须按本系统实测
 
-  面试可以提：「我们不是用 Computer Use 替代 Selenium，而是用 Computer Use
-  覆盖 Selenium 覆盖不到的 5% 的长尾操作场景。」
+  面试可以提：「我们不是用 Computer Use 替代 Selenium，而是把它用于
+  API/DOM 自动化无法覆盖的长尾场景，并单独测量成功率、成本与人工接管率。」
 
 
 17.6 模拟 Computer Use Agent
@@ -495,12 +477,12 @@ def demo_computer_use():
    - 核心挑战：像素坐标计算 + 视觉理解
 
 2. 两大阵营
-   - Anthropic: 控制真实电脑（通用但危险）
-   - OpenAI CUA: 虚拟浏览器（安全但局限）
+   - Anthropic: Beta computer tool，运行环境由开发者负责
+   - OpenAI: Responses computer tool；旧 preview 路径需迁移
 
 3. 当前局限性（面试时坦诚讨论）
-   - OSWorld 14.9%（人类 75%）—— 还有很长的路
-   - 延迟 3-4秒/步，成本 100倍于 API
+   - benchmark 分数依模型、环境和 harness 变化，必须带日期复测
+   - 多轮截图-动作会累积延迟、token 和失败概率
    - 安全风险高
 
 4. 安全第一
@@ -524,22 +506,19 @@ if __name__ == "__main__":
 
     demo_computer_use()
 
-    print("\n▶ OSWorld Benchmark 成绩")
+    print("\n▶ Computer Use 评测维度")
     print("-" * 50)
-    print("  人类                75.0%")
-    print("  Claude 3.5 Sonnet  14.9%  (Computer Use)")
-    print("  GPT-4V              7.8%  (传统视觉模式)")
-    print()
-    print("  结论：Computer Use 翻倍了前最好成绩，")
-    print("        但离人类水平仍有巨大差距。")
+    print("  成功率 / 危险动作拦截率 / 人工接管率")
+    print("  动作数 / p95 延迟 / token / 恢复时间")
+    print("  所有结果必须附模型、环境、harness 和日期")
 
     print("\n▶ Anthropic vs OpenAI Computer Use 对比")
     print("-" * 50)
     comparisons = [
-        ("操作范围", "Anthropic: 整个操作系统", "OpenAI: 浏览器内"),
-        ("安全性", "Anthropic: 需自行沙箱", "OpenAI: 内置安全隔离"),
-        ("适用场景", "Anthropic: 桌面软件+Web", "OpenAI: Web任务"),
-        ("成本", "Anthropic: 截图Token较贵", "OpenAI: 操作Token较低"),
+        ("产品状态", "Anthropic: Beta", "OpenAI: Responses tool"),
+        ("执行环境", "开发者提供隔离环境", "开发者/平台受控环境"),
+        ("反馈循环", "动作后回传截图", "动作后回传环境输出"),
+        ("安全责任", "allowlist + 人工确认", "allowlist + 人工确认"),
     ]
     for dim, a, o in comparisons:
         print(f"  {dim:10s}  {a:30s}  {o}")

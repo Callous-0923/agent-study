@@ -1,223 +1,199 @@
 """
-第33章：Prompt Caching & 推理优化 —— 省钱的工程手段
-=====================================================
+第33章：Prompt Caching——精确前缀复用与成本治理
+================================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
-  1. 理解 Anthropic Prompt Caching 的原理和使用方式
-  2. 掌握类比：Prompt Caching vs CDN vs 语义缓存
-  3. 学会 KV-Cache 共享和推测解码的概念
-  4. 量化各种缓存策略的收益
+  1. 区分 Prompt Caching、响应缓存与语义缓存
+  2. 掌握 OpenAI 与 Anthropic 当前的前缀缓存接口
+  3. 学会设计稳定前缀、缓存边界和观测指标
+  4. 用真实业务流量评估收益，而不是套用固定“节省比例”
 
-📌 面试高频点：
-  - 「Anthropic 的 Prompt Caching 是怎么工作的？」
-  - 「Prompt Caching 和语义缓存有什么区别？」
-  - 「推测解码是什么？对 Agent 有什么价值？」
+33.1 三类容易混淆的缓存
+────────────────────────
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-综合 Anthropic Prompt Caching API + 推理优化论文
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Prompt Caching（提供商侧前缀缓存）
+   - 复用完全相同的已编码前缀或内部 KV 状态。
+   - 后缀仍由模型处理并生成新响应。
+   - 是否命中、最低前缀长度、TTL 和价格均由模型与提供商决定。
 
+2. 响应缓存（应用侧 Exact Cache）
+   - 相同且安全复用的请求直接返回旧响应，不调用模型。
+   - 必须把租户、权限、模型、Prompt、工具和数据版本纳入缓存键。
 
-33.1 缓存的三层体系
-━━━━━━━━━━━━━━━━━━
+3. 语义缓存（应用侧 Semantic Cache）
+   - 相似问题可能复用答案。
+   - 必须验证意图、实体、时间范围和权限；实时查询与副作用请求通常不能缓存。
 
-下面这张表总结了 Agent 场景中三种不同粒度的缓存技术。从 L1 到 L3，
-成本节省递减、命中率递增、延迟递增。实际项目中三者叠加使用效果最佳。
+Prompt Caching 的命中单位是“精确前缀”，不是“语义相似”。因此最重要的工程原则是：
+把稳定内容放在前面，把用户问题、时间戳、随机 ID 等动态内容放在后面。
 
-┌──────────────────┬──────────────┬──────────┬──────────┐
-│ 层                │     原理      │  命中率   │ 节省幅度  │
-├──────────────────┼──────────────┼──────────┼──────────┤
-│ L1: 语义缓存      │ 相似查询匹配   │ 30-50%   │ 100%     │
-│ L2: Prompt Caching│ 相同前缀重用   │ 60-90%   │ 90%      │
-│ L3: KV-Cache 共享 │ 跨请求共享状态  │ 取决于场景 │ 50-80%   │
-└──────────────────┴──────────────┴──────────┴──────────┘
+33.2 OpenAI：自动缓存与 GPT-5.6 显式断点
+──────────────────────────────────────────────
 
-33.2 Anthropic Prompt Caching —— 90% 节省的秘密
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+截至 2026-08-01，OpenAI 对符合条件的近期模型自动启用 Prompt Caching。
+GPT-5.6 及后续模型还支持显式缓存断点：
+  - 在受支持的输入内容块上设置 prompt_cache_breakpoint；
+  - 同一稳定前缀配合稳定的 prompt_cache_key；
+  - prompt_cache_options.mode="explicit" 可关闭隐式断点；
+  - GPT-5.6 的显式前缀最低为 1024 tokens；
+  - prompt_cache_options.ttl 当前仅支持 "30m"，表示至少保留 30 分钟；
+  - 写入量见 cache_write_tokens，命中量见 cached_tokens。
 
-如果你用过 Anthropic API，会发现一个奇怪的现象：即使给 Claude 发送
-完全相同的 System Prompt（比如「你是一个客服助手...」），每次请求
-都会完整计费这段文本的 Token。这就像每次打开 YouTube 都重新下载
-整个网页——明明大部分内容没变。
+GPT-5.6+ 的缓存写入输入价格可能高于普通输入，读取价格则更低。不要只看命中率，
+应同时计算“写入、读取、未缓存输入、输出”四类用量的实际账单。
 
-Anthropic Prompt Caching 解决的就是这个问题。
+真实 Responses API 请求骨架（需要已安装 openai，并设置 OPENAI_API_KEY）：
 
-本质：对 System Prompt 和长上下文做缓存，多次调用时只计费「新增内容」。
+    from openai import OpenAI
+    client = OpenAI()
+    response = client.responses.create(
+        model="gpt-5.6",
+        prompt_cache_key="tenant-a:policy-v3",
+        prompt_cache_options={"mode": "explicit", "ttl": "30m"},
+        input=[
+            {
+                "role": "system",
+                "content": [{
+                    "type": "input_text",
+                    "text": stable_policy_and_tools,
+                    "prompt_cache_breakpoint": {"mode": "explicit"},
+                }],
+            },
+            {"role": "user", "content": question},
+        ],
+    )
+    cached = response.usage.input_tokens_details.cached_tokens
 
-工作流程（三步）：
-  1. 在你的 content block 中加上 cache_control 标记
-     → 告诉 Claude：「这段内容以后可能会重复用」
-  2. 下一次请求如果包含相同前缀，Claude 跳过重复的编码计算
-     → 不需要重新把 System Prompt 转成向量
-  3. 输入 Token 费用降低 90%
-     → 10 万 Token 的 System Prompt 从 $0.30 降到 $0.03
+模型名称、价格和支持项会继续变化；生产代码应把模型 ID 放入配置，并以官方模型页为准。
 
-关键限制：
-  - 最少 1024 tokens 才能被缓存（太短不值得）
-  - 缓存 TTL: 5 分钟（没有活跃使用会自动失效）
-  - 目前仅 Anthropic 原生支持，OpenAI 有类似机制但不完全相同
+33.3 Anthropic：cache_control 与可选 TTL
+───────────────────────────────────────────
 
-这对 Agent 意味着什么？
-  如果你的 Agent 有 5000 Token 的 System Prompt + Tool Definitions，
-  每轮对话每次都计费这 5000 Token。假设每天 10000 次调用：
-  - 无缓存：5000 × 10000 × $0.000003 = $150/天（仅前缀部分）
-  - 有缓存：5000 × 1 × $0.000003（首次）+ 用户Token × 9999 次 ≈ $4.5/天
-  → 节省了 97% 的前缀成本
+Anthropic Messages API 可在 system、messages 或 tools 的内容块上设置 cache_control。
+默认临时缓存 TTL 为 5 分钟，也可选择 1 小时；最低可缓存 token 数随模型变化。
 
+    import anthropic
+    client = anthropic.Anthropic()
+    message = client.messages.create(
+        model=anthropic_model_from_config,
+        max_tokens=512,
+        system=[{
+            "type": "text",
+            "text": stable_policy_and_tools,
+            "cache_control": {"type": "ephemeral", "ttl": "1h"},
+        }],
+        messages=[{"role": "user", "content": question}],
+    )
 
-33.3 什么时候用 Prompt Caching？
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+通过 usage 中的 cache_creation_input_tokens 与 cache_read_input_tokens 观察写入和读取。
+不要把某个模型的最低长度、折扣或 TTL 推广为所有 Anthropic 模型的永久规则。
 
-最适用的场景：
-  ✓ Agent 的多轮对话（System Prompt 不变）
-  ✓ 大量 Tool Definitions（每次调用都带同样的工具列表）
-  ✓ 长文档 QA（同一文档多次提问）
+33.4 生产设计清单
+──────────────────
 
-不太适合的场景：
-  ✗ 每次请求都是完全不同的上下文
-  ✗ 短对话（System Prompt < 1024 tokens）
+  ✓ 稳定前缀：策略、长文档和工具定义放前面，动态问题放最后。
+  ✓ 版本化：Prompt、工具、知识库或权限改变时更新 prompt_cache_key。
+  ✓ 租户隔离：缓存键不得让不同租户或权限域意外复用敏感前缀。
+  ✓ 保持字节稳定：工具顺序、JSON 序列化、图片和文本内容都可能影响命中。
+  ✓ 可观测：分别记录写入 tokens、读取 tokens、未缓存 tokens、延迟和总成本。
+  ✓ 实验：用代表性流量对照，不预设固定命中率或节省比例。
+  ✓ 降级：缓存未命中或不可用时，正确性不能改变。
+
+安全提醒：提供商侧缓存不等于应用侧授权。不要为了提高命中率，把本应隔离的用户数据、
+权限上下文或密钥拼进共享前缀；还要遵守提供商的数据保留和 Zero Data Retention 说明。
 """
 
-import time
+from __future__ import annotations
+
 import hashlib
+import time
+from dataclasses import dataclass
 
 
-class PromptCacheSimulator:
-    """模拟 Prompt Caching 的工作原理。"""
+@dataclass
+class CacheEntry:
+    expires_at: float
+    estimated_prefix_tokens: int
 
-    def __init__(self):
-        self.cache = {}  # {prefix_hash: cached_tokens}
-        self.hits = 0
-        self.misses = 0
 
-    def call_llm(self, system_prompt: str,
-                 user_message: str) -> dict:
-        """模拟带缓存的 LLM 调用。
+class PrefixCacheSimulator:
+    """教学模拟：演示“精确前缀 + TTL”，不模拟任何提供商的计费或内部 KV 实现。"""
 
-        Returns:
-            含成本信息的字典。
-        """
-        prefix_hash = hashlib.md5(
-            system_prompt.encode()
-        ).hexdigest()
+    def __init__(self, ttl_seconds: int = 300):
+        self.ttl_seconds = ttl_seconds
+        self.cache: dict[str, CacheEntry] = {}
+        self.reads = 0
+        self.writes = 0
 
-        prefix_tokens = len(system_prompt) // 4
-        user_tokens = len(user_message) // 4
-        total_tokens = prefix_tokens + user_tokens
+    @staticmethod
+    def _estimate_tokens(text: str) -> int:
+        """仅供演示的粗略估算；真实用量以 API usage 字段为准。"""
+        return max(1, len(text.encode("utf-8")) // 4)
 
-        if prefix_hash in self.cache:
-            self.hits += 1
-            cost = user_tokens * 0.00001  # 仅计费新 token
-            return {
-                "cached": True,
-                "tokens_charged": user_tokens,
-                "total_tokens": total_tokens,
-                "est_cost": round(cost, 6),
-            }
+    @staticmethod
+    def _key(namespace: str, prefix: str) -> str:
+        payload = f"{namespace}\0{prefix}".encode("utf-8")
+        return hashlib.sha256(payload).hexdigest()
 
-        self.misses += 1
-        self.cache[prefix_hash] = True
-        cost = total_tokens * 0.00001
+    def request(self, namespace: str, stable_prefix: str, dynamic_suffix: str) -> dict:
+        """返回缓存读写分类；dynamic_suffix 不参与前缀缓存键。"""
+        now = time.monotonic()
+        key = self._key(namespace, stable_prefix)
+        entry = self.cache.get(key)
+        hit = entry is not None and entry.expires_at > now
+
+        prefix_tokens = self._estimate_tokens(stable_prefix)
+        suffix_tokens = self._estimate_tokens(dynamic_suffix)
+        if hit:
+            self.reads += 1
+            cache_write_tokens = 0
+            cached_tokens = entry.estimated_prefix_tokens
+        else:
+            self.writes += 1
+            self.cache[key] = CacheEntry(now + self.ttl_seconds, prefix_tokens)
+            cache_write_tokens = prefix_tokens
+            cached_tokens = 0
+
         return {
-            "cached": False,
-            "tokens_charged": total_tokens,
-            "total_tokens": total_tokens,
-            "est_cost": round(cost, 6),
+            "cache_hit": hit,
+            "cache_write_tokens": cache_write_tokens,
+            "cached_tokens": cached_tokens,
+            "uncached_suffix_tokens": suffix_tokens,
         }
 
     def stats(self) -> dict:
-        total = self.hits + self.misses
+        total = self.reads + self.writes
         return {
-            "hit_rate": f"{self.hits / max(total, 1):.0%}",
-            "total_calls": total,
-            "cache_size": len(self.cache),
+            "requests": total,
+            "cache_reads": self.reads,
+            "cache_writes": self.writes,
+            "observed_read_rate": self.reads / total if total else 0.0,
         }
 
 
-"""
-33.4 推测解码 (Speculative Decoding)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+def demo_prefix_cache() -> None:
+    print("=" * 64)
+    print("Prompt Caching 教学模拟：同一租户与稳定前缀可复用")
+    print("=" * 64)
+    simulator = PrefixCacheSimulator(ttl_seconds=300)
+    stable_prefix = "客服政策 v3；工具：query_order、create_refund；退款需要人工确认。"
+    questions = ["查询订单 A100", "查询订单 A101", "解释退款条件"]
 
-原理：用小模型「猜测」大模型的输出，大模型验证。
+    for question in questions:
+        result = simulator.request("tenant-a:policy-v3", stable_prefix, question)
+        state = "读取缓存" if result["cache_hit"] else "写入缓存"
+        print(
+            f"{state:8s} | cached={result['cached_tokens']:3d} "
+            f"write={result['cache_write_tokens']:3d} "
+            f"suffix={result['uncached_suffix_tokens']:3d}"
+        )
 
-流程：
-  1. 小模型快速生成 N 个候选 token
-  2. 大模型一次性验证这 N 个 token
-  3. 通过率 > 80% → 速度快 2-3x
-
-对 Agent 的价值：
-  简单步骤（如「继续执行下一步」）→ 小模型足以预测
-  复杂决策（如「该用什么工具」）→ 仍需要大模型
-
-
-33.5 成本优化的组合策略
-━━━━━━━━━━━━━━━━━━━━━━
-
-  ┌─────────────────────────────────────────────┐
-  │                                             │
-  │  Ch26 模型路由  → 80% 请求用小模型           │
-  │  Ch28 语义缓存  → 30-50% 免调 LLM            │
-  │  Ch33 Prompt Caching → 90% 节省前缀 Token    │
-  │                                             │
-  │  三者叠加 → 综合成本降低 60-85%               │
-  │                                             │
-  └─────────────────────────────────────────────┘
-
-
-33.6 本章总结
-━━━━━━━━━━━━
-
-核心要点回顾：
-
-1. Prompt Caching: 缓存 System Prompt，输入 Token 费降 90%
-2. KV-Cache 共享: 跨请求复用 LLM 内部状态
-3. 推测解码: 小模型猜 + 大模型验证，快 2-3x
-
-面试速记：
-  「Prompt Caching 怎么工作？」
-  → 标记相同前缀 → Anthropic 跳过编码 → 输入 Token 费降 90%
-  → 最少 1024 tokens 才能缓存 → TTL 5 分钟
-"""
-
-
-def demo_cache_simulator():
-    print("=" * 60)
-    print("  Prompt Caching 模拟")
-    print("=" * 60)
-
-    sim = PromptCacheSimulator()
-
-    system = "你是一个专业的 AI 助手，需要详细回答用户的问题。请保持礼貌和专业。" * 10
-    queries = [
-        "今天天气怎么样？",
-        "帮我写一段 Python 代码",
-        "推荐几本 AI 书籍",
-        "今天天气怎么样？",  # 重复查询，但 System Prompt 不变
-    ]
-
-    for q in queries:
-        result = sim.call_llm(system, q)
-        icon = "🎯 缓存命中" if result["cached"] else "🆕 首次调用"
-        print(f"  {icon} | 计费: {result['tokens_charged']} tokens "
-              f"| 成本: ${result['est_cost']:.6f}")
-
-    s = sim.stats()
-    print(f"\n  📊 缓存统计: 命中率 {s['hit_rate']}, "
-          f"总调用 {s['total_calls']} 次")
+    print("统计：", simulator.stats())
+    print("注意：上面 token 数为粗略教学估算，不代表 API 账单。")
 
 
 if __name__ == "__main__":
-    print("╔══════════════════════════════════════════════════════╗")
-    print("║  第33章：Prompt Caching & 推理优化                     ║")
-    print("║  Anthropic Cache · KV共享 · 推测解码                  ║")
-    print("╚══════════════════════════════════════════════════════╝")
-    demo_cache_simulator()
-    print("\n▶ 三层缓存体系")
-    print("-" * 50)
-    for name, benefit in [
-        ("L1 语义缓存", "相似查询匹配，100% 节省"),
-        ("L2 Prompt Caching", "相同前缀重用，90% 节省"),
-        ("L3 KV-Cache 共享", "跨请求状态共享，50-80% 节省"),
-    ]:
-        print(f"  {name:18s} → {benefit}")
-    print("\n✅ 第33章完成！")
+    demo_prefix_cache()

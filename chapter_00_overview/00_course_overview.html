@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:340e152fca3c5bbac21cc9a4059af7ff2b65bef1a8103fd91d14bac29a320024 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -301,7 +302,10 @@ body {
 <span class="nav-link nav-disabled">← 已是第一章</span>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_01_fundamentals/01_hello_agent.html" title="第一个 Agent — 裸写 ReAct 循环">第1章 →</a>
-</div><div class="hero"><h1>第0章 AI Agent 课程概览与前置知识</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解「什么是 AI Agent」- 建立直觉认知</span><span class="tag tag-goal">2. 掌握 Agent 的核心组成公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">3. 了解 Agent 开发的完整技术栈和 36 章学习路线</span><span class="tag tag-goal">4. 确认学习本课程所需的前置知识</span><span class="tag tag-goal">0.1 Agent 是什么？（5分钟理解）</span><span class="tag tag-goal">0.2 为什么 2024-2026 年是 Agent 爆发期？</span><span class="tag tag-goal">0.3 Agent 核心公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">0.4 全套学习路线图（36章七层递进）</span><span class="tag tag-goal">0.5 前置知识自查清单</span><span class="tag tag-goal">0.6 环境搭建（一键运行）</span></div><p>&nbsp;</p>
+</div><div class="hero"><h1>第0章 AI Agent 课程概览与前置知识</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解「什么是 AI Agent」- 建立直觉认知</span><span class="tag tag-goal">2. 掌握 Agent 的核心组成公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">3. 了解 Agent 开发的完整技术栈和 37 章学习路线</span><span class="tag tag-goal">4. 确认学习本课程所需的前置知识</span><span class="tag tag-goal">0.1 Agent 是什么？（5分钟理解）</span><span class="tag tag-goal">0.2 为什么 2024-2026 年是 Agent 爆发期？</span><span class="tag tag-goal">0.3 Agent 核心公式：Agent = LLM + 规划 + 记忆 + 工具</span><span class="tag tag-goal">0.4 全套学习路线图（37章七层递进）</span><span class="tag tag-goal">0.5 前置知识自查清单</span><span class="tag tag-goal">0.6 环境搭建（一键运行）</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -319,10 +323,10 @@ body {
 <p>✅ AI Agent：</p>
 <p>用户：「北京明天天气怎么样？」</p>
 <p>Agent 内部执行了 4 步：</p>
-<li>思考(Think)：用户想知道天气 → 我需要调用天气查询工具</li>
-<p>2. 行动(Act)：调用 get_weather("北京") → 发送 HTTP 请求到天气 API</p>
-<p>3. 观察(Observe)：返回 {"明天": "晴，25°C"} → 拿到真实数据</p>
-<p>4. 回答：用自然语言组织结果 → 「北京明天晴天，气温 25°C」</p>
+<li>1. 思考(Think)：用户想知道天气 → 我需要调用天气查询工具</li>
+<li>2. 行动(Act)：调用 get_weather("北京") → 发送 HTTP 请求到天气 API</li>
+<li>3. 观察(Observe)：返回 {"明天": "晴，25°C"} → 拿到真实数据</li>
+<li>4. 回答：用自然语言组织结果 → 「北京明天晴天，气温 25°C」</li>
 <p>&nbsp;</p>
 <p>核心区别：</p>
 <li>LLM = 「大脑」（会思考，但只能靠记忆）</li>
@@ -348,23 +352,23 @@ body {
 <li>2024.10: Anthropic 发布 Computer Use（Claude 操控电脑）</li>
 <li>2024.11: Anthropic 发布 MCP 协议（Agent ↔ 工具的 USB-C）</li>
 <p>&nbsp;</p>
-<p>── 2025: Agent 爆发之年 ──</p>
+<p>── 2025: Agent 工程平台化 ──</p>
 <li>2025.01: DeepSeek-R1 发布，推理能力大幅提升</li>
-<li>2025.02: Claude Code 正式发布（工业级编码 Agent 标杆）</li>
-<li>2025.04: Google 联合 50+ 企业发布 A2A 协议（Agent ↔ Agent）</li>
-<li>2025.09: Anthropic 发布 Claude Agent SDK（通用 Agent 框架）</li>
-<li>2025.10: Anthropic Computer Use 正式发布（production-ready）</li>
-<li>2025.12: OpenAI 发布 CUA (Computer Using Agent)</li>
+<li>2025.02: Anthropic 推出 Claude Code 编码 Agent</li>
+<li>2025.03: OpenAI 推出 Responses API 与内置 Agent 工具</li>
+<li>2025.04: Google 发起 A2A 协议（Agent ↔ Agent）</li>
+<li>2025: Claude Code SDK 更名为 Claude Agent SDK</li>
 <p>&nbsp;</p>
-<p>── 2026: Agent 基础设施成熟 ──</p>
-<li>2026.03: Letta 发布 Filesystem Memory 方案（LoCoMo 74.0%）</li>
-<li>2026: MCP / A2A 成为行业标准，Agent 中间件生态涌现</li>
+<p>── 2026: 协议、安全与评测走向规范化 ──</p>
+<li>2026: A2A 1.0 统一操作、AgentCard 与跨 Agent 互操作模型</li>
+<li>2026.07: MCP 2026-07-28 采用无状态核心，简化传输与实现</li>
+<li>2026: OWASP 发布 Agentic Applications Top 10（ASI01-ASI10）</li>
 <p>&nbsp;</p>
-<p>就业信号（2025-2026）：</p>
-<li>"AI Agent 工程师" 岗位同比增长 300%+</li>
-<li>大厂（字节/腾讯/阿里/Google/Meta）均设立 Agent 专项团队</li>
-<li>硅谷 VC 投资方向全面转向 Agent 赛道</li>
-<li>Agent 工程师薪资范围：一线城市 25K-80K（视经验和公司）</li>
+<p>工程信号（截至 2026-08-01）：</p>
+<li>Agent 已从“单次模型调用”扩展到工具、状态、协议、评测和安全体系</li>
+<li>MCP、A2A、OpenTelemetry GenAI 语义约定等开放规范持续演进</li>
+<li>生产团队更看重可评测、可观测、可恢复和最小权限，而非框架数量</li>
+<li>岗位数量和薪资会随地区与时间变化，本课程不提供未经来源验证的统计值</li>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>0.3 Agent 核心公式</h2>
@@ -375,7 +379,7 @@ body {
   │                  AI Agent                   │
   │  ┌─────────┐  ┌────────┐  ┌──────────────┐  │
   │  │   LLM   │  │ 规划器  │  │   记忆系统    │  │
-  │  │ (大脑)   │  │Planning│  │   Memory     │   │ 
+  │  │ (大脑)   │  │Planning│  │   Memory     │   │
   │  └────┬────┘  └───┬────┘  └──────┬───────┘  │
   │       │           │              │          │
   │       └───────────┼──────────────┘          │
@@ -388,20 +392,20 @@ body {
   └─────────────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>Agent 执行循环（核心，面试高频！）：</p>
-<li>感知(Perceive)：接收用户输入和上一次行动的结果</li>
-<p>2. 思考(Think)：LLM 分析当前状态，决定下一步</p>
-<p>3. 行动(Act)：调用工具或生成最终回答</p>
-<p>4. 观察(Observe)：获取行动结果</p>
+<li>1. 感知(Perceive)：接收用户输入和上一次行动的结果</li>
+<li>2. 思考(Think)：LLM 分析当前状态，决定下一步</li>
+<li>3. 行动(Act)：调用工具或生成最终回答</li>
+<li>4. 观察(Observe)：获取行动结果</li>
 <p>→ 回到步骤 1，直到任务完成</p>
 <p>&nbsp;</p>
 <p>这个循环被称为「ReAct 循环」(Reasoning + Acting)，</p>
 <p>是 99% 的 Agent 框架的底层逻辑。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>0.4 全套学习路线图（36章七层递进）</h2>
+<h2>0.4 全套学习路线图（37章七层递进）</h2>
 <p>&nbsp;</p>
 <p>本课程按「理论 → 实践 → 深度 → 工程 → 架构 → 补强 → 专家」七层递进，</p>
-<p>共 36 章（Ch0-Ch36），每章既是完整讲义也是可运行代码。</p>
+<p>共 37 章（Ch0-Ch36），每章既是完整讲义也是可运行代码。</p>
 <p>&nbsp;</p>
 <p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌─────────────────────────────────────────────────────────────┐
   │ 第1层：Agent 理论基础（Ch0-3）                                │
@@ -422,9 +426,9 @@ body {
   ├─────────────────────────────────────────────────────────────┤
   │ 第3层：深度技术剖析（Ch8-12）                                │
   │ ┌──────────────┬──────────────────────────────────────────┐ │
-  │ │ Ch8 ClaudeCode│ nO主循环·h2A实时Steering·上下文压缩·SubAgent│
+  │ │ Ch8 ClaudeCode│ Agent循环·Steering队列·上下文压缩·SubAgent│
   │ │ Ch9 RAG深度   │ 从Naive到生产级·Chunk·Embedding·RRF     │
-  │ │ Ch10 MCP协议  │ JSON-RPC·原语·能力协商·stdio/SSE传输层   │
+  │ │ Ch10 MCP协议  │ 无状态JSON-RPC·原语·stdio/Streamable HTTP│
   │ │ Ch11 ToolCall │ OpenAI vs Anthropic·Streaming·Strict模式 │
   │ │ Ch12 基础设施  │ OpenClaw架构·Harness·Agent生产化Checklist │
   │ └──────────────┴──────────────────────────────────────────┘ │
@@ -433,10 +437,10 @@ body {
   │ ┌──────────────┬──────────────────────────────────────────┐ │
   │ │ Ch13 FastAPI  │ REST API·SSE·WebSocket·生产部署架构      │
   │ │ Ch14 SQLite   │ 5表Schema·WAL模式·会话/任务/用户管理     │
-  │ │ Ch15 A2A协议   │ AgentCard·Task·Artifact·多Agent协作      │
+  │ │ Ch15 A2A协议   │ v1.0 AgentCard·Message·Task·Artifact    │
   │ │ Ch16 MemGPT   │ Core Memory·Heartbeat·Sleep-Time·FS记忆  │
-  │ │ Ch17 CompUse  │ Screenshot-Action Loop·坐标计算·安全沙箱 │
-  │ │ Ch18 安全防护  │ Prompt Injection攻防·权限分级·4层防御    │
+  │ │ Ch17 CompUse  │ Beta工具·Screenshot-Action·安全沙箱     │
+  │ │ Ch18 安全防护  │ OWASP Agentic Top 10·权限分级·4层防御   │
   │ └──────────────┴──────────────────────────────────────────┘ │
   ├─────────────────────────────────────────────────────────────┤
   │ 第5层：高级架构与优化（Ch19-24）                              │
@@ -446,7 +450,7 @@ body {
   │ │ Ch21 Streaming│ EventBus·动态中断·背压控制               │
   │ │ Ch22 DSPy    │ Signature→Module→Optimizer 自动优化       │
   │ │ Ch23 CodeAgent│ CodeAct·ACI·Plan-Execute·SWE-bench横评   │
-  │ │ Ch24 可观测   │ Tracing Span树·LangSmith vs LangFuse     │
+  │ │ Ch24 可观测   │ OTel GenAI语义·Tracing·LangSmith/Langfuse│
   │ └──────────────┴──────────────────────────────────────────┘ │
   ├─────────────────────────────────────────────────────────────┤
   │ 第6层：基础能力补强（Ch25-28）                                │
@@ -463,7 +467,7 @@ body {
   │ │ Ch30 可靠性   │ 熔断器·指数退避重试·幂等性·降级策略     │
   │ │ Ch31 评测体系  │ GAIA·AgentBench·WebArena·tau-bench      │
   │ │ Ch32 自改进   │ Bad Case收集→自动改Prompt→评测验证      │
-  │ │ Ch33 Cache   │ Anthropic Cache·推测解码·KV共享          │
+  │ │ Ch33 Cache   │ OpenAI/Anthropic Prompt Cache·KV复用     │
   │ │ Ch34 微调     │ LoRA微调·数据准备·成本收益对比           │
   │ │ Ch35 数据飞轮  │ 交互采集→Bad Case识别→自动触发改进     │
   │ │ Ch36 纵深安全  │ Canary Token·分层隔离·行为沙箱          │
@@ -471,14 +475,14 @@ body {
   └─────────────────────────────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>学习建议：</p>
-<li>新手入门：按 Ch0 → Ch36 顺序学习，每章 1-2 小时</li>
-<li>有基础者：直接跳到 Ch8 开始深度技术</li>
-<li>面试突击（重点章节）：</li>
+<li>1. 新手入门：按 Ch0 → Ch36 顺序学习，每章 1-2 小时</li>
+<li>2. 有基础者：直接跳到 Ch8 开始深度技术</li>
+<li>3. 面试突击（重点章节）：</li>
 <p>Ch7(面试20问) + Ch8(Claude Code) + Ch9(RAG) + Ch10(MCP)</p>
 <p>+ Ch11(ToolCall) + Ch15(A2A) + Ch18(安全) + Ch19(Workflow)</p>
-<li>构建产品：Ch13(FastAPI) + Ch14(SQLite) + Ch24(可观测)</li>
+<li>4. 构建产品：Ch13(FastAPI) + Ch14(SQLite) + Ch24(可观测)</li>
 <p>+ Ch26(模型路由) + Ch28(语义缓存)</p>
-<li>降本增效：Ch26(路由节省94%) + Ch28(缓存) + Ch33(Prompt Cache)</li>
+<li>5. 降本增效：Ch26(路由) + Ch28(缓存) + Ch33(Prompt Cache)，收益以实测为准</li>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>0.5 前置知识自查清单</h2>
@@ -523,7 +527,7 @@ body {
   │ Ch4-5 框架         │ langchain, langchain-openai,      │
   │                    │ langgraph                         │
   │ Ch6-7 评测+面试    │ 无需额外依赖                       │
-  │ Ch8-12 深度技术    │ pydantic, httpx, tiktoken         │
+  │ Ch8-12 深度技术    │ 标准库；真实 SDK 练习按章节选装    │
   │ Ch13 FastAPI       │ fastapi, uvicorn                  │
   │ Ch14 SQLite        │ 标准库（无需额外安装）              │
   │ Ch15-18 协议/安全  │ 无需额外依赖（标准库）              │
@@ -534,13 +538,13 @@ body {
   │ Ch29-36 专家进阶   │ 标准库（无需额外安装）              │
   └────────────────────┴────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
-<p>⚡ 核心依赖一行安装（Ch1-18 必需）：</p>
-<p>pip install openai python-dotenv langchain langchain-openai \</p>
-<p>langgraph pydantic httpx tiktoken fastapi uvicorn numpy</p>
+<p>⚡ 从仓库根目录安装已核对的主版本范围：</p>
+<p>python -m pip install -r requirements.txt</p>
 <p>&nbsp;</p>
 <p>💡 大部分章节（Ch8-36）仅使用 Python 标准库</p>
-<p>（sqlite3 / asyncio / hashlib / json / time），无需额外安装即可运行。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (84 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check_python_version</span><span class="code-badge code-badge-func">install_dependencies</span><span class="code-badge code-badge-func">show_env_setup_guide</span></div><div class="code-block"><pre><span class="k">import</span> subprocess
+<p>（sqlite3 / asyncio / hashlib / json / time），无需额外安装即可运行。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (68 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">check_python_version</span><span class="code-badge code-badge-func">install_dependencies</span><span class="code-badge code-badge-func">show_env_setup_guide</span></div><div class="code-block"><pre><span class="k">import</span> subprocess
 <span class="k">import</span> sys
+<span class="k">from</span> pathlib <span class="k">import</span> Path
 
 
 <span class="k">def</span> <span class="f">check_python_version</span>():
@@ -554,25 +558,12 @@ body {
 
 
 <span class="k">def</span> <span class="f">install_dependencies</span>():
-    <span class="s">"""一键安装本课程所需的所有核心依赖。"""</span>
-    packages = [
-        <span class="s">"openai&gt;=1.0.0"</span>,           <span class="h"># OpenAI API 调用 (Ch1-12)</span>
-        <span class="s">"langchain&gt;=0.3.0"</span>,       <span class="h"># LangChain 核心框架 (Ch4-5)</span>
-        <span class="s">"langchain-openai"</span>,        <span class="h"># LangChain OpenAI 集成 (Ch4-5)</span>
-        <span class="s">"langgraph"</span>,               <span class="h"># LangGraph 状态机 (Ch4-5)</span>
-        <span class="s">"pydantic&gt;=2.0.0"</span>,        <span class="h"># 数据验证 (Ch13)</span>
-        <span class="s">"python-dotenv"</span>,           <span class="h"># 环境变量管理</span>
-        <span class="s">"httpx"</span>,                   <span class="h"># HTTP 请求</span>
-        <span class="s">"tiktoken"</span>,                <span class="h"># Token 计数</span>
-        <span class="s">"fastapi"</span>,                 <span class="h"># Web 框架 (Ch13)</span>
-        <span class="s">"uvicorn"</span>,                 <span class="h"># ASGI 服务器 (Ch13)</span>
-        <span class="s">"numpy"</span>,                   <span class="h"># 数值计算 (Ch25 向量数据库演示)</span>
-    ]
-    <span class="k">for</span> pkg <span class="k">in</span> packages:
-        <span class="b">print</span>(f<span class="s">"正在安装 {pkg}..."</span>)
-        subprocess.check_call(
-            [sys.executable, <span class="s">"-m"</span>, <span class="s">"pip"</span>, <span class="s">"install"</span>, pkg, <span class="s">"-q"</span>]
-        )
+    <span class="s">"""从版本化依赖文件安装课程依赖。"""</span>
+    requirements = Path(__file__).resolve().parents[<span class="n">1</span>] / <span class="s">"requirements.txt"</span>
+    <span class="b">print</span>(f<span class="s">"正在安装 {requirements} 中列出的依赖..."</span>)
+    subprocess.check_call(
+        [sys.executable, <span class="s">"-m"</span>, <span class="s">"pip"</span>, <span class="s">"install"</span>, <span class="s">"-r"</span>, <span class="b">str</span>(requirements)]
+    )
     <span class="b">print</span>(<span class="s">"\n[✓] 所有依赖安装完成！"</span>)
 
 
@@ -615,28 +606,27 @@ body {
 
     <span class="b">print</span>()
     <span class="b">print</span>(<span class="s">"后续章节运行前，请先执行依赖安装："</span>)
-    <span class="b">print</span>(<span class="s">"  修改下方 install=True 后运行本文件"</span>)
+    <span class="b">print</span>(<span class="s">"  python -m pip install -r requirements.txt"</span>)
     <span class="b">print</span>()
 
-    install = <span class="k">False</span>  <span class="h"># 改为 True 以执行安装</span>
-    <span class="k">if</span> install:
-        install_dependencies()
-
-    show_env_setup_guide()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (352 行)</summary><div class="code-block"><pre><span class="s">"""
+    show_env_setup_guide()</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (338 行)</summary><div class="code-block"><pre><span class="s">"""
 第0章：AI Agent 课程概览与前置知识
 ===================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 理解「什么是 AI Agent」- 建立直觉认知
   2. 掌握 Agent 的核心组成公式：Agent = LLM + 规划 + 记忆 + 工具
-  3. 了解 Agent 开发的完整技术栈和 36 章学习路线
+  3. 了解 Agent 开发的完整技术栈和 37 章学习路线
   4. 确认学习本课程所需的前置知识
 
 📌 本章结构：
   0.1 Agent 是什么？（5分钟理解）
   0.2 为什么 2024-2026 年是 Agent 爆发期？
   0.3 Agent 核心公式：Agent = LLM + 规划 + 记忆 + 工具
-  0.4 全套学习路线图（36章七层递进）
+  0.4 全套学习路线图（37章七层递进）
   0.5 前置知识自查清单
   0.6 环境搭建（一键运行）
 
@@ -688,23 +678,23 @@ body {
     • 2024.10: Anthropic 发布 Computer Use（Claude 操控电脑）
     • 2024.11: Anthropic 发布 MCP 协议（Agent ↔ 工具的 USB-C）
 
-  ── 2025: Agent 爆发之年 ──
+  ── 2025: Agent 工程平台化 ──
     • 2025.01: DeepSeek-R1 发布，推理能力大幅提升
-    • 2025.02: Claude Code 正式发布（工业级编码 Agent 标杆）
-    • 2025.04: Google 联合 50+ 企业发布 A2A 协议（Agent ↔ Agent）
-    • 2025.09: Anthropic 发布 Claude Agent SDK（通用 Agent 框架）
-    • 2025.10: Anthropic Computer Use 正式发布（production-ready）
-    • 2025.12: OpenAI 发布 CUA (Computer Using Agent)
+    • 2025.02: Anthropic 推出 Claude Code 编码 Agent
+    • 2025.03: OpenAI 推出 Responses API 与内置 Agent 工具
+    • 2025.04: Google 发起 A2A 协议（Agent ↔ Agent）
+    • 2025: Claude Code SDK 更名为 Claude Agent SDK
 
-  ── 2026: Agent 基础设施成熟 ──
-    • 2026.03: Letta 发布 Filesystem Memory 方案（LoCoMo 74.0%）
-    • 2026: MCP / A2A 成为行业标准，Agent 中间件生态涌现
+  ── 2026: 协议、安全与评测走向规范化 ──
+    • 2026: A2A 1.0 统一操作、AgentCard 与跨 Agent 互操作模型
+    • 2026.07: MCP 2026-07-28 采用无状态核心，简化传输与实现
+    • 2026: OWASP 发布 Agentic Applications Top 10（ASI01-ASI10）
 
-就业信号（2025-2026）：
-  - "AI Agent 工程师" 岗位同比增长 300%+
-  - 大厂（字节/腾讯/阿里/Google/Meta）均设立 Agent 专项团队
-  - 硅谷 VC 投资方向全面转向 Agent 赛道
-  - Agent 工程师薪资范围：一线城市 25K-80K（视经验和公司）
+工程信号（截至 2026-08-01）：
+  - Agent 已从“单次模型调用”扩展到工具、状态、协议、评测和安全体系
+  - MCP、A2A、OpenTelemetry GenAI 语义约定等开放规范持续演进
+  - 生产团队更看重可评测、可观测、可恢复和最小权限，而非框架数量
+  - 岗位数量和薪资会随地区与时间变化，本课程不提供未经来源验证的统计值
 
 ---
 
@@ -717,7 +707,7 @@ body {
   │                  AI Agent                   │
   │  ┌─────────┐  ┌────────┐  ┌──────────────┐  │
   │  │   LLM   │  │ 规划器  │  │   记忆系统    │  │
-  │  │ (大脑)   │  │Planning│  │   Memory     │   │ 
+  │  │ (大脑)   │  │Planning│  │   Memory     │   │
   │  └────┬────┘  └───┬────┘  └──────┬───────┘  │
   │       │           │              │          │
   │       └───────────┼──────────────┘          │
@@ -740,11 +730,11 @@ body {
   是 99% 的 Agent 框架的底层逻辑。
 
 
-0.4 全套学习路线图（36章七层递进）
+0.4 全套学习路线图（37章七层递进）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 本课程按「理论 → 实践 → 深度 → 工程 → 架构 → 补强 → 专家」七层递进，
-共 36 章（Ch0-Ch36），每章既是完整讲义也是可运行代码。
+共 37 章（Ch0-Ch36），每章既是完整讲义也是可运行代码。
 
   ┌─────────────────────────────────────────────────────────────┐
   │ 第1层：Agent 理论基础（Ch0-3）                                │
@@ -765,9 +755,9 @@ body {
   ├─────────────────────────────────────────────────────────────┤
   │ 第3层：深度技术剖析（Ch8-12）                                │
   │ ┌──────────────┬──────────────────────────────────────────┐ │
-  │ │ Ch8 ClaudeCode│ nO主循环·h2A实时Steering·上下文压缩·SubAgent│
+  │ │ Ch8 ClaudeCode│ Agent循环·Steering队列·上下文压缩·SubAgent│
   │ │ Ch9 RAG深度   │ 从Naive到生产级·Chunk·Embedding·RRF     │
-  │ │ Ch10 MCP协议  │ JSON-RPC·原语·能力协商·stdio/SSE传输层   │
+  │ │ Ch10 MCP协议  │ 无状态JSON-RPC·原语·stdio/Streamable HTTP│
   │ │ Ch11 ToolCall │ OpenAI vs Anthropic·Streaming·Strict模式 │
   │ │ Ch12 基础设施  │ OpenClaw架构·Harness·Agent生产化Checklist │
   │ └──────────────┴──────────────────────────────────────────┘ │
@@ -776,10 +766,10 @@ body {
   │ ┌──────────────┬──────────────────────────────────────────┐ │
   │ │ Ch13 FastAPI  │ REST API·SSE·WebSocket·生产部署架构      │
   │ │ Ch14 SQLite   │ 5表Schema·WAL模式·会话/任务/用户管理     │
-  │ │ Ch15 A2A协议   │ AgentCard·Task·Artifact·多Agent协作      │
+  │ │ Ch15 A2A协议   │ v1.0 AgentCard·Message·Task·Artifact    │
   │ │ Ch16 MemGPT   │ Core Memory·Heartbeat·Sleep-Time·FS记忆  │
-  │ │ Ch17 CompUse  │ Screenshot-Action Loop·坐标计算·安全沙箱 │
-  │ │ Ch18 安全防护  │ Prompt Injection攻防·权限分级·4层防御    │
+  │ │ Ch17 CompUse  │ Beta工具·Screenshot-Action·安全沙箱     │
+  │ │ Ch18 安全防护  │ OWASP Agentic Top 10·权限分级·4层防御   │
   │ └──────────────┴──────────────────────────────────────────┘ │
   ├─────────────────────────────────────────────────────────────┤
   │ 第5层：高级架构与优化（Ch19-24）                              │
@@ -789,7 +779,7 @@ body {
   │ │ Ch21 Streaming│ EventBus·动态中断·背压控制               │
   │ │ Ch22 DSPy    │ Signature→Module→Optimizer 自动优化       │
   │ │ Ch23 CodeAgent│ CodeAct·ACI·Plan-Execute·SWE-bench横评   │
-  │ │ Ch24 可观测   │ Tracing Span树·LangSmith vs LangFuse     │
+  │ │ Ch24 可观测   │ OTel GenAI语义·Tracing·LangSmith/Langfuse│
   │ └──────────────┴──────────────────────────────────────────┘ │
   ├─────────────────────────────────────────────────────────────┤
   │ 第6层：基础能力补强（Ch25-28）                                │
@@ -806,7 +796,7 @@ body {
   │ │ Ch30 可靠性   │ 熔断器·指数退避重试·幂等性·降级策略     │
   │ │ Ch31 评测体系  │ GAIA·AgentBench·WebArena·tau-bench      │
   │ │ Ch32 自改进   │ Bad Case收集→自动改Prompt→评测验证      │
-  │ │ Ch33 Cache   │ Anthropic Cache·推测解码·KV共享          │
+  │ │ Ch33 Cache   │ OpenAI/Anthropic Prompt Cache·KV复用     │
   │ │ Ch34 微调     │ LoRA微调·数据准备·成本收益对比           │
   │ │ Ch35 数据飞轮  │ 交互采集→Bad Case识别→自动触发改进     │
   │ │ Ch36 纵深安全  │ Canary Token·分层隔离·行为沙箱          │
@@ -821,7 +811,7 @@ body {
      + Ch11(ToolCall) + Ch15(A2A) + Ch18(安全) + Ch19(Workflow)
   4. 构建产品：Ch13(FastAPI) + Ch14(SQLite) + Ch24(可观测)
      + Ch26(模型路由) + Ch28(语义缓存)
-  5. 降本增效：Ch26(路由节省94%) + Ch28(缓存) + Ch33(Prompt Cache)
+  5. 降本增效：Ch26(路由) + Ch28(缓存) + Ch33(Prompt Cache)，收益以实测为准
 
 ---
 
@@ -870,7 +860,7 @@ body {
   │ Ch4-5 框架         │ langchain, langchain-openai,      │
   │                    │ langgraph                         │
   │ Ch6-7 评测+面试    │ 无需额外依赖                       │
-  │ Ch8-12 深度技术    │ pydantic, httpx, tiktoken         │
+  │ Ch8-12 深度技术    │ 标准库；真实 SDK 练习按章节选装    │
   │ Ch13 FastAPI       │ fastapi, uvicorn                  │
   │ Ch14 SQLite        │ 标准库（无需额外安装）              │
   │ Ch15-18 协议/安全  │ 无需额外依赖（标准库）              │
@@ -881,9 +871,8 @@ body {
   │ Ch29-36 专家进阶   │ 标准库（无需额外安装）              │
   └────────────────────┴────────────────────────────────────┘
 
-  ⚡ 核心依赖一行安装（Ch1-18 必需）：
-    pip install openai python-dotenv langchain langchain-openai \
-                langgraph pydantic httpx tiktoken fastapi uvicorn numpy
+  ⚡ 从仓库根目录安装已核对的主版本范围：
+    python -m pip install -r requirements.txt
 
   💡 大部分章节（Ch8-36）仅使用 Python 标准库
      （sqlite3 / asyncio / hashlib / json / time），无需额外安装即可运行。
@@ -891,6 +880,7 @@ body {
 
 <span class="k">import</span> subprocess
 <span class="k">import</span> sys
+<span class="k">from</span> pathlib <span class="k">import</span> Path
 
 
 <span class="k">def</span> <span class="f">check_python_version</span>():
@@ -904,25 +894,12 @@ body {
 
 
 <span class="k">def</span> <span class="f">install_dependencies</span>():
-    <span class="s">"""一键安装本课程所需的所有核心依赖。"""</span>
-    packages = [
-        <span class="s">"openai&gt;=1.0.0"</span>,           <span class="h"># OpenAI API 调用 (Ch1-12)</span>
-        <span class="s">"langchain&gt;=0.3.0"</span>,       <span class="h"># LangChain 核心框架 (Ch4-5)</span>
-        <span class="s">"langchain-openai"</span>,        <span class="h"># LangChain OpenAI 集成 (Ch4-5)</span>
-        <span class="s">"langgraph"</span>,               <span class="h"># LangGraph 状态机 (Ch4-5)</span>
-        <span class="s">"pydantic&gt;=2.0.0"</span>,        <span class="h"># 数据验证 (Ch13)</span>
-        <span class="s">"python-dotenv"</span>,           <span class="h"># 环境变量管理</span>
-        <span class="s">"httpx"</span>,                   <span class="h"># HTTP 请求</span>
-        <span class="s">"tiktoken"</span>,                <span class="h"># Token 计数</span>
-        <span class="s">"fastapi"</span>,                 <span class="h"># Web 框架 (Ch13)</span>
-        <span class="s">"uvicorn"</span>,                 <span class="h"># ASGI 服务器 (Ch13)</span>
-        <span class="s">"numpy"</span>,                   <span class="h"># 数值计算 (Ch25 向量数据库演示)</span>
-    ]
-    <span class="k">for</span> pkg <span class="k">in</span> packages:
-        <span class="b">print</span>(f<span class="s">"正在安装 {pkg}..."</span>)
-        subprocess.check_call(
-            [sys.executable, <span class="s">"-m"</span>, <span class="s">"pip"</span>, <span class="s">"install"</span>, pkg, <span class="s">"-q"</span>]
-        )
+    <span class="s">"""从版本化依赖文件安装课程依赖。"""</span>
+    requirements = Path(__file__).resolve().parents[<span class="n">1</span>] / <span class="s">"requirements.txt"</span>
+    <span class="b">print</span>(f<span class="s">"正在安装 {requirements} 中列出的依赖..."</span>)
+    subprocess.check_call(
+        [sys.executable, <span class="s">"-m"</span>, <span class="s">"pip"</span>, <span class="s">"install"</span>, <span class="s">"-r"</span>, <span class="b">str</span>(requirements)]
+    )
     <span class="b">print</span>(<span class="s">"\n[✓] 所有依赖安装完成！"</span>)
 
 
@@ -965,12 +942,8 @@ body {
 
     <span class="b">print</span>()
     <span class="b">print</span>(<span class="s">"后续章节运行前，请先执行依赖安装："</span>)
-    <span class="b">print</span>(<span class="s">"  修改下方 install=True 后运行本文件"</span>)
+    <span class="b">print</span>(<span class="s">"  python -m pip install -r requirements.txt"</span>)
     <span class="b">print</span>()
-
-    install = <span class="k">False</span>  <span class="h"># 改为 True 以执行安装</span>
-    <span class="k">if</span> install:
-        install_dependencies()
 
     show_env_setup_guide()
 </pre></div></details></div><div class="nav-bar">

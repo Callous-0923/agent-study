@@ -1,0 +1,26 @@
+name: Validate course
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install course dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run repository checks
+        run: python -m unittest discover -s tests -v
+      - name: Rebuild static lessons
+        run: python build_html.py --all
+      - name: Verify generated pages are current
+        run: git diff --exit-code -- 'chapter_*/*.html' index.html

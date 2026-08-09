@@ -2,15 +2,15 @@
   <h1 align="center">🤖 AI Agent Full-Stack Learning Course</h1>
   <p align="center">
     Master AI Agent core theory and engineering from zero to one<br>
-    36 Chapters · 22,000+ Lines of Code · 60+ Runnable Examples · Interview-Ready
+    37 Chapters · 22,000+ Lines of Code · 60+ Runnable Examples · Interview-Ready
   </p>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/Chapters-36-green" alt="Chapters">
+  <img src="https://img.shields.io/badge/Chapters-37-green" alt="Chapters">
   <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License">
-  <img src="https://img.shields.io/badge/Updated-2026.05-brightgreen" alt="Update">
+  <img src="https://img.shields.io/badge/Updated-2026.08-brightgreen" alt="Update">
 
   <br>
 
@@ -28,19 +28,19 @@
   <a href="https://agent-study-ruddy.vercel.app/chapter_10_mcp/10_mcp_deepdive.html"><img src="https://img.shields.io/badge/🔌-MCP_Protocol-10B981?style=for-the-badge" alt="MCP Protocol"></a>
 </p>
 
-> **🌐 No installation — read in your browser**: [agent-study-ruddy.vercel.app](https://agent-study-ruddy.vercel.app/) · All 36 chapters · Dark blueprint theme · Mobile-friendly
+> **🌐 No installation — read in your browser**: [agent-study-ruddy.vercel.app](https://agent-study-ruddy.vercel.app/) · All 37 chapters · Dark blueprint theme · Mobile-friendly
 
 ---
 
 ## 📖 Overview
 
-A **career-oriented** AI Agent full-stack learning course. From Agent fundamentals to Claude Code reverse engineering, from RAG to MCP/A2A protocols, from DSPy to production observability — covering **36 topics across 7 tiers**. Each chapter is a **standalone runnable `.py` file** — a complete lecture and executable code in one.
+A **career- and product-engineering-oriented** AI Agent full-stack course. It spans Agent fundamentals and code agents, RAG, MCP 2026-07-28, A2A v1.0, Responses API tool orchestration, streaming UI, evaluation, security, and observability — **37 topics across 7 tiers**. Each chapter is a **standalone runnable `.py` file**: a lecture and executable code in one.
 
 > **Target audience**: New graduates, career switchers, and any developer looking to systematically master AI Agents.
 
 ---
 
-## 🗺️ Course Roadmap (36 Chapters · 7 Tiers)
+## 🗺️ Course Roadmap (37 Chapters · 7 Tiers)
 
 ```
 Tier 1: Foundations ── Tier 2: Engineering ── Tier 3: Deep Tech ── Tier 4: Production
@@ -154,7 +154,7 @@ Create a `.env` file in the project root:
 ```env
 OPENAI_API_KEY=sk-your-api-key-here
 OPENAI_BASE_URL=https://api.openai.com/v1
-LLM_MODEL=gpt-4o-mini
+LLM_MODEL=gpt-5.6-terra
 ```
 
 > You can also use other providers (DeepSeek, Qwen, etc.) by changing `OPENAI_BASE_URL` and `LLM_MODEL`.
@@ -185,6 +185,8 @@ python chapter_28_cache/28_cache.py
 | `pydantic` | Ch13 | Data model validation |
 | `python-dotenv` | Ch0 | Environment variable management |
 
+Optionally run `pip install -e ".[agents]"` for follow-up exercises using the OpenAI Agents SDK. Core examples continue to use the Responses API or offline teaching implementations.
+
 > **Note**: Chapters 8-12 and 14-28 mostly rely on the Python standard library (`sqlite3`, `asyncio`, `hashlib`, etc.) — no extra installation needed.
 
 ---
@@ -202,11 +204,12 @@ Follow Ch0 → Ch36 in order, 1-2 hours per chapter.
 - **Ch11**: Tool Calling internals
 - **Ch18**: Agent security (demo vs. production engineer differentiator)
 - **Ch19**: Workflow design patterns (universal system design framework)
-- **Ch26**: Model routing (50-80% cost reduction)
+- **Ch26**: Model routing (evaluate quality, latency, and cost on private workloads)
 
 ### Path 3: Build Products
 - **Ch13**: FastAPI service
 - **Ch14**: SQLite persistence
+- **Ch11 + Ch21**: Tool Search/PTC + streaming UI, approvals, and Realtime
 - **Ch12 + Ch24**: Production checklist + observability
 - **Ch26 + Ch28**: Cost optimization (routing + caching)
 
@@ -215,9 +218,9 @@ Follow Ch0 → Ch36 in order, 1-2 hours per chapter.
 ## 🧠 Core Technology Coverage
 
 ```
-Tool Calling Internals  ★★★★★  Complete OpenAI vs Anthropic comparison + Streaming assembly
-MCP Protocol            ★★★★★  Full lifecycle simulation (Initialize→tools/call)
-A2A Protocol            ★★★★★  AgentCard/Task/Artifact + Multi-Agent collaboration
+Tool Calling Internals  ★★★★★  OpenAI/Anthropic + Tool Search/PTC + streaming assembly
+MCP Protocol            ★★★★★  2026-07-28 stateless core + routing/MRTR/cache
+A2A Protocol            ★★★★★  v1.0 AgentCard/Task/Artifact + standard stream events
 Claude Code Architecture★★★★★  nO/h2A/Compaction/SubAgent reverse analysis
 RAG Full-Stack          ★★★★   Chunking/Embedding/RRF/Cross-Encoder/Production
 Model Routing           ★★★★   4 strategies + cost comparison experiments (94% savings)
@@ -321,5 +324,5 @@ MIT License — Free to use, modify, and distribute.
 
 <p align="center">
   <b>If this project helps you, please give it a ⭐ Star!</b><br>
-  <sub>36 Chapters · 7 Tiers · Continuously updated · Issues and PRs welcome</sub>
+<sub>37 Chapters · 7 Tiers · Verified 2026.08 · Issues and PRs welcome</sub>
 </p>

@@ -2,9 +2,12 @@
 第1章：AI Agent 基础概念 —— 从 LLM 调用到第一个 Agent
 =====================================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 理解 Agent 的 4 要素：LLM / 规划 / 记忆 / 工具
-  2. 掌握 LLM API 调用的基本方式
+  2. 掌握 OpenAI Responses API 的基本方式
   3. 手写一个最简 Agent（无框架，理解底层原理）
   4. 运行本文件，见到你的第一个 Agent 输出
 
@@ -44,13 +47,12 @@ def call_llm(prompt: str) -> str:
     Returns:
         LLM 生成的回复文本。
     """
-    model = os.getenv("LLM_MODEL", "gpt-4o-mini")
-    response = client.chat.completions.create(
+    model = os.getenv("LLM_MODEL", "gpt-5.6-terra")
+    response = client.responses.create(
         model=model,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
+        input=prompt,
     )
-    return response.choices[0].message.content
+    return response.output_text
 
 
 """
@@ -76,58 +78,59 @@ Function Calling 是 Agent 的核心机制。LLM 不只是生成文本，
 但必须由我们（代码）去执行实际的工具调用。
 """
 
-# 定义工具列表 —— 告诉 LLM 它有哪些"技能"可以使用
+# Responses API 的函数工具使用扁平 schema，而不是旧 Chat Completions 的
+# {"type": "function", "function": {...}} 包装。
 TOOLS = [
     {
         "type": "function",
-        "function": {
-            "name": "get_weather",
-            "description": "查询指定城市的天气信息。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "city": {
-                        "type": "string",
-                        "description": "城市名称，如 '北京'、'上海'",
-                    }
-                },
-                "required": ["city"],
+        "name": "get_weather",
+        "description": "查询指定城市的天气信息。课程中返回模拟数据。",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "description": "城市名称，如 '北京'、'上海'",
+                }
             },
+            "required": ["city"],
+            "additionalProperties": False,
         },
+        "strict": True,
     },
     {
         "type": "function",
-        "function": {
-            "name": "search_web",
-            "description": "在网上搜索信息，返回搜索结果。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "搜索关键词",
-                    }
-                },
-                "required": ["query"],
+        "name": "search_web",
+        "description": "搜索信息。课程中返回模拟结果，不会访问互联网。",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "搜索关键词",
+                }
             },
+            "required": ["query"],
+            "additionalProperties": False,
         },
+        "strict": True,
     },
     {
         "type": "function",
-        "function": {
-            "name": "calculate",
-            "description": "执行数学计算。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "expression": {
-                        "type": "string",
-                        "description": "数学表达式，如 '2 + 3 * 4'",
-                    }
-                },
-                "required": ["expression"],
+        "name": "calculate",
+        "description": "执行只包含基础运算符的数学计算。",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "expression": {
+                    "type": "string",
+                    "description": "数学表达式，如 '2 + 3 * 4'",
+                }
             },
+            "required": ["expression"],
+            "additionalProperties": False,
         },
+        "strict": True,
     },
 ]
 
@@ -254,8 +257,8 @@ def run_agent(user_message: str, max_iterations: int = 5):
     Returns:
         Agent 的最终回答。
     """
-    # 对话历史 —— Agent 的「短期记忆」
-    messages = [
+    # Responses 输入项 —— Agent 的「短期记忆」
+    input_items = [
         {"role": "system", "content": "你是一个有用的 AI 助手。当需要获取最新信息或执行计算时，请使用提供的工具。"},
         {"role": "user", "content": user_message},
     ]
@@ -266,30 +269,32 @@ def run_agent(user_message: str, max_iterations: int = 5):
 
     for iteration in range(max_iterations):
         # ===== 第 1 步：调用 LLM（Think 阶段）=====
-        model = os.getenv("LLM_MODEL", "gpt-4o-mini")
-        response = client.chat.completions.create(
+        model = os.getenv("LLM_MODEL", "gpt-5.6-terra")
+        response = client.responses.create(
             model=model,
-            messages=messages,
+            input=input_items,
             tools=TOOLS,
             tool_choice="auto",
         )
 
-        assistant_message = response.choices[0].message
+        function_calls = [
+            item for item in response.output if item.type == "function_call"
+        ]
 
         # ===== 第 2 步：检查 LLM 是否需要调用工具 =====
-        if assistant_message.tool_calls is None:
+        if not function_calls:
             # LLM 决定直接回答（不需要工具）→ 循环结束
-            final_answer = assistant_message.content
+            final_answer = response.output_text
             print(f"\n🎯 Agent 最终回答:\n{final_answer}")
             return final_answer
 
         # ===== 第 3 步：执行工具调用（Act 阶段）=====
-        # 将 LLM 的回复（含 tool_calls）加入对话历史
-        messages.append(assistant_message)
+        # 保留模型输出项；下一轮需要它们与 function_call_output 对应。
+        input_items.extend(response.output)
 
-        for tool_call in assistant_message.tool_calls:
-            func_name = tool_call.function.name
-            func_args = json.loads(tool_call.function.arguments)
+        for tool_call in function_calls:
+            func_name = tool_call.name
+            func_args = json.loads(tool_call.arguments)
 
             print(f"\n🔧 第 {iteration + 1} 轮 - 调用工具: {func_name}({func_args})")
 
@@ -303,24 +308,24 @@ def run_agent(user_message: str, max_iterations: int = 5):
             print(f"📊 工具返回: {result}")
 
             # 将工具执行结果加入对话历史（Observe 阶段）
-            messages.append({
-                "role": "tool",
-                "tool_call_id": tool_call.id,
-                "content": result,
+            input_items.append({
+                "type": "function_call_output",
+                "call_id": tool_call.call_id,
+                "output": result,
             })
 
     # 达到最大迭代次数，强制 LLM 给出最终回答
     print("\n⚠️ 达到最大迭代次数，要求 LLM 给出最终回答...")
-    messages.append({
+    input_items.append({
         "role": "user",
         "content": "请基于已有的工具调用结果，给出最终回答。"
     })
-    model = os.getenv("LLM_MODEL", "gpt-4o-mini")
-    final_response = client.chat.completions.create(
+    model = os.getenv("LLM_MODEL", "gpt-5.6-terra")
+    final_response = client.responses.create(
         model=model,
-        messages=messages,
+        input=input_items,
     )
-    final_answer = final_response.choices[0].message.content
+    final_answer = final_response.output_text
     print(f"\n🎯 Agent 最终回答:\n{final_answer}")
     return final_answer
 

@@ -2,13 +2,17 @@
 第11章：Tool Calling 底层机制深度剖析
 =====================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 深入理解 LLM Function Calling 的「真正原理」
   2. 掌握 OpenAI / Anthropic 两套实现的技术细节和差异
   3. 理解 Streaming Tool Calls 的机制
   4. 学会 Parallel Tool Calling 的使用与限制
   5. 掌握 Strict Function Calling（严格模式）
-  6. 理解 Tool Calling 中的常见陷阱和解决方案
+  6. 理解 Tool Search 与 Programmatic Tool Calling 的边界
+  7. 理解 Tool Calling 中的常见陷阱和解决方案
 
 📌 面试高频点：
   - LLM 是如何「知道」该调用哪个工具的？
@@ -54,26 +58,24 @@
 
 当你在 API 请求中包含 tools 参数时：
 
-  POST /v1/chat/completions
+  POST /v1/responses
   {
-    "model": "gpt-4o",
-    "messages": [...],
+    "model": "gpt-5.6-terra",
+    "input": [...],
     "tools": [
       {
         "type": "function",
-        "function": {
-          "name": "get_weather",
-          "description": "查询天气",
-          "parameters": {...}
-        }
+        "name": "get_weather",
+        "description": "查询天气",
+        "parameters": {...},
+        "strict": true
       }
     ]
   }
 
-OpenAI 的处理流程：
-  1. 将 tools 定义序列化为文本
-  2. 将序列化后的文本拼接到 system prompt 后面
-  3. 拼接内容会计入 prompt token（扣费！）
+OpenAI 的服务端内部提示构造不是稳定公开接口。可以确认的是：工具定义会占用
+输入 token / 上下文预算，因此应从 API usage 字段和真实账单测量，而不是假设
+服务端一定以某种文本拼接方式实现。
 
 Anthropic 的处理流程类似但有差异：
   1. 将 tools 作为独立字段发送
@@ -81,9 +83,9 @@ Anthropic 的处理流程类似但有差异：
   3. 同样计入 prompt token
 
 面试重点：tools 定义消耗 token！
-  - 一个典型工具的 JSON Schema 约 200-500 tokens
-  - 10 个工具可能消耗 2000-5000 tokens
-  - 这是每次请求的固定开销！
+  - schema 越长，输入预算通常越大
+  - 具体 token 数取决于 provider、模型与序列化方式
+  - 通过 usage、tracing 和账单按版本监控
   - 优化策略：只传当前场景可能用到的工具（动态工具选择）
 
 
@@ -93,13 +95,13 @@ Anthropic 的处理流程类似但有差异：
 ┌──────────────────┬───────────────────────┬──────────────────────────┐
 │      维度         │  OpenAI Function Call  │  Anthropic Tool Use      │
 ├──────────────────┼───────────────────────┼──────────────────────────┤
-│ 工具定义格式      │ 嵌套对象               │ 更简洁的 Tool 对象        │
+│ 工具定义格式      │ Responses 扁平对象      │ Tool 对象                 │
 │                  │ {type:"function",     │ {name:"...",            │
-│                  │  function:{...}}      │  description:"...",      │
+│                  │  name:"...",...}     │  description:"...",      │
 │                  │                       │  input_schema:{...}}     │
 ├──────────────────┼───────────────────────┼──────────────────────────┤
-│ 返回格式          │ tool_calls 数组        │ content 中的 tool_use    │
-│                  │ [{"function":{...}}]  │ blocks                  │
+│ 返回格式          │ output 中 function_call│ content 中的 tool_use    │
+│                  │ items                  │ blocks                  │
 ├──────────────────┼───────────────────────┼──────────────────────────┤
 │ 并行调用          │ 同时返回多个 tool_call  │ 同时返回多个 tool_use    │
 │                  │ (parallel_tool_calls  │ block                   │
@@ -108,31 +110,20 @@ Anthropic 的处理流程类似但有差异：
 │ 流式支持          │ 增量式 tool_call 名称   │ content_block 流式输出   │
 │                  │ 和参数                  │                         │
 ├──────────────────┼───────────────────────┼──────────────────────────┤
-│ 严格模式          │ strict: true          │ 不支持单独的 strict 模式   │
-│                  │ (保证 JSON Schema 一致) │ (但通过 prompt 可实现)    │
+│ 严格模式          │ strict: true          │ strict: true             │
+│                  │ (支持的 Schema 子集)    │ (mcp_toolset 除外)        │
 ├──────────────────┼───────────────────────┼──────────────────────────┤
 │ Token 计算        │ tools 序列化拼入 prompt │ tools 作为独立参数       │
 ├──────────────────┼───────────────────────┼──────────────────────────┤
-│ 工具结果返回      │ Tool Message           │ Tool Result Content Block│
-│                  │ role="tool"            │ type="tool_result"      │
+│ 工具结果返回      │ function_call_output   │ Tool Result Content Block│
+│                  │ item + call_id          │ type="tool_result"      │
 └──────────────────┴───────────────────────┴──────────────────────────┘
 
 两种格式对比（JSON）：
 
   # OpenAI 格式
-  {
-    "role": "assistant",
-    "tool_calls": [
-      {
-        "id": "call_abc123",
-        "type": "function",
-        "function": {
-          "name": "get_weather",
-          "arguments": "{\"city\": \"北京\"}"
-        }
-      }
-    ]
-  }
+  {"type": "function_call", "call_id": "call_abc123",
+   "name": "get_weather", "arguments": "{\"city\": \"北京\"}"}
 
   # Anthropic 格式
   {
@@ -152,20 +143,23 @@ Anthropic 的处理流程类似但有差异：
   - Anthropic: input 直接是 JSON 对象
 """
 
+import ast
+import operator
+
 # 两个平台的工具定义格式对比
 OPENAI_TOOL = {
     "type": "function",
-    "function": {
-        "name": "get_weather",
-        "description": "查询天气",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "city": {"type": "string", "description": "城市名称"}
-            },
-            "required": ["city"],
+    "name": "get_weather",
+    "description": "查询天气",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "city": {"type": "string", "description": "城市名称"}
         },
+        "required": ["city"],
+        "additionalProperties": False,
     },
+    "strict": True,
 }
 
 ANTHROPIC_TOOL = {
@@ -180,8 +174,38 @@ ANTHROPIC_TOOL = {
             }
         },
         "required": ["city"],
+        "additionalProperties": False,
     },
+    "strict": True,
 }
+
+# OpenAI Responses API 的 Programmatic Tool Calling 配置示意。
+# 它只构造请求数据，不调用网络，便于离线检查 schema。
+OPENAI_PROGRAMMATIC_TOOLS = [
+    {
+        "type": "function",
+        "name": "get_inventory",
+        "description": "Return sku and available_units for one SKU.",
+        "parameters": {
+            "type": "object",
+            "properties": {"sku": {"type": "string"}},
+            "required": ["sku"],
+            "additionalProperties": False,
+        },
+        "output_schema": {
+            "type": "object",
+            "properties": {
+                "sku": {"type": "string"},
+                "available_units": {"type": "number"},
+            },
+            "required": ["sku", "available_units"],
+            "additionalProperties": False,
+        },
+        "allowed_callers": ["programmatic"],
+        "strict": True,
+    },
+    {"type": "programmatic_tool_calling"},
+]
 
 
 """
@@ -288,13 +312,13 @@ ANTHROPIC_TOOL = {
 
 ▍ 生产中的 Token 陷阱 —— tools 定义在「吃」你的预算
 
-  很多人不知道 tools 定义每次请求都会重复计费。一个 Agent 如果有
-  15 个工具，每个工具 300 tokens 的定义 → 4500 tokens/次的前缀开销。
+  tools 定义会占用输入预算。一个 Agent 如果把大量、冗长且无关的工具
+  全部传入，每次请求都会承担额外上下文与路由难度。
   
   优化策略：
     a) 动态工具集 —— 第一轮不带 tools，让 LLM 说「我需要什么」
        → 第二轮只带 2-3 个相关工具
-    b) 工具描述瘦身 —— description 越短越好（Anthropic 建议 < 200 字）
+    b) 工具描述聚焦 —— 清楚写明用途、边界和何时不要调用，删除重复文字
     c) Schema 惰性加载 —— 只在 LLM 选择了某个工具后才传完整 Schema
     d) 缓存工具列表 —— 使用 Prompt Caching（Ch33）缓存不变的 tools 前缀
 
@@ -302,41 +326,37 @@ ANTHROPIC_TOOL = {
 11.6 Strict Function Calling —— 严格模式
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-OpenAI 在 2024 年推出了 strict 模式：
-  设置 strict: true 时，LLM 保证输出的参数 100% 符合 JSON Schema。
+OpenAI 与 Anthropic 的函数工具都支持 `strict: true`（Anthropic 的
+`mcp_toolset` 例外）。它提高对受支持 JSON Schema 子集的遵循度，但调用方
+仍要处理拒绝、截断、网络错误、业务校验失败和工具自身异常。
 
 ▍ Strict 模式的代价 —— 面试官想听你说「限制」
 
   面试常见陷阱：「你用 strict 模式了吗？」→ 如果你只说「用了，保证格式」，
   就太浅了。正确的深度回答应当包含 strict 模式的限制：
 
-  1. 所有参数必须定义在顶层 object —— 不支持嵌套的 anyOf/oneOf
-  2. 所有字段必须显式声明 type + 是否 nullable
-  3. 不支持动态 Schema —— 「根据上一个参数决定这个参数的类型」
-     这种场景 Strict 做不了
-  4. 可选字段必须声明 default 或 nullable，否则 LLM 可能不生成
-  5. 额外限制：顶层必须为 object 类型，数组类型参数需包装在 object 内
+  1. 各平台只支持 JSON Schema 的子集，且子集会随 API 版本变化
+  2. `additionalProperties: false`、required 和 nullable 的写法必须按官方要求
+  3. 动态、递归或复杂联合结构要先做 provider 兼容性测试
+  4. Schema 合法不代表参数在业务上安全：路径、金额、ID 仍需再次验证
 
   面试可以提：「Strict 模式适合 API 网关类的确定性工具，
   但对需要 LLM 灵活输出结构（如图表配置、动态查询）的场景
   反而会限制表达能力。我通常按工具类型分：确定性工具用 strict，
   创造性工具不用。」
 
-▍ 为什么 Anthropic 没有 Strict 模式？
-  
-  因为 Anthropic 的设计哲学不同：不是靠 Schema 约束，而是
-  通过训练让模型「学会」输出正确格式的 JSON。Claude 3.5+
-  在工具调用格式正确率上已经非常接近 100%（非 strict 条件下）。
-  
-  实践中：Claude 的 tool_use 返回的 input 字段已经是解析好的
-  JSON 对象（不是字符串），这本身减少了一半的格式错误。
+▍ Anthropic strict tool use
+
+  Anthropic 当前同样可在工具定义上设置 `strict: true`；除 `mcp_toolset`
+  外可用于客户端工具和服务端工具。`tool_use.input` 在 SDK 中通常作为对象
+  提供，但仍要用同一业务校验器检查后才能执行。
 
 
 11.6.1 Tool Calling 生产 Checklist
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   你上线前应该检查：
-  ✅ 每个工具的 description < 200 字（Anthropic 建议）
+  ✅ description 说明用途、输入语义、边界和禁止场景，不堆砌无关文本
   ✅ 动态加载工具，不是一次传 20 个
   ✅ 参数有明确的 type + default + nullable 声明
   ✅ 工具返回有 max_length 限制（避免 10MB JSON 爆上下文）
@@ -353,18 +373,16 @@ OpenAI 在 2024 年推出了 strict 模式：
 示例：
   {
     "type": "function",
-    "function": {
-      "name": "get_weather",
-      "strict": true,  // ← 开启严格模式
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "city": {"type": "string"},
-          "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]}
-        },
-        "required": ["city", "unit"],
-        "additionalProperties": false  // ← strict 模式必须设置
-      }
+    "name": "get_weather",
+    "strict": true,
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "city": {"type": "string"},
+        "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]}
+      },
+      "required": ["city", "unit"],
+      "additionalProperties": false
     }
   }
 
@@ -373,10 +391,38 @@ OpenAI 在 2024 年推出了 strict 模式：
   2. 减少重试：不需要「尝试解析 → 失败 → 重新请求 LLM」
   3. 安全考虑：防止 LLM 输出未定义的字段
 
-Anthropic 目前没有单独的 strict 参数，
-但可以通过 prompt 工程实现类似效果：
-  "You MUST output exactly the parameters specified in the input_schema.
-   Do not include any additional fields."
+Anthropic 示例同样在工具对象顶层设置 `strict: true`；调用前先确认当前
+工具类型与模型支持该能力，并保留本地 schema 与业务规则验证。
+
+
+11.6.2 Tool Search 与 Programmatic Tool Calling（2026）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+官方文档：
+  https://developers.openai.com/api/docs/guides/tools-tool-search
+  https://developers.openai.com/api/docs/guides/tools-programmatic-tool-calling
+
+当工具目录很大时，不应把全部 schema 永久塞进上下文。Tool Search 可以将
+函数、custom tool 或 MCP tool 标为 defer_loading，让模型先搜索并加载相关
+工具，再执行调用。它解决的是「先找到哪个工具」的问题。
+
+Programmatic Tool Calling（PTC）解决另一类问题：让模型在隔离的 V8 运行时中
+生成 JavaScript，对允许的工具做并行、循环、过滤、聚合或校验。配置要点：
+
+  1. 请求中加入 {"type": "programmatic_tool_calling"}
+  2. 可被程序调用的工具设置 allowed_callers: ["programmatic"]
+  3. 为结构化返回增加 output_schema，让程序知道字段契约
+  4. 应用仍负责执行客户端 function_call，并原样带回 call_id 与 caller
+  5. 继续处理 program / function_call / program_output，直到出现最终 message
+
+选择边界：
+  - 查一次数据、每一步都需要语义判断、需要审批或必须保留原生引用 → 直接调用
+  - 可预测的过滤、连接、去重、聚合，大量中间结果可被压缩 → 考虑 PTC
+  - 写操作默认保持直接调用，把人工审批边界留在宿主应用
+
+多轮 Responses 工作流还要保存状态：使用 previous_response_id 继续已存储响应，
+或在 store=false 时重放全部输出项；GPT-5.6 可通过 reasoning.context 控制此前
+reasoning 是否继续相关。不要只保存最终文本而丢失 tool/program/reasoning items。
 
 
 11.7 Tool Calling 的进阶技巧
@@ -399,16 +445,52 @@ Anthropic 目前没有单独的 strict 参数，
    ✗ return "Error 404"
    ✓ return "未找到城市'培京'的天气数据。城市名是否拼写有误？可用城市：北京、上海。"
 
-4. 工具数量控制 —— 别给 LLM 太多选择
-   - 超过 10 个工具时，LLM 的选择准确率显著下降
-   - 采用「动态工具集」：根据当前上下文过滤可用工具
-   - 分层的工具注册：先给概览，用户指定后再给详细工具
+4. 工具数量控制 —— 别默认传入完整目录
+   - 工具越多，schema 的上下文成本和误选空间通常越大，具体影响要用评测确认
+   - 小目录采用动态工具集：根据当前上下文过滤可用工具
+   - 大目录采用 Tool Search / defer_loading，按需加载详细 schema
 
 5. 工具调用确认（Human-in-the-Loop）
    - 读操作：自动执行（get_weather, search）
    - 写操作：需要确认（send_email, delete_file）
    - 危险操作：需要二次确认（execute_sql, run_command）
 """
+
+
+_ARITHMETIC_OPERATORS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.Mod: operator.mod,
+    ast.USub: operator.neg,
+    ast.UAdd: operator.pos,
+}
+
+
+def safe_calculate(raw_expression: str) -> str:
+    """只计算基础算术表达式；拒绝名称、属性、下标和函数调用。"""
+    expression = raw_expression.strip()
+    if not expression or len(expression) > 100:
+        return "表达式错误"
+
+    def evaluate(node):
+        if isinstance(node, ast.Expression):
+            return evaluate(node.body)
+        if isinstance(node, ast.Constant) and type(node.value) in {int, float}:
+            return node.value
+        if isinstance(node, ast.BinOp) and type(node.op) in _ARITHMETIC_OPERATORS:
+            return _ARITHMETIC_OPERATORS[type(node.op)](
+                evaluate(node.left), evaluate(node.right)
+            )
+        if isinstance(node, ast.UnaryOp) and type(node.op) in _ARITHMETIC_OPERATORS:
+            return _ARITHMETIC_OPERATORS[type(node.op)](evaluate(node.operand))
+        raise ValueError("只允许基础算术")
+
+    try:
+        return str(evaluate(ast.parse(expression, mode="eval")))
+    except (SyntaxError, ValueError, TypeError, ZeroDivisionError, OverflowError):
+        return "表达式错误"
 
 
 class ToolCallSimulator:
@@ -421,7 +503,7 @@ class ToolCallSimulator:
         self.tools = {
             "get_weather": lambda args: f"天气: {args.get('city', '未知')} 晴 25°C",
             "search": lambda args: f"搜索结果(关于'{args.get('query', '')}'): ...",
-            "calculate": lambda args: str(eval(args.get('expression', '0'))),
+            "calculate": lambda args: safe_calculate(args.get("expression", "0")),
         }
 
     def process_openai_style(self, llm_response: dict) -> str:
@@ -606,7 +688,7 @@ def demo_streaming_assembly():
 
 2. OpenAI vs Anthropic
    - arguments: JSON 字符串 vs 直接对象
-   - strict mode: OpenAI 有，Anthropic 靠 prompt
+   - strict mode: 两者均支持，但 schema 子集和例外不同
    - 底层原理相同，API 形式不同
 
 3. Parallel Tool Calling
@@ -661,7 +743,7 @@ if __name__ == "__main__":
         "错误信息要能帮助 LLM 自我纠正",
         "工具超过10个 → 动态过滤",
         "写入操作 → 人工确认",
-        "strict 模式 → 生产环境必用",
+        "strict 模式 → 支持时启用，并始终保留本地校验",
     ]
     for t in tips:
         print(f"  🔑 {t}")
