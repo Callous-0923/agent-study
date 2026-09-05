@@ -250,7 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
-<!-- generated-from-sha256:c1b73e839f297cbf5043637bf6b7bf6932c64cd85513604c49c1a2d2a6722eb5 -->
+<!-- generated-from-sha256:f4d98ec6538197a32373cb96493b709936b4a97dff032e588e1d2a10af205a03 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -302,7 +302,7 @@ body {
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_30_reliability/30_reliability.html" title="Agent 可靠性工程 — 熔断器·退避重试·幂等">← 第30章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_32_self_improving/32_self_improving.html" title="Self-Improving Agent — Bad Case 驱动的自动优化">第32章 →</a>
-</div><div class="hero"><h1>第31章 Agent 评测体系深度 —— 不只是「看起来不错」</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 掌握 GAIA / AgentBench / WebArena / ClawBench / tau-bench / SWE-bench 六大评测</span><span class="tag tag-goal">2. 理解每个评测的设计意图和适用场景</span><span class="tag tag-goal">3. 学会自建 Agent 评测集的方法</span><span class="tag tag-goal">4. 建立生产环境的多维度评测体系</span><span class="tag tag-interview">🎤 「你们怎么评测 Agent 的质量？」</span><span class="tag tag-interview">🎤 「GAIA 和 SWE-bench 有什么区别？」</span><span class="tag tag-interview">🎤 「怎么自建评测集？」</span></div><p>&nbsp;</p>
+</div><div class="hero"><h1>第31章 Agent 评测体系深度 —— 不只是「看起来不错」</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 掌握 GAIA / AgentBench / WebArena / tau-bench / SWE-bench 五大评测</span><span class="tag tag-goal">2. 理解每个评测的设计意图和适用场景</span><span class="tag tag-goal">3. 学会自建 Agent 评测集的方法</span><span class="tag tag-goal">4. 建立生产环境的多维度评测体系</span><span class="tag tag-interview">🎤 「你们怎么评测 Agent 的质量？」</span><span class="tag tag-interview">🎤 「GAIA 和 SWE-bench 有什么区别？」</span><span class="tag tag-interview">🎤 「怎么自建评测集？」</span></div><p>&nbsp;</p>
 <p>内容核对：2026-08-01</p>
 <p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
 <p>&nbsp;</p>
@@ -312,20 +312,17 @@ body {
 <p>任何分数都必须从官方榜单/论文读取并附模型、harness、预算和日期。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>31.1 六大评测对比</h2>
+<h2>31.1 五大评测对比</h2>
 <p>&nbsp;</p>
-<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">┌────────────────┬──────────────┬──────────────────────┐
-│ 评测名称        │  评测什么     │       特点            │
-├────────────────┼──────────────┼──────────────────────┤
-│ GAIA           │ 通用助理     │ 多步推理+工具使用       │
-│ AgentBench     │ 多环境 Agent  │ 8 个真实环境            │
-│ WebArena       │ Web 操作     │ 真实网站交互             │
-│ ClawBench      │ 日常在线任务  │ 生产网站+提交拦截         │
-│ tau-bench      │ 工具使用精度  │ 函数参数正确率            │
-│ SWE-bench      │ 代码修复     │ 真实 GitHub Issue        │
-└────────────────┴──────────────┴──────────────────────┘</pre>
-<p>&nbsp;</p>
-<p>各评测的任务、环境与成功标准不同，不使用统一星级比较难度。</p>
+<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">┌────────────────┬──────────────┬──────────────────────┬──────────┐
+│ 评测名称        │  评测什么     │       特点            │  难度     │
+├────────────────┼──────────────┼──────────────────────┼──────────┤
+│ GAIA           │ 通用助理     │ 多步推理+工具使用       │ ⭐⭐⭐    │
+│ AgentBench     │ 多环境 Agent  │ 8 个真实环境            │ ⭐⭐⭐⭐   │
+│ WebArena       │ Web 操作     │ 真实网站交互             │ ⭐⭐⭐⭐   │
+│ tau-bench      │ 工具使用精度  │ 函数参数正确率            │ ⭐⭐      │
+│ SWE-bench      │ 代码修复     │ 真实 GitHub Issue        │ ⭐⭐⭐⭐⭐  │
+└────────────────┴──────────────┴──────────────────────┴──────────┘</pre>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>31.2 GAIA —— 通用 AI 助手评测</h2>
@@ -376,31 +373,7 @@ body {
 <p>进一步审查也发现任务质量问题。公开分数必须配合任务审计和私有未污染回归集。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<h2>31.5 ClawBench —— 真实生产网站上的日常任务评测</h2>
-<p>&nbsp;</p>
-<p>评测什么：衡量浏览器 Agent 能否在真实生产网站上完成日常在线工作流，</p>
-<p>包括跨页面搜索、多步表单、预约、购物和求职等操作。</p>
-<p>&nbsp;</p>
-<p>与使用静态页面或沙箱的 Web 评测相比，ClawBench 的关键设计包括：</p>
-<li>真实生产网站：保留动态内容、布局变化和实际交互复杂性</li>
-<li>提交拦截：按任务规则记录并阻断关键、不可逆的最终 HTTP 请求，</li>
-<p>如结账、表单提交或发送邮件，防止这些请求产生真实副作用。</p>
-<p>该机制依赖请求规则覆盖，不能视为对所有网站操作的安全保证；</p>
-<p>拦截到请求也不等于任务成功，仍需后续评估。</p>
-<li>端到端证据：保存动作、HTTP 请求、截图、会话消息和录像，支持结果审计</li>
-<p>&nbsp;</p>
-<p>规模：论文 v2（2026-07-20）介绍了 153 个日常任务，覆盖 144 个平台和 15 类。</p>
-<p>版本说明（2026-09-05 核对）：官方仓库当前 V1 为 152 个任务、143 个网站；</p>
-<p>这是发布后移除任务的开源语料口径，不能与论文口径混用。</p>
-<p>这类评测关注复杂流程的最终任务完成率，而不只是单步点击准确率。</p>
-<p>报告结果时记录任务集版本、模型、harness、预算与运行日期；网站布局、</p>
-<p>可用性和反自动化机制的变化也会影响结果。</p>
-<p>&nbsp;</p>
-<p>论文：https://arxiv.org/abs/2604.08523v2</p>
-<p>代码：https://github.com/TIGER-AI-Lab/ClawBench</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<h2>31.6 自建评测集方法论</h2>
+<h2>31.5 自建评测集方法论</h2>
 <p>&nbsp;</p>
 <p>四步构建法：</p>
 <p>&nbsp;</p>
@@ -417,7 +390,7 @@ body {
 <li>4. 持续迭代</li>
 <li>每次模型/prompt/tool/schema/harness 变更跑哨兵集，按风险定期跑全量</li>
 <li>Bad Case → 改进 prompt → 重新评测</li>
-<li>非确定性路径运行多次，报告均值、方差和置信区间</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (148 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_case</span><span class="code-badge code-badge-func">evaluate</span><span class="code-badge code-badge-func">demo_benchmarks</span><span class="code-badge code-badge-func">mock_agent</span><span class="code-badge code-badge-class">AgentTestCase</span><span class="code-badge code-badge-class">SimpleAgentBench</span></div><div class="code-block"><pre><span class="k">import</span> json
+<li>非确定性路径运行多次，报告均值、方差和置信区间</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (147 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_case</span><span class="code-badge code-badge-func">evaluate</span><span class="code-badge code-badge-func">demo_benchmarks</span><span class="code-badge code-badge-func">mock_agent</span><span class="code-badge code-badge-class">AgentTestCase</span><span class="code-badge code-badge-class">SimpleAgentBench</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -550,21 +523,20 @@ body {
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
     <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
     <span class="b">print</span>(<span class="s">"║  第31章：Agent 评测体系深度                             ║"</span>)
-    <span class="b">print</span>(<span class="s">"║  六项公开评测：设计意图与适用场景                       ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  GAIA · AgentBench · WebArena · tau-bench · SWE-bench║"</span>)
     <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
     demo_benchmarks()
-    <span class="b">print</span>(<span class="s">"\n▶ 六大评测对比"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 五大评测对比"</span>)
     <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
-    <span class="k">for</span> name, purpose <span class="k">in</span> [
-        (<span class="s">"GAIA"</span>, <span class="s">"通用助理 多步推理+工具"</span>),
-        (<span class="s">"AgentBench"</span>, <span class="s">"8环境综合适应性"</span>),
-        (<span class="s">"WebArena"</span>, <span class="s">"真实 Web 操作"</span>),
-        (<span class="s">"ClawBench"</span>, <span class="s">"真实生产网站日常任务"</span>),
-        (<span class="s">"tau-bench"</span>, <span class="s">"工具调用精度"</span>),
-        (<span class="s">"SWE-bench"</span>, <span class="s">"代码修复"</span>),
+    <span class="k">for</span> name, purpose, level <span class="k">in</span> [
+        (<span class="s">"GAIA"</span>, <span class="s">"通用助理 多步推理+工具"</span>, <span class="s">"⭐⭐⭐"</span>),
+        (<span class="s">"AgentBench"</span>, <span class="s">"8环境综合适应性"</span>, <span class="s">"⭐⭐⭐⭐"</span>),
+        (<span class="s">"WebArena"</span>, <span class="s">"真实 Web 操作"</span>, <span class="s">"⭐⭐⭐⭐"</span>),
+        (<span class="s">"tau-bench"</span>, <span class="s">"工具调用精度"</span>, <span class="s">"⭐⭐"</span>),
+        (<span class="s">"SWE-bench"</span>, <span class="s">"代码修复"</span>, <span class="s">"⭐⭐⭐⭐⭐"</span>),
     ]:
-        <span class="b">print</span>(f<span class="s">"  {name:14s} → {purpose}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第31章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (285 行)</summary><div class="code-block"><pre><span class="s">"""
+        <span class="b">print</span>(f<span class="s">"  {name:14s} → {purpose:30s} 难度{level}"</span>)
+    <span class="b">print</span>(<span class="s">"\n✅ 第31章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (256 行)</summary><div class="code-block"><pre><span class="s">"""
 第31章：Agent 评测体系深度 —— 不只是「看起来不错」
 =====================================================
 
@@ -572,7 +544,7 @@ body {
 说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
-  1. 掌握 GAIA / AgentBench / WebArena / ClawBench / tau-bench / SWE-bench 六大评测
+  1. 掌握 GAIA / AgentBench / WebArena / tau-bench / SWE-bench 五大评测
   2. 理解每个评测的设计意图和适用场景
   3. 学会自建 Agent 评测集的方法
   4. 建立生产环境的多维度评测体系
@@ -586,21 +558,18 @@ body {
 任何分数都必须从官方榜单/论文读取并附模型、harness、预算和日期。
 
 
-31.1 六大评测对比
+31.1 五大评测对比
 ━━━━━━━━━━━━━━━━
 
-┌────────────────┬──────────────┬──────────────────────┐
-│ 评测名称        │  评测什么     │       特点            │
-├────────────────┼──────────────┼──────────────────────┤
-│ GAIA           │ 通用助理     │ 多步推理+工具使用       │
-│ AgentBench     │ 多环境 Agent  │ 8 个真实环境            │
-│ WebArena       │ Web 操作     │ 真实网站交互             │
-│ ClawBench      │ 日常在线任务  │ 生产网站+提交拦截         │
-│ tau-bench      │ 工具使用精度  │ 函数参数正确率            │
-│ SWE-bench      │ 代码修复     │ 真实 GitHub Issue        │
-└────────────────┴──────────────┴──────────────────────┘
-
-各评测的任务、环境与成功标准不同，不使用统一星级比较难度。
+┌────────────────┬──────────────┬──────────────────────┬──────────┐
+│ 评测名称        │  评测什么     │       特点            │  难度     │
+├────────────────┼──────────────┼──────────────────────┼──────────┤
+│ GAIA           │ 通用助理     │ 多步推理+工具使用       │ ⭐⭐⭐    │
+│ AgentBench     │ 多环境 Agent  │ 8 个真实环境            │ ⭐⭐⭐⭐   │
+│ WebArena       │ Web 操作     │ 真实网站交互             │ ⭐⭐⭐⭐   │
+│ tau-bench      │ 工具使用精度  │ 函数参数正确率            │ ⭐⭐      │
+│ SWE-bench      │ 代码修复     │ 真实 GitHub Issue        │ ⭐⭐⭐⭐⭐  │
+└────────────────┴──────────────┴──────────────────────┴──────────┘
 
 
 31.2 GAIA —— 通用 AI 助手评测
@@ -654,32 +623,7 @@ SWE-bench 特别提示（2026）：Verified 已被指出存在污染和测试缺
 进一步审查也发现任务质量问题。公开分数必须配合任务审计和私有未污染回归集。
 
 
-31.5 ClawBench —— 真实生产网站上的日常任务评测
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-评测什么：衡量浏览器 Agent 能否在真实生产网站上完成日常在线工作流，
-包括跨页面搜索、多步表单、预约、购物和求职等操作。
-
-与使用静态页面或沙箱的 Web 评测相比，ClawBench 的关键设计包括：
-  - 真实生产网站：保留动态内容、布局变化和实际交互复杂性
-  - 提交拦截：按任务规则记录并阻断关键、不可逆的最终 HTTP 请求，
-    如结账、表单提交或发送邮件，防止这些请求产生真实副作用。
-    该机制依赖请求规则覆盖，不能视为对所有网站操作的安全保证；
-    拦截到请求也不等于任务成功，仍需后续评估。
-  - 端到端证据：保存动作、HTTP 请求、截图、会话消息和录像，支持结果审计
-
-规模：论文 v2（2026-07-20）介绍了 153 个日常任务，覆盖 144 个平台和 15 类。
-版本说明（2026-09-05 核对）：官方仓库当前 V1 为 152 个任务、143 个网站；
-这是发布后移除任务的开源语料口径，不能与论文口径混用。
-这类评测关注复杂流程的最终任务完成率，而不只是单步点击准确率。
-报告结果时记录任务集版本、模型、harness、预算与运行日期；网站布局、
-可用性和反自动化机制的变化也会影响结果。
-
-论文：https://arxiv.org/abs/2604.08523v2
-代码：https://github.com/TIGER-AI-Lab/ClawBench
-
-
-31.6 自建评测集方法论
+31.5 自建评测集方法论
 ━━━━━━━━━━━━━━━━━━━━
 
 四步构建法：
@@ -833,20 +777,19 @@ SWE-bench 特别提示（2026）：Verified 已被指出存在污染和测试缺
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
     <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
     <span class="b">print</span>(<span class="s">"║  第31章：Agent 评测体系深度                             ║"</span>)
-    <span class="b">print</span>(<span class="s">"║  六项公开评测：设计意图与适用场景                       ║"</span>)
+    <span class="b">print</span>(<span class="s">"║  GAIA · AgentBench · WebArena · tau-bench · SWE-bench║"</span>)
     <span class="b">print</span>(<span class="s">"╚══════════════════════════════════════════════════════╝"</span>)
     demo_benchmarks()
-    <span class="b">print</span>(<span class="s">"\n▶ 六大评测对比"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ 五大评测对比"</span>)
     <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
-    <span class="k">for</span> name, purpose <span class="k">in</span> [
-        (<span class="s">"GAIA"</span>, <span class="s">"通用助理 多步推理+工具"</span>),
-        (<span class="s">"AgentBench"</span>, <span class="s">"8环境综合适应性"</span>),
-        (<span class="s">"WebArena"</span>, <span class="s">"真实 Web 操作"</span>),
-        (<span class="s">"ClawBench"</span>, <span class="s">"真实生产网站日常任务"</span>),
-        (<span class="s">"tau-bench"</span>, <span class="s">"工具调用精度"</span>),
-        (<span class="s">"SWE-bench"</span>, <span class="s">"代码修复"</span>),
+    <span class="k">for</span> name, purpose, level <span class="k">in</span> [
+        (<span class="s">"GAIA"</span>, <span class="s">"通用助理 多步推理+工具"</span>, <span class="s">"⭐⭐⭐"</span>),
+        (<span class="s">"AgentBench"</span>, <span class="s">"8环境综合适应性"</span>, <span class="s">"⭐⭐⭐⭐"</span>),
+        (<span class="s">"WebArena"</span>, <span class="s">"真实 Web 操作"</span>, <span class="s">"⭐⭐⭐⭐"</span>),
+        (<span class="s">"tau-bench"</span>, <span class="s">"工具调用精度"</span>, <span class="s">"⭐⭐"</span>),
+        (<span class="s">"SWE-bench"</span>, <span class="s">"代码修复"</span>, <span class="s">"⭐⭐⭐⭐⭐"</span>),
     ]:
-        <span class="b">print</span>(f<span class="s">"  {name:14s} → {purpose}"</span>)
+        <span class="b">print</span>(f<span class="s">"  {name:14s} → {purpose:30s} 难度{level}"</span>)
     <span class="b">print</span>(<span class="s">"\n✅ 第31章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_30_reliability/30_reliability.html" title="Agent 可靠性工程 — 熔断器·退避重试·幂等">← 第30章</a>
