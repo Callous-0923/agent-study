@@ -115,7 +115,7 @@ Tier 5: Advanced Arch ── Tier 6: Reinforcement ── Tier 7: Expert
 |------|------|----------|
 | **[Ch29](https://callous-0923.github.io/agent-study/chapter_29_multimodal/29_multimodal.html)** | Multi-Modal Agent | Vision + text joint reasoning, multi-modal tool calling |
 | **[Ch30](https://callous-0923.github.io/agent-study/chapter_30_reliability/30_reliability.html)** | Agent Reliability Engineering | Circuit breaker, exponential backoff retry, idempotency, degradation |
-| **[Ch31](https://callous-0923.github.io/agent-study/chapter_31_benchmarks/31_benchmarks.html)** | Agent Benchmarking in Depth | GAIA / AgentBench / WebArena / tau-bench |
+| **[Ch31](https://callous-0923.github.io/agent-study/chapter_31_benchmarks/31_benchmarks.html)** | Agent Benchmarking in Depth | GAIA / AgentBench / WebArena / ClawBench / tau-bench / SWE-bench |
 | **[Ch32](https://callous-0923.github.io/agent-study/chapter_32_self_improving/32_self_improving.html)** | Self-Improving Agent | Bad case collection → auto prompt optimization → eval validation |
 | **[Ch33](https://callous-0923.github.io/agent-study/chapter_33_prompt_cache/33_prompt_cache.html)** | Prompt Caching & Inference Optimization | Anthropic Cache, KV sharing, speculative decoding |
 | **[Ch34](https://callous-0923.github.io/agent-study/chapter_34_finetune/34_finetune.html)** | Model Fine-tuning for Function Calling | LoRA, fine-tuning data preparation, cost-benefit analysis |
