@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:4115eba3c901634c89164b8019186a8d27a0cc7ad126625fa94a526851c9dbf6 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -301,7 +302,10 @@ body {
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_04_frameworks/04_frameworks.html" title="主流框架实战 — LangChain·LangGraph">← 第4章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_06_evaluation/06_evaluation.html" title="评估与测试 — 评测框架·生产 Checklist">第6章 →</a>
-</div><div class="hero"><h1>第5章 多智能体系统（Multi-Agent System）</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解多智能体系统的核心架构模式</span><span class="tag tag-goal">2. 掌握 Agent 之间的协作/通信机制</span><span class="tag tag-goal">3. 学会用 LangGraph 构建多 Agent 工作流</span><span class="tag tag-goal">4. 了解 crewAI 等框架的多 Agent 编排方式</span><span class="tag tag-interview">🎤 多 Agent 系统的架构模式（协作/分层/竞争）</span><span class="tag tag-interview">🎤 Agent 间通信协议设计</span><span class="tag tag-interview">🎤 如何处理多 Agent 的冲突和一致性问题</span><span class="tag tag-interview">🎤 Multi-Agent 和单 Agent 的取舍</span></div><p>&nbsp;</p>
+</div><div class="hero"><h1>第5章 多智能体系统（Multi-Agent System）</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解多智能体系统的核心架构模式</span><span class="tag tag-goal">2. 掌握 Agent 之间的协作/通信机制</span><span class="tag tag-goal">3. 学会用 LangGraph 构建多 Agent 工作流</span><span class="tag tag-goal">4. 了解 LangGraph、OpenAI Agents SDK 与 Responses multi-agent 的边界</span><span class="tag tag-interview">🎤 多 Agent 系统的架构模式（协作/分层/竞争）</span><span class="tag tag-interview">🎤 Agent 间通信协议设计</span><span class="tag tag-interview">🎤 如何处理多 Agent 的冲突和一致性问题</span><span class="tag tag-interview">🎤 Multi-Agent 和单 Agent 的取舍</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -319,10 +323,10 @@ body {
 <li>每个 Agent 的 prompt 可以高度专业化</li>
 <p>&nbsp;</p>
 <p>核心优势：</p>
-<li>分工明确：每个 Agent 专注自己的领域</li>
-<li>并行执行：多个 Agent 可以同时工作</li>
-<li>错误隔离：一个 Agent 出错不影响整体</li>
-<li>专业化 prompt：每个 Agent 可以用领域最优提示词</li>
+<li>1. 分工明确：每个 Agent 专注自己的领域</li>
+<li>2. 并行执行：多个 Agent 可以同时工作</li>
+<li>3. 错误隔离：一个 Agent 出错不影响整体</li>
+<li>4. 专业化 prompt：每个 Agent 可以用领域最优提示词</li>
 <p>&nbsp;</p>
 <p>经典场景：</p>
 <li>软件开发生命周期（需求 → 设计 → 编码 → 测试 → 部署）</li>
@@ -403,7 +407,7 @@ REVIEWER_SYSTEM_PROMPT = <span class="s">"""你是一位严格的内容审核编
 - 完整性：是否覆盖了任务要求的所有方面？
 
 返回格式：
-{"score": 1-10, "issues": ["问题1", "问题2"], 
+{"score": 1-10, "issues": ["问题1", "问题2"],
  "approved": true/false, "suggestions": "改进建议"}"""</span>
 
 
@@ -541,7 +545,7 @@ load_dotenv()
     <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     llm = ChatOpenAI(
-        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>),
         api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
         base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
         temperature=<span class="n">0.7</span>,
@@ -650,7 +654,7 @@ load_dotenv()
     <span class="h"># 尝试初始化 LLM</span>
     <span class="k">try</span>:
         llm = ChatOpenAI(
-            model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+            model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>),
             api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
             base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
             temperature=<span class="n">0.5</span>,
@@ -706,25 +710,36 @@ load_dotenv()
     <span class="b">print</span>(f<span class="s">"    输出: {report[:200]}..."</span>)
 
     <span class="b">print</span>(<span class="s">"\n📄 ===== 最终报告摘要 ====="</span>)
-    <span class="b">print</span>(report <span class="k">if</span> <span class="b">len</span>(report) &lt; <span class="n">500</span> <span class="k">else</span> report[:<span class="n">500</span>] + <span class="s">"..."</span>)</pre></div></details></div><div class="lecture"><h2>5.4 Multi-Agent 设计原则（面试高频！）</h2>
+    <span class="b">print</span>(report <span class="k">if</span> <span class="b">len</span>(report) &lt; <span class="n">500</span> <span class="k">else</span> report[:<span class="n">500</span>] + <span class="s">"..."</span>)</pre></div></details></div><div class="lecture"><h3>5.3.1 2026 年的编排选择</h3>
 <p>&nbsp;</p>
-<li>职责单一原则</li>
+<p>多 Agent 是架构选择，不是默认升级。先建立单 Agent + 工具的质量、延迟和成本</p>
+<p>基线；只有任务能清晰拆分、角色上下文需要隔离或并行确有收益时再引入。</p>
+<p>&nbsp;</p>
+<p>LangGraph：应用显式拥有图、状态、checkpoint 和中断点，适合可控工作流</p>
+<p>OpenAI Agents SDK：提供 Agent、handoff、guardrail、session 和 tracing 抽象</p>
+<p>Responses multi-agent：GPT-5.6 可用的 beta 编排能力，适合可独立并行的子任务</p>
+<p>自定义队列/工作流引擎：适合跨服务、长任务、严格重试和审计要求</p>
+<p>&nbsp;</p>
+<p>无论选择哪一层，都要保留：最大子任务数、最大深度、超时/重试、审批边界、</p>
+<p>每个子 Agent 的输入输出 trace，以及与单 Agent 基线的同集评测。</p></div><div class="lecture"><h2>5.4 Multi-Agent 设计原则（面试高频！）</h2>
+<p>&nbsp;</p>
+<li>1. 职责单一原则</li>
 <li>每个 Agent 只做一件事，做到极致</li>
 <li>不要给一个 Agent 塞太多职责</li>
 <p>&nbsp;</p>
-<li>通信标准化</li>
+<li>2. 通信标准化</li>
 <li>Agent 之间用结构化格式通信（JSON/XML）</li>
 <li>避免自然语言的模糊性</li>
 <p>&nbsp;</p>
-<li>错误隔离</li>
+<li>3. 错误隔离</li>
 <li>一个 Agent 失败不应导致整个系统崩溃</li>
 <li>设置重试机制和降级策略</li>
 <p>&nbsp;</p>
-<li>可观测性</li>
+<li>4. 可观测性</li>
 <li>记录每个 Agent 的输入/输出/耗时</li>
 <li>便于调试和优化</li>
 <p>&nbsp;</p>
-<li>成本控制</li>
+<li>5. 成本控制</li>
 <li>Multi-Agent 会成倍增加 API 调用量</li>
 <li>用缓存、batching、模型分层来降低成本</li>
 <p>&nbsp;</p>
@@ -743,22 +758,22 @@ load_dotenv()
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
-<li>Multi-Agent = 多角色协作</li>
+<li>1. Multi-Agent = 多角色协作</li>
 <li>协作式：平等对话，共同决策</li>
 <li>分层式：上级委派，下级执行</li>
 <li>竞争式：多方生成，择优选用</li>
 <p>&nbsp;</p>
-<li>通信机制</li>
+<li>2. 通信机制</li>
 <li>共享状态（LangGraph 的方式）</li>
 <li>消息传递（AutoGen 的方式）</li>
 <li>任务委派（crewAI 的方式）</li>
 <p>&nbsp;</p>
-<li>实践框架</li>
+<li>3. 实践框架</li>
 <li>LangGraph：灵活构建自定义 Multi-Agent 图</li>
 <li>crewAI：开箱即用的角色-任务模型</li>
 <li>AutoGen：对话驱动的 Multi-Agent</li>
 <p>&nbsp;</p>
-<li>设计原则</li>
+<li>4. 设计原则</li>
 <li>职责单一、通信标准化、错误隔离、可观测、控成本</li>
 <p>&nbsp;</p>
 <p>面试速记：</p>
@@ -800,15 +815,18 @@ load_dotenv()
     <span class="b">print</span>(<span class="s">"框架: AutoGen  → 对话驱动 Multi-Agent"</span>)
     <span class="b">print</span>(<span class="s">"原则: 职责单一、通信标准、错误隔离、可观测、控成本"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第5章完成！接下来进入第6章：评估与最佳实践。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (536 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第5章完成！接下来进入第6章：评估与最佳实践。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (556 行)</summary><div class="code-block"><pre><span class="s">"""
 第5章：多智能体系统（Multi-Agent System）
 =========================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 理解多智能体系统的核心架构模式
   2. 掌握 Agent 之间的协作/通信机制
   3. 学会用 LangGraph 构建多 Agent 工作流
-  4. 了解 crewAI 等框架的多 Agent 编排方式
+  4. 了解 LangGraph、OpenAI Agents SDK 与 Responses multi-agent 的边界
 
 📌 面试高频点：
   - 多 Agent 系统的架构模式（协作/分层/竞争）
@@ -886,7 +904,7 @@ load_dotenv()
   - Reviewer Agent: 负责审核和改进
 
 流程：
-  输入需求 → Writer 创作 → Reviewer 审核 → 
+  输入需求 → Writer 创作 → Reviewer 审核 →
   如果不合格 → Writer 修改 → Reviewer 再审 →
   如果合格 → 输出终稿
 """</span>
@@ -923,7 +941,7 @@ REVIEWER_SYSTEM_PROMPT = <span class="s">"""你是一位严格的内容审核编
 - 完整性：是否覆盖了任务要求的所有方面？
 
 返回格式：
-{"score": 1-10, "issues": ["问题1", "问题2"], 
+{"score": 1-10, "issues": ["问题1", "问题2"],
  "approved": true/false, "suggestions": "改进建议"}"""</span>
 
 
@@ -1062,7 +1080,7 @@ REVIEWER_SYSTEM_PROMPT = <span class="s">"""你是一位严格的内容审核编
     <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     llm = ChatOpenAI(
-        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>),
         api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
         base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
         temperature=<span class="n">0.7</span>,
@@ -1174,7 +1192,7 @@ crewAI 采用「Crew = Agents + Tasks」模型：
     <span class="h"># 尝试初始化 LLM</span>
     <span class="k">try</span>:
         llm = ChatOpenAI(
-            model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+            model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>),
             api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
             base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
             temperature=<span class="n">0.5</span>,
@@ -1231,6 +1249,23 @@ crewAI 采用「Crew = Agents + Tasks」模型：
 
     <span class="b">print</span>(<span class="s">"\n📄 ===== 最终报告摘要 ====="</span>)
     <span class="b">print</span>(report <span class="k">if</span> <span class="b">len</span>(report) &lt; <span class="n">500</span> <span class="k">else</span> report[:<span class="n">500</span>] + <span class="s">"..."</span>)
+
+
+<span class="s">"""
+5.3.1 2026 年的编排选择
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+多 Agent 是架构选择，不是默认升级。先建立单 Agent + 工具的质量、延迟和成本
+基线；只有任务能清晰拆分、角色上下文需要隔离或并行确有收益时再引入。
+
+  LangGraph：应用显式拥有图、状态、checkpoint 和中断点，适合可控工作流
+  OpenAI Agents SDK：提供 Agent、handoff、guardrail、session 和 tracing 抽象
+  Responses multi-agent：GPT-5.6 可用的 beta 编排能力，适合可独立并行的子任务
+  自定义队列/工作流引擎：适合跨服务、长任务、严格重试和审计要求
+
+无论选择哪一层，都要保留：最大子任务数、最大深度、超时/重试、审批边界、
+每个子 Agent 的输入输出 trace，以及与单 Agent 基线的同集评测。
+"""</span>
 
 
 <span class="s">"""

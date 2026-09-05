@@ -2,6 +2,9 @@
 第14章：SQLite + Agent 持久化存储
 ==================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 用 SQLite 实现 Agent 的会话持久化（对话历史不丢失）
   2. 实现任务状态管理（暂停/恢复/取消）
@@ -162,7 +165,7 @@ def init_database():
             title TEXT DEFAULT '新对话',
             status TEXT DEFAULT 'active'
                 CHECK(status IN ('active','paused','completed','cancelled')),
-            model TEXT DEFAULT 'gpt-4o-mini',
+            model TEXT DEFAULT 'gpt-5.6-terra',
             total_tokens INTEGER DEFAULT 0,
             total_cost REAL DEFAULT 0.0,
             message_count INTEGER DEFAULT 0,
@@ -323,7 +326,7 @@ class AgentStorage:
 
     @staticmethod
     def create_session(user_id: str, title: str = "新对话",
-                       model: str = "gpt-4o-mini") -> dict:
+                       model: str = "gpt-5.6-terra") -> dict:
         """创建新会话。
 
         Args:

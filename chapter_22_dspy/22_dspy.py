@@ -2,6 +2,9 @@
 第22章：DSPy —— Prompt 不是手写的，是编译出来的
 ==================================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 理解 DSPy 的核心哲学：「Programming, not Prompting」
   2. 掌握 Signature → Module → Optimizer 三层抽象
@@ -38,12 +41,12 @@ DSPy 的解决方案：
 
   类比：
     传统 Prompt = 手动写汇编代码（每换一个 CPU 就要重写）
-    DSPy = 写 C 代码再编译（代码不变，编译器适配不同 CPU）
+    DSPy = 写声明式程序再用数据优化（模型变化后仍需重新评测/优化）
 
   翻译成 DSPy 术语：
     DSPy 程序（Python 代码）→ Optimizer（编译器）→ Prompt（机器码）
                                            ↑
-                                    自动适配不同的 LLM
+                                    针对指定 LM 与训练集优化
 
 
 22.2 Signature —— 把 Prompt 变成「函数签名」
@@ -67,26 +70,28 @@ Signature 的优势：
 import json
 import time
 import hashlib
+import os
 from typing import Optional
 from dataclasses import dataclass, field
 
 
-# ===== 模拟 DSPy 核心概念（不 import dspy）=====
+# ===== 教学模拟：帮助理解抽象，不等同于真实 dspy API =====
 
 @dataclass
 class SignatureField:
     """Signature 字段 —— 带描述的类型标注。"""
     desc: str = ""
+    role: str = "input"
 
 
 def InputField(desc: str = "") -> SignatureField:
     """标记输入字段。"""
-    return SignatureField(desc=desc)
+    return SignatureField(desc=desc, role="input")
 
 
 def OutputField(desc: str = "") -> SignatureField:
     """标记输出字段。"""
-    return SignatureField(desc=desc)
+    return SignatureField(desc=desc, role="output")
 
 
 class DSPySignature:
@@ -105,8 +110,7 @@ class DSPySignature:
         for name, val in cls.__dict__.items():
             if isinstance(val, SignatureField):
                 fields[name] = {
-                    "role": "input" if isinstance(val, InputField.__class__)
-                            else "output",
+                    "role": val.role,
                     "desc": val.desc,
                 }
         return {
@@ -133,6 +137,31 @@ class DSPySignature:
             f"\n\n### 输出\n" + "\n".join(f"- {o}" for o in outputs) +
             f"\n\n请严格按输出格式返回 JSON。"
         )
+
+
+def build_real_dspy_predictor():
+    """使用当前 DSPy 3.x API 构建 Predictor；调用者负责配置 LM。
+
+    运行前安装 `pip install -e .[dspy]`，并执行：
+      dspy.configure(lm=dspy.LM(os.environ["DSPY_MODEL"]))
+    模型名由环境配置，避免课程代码把快速变化的 provider 快照写死。
+    """
+    try:
+        import dspy
+    except ImportError as exc:
+        raise RuntimeError("请先安装可选依赖: python -m pip install -e .[dspy]") from exc
+
+    if not os.getenv("DSPY_MODEL"):
+        raise RuntimeError("请设置 DSPY_MODEL，例如 provider/model-id")
+    dspy.configure(lm=dspy.LM(os.environ["DSPY_MODEL"]))
+
+    class Sentiment(dspy.Signature):
+        """将文本分类为 positive、negative 或 neutral。"""
+
+        text: str = dspy.InputField()
+        label: str = dspy.OutputField()
+
+    return dspy.Predict(Sentiment)
 
 
 """
@@ -465,7 +494,7 @@ def demo_dspy_workflow():
 
 1. DSPy = Programming, Not Prompting
    - Prompt 是编译产物，不是手写字符串
-   - 代码不变，Optimizer 自动适配不同 LLM
+   - 模型变化后，用固定评测集重新运行 Optimizer 并做回归
 
 2. 三层抽象
    - Signature: 输入输出规范（替代 Prompt 字符串）
@@ -481,7 +510,7 @@ def demo_dspy_workflow():
   "DSPy 是什么？"
   → Programming, not Prompting
   → Signature 定义输入输出 → Module 组装 → Optimizer 自动优化
-  → 代码不变，换模型自动适配
+  → Signature/Module 保持结构稳定，换模型后重新优化和验证
   → 和 LangChain 互补：DSPy 管 Prompt 优化，LangChain 管流程编排
 """
 
@@ -498,7 +527,7 @@ if __name__ == "__main__":
     print("-" * 50)
     opts = [
         ("BootstrapFewShot", "自动找最佳 few-shot 示例"),
-        ("MIPROv2", "自动探索指令 + 示例组合（最推荐）"),
+        ("MIPROv2", "联合探索指令与示例；是否适用由数据和预算决定"),
         ("BootstrapFinetune", "为每个 Module 自动微调模型"),
         ("BetterTogether", "组合多个 Optimizer 级联优化"),
     ]
@@ -509,6 +538,6 @@ if __name__ == "__main__":
     print("-" * 50)
     print("  DSPy:     管 Prompt 优化（LLM 调用的「质量层」）")
     print("  LangChain: 管流程编排（Agent 执行的「控制层」）")
-    print("  最佳实践: LangGraph 编排 + DSPy 优化")
+    print("  组合方式: LangGraph 编排 + DSPy 优化（需分别评测）")
 
     print("\n✅ 第22章完成！")

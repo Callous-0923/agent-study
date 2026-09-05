@@ -1,783 +1,370 @@
 """
-第10章：MCP 协议深度解析 —— 从协议原理到生产级 Server 实战
-===========================================================
+第10章：MCP 2026-07-28 —— 无状态工具与上下文协议
+=================================================
+
+内容核对：2026-08-01
+说明：本章协议说明以 MCP 2026-07-28 规范为准；Python 类是教学模拟，
+不替代官方 SDK，也不实现 HTTP、鉴权或进程管理。
+官方变更说明：https://blog.modelcontextprotocol.io/posts/2026-07-28/
 
 📌 本章目标：
-  1. 深入理解 MCP 的设计哲学与核心取舍
-  2. 掌握 JSON-RPC 2.0 消息格式及生产实战细节
-  3. 精通 Client-Host-Server 三层架构与能力协商机制
-  4. 深入理解 Tools / Resources / Prompts / Sampling 四大原语
-  5. 掌握 stdio / SSE / Streamable HTTP 三种传输方式选型
-  6. 学会 MCP Server 的生产安全模型与工程实践
-  7. 理解 MCP vs Function Calling vs A2A 的边界
+  1. 理解 MCP 的 Host / Client / Server 分工
+  2. 掌握 2026-07-28 无状态核心与早期会话式版本的区别
+  3. 理解 tools / resources / prompts 三类 Server 原语
+  4. 正确选择 stdio 与 Streamable HTTP
+  5. 用 JSON-RPC 2.0 实现一个无状态教学 Server
 
 📌 面试高频点：
-  - MCP 的设计哲学是什么？为什么不是 REST API？
-  - JSON-RPC 的 id 字段在并发场景下的作用？
-  - 能力协商怎么做？降级策略是什么？
-  - stdio 和 SSE 各自适合什么场景？
-  - MCP、Function Calling、A2A 三者的边界在哪？
-  - MCP Server 怎么做安全隔离？防注入怎么做？
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-本章内容基于 MCP 官方规范 (2025-06-18 版) 和 SDK 源码
-官方文档: https://modelcontextprotocol.io
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  - MCP 解决什么问题，和普通 Function Calling 有何区别？
+  - 为什么 2026-07-28 删除初始化握手与协议级会话？
+  - stdio 与 Streamable HTTP 如何选？
+  - 如何控制 MCP Server 的权限、供应链和输出污染风险？
 
 
-10.1 MCP 是什么？—— 用类比建立直觉
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10.1 MCP 的边界
+━━━━━━━━━━━━━━━━━
 
-类比：USB-C 接口
+MCP（Model Context Protocol）为 AI 应用连接外部能力提供标准消息协议：
 
-  在没有 USB-C 之前：
-    手机用 Micro-USB、电脑用 USB-A、显示器用 HDMI、硬盘用 Thunderbolt
-    每种设备需要不同的线，接口混乱不堪
+  Host   ：面向用户的 AI 应用，负责权限、模型调用和整体生命周期
+  Client ：Host 内连接某个 Server 的协议组件
+  Server ：暴露 tools、resources、prompts 等能力
 
-  USB-C 统一了这一切：
-    一个接口，连接所有设备
-    协议统一，但每个设备的「功能」不同
+  ┌────────────── Host ──────────────┐
+  │ Model / Policy / Approval / UI   │
+  │      ┌────────┐  ┌────────┐      │
+  │      │Client A│  │Client B│      │
+  └──────┴───┬────┴───┬───────┴──────┘
+             │ MCP     │ MCP
+        ┌────▼────┐ ┌──▼──────┐
+        │Files Srv│ │CRM Server│
+        └─────────┘ └──────────┘
 
-  MCP 就是 AI 世界的 USB-C：
-    一个协议，连接所有外部系统
-    协议统一（JSON-RPC），但每个 Server 的「工具」不同
-    2024年11月由 Anthropic 发布，迅速成为行业标准
-
-MCP 解决了什么核心问题？
-
-  旧世界（MCP 之前）：
-    ┌──────┐   自定义协议   ┌──────────┐
-    │ LLM   │──────────────→│ Google API│
-    │       │   自定义协议   ├──────────┤
-    │       │──────────────→│ GitHub API│
-    │       │   自定义协议   ├──────────┤
-    │       │──────────────→│ 数据库     │
-    └──────┘                └──────────┘
-    每连接一个新系统，都要写新的适配代码！
-
-  新世界（MCP 之后）：
-    ┌──────┐     MCP       ┌──────────┐
-    │ LLM   │──────────────→│ MCP Server│→ Google
-    │       │     MCP       ├──────────┤
-    │       │──────────────→│ MCP Server│→ GitHub
-    │       │     MCP       ├──────────┤
-    │       │──────────────→│ MCP Server│→ Database
-    └──────┘                └──────────┘
-    一个协议，连接所有！新系统只需实现一个 MCP Server。
+MCP 不等于 Agent 框架：它不替你规划任务、选择模型或决定是否批准危险操作。
+它也不等于业务 API：Server 通常仍需在内部调用数据库、HTTP API 或本地程序。
 
 
-10.2 MCP 的三层架构 —— Host / Client / Server
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10.2 2026-07-28 的关键变化
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  ┌──────────────────────────────────────────────────────────┐
-  │                     Host Application                      │
-  │  ┌─────────────────┐  ┌─────────────────┐                │
-  │  │   MCP Client 1   │  │   MCP Client 2  │  ...          │
-  │  │  (1:1 连接)     │  │  (1:1 连接)     │                │
-  │  └────────┬────────┘  └────────┬────────┘                │
-  │           │                    │                          │
-  └───────────┼────────────────────┼──────────────────────────┘
-              │                    │
-     MCP协议  │           MCP协议  │
-    (JSON-RPC)│          (JSON-RPC)│
-              ▼                    ▼
-  ┌──────────────────┐  ┌──────────────────┐
-  │   MCP Server 1    │  │   MCP Server 2    │
-  │   文件系统 & Git   │  │     数据库        │
-  │                   │  │                   │
-  │  • read_file()    │  │  • query()        │
-  │  • write_file()   │  │  • insert()       │
-  │  • git_status()   │  │  • schema()       │
-  └──────────────────┘  └──────────────────┘
+早期 MCP 版本把 initialize / initialized、能力协商和协议级 session 作为
+连接生命周期的一部分。2026-07-28 将核心改为无状态：
 
-三个角色的职责：
+  - 删除初始化握手和协议级会话
+  - 每个请求携带完成该请求所需的信息
+  - 简化无服务器、负载均衡和水平扩展
+  - roots、sampling、logging 等 Client 能力进入弃用路径
+  - 核心传输聚焦 stdio 与 Streamable HTTP
 
-  Host（主机）
-    - LLM 所在的应用程序（如 Claude Desktop、Claude Code）
-    - 创建和管理多个 Client 实例
-    - 控制安全策略和用户授权
-    - 聚合多个 Server 提供的上下文
+同一版本还加入了几项容易被遗漏的工程能力：
 
-  Client（客户端）
-    - Host 内部的组件，每个 Client 连接一个 Server
-    - 1:1 关系：一个 Client ↔ 一个 Server
-    - 处理协议握手和能力协商
-    - 路由协议消息
+  - HTTP 请求可用 Mcp-Method / Mcp-Name 等路由头，网关无需解析完整 body
+  - server/discover 用于发现端点能力，降低客户端预配置耦合
+  - list 响应可携带 ttlMs，客户端据此缓存 tools/resources/prompts 列表
+  - Multi-Round-Trip Requests（MRTR）允许一次外层请求内完成多轮协议交互
+  - Tasks、鉴权等能力通过扩展演进，不应再次塞回核心的隐藏会话状态
 
-  Server（服务器）
-    - 提供具体的上下文的进程/服务
-    - 通过 MCP 原语暴露能力
-    - 可以是本地进程（stdio）或远程服务（SSE）
+这些字段属于协议契约，部署时还要同步检查代理是否保留路由头、缓存是否按
+ttlMs 失效，以及扩展是否被客户端和 Server 双方支持。
 
-关键设计原则（面试常问！）：
-  1. Server 不能看到完整对话，也不能「看到」其他 Server
-     → 安全隔离：对话历史留在 Host，Server 只收到必要信息
-  2. Server 应极其简单易构建
-     → 复杂逻辑留给 Host，Server 只做一件事
-  3. Server 应高度可组合
-     → 多个 Server 可以无缝组合使用
+“无状态”不表示业务不能保存状态。购物车、数据库事务或长任务仍可由业务层
+用显式资源 ID、任务 ID 或外部存储管理；不要重新发明隐藏的粘性会话。
 
 
-10.2.1 MCP 的设计哲学 —— 为什么不是 REST API？
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10.3 Server 原语
+━━━━━━━━━━━━━━━━
 
-面试官问：「为什么 MCP 不用 REST API，要用 JSON-RPC？」这是在考察
-你是否理解协议设计的「为什么」。
+┌───────────┬──────────────────────────────┬────────────────────────┐
+│ 原语      │ 常见操作                     │ 责任边界               │
+├───────────┼──────────────────────────────┼────────────────────────┤
+│ tools     │ tools/list, tools/call       │ 可执行动作；Host 决定批准│
+│ resources │ resources/list, resources/read│ 可寻址的上下文数据       │
+│ prompts   │ prompts/list, prompts/get    │ 参数化提示模板           │
+└───────────┴──────────────────────────────┴────────────────────────┘
 
-▍ REST API 在 Agent 场景下的 3 个根本缺陷
-
-  缺陷 1：REST 是「请求-响应」模式，Agent 需要「双向推送」
-    REST 只有 Client 主动请求 → Server 被动响应。
-    但 Agent 场景下 Server 可能主动推送：
-    - 工具列表变了（用户安装了新插件）→ Server 需要通知 Host
-    - 文件被外部修改了 → Server 需要主动告知
-    - 长时间运行的任务完成了 → Server 不能等 Host 来轮询
-    
-    JSON-RPC 的 Notification（无 id 的消息）天然支持这种推送。
-
-  缺陷 2：REST 的 URL 路由是「名词」思维，Agent 需要「动词」思维
-    REST: GET /tools/weather → 获取天气工具「资源」
-    MCP:  {"method": "tools/call", "params": {"name": "get_weather"}}
-    
-    工具调用本质是「动作」，不是「资源」。用 URL 建模动作
-    导致接口膨胀（每个工具一个 endpoint），而 JSON-RPC 统一 method + params。
-
-  缺陷 3：REST 的状态协商靠 Header，JSON-RPC 靠 capabilities 对象
-    REST: Accept: application/vnd.api.v2+json （版本号藏在 Content-Type）
-    MCP: {"capabilities": {"tools": {...}, "sampling": {...}}}
-    
-    能力协商是整个 JSON 对象，可以动态嵌套、版本化、实验性功能标记。
-    比 HTTP Header 灵活得多。
-
-▍ 为什么 Anthropic 选择了 JSON-RPC 而不是 gRPC？
-
-  gRPC 很好，但有 3 个门槛和 MCP 的设计目标冲突：
-    1. gRPC 需要 protobuf 编译 → MCP 想让「任何人 30 分钟写一个 Server」
-    2. gRPC 强类型 → MCP 需要一定的灵活性（实验性功能、动态工具列表）
-    3. gRPC 二进制 → MCP 需要可调试（stdio 下 cat 就能看到消息）
-    
-  JSON-RPC 的 trade-off：类型安全弱，但开发体验和调试体验极好。
-  对于「让 100 万开发者快速构建 Server」这个目标，JSON-RPC 是正确选择。
-
-▍ Server 为什么不能看到完整对话？
-
-  这是 MCP 最巧妙的安全设计之一。对话历史保留在 Host 内部，Server 只收到：
-    - 当前这次工具调用的参数
-    - 没有用户之前的提问
-    - 没有 LLM 的推理过程
-    - 没有其他 Server 的返回结果
-
-  为什么？因为如果 Server 能看到完整对话：
-    - GitHub MCP Server 可能读到用户给 LLM 的数据分析请求（包含商业机密）
-    - 数据库 Server 可能窥探其他 Server 的查询结果
-    - 任何 Server 都可能通过对话历史推断用户意图和上下文
-    
-  这个设计原则在面试中可以直接引用：
-  「MCP 的安全隔离是通过 Host 做对话历史过滤实现的，
-  每个 Server 只收到自己需要的最少信息。」
+工具 schema 是契约，不是安全边界。Server 仍需验证参数、授权调用者、限制资源，
+Host 仍需根据副作用和数据敏感度决定自动执行、人工确认或拒绝。
 
 
-10.3 MCP 的消息格式 —— JSON-RPC 2.0
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10.4 传输层选型
+━━━━━━━━━━━━━━━━
 
-MCP 使用 JSON-RPC 2.0 作为通信协议。
-这是理解 MCP 调用流程的基础。
+stdio：
+  - Host 启动本地 Server 子进程，通过 stdin/stdout 交换 JSON-RPC
+  - 适合桌面工具、CLI 和单用户本地集成
+  - stdout 只能写协议消息；日志应写 stderr
 
-三种消息类型：
+Streamable HTTP：
+  - Client 向单一 MCP 端点发送 HTTP POST
+  - Server 可直接返回 JSON，也可用 SSE 流式返回多个事件
+  - 适合远程、多实例和网关部署
+  - 必须处理鉴权、Origin 校验、TLS、限流和 SSRF/重放风险
+
+旧的独立 HTTP+SSE 会话传输只适合维护旧客户端，不应作为新系统默认方案。
+
+
+10.5 JSON-RPC 2.0 教学实现
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+下面的 `StatelessMCPServer` 只演示协议分派和 schema。它没有网络监听、
+OAuth、动态工具发现或完整错误码映射。每个 `handle()` 调用都可独立完成，
+代码中没有 initialize 状态或 session 字段。
 """
 
-# === Request（请求）===
-REQUEST_EXAMPLE = {
-    "jsonrpc": "2.0",
-    "id": 1,                    # 请求ID，用于匹配响应
-    "method": "tools/call",     # 方法名
-    "params": {                 # 参数
-        "name": "get_weather",
-        "arguments": {"city": "北京"}
-    }
-}
+from __future__ import annotations
 
-# === Response（成功响应）===
-RESPONSE_EXAMPLE = {
-    "jsonrpc": "2.0",
-    "id": 1,                    # 对应请求的ID
-    "result": {                 # 成功结果
-        "content": [
-            {"type": "text", "text": "北京天气：晴，25°C"}
-        ]
-    }
-}
-
-# === Error Response（错误响应）===
-ERROR_RESPONSE_EXAMPLE = {
-    "jsonrpc": "2.0",
-    "id": 1,
-    "error": {
-        "code": -32602,         # 标准 JSON-RPC 错误码
-        "message": "Invalid params",
-        "data": {"detail": "缺少必填参数 'city'"}
-    }
-}
-
-# === Notification（通知 — 无需响应）===
-NOTIFICATION_EXAMPLE = {
-    "jsonrpc": "2.0",
-    "method": "notifications/tools/list_changed",  # 无 id 字段！
-    "params": {}
-}
-
-"""
-关键区别：
-  - Request/Response 有 id 字段（双向匹配）
-  - Notification 没有 id（不需要响应）
+import json
+from dataclasses import dataclass
+from typing import Any, Callable
 
 
-10.3.1 JSON-RPC 生产实战 —— 面试官想知道你真正用过
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-▍ id 字段的关键作用 —— 不只是「匹配请求」
-
-  面试官问「id 字段是干嘛的？」如果你只回答「匹配请求和响应」，
-  那就太浅了。更深层的答案：
-
-  1. 并发调用保序 —— Agent 可能同时调用 3 个工具（get_weather、
-     search_news、query_db），3 个请求顺序发、响应乱序回。
-     id 让你知道「这个返回是哪个请求的」。
-     
-  2. 幂等性支持 —— 用相同 id 重发请求，Server 应返回相同结果。
-     这在网络抖动场景下至关重要：Client 发了 tools/call(id=5)，
-     Server 执行了但响应丢了，Client 重发 id=5，Server 不应再次执行。
-     
-  3. 请求链追踪 —— 一个 Agent 动作链的每个子请求可以共享一个
-     trace_id（通过 params 传），但各自有独立 id 做匹配。
-
-▍ JSON-RPC 错误码 —— 不只是 -32601
-
-  面试官让你列几个 JSON-RPC 标准错误码：
-    -32700  Parse error          ← JSON 格式无效（写错了花括号）
-    -32600  Invalid Request      ← 不是合法的 Request 对象
-    -32601  Method not found     ← 调了不存在的工具
-    -32602  Invalid params       ← 参数类型不对或缺少必填字段
-    -32603  Internal error       ← Server 内部炸了（兜底用）
-    
-  MCP 在标准码之上还扩展了：
-    -32000 ~ -32099: Server 层面错误（如工具执行超时、权限不足）
-
-  面试实用技巧：提到错误码时举一个生产中的真实例子——
-  「线上遇到过：Agent 传了字符串 '5' 而不是数字 5，Server 返回 -32602，
-  我们在 Host 层加了类型自动转换来修复。」
-
-▍ Notification 的生产应用
-
-  Notification 不是设计上的点缀，而是 MCP 支持「长连接 Server」的关键：
-    - 工具列表变更通知：用户装了新 MCP 插件 → Server 主动通知 Host
-    - 资源更新通知：文件被修改 → Server 推送给 Host 刷新上下文
-    - 进度通知：长时间工具调用（如大文件分析）→ Server 上报进度
-
-  面试中提一句「Notification 机制让 MCP 不只是请求-响应，而是
-  事件驱动的双向通信」会显得你对协议理解很深。
+JSONRPC_VERSION = "2.0"
+MCP_SPEC_SNAPSHOT = "2026-07-28"
 
 
-10.4 MCP 的核心方法（Primitives）—— 按调用流程
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class MCPError(Exception):
+    """带 JSON-RPC 错误码的教学异常。"""
 
-完整的 MCP 调用生命周期：
-
-  ┌────────────────────────────────────────────┐
-  │  Phase 1: 初始化 (Initialize)              │
-  │  ┌──────────────────────────────────────┐  │
-  │  │ Client                    Server     │  │
-  │  │   │── initialize ──────────→│        │  │
-  │  │   │←─ capabilities + info ─│        │  │
-  │  │   │── initialized ─────────→│        │  │
-  │  └──────────────────────────────────────┘  │
-  ├────────────────────────────────────────────┤
-  │  Phase 2: 发现工具 (Tool Discovery)         │
-  │  ┌──────────────────────────────────────┐  │
-  │  │   │── tools/list ──────────→│        │  │
-  │  │   │←─ [工具1, 工具2, ...] ─│        │  │
-  │  └──────────────────────────────────────┘  │
-  ├────────────────────────────────────────────┤
-  │  Phase 3: 调用工具 (Tool Invocation)        │
-  │  ┌──────────────────────────────────────┐  │
-  │  │   │── tools/call ──────────→│        │  │
-  │  │   │←─ tool_result ────────│        │  │
-  │  └──────────────────────────────────────┘  │
-  ├────────────────────────────────────────────┤
-  │  Phase 4: 关闭 (Teardown)                  │
-  │  ┌──────────────────────────────────────┐  │
-  │  │   │── 关闭连接 ─────────────→│        │  │
-  │  └──────────────────────────────────────┘  │
-  └────────────────────────────────────────────┘
-
-MCP 的三大核心原语（Server 能力）：
-
-  1. Tools（工具）
-     - 让 LLM 可以「做」事情
-     - 示例：查询数据库、调用API、执行计算
-     - 对应方法：tools/list, tools/call
-
-  2. Resources（资源）
-     - 让 LLM 可以「读」数据
-     - 示例：读取文件、获取数据库schema
-     - 对应方法：resources/list, resources/read
-
-  3. Prompts（提示模板）
-     - 预定义的提示词模板
-     - 示例：「代码审查模板」「Bug报告模板」
-     - 对应方法：prompts/list, prompts/get
-
-  4. Sampling（采样）—— Client 能力
-     - Server 可以请求 Host 的 LLM 生成内容
-     - 示例：Server 需要 LLM 帮助分类或总结
+    def __init__(self, code: int, message: str, data: Any = None):
+        super().__init__(message)
+        self.code = code
+        self.message = message
+        self.data = data
 
 
-10.5 Capability Negotiation（能力协商）—— 面试重点！
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+@dataclass(frozen=True)
+class Tool:
+    """Server 暴露的一个函数工具。"""
 
-MCP 不是「一刀切」的协议。Client 和 Server 在连接初始化时
-互相声明自己的「能力」，只有双方都支持的功能才可用。
+    name: str
+    description: str
+    input_schema: dict[str, Any]
+    handler: Callable[..., Any]
+    read_only: bool = True
 
-Server 声明的能力（capabilities）:
-  {
-    "capabilities": {
-      "tools": {"listChanged": true},     // 支持工具，且工具列表可动态变化
-      "resources": {"subscribe": true},   // 支持资源，且支持订阅更新
-      "prompts": {"listChanged": false},  // 支持提示模板，列表静态不变
-      "logging": {}                       // 支持日志输出
-    }
-  }
-
-Client 声明的能力:
-  {
-    "capabilities": {
-      "sampling": {},                     // 支持 LLM 采样
-      "roots": {"listChanged": true},     // 支持根目录声明
-      "experimental": {"featureX": {}}    // 实验性功能
-    }
-  }
-
-为什么需要能力协商？
-  1. 向后兼容：新版本可降级到老版本的功能集
-  2. 渐进增强：功能可以逐步添加，不破坏现有 Server
-  3. 安全隔离：Host 可以拒绝某些能力（如不启用 sampling）
-
-  类比：两人见面先握手说「我会英语、中文、日语」
-        然后选择双方都会的语言交流。
+    def descriptor(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "description": self.description,
+            "inputSchema": self.input_schema,
+            "annotations": {"readOnlyHint": self.read_only},
+        }
 
 
-10.6 MCP 传输层 —— stdio vs SSE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class StatelessMCPServer:
+    """无状态 MCP 教学 Server。
 
-MCP 内置两种传输方式：
-
-1. stdio（标准输入/输出）
-   - 适用：本地进程、命令行工具
-   - 原理：Client 启动 Server 作为子进程
-   - 通信：通过 stdin/stdout 交换 JSON-RPC 消息
-   - 优点：简单、安全（进程隔离）
-   - 示例：本地文件系统 Server、本地数据库 Server
-
-2. SSE（Server-Sent Events）
-   - 适用：远程服务、Web 部署
-   - 原理：HTTP POST（Client→Server）+ SSE（Server→Client）
-   - 优点：支持远程部署、服务端推送
-   - 示例：云端 API Server、第三方服务集成
-
-还支持 2025 年新增的 Streamable HTTP 传输方式。
-
-
-10.6.1 传输层选型决策树 —— 三种方式怎么选？
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-面试官问「stdio 和 SSE 有什么区别？你项目里用哪个？」
-—— 这不是考概念，是在考你有没有做过技术选型。
-
-▍ 决策树（从工程角度）
-
-  你的 MCP Server 部署在哪里？
-  ├─ 本地（和 Host 在同一台机器）
-  │   └─ stdio ← 唯一正解
-  │       理由：零网络开销、进程隔离天然安全、不需要额外运维
-  │       不需要开端口、不需要 HTTPS 证书、不需要鉴权逻辑
-  │
-  └─ 远程（Server 和 Host 不在同一台机器）
-      ├─ 简单场景，不需要流式
-      │   └─ Streamable HTTP ← 2025 新增
-      │       理由：部署最简单（只需一个 POST endpoint）
-      │       适合：简单的 API 封装、无需推送通知的 Server
-      │
-      └─ 复杂场景，需要服务端推送
-          └─ SSE
-              理由：支持 Server 主动推送（工具列表变更、进度更新）
-              需要：反向代理支持（Nginx 关掉 buffering）
-              注意：SSE 走 HTTP/1.1，不支持 HTTP/2 多路复用
-
-▍ stdio 的生产陷阱（你可能踩过的坑）
-
-  1. 进程管理 —— Client 启动 Server 为子进程，Server 崩溃了谁来重启？
-     答：Host 负责。Claude Desktop 会自动重启崩溃的 Server。
-     → 你实现 MCP Client 时必须处理子进程的生命周期。
-
-  2. 大结果传输 —— stdin/stdout 默认有 buffer 限制（通常 64KB）。
-     如果你的工具返回 10MB 的 JSON，stdout 可能阻塞。
-     → MCP 2025-06-18 版本增加了分页支持（tools/call 返回 cursor）。
-
-  3. stdin 被污染 —— 如果 Server 的代码里 print() 了调试日志到 stdout，
-     Client 会把它当成 JSON-RPC 消息来解析 → 解析失败。
-     → 严格规则：日志走 stderr，协议消息走 stdout。
-
-▍ 远程 Server 的安全模型
-
-  stdio 下不需要鉴权（信任本地进程），但远程 Server 必须考虑：
-    - 传输层安全 → HTTPS（和任何 Web API 一样）
-    - 身份认证 → API Key / OAuth Token（SSE 首请求的 Header 带）
-    - 工具级授权 → 不是所有的 tools 对所有用户可用
-    - Rate Limiting → 防止 Agent 死循环调用工具
-
-  面试中可以提：「简单场景用 API Key，企业场景用 OAuth + 工具级 RBAC。」
-"""
-
-
-class SimulatedMCPServer:
-    """模拟 MCP Server —— 完整演示 MCP 的核心交互流程。
-
-    实现了 Tools 原语的完整调用链路。
+    真实项目应使用与目标规范兼容的官方 SDK，并在传输层接入身份认证、
+    限流、审计和超时。本类只实现三类 Server 原语的最小子集。
     """
 
     def __init__(self, name: str, version: str):
         self.name = name
         self.version = version
-        self.capabilities = {
-            "tools": {"listChanged": True},
-            "resources": {"subscribe": False},
-            "prompts": {"listChanged": False},
+        self._tools: dict[str, Tool] = {}
+        self._resources: dict[str, str] = {}
+        self._prompts: dict[str, str] = {}
+
+    def add_tool(self, tool: Tool) -> None:
+        if tool.name in self._tools:
+            raise ValueError(f"duplicate tool: {tool.name}")
+        self._tools[tool.name] = tool
+
+    def add_resource(self, uri: str, text: str) -> None:
+        self._resources[uri] = text
+
+    def add_prompt(self, name: str, template: str) -> None:
+        self._prompts[name] = template
+
+    def handle(self, request: dict[str, Any]) -> dict[str, Any] | None:
+        """处理一个独立 JSON-RPC 请求；notification 不返回响应。"""
+        request_id = request.get("id")
+        try:
+            self._validate_envelope(request)
+            method = request["method"]
+            params = request.get("params") or {}
+            result = self._dispatch(method, params)
+            if request_id is None:
+                return None
+            return {"jsonrpc": JSONRPC_VERSION, "id": request_id, "result": result}
+        except MCPError as exc:
+            if request_id is None:
+                return None
+            error = {"code": exc.code, "message": exc.message}
+            if exc.data is not None:
+                error["data"] = exc.data
+            return {"jsonrpc": JSONRPC_VERSION, "id": request_id, "error": error}
+
+    @staticmethod
+    def _validate_envelope(request: dict[str, Any]) -> None:
+        if request.get("jsonrpc") != JSONRPC_VERSION:
+            raise MCPError(-32600, "Invalid Request: jsonrpc must be '2.0'")
+        if not isinstance(request.get("method"), str):
+            raise MCPError(-32600, "Invalid Request: method must be a string")
+        if "params" in request and not isinstance(request["params"], dict):
+            raise MCPError(-32602, "Invalid params: expected object")
+
+    def _dispatch(self, method: str, params: dict[str, Any]) -> dict[str, Any]:
+        handlers = {
+            "tools/list": self._list_tools,
+            "tools/call": self._call_tool,
+            "resources/list": self._list_resources,
+            "resources/read": self._read_resource,
+            "prompts/list": self._list_prompts,
+            "prompts/get": self._get_prompt,
         }
-        # 注册工具
-        self.tools = {
-            "get_weather": {
-                "name": "get_weather",
-                "description": "查询指定城市的天气信息",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "city": {
-                            "type": "string",
-                            "description": "城市名称"
-                        }
-                    },
-                    "required": ["city"],
-                },
-                "handler": self._handle_weather,
-            },
-            "search_docs": {
-                "name": "search_docs",
-                "description": "在知识库中搜索文档",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "query": {"type": "string", "description": "搜索关键词"},
-                        "max_results": {"type": "integer", "default": 5},
-                    },
-                    "required": ["query"],
-                },
-                "handler": self._handle_search,
-            },
-        }
+        handler = handlers.get(method)
+        if handler is None:
+            raise MCPError(-32601, f"Method not found: {method}")
+        return handler(params)
 
-    def _handle_weather(self, args: dict) -> dict:
-        """处理天气查询工具调用。"""
-        weather = {"北京": "晴 25°C", "上海": "多云 28°C",
-                   "深圳": "阵雨 30°C"}
-        city = args.get("city", "")
-        return {
-            "content": [{"type": "text",
-                        "text": weather.get(city, f"未找到{city}的天气数据")}],
-            "isError": city not in weather,
-        }
+    def _list_tools(self, _params: dict[str, Any]) -> dict[str, Any]:
+        return {"tools": [tool.descriptor() for tool in self._tools.values()]}
 
-    def _handle_search(self, args: dict) -> dict:
-        """处理文档搜索工具调用。"""
-        query = args.get("query", "")
-        max_results = args.get("max_results", 5)
-        mock_results = [f"文档{i}: 关于'{query}'的内容片段..." 
-                        for i in range(min(max_results, 3))]
-        return {
-            "content": [{"type": "text", "text": "\n".join(mock_results)}],
-            "isError": False,
-        }
-
-    def handle_request(self, request: dict) -> dict:
-        """MCP Server 的消息路由（核心！）。
-
-        Args:
-            request: JSON-RPC 请求。
-
-        Returns:
-            JSON-RPC 响应。
-        """
-        req_id = request.get("id")
-        method = request.get("method", "")
-        params = request.get("params", {})
-
-        # === Phase 1: initialize ===
-        if method == "initialize":
+    def _call_tool(self, params: dict[str, Any]) -> dict[str, Any]:
+        name = params.get("name")
+        arguments = params.get("arguments", {})
+        tool = self._tools.get(name)
+        if tool is None:
+            raise MCPError(-32602, f"Unknown tool: {name}")
+        if not isinstance(arguments, dict):
+            raise MCPError(-32602, "arguments must be an object")
+        try:
+            value = tool.handler(**arguments)
             return {
-                "jsonrpc": "2.0",
-                "id": req_id,
-                "result": {
-                    "protocolVersion": "2025-06-18",
-                    "capabilities": self.capabilities,
-                    "serverInfo": {
-                        "name": self.name,
-                        "version": self.version,
-                    },
-                },
+                "content": [{"type": "text", "text": json.dumps(value, ensure_ascii=False)}],
+                "isError": False,
+            }
+        except (TypeError, ValueError) as exc:
+            return {
+                "content": [{"type": "text", "text": f"tool input error: {exc}"}],
+                "isError": True,
             }
 
-        # === Phase 2: tools/list ===
-        if method == "tools/list":
-            tool_list = []
-            for t in self.tools.values():
-                tool_list.append({
-                    "name": t["name"],
-                    "description": t["description"],
-                    "inputSchema": t["inputSchema"],
-                })
-            return {
-                "jsonrpc": "2.0",
-                "id": req_id,
-                "result": {"tools": tool_list},
-            }
+    def _list_resources(self, _params: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "resources": [
+                {"uri": uri, "name": uri.rsplit("/", 1)[-1], "mimeType": "text/plain"}
+                for uri in self._resources
+            ]
+        }
 
-        # === Phase 3: tools/call ===
-        if method == "tools/call":
-            tool_name = params.get("name", "")
-            tool_args = params.get("arguments", {})
-            tool = self.tools.get(tool_name)
-            if tool is None:
-                return {
-                    "jsonrpc": "2.0",
-                    "id": req_id,
-                    "error": {
-                        "code": -32601,
-                        "message": f"未知工具: {tool_name}"
-                    },
+    def _read_resource(self, params: dict[str, Any]) -> dict[str, Any]:
+        uri = params.get("uri")
+        if uri not in self._resources:
+            raise MCPError(-32602, f"Unknown resource: {uri}")
+        return {
+            "contents": [
+                {"uri": uri, "mimeType": "text/plain", "text": self._resources[uri]}
+            ]
+        }
+
+    def _list_prompts(self, _params: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "prompts": [
+                {
+                    "name": name,
+                    "description": "教学模板",
+                    "arguments": [{"name": "topic", "required": True}],
                 }
-            result = tool["handler"](tool_args)
-            return {
-                "jsonrpc": "2.0",
-                "id": req_id,
-                "result": result,
-            }
+                for name in self._prompts
+            ]
+        }
 
-        # 未知方法
+    def _get_prompt(self, params: dict[str, Any]) -> dict[str, Any]:
+        name = params.get("name")
+        template = self._prompts.get(name)
+        if template is None:
+            raise MCPError(-32602, f"Unknown prompt: {name}")
+        topic = str((params.get("arguments") or {}).get("topic", ""))
         return {
-            "jsonrpc": "2.0",
-            "id": req_id,
-            "error": {
-                "code": -32601,
-                "message": f"未知方法: {method}"
-            },
+            "description": "渲染后的教学模板",
+            "messages": [
+                {"role": "user", "content": {"type": "text", "text": template.format(topic=topic)}}
+            ],
         }
 
 
-def demo_mcp_full_flow():
-    """演示 MCP 的完整调用流程。"""
-    print("=" * 60)
-    print("  MCP 完整调用流程演示")
-    print("=" * 60)
+def build_demo_server() -> StatelessMCPServer:
+    """创建一个只含模拟数据的 Server。"""
+    server = StatelessMCPServer("agent-study-demo", "2026.8")
+    server.add_tool(
+        Tool(
+            name="get_weather",
+            description="返回课程内置的模拟天气，不访问真实天气服务。",
+            input_schema={
+                "type": "object",
+                "properties": {"city": {"type": "string"}},
+                "required": ["city"],
+                "additionalProperties": False,
+            },
+            handler=lambda city: {"city": city, "condition": "晴（模拟）", "celsius": 25},
+        )
+    )
+    server.add_resource("course://mcp/checklist", "schema、鉴权、超时、审批、审计、限流")
+    server.add_prompt("review", "请审查 {topic} 的权限、输入验证和失败恢复策略。")
+    return server
 
-    server = SimulatedMCPServer("WeatherServer", "1.0.0")
 
-    # Phase 1: 初始化 + 能力协商
-    print("\n  [Phase 1] 初始化与能力协商")
-    init_request = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "initialize",
-        "params": {
-            "protocolVersion": "2025-06-18",
-            "capabilities": {"sampling": {}},
-            "clientInfo": {"name": "ClaudeCode", "version": "1.0.60"},
+"""
+10.6 生产安全清单
+━━━━━━━━━━━━━━━━━━━
+
+1. 身份与授权
+   - 远程 Server 验证访问令牌的 audience、scope、过期时间和签名
+   - 每个工具按调用者和资源做授权，不把“能看到工具”当作“能执行工具”
+
+2. 最小权限与审批
+   - 只读、可逆写入、不可逆操作分级
+   - 删除、转账、发布、发送消息等高影响操作要求明确确认
+
+3. 输入与输出
+   - JSON Schema 之外再做长度、路径、域名、枚举和业务约束
+   - 把工具输出视为不可信数据，防止间接提示注入进入模型上下文
+
+4. 传输与运行时
+   - 本地 HTTP 校验 Origin 并优先绑定 loopback
+   - 设置超时、并发上限、输出上限、速率限制和熔断
+   - 固定 Server/依赖版本，维护工具清单和供应链来源
+
+5. 可观测与恢复
+   - 记录调用者、工具名、参数摘要、审批、耗时和结果状态
+   - 使用幂等键、补偿事务或人工恢复处理副作用
+
+
+10.7 与相邻协议的关系
+━━━━━━━━━━━━━━━━━━━━━━
+
+  Function Calling：模型输出“调用哪个函数及参数”的供应商 API 机制
+  MCP             ：Host/Client/Server 之间发现和调用外部能力的开放协议
+  A2A             ：独立 Agent 服务之间发现、委派、跟踪任务和交换产物
+
+常见组合：模型通过 Function Calling 选择工具，Host 通过 MCP Client 调用工具；
+当任务需要委派给另一个独立 Agent 服务时，再通过 A2A 交换 Message/Task。
+"""
+
+
+def demo() -> None:
+    server = build_demo_server()
+    requests = [
+        {"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
+        {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {"name": "get_weather", "arguments": {"city": "上海"}},
         },
-    }
-    print(f"  Client → Server: {init_request['method']}")
-    init_response = server.handle_request(init_request)
-    caps = init_response["result"]["capabilities"]
-    print(f"  Server → Client: 协议版本 {init_response['result']['protocolVersion']}")
-    print(f"  Server 能力: {list(caps.keys())}")
-
-    # 发送 initialized 通知
-    print(f"  Client → Server: initialized (通知，无需响应)")
-
-    # Phase 2: 发现工具
-    print("\n  [Phase 2] 发现工具列表")
-    list_request = {
-        "jsonrpc": "2.0",
-        "id": 2,
-        "method": "tools/list",
-        "params": {},
-    }
-    print(f"  Client → Server: {list_request['method']}")
-    list_response = server.handle_request(list_request)
-    tools = list_response["result"]["tools"]
-    for t in tools:
-        print(f"    工具: {t['name']} - {t['description']}")
-
-    # Phase 3: 调用工具
-    print("\n  [Phase 3] 调用工具")
-    call_requests = [
-        ("tools/call", {"name": "get_weather", "arguments": {"city": "北京"}}),
-        ("tools/call", {"name": "search_docs", "arguments": {"query": "MCP协议"}}),
-        ("tools/call", {"name": "get_weather", "arguments": {"city": "火星"}}),
+        {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "resources/read",
+            "params": {"uri": "course://mcp/checklist"},
+        },
     ]
-    for method, params in call_requests:
-        req = {"jsonrpc": "2.0", "id": 3, "method": method, "params": params}
-        print(f"  Client → Server: {params['name']}({params['arguments']})")
-        response = server.handle_request(req)
-        if "result" in response:
-            content = response["result"]["content"][0]["text"]
-            is_error = response["result"].get("isError", False)
-            flag = "⚠️ 错误:" if is_error else "  ✅"
-            print(f"  Server → Client: {flag} {content}")
-        else:
-            print(f"  Server → Client: ❌ {response['error']['message']}")
-
-
-"""
-10.7 MCP vs Function Calling vs A2A —— 三者边界在哪？
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-面试中经常混淆这三个概念，把它们放在一起对比会显得你有系统思维。
-
-  ┌──────────────┬──────────────────┬───────────────────┬───────────────────┐
-  │     维度      │   MCP             │  Function Calling  │      A2A          │
-  ├──────────────┼──────────────────┼───────────────────┼───────────────────┤
-  │ 本质          │ 通信协议          │ LLM 能力            │ 通信协议            │
-  │ 标准化        │ 开放标准          │ 厂商自有实现        │ 开放标准            │
-  │ 解决的问题     │ LLM ↔ 工具        │ LLM 决策调用工具    │ Agent ↔ Agent      │
-  │ 连接模式      │ Client↔Server    │ 直接在 API 调用中    │ Agent↔Agent        │
-  │ 工具发现      │ tools/list 动态   │ 每次请求手动传入     │ AgentCard 发现      │
-  │ 服务器生态    │ 独立部署 MCP Server│ 无独立服务器概念     │ Agent 作为服务       │
-  │ 跨模型支持    │ 是（协议层面）     │ 取决于厂商           │ 是（协议层面）       │
-  └──────────────┴──────────────────┴───────────────────┴───────────────────┘
-
-三者的协作关系（面试高分答案）：
-
-  "在完整的 Agent 系统中，三者各司其职：
-   - MCP 负责「Agent 怎么连接工具」—— 协议层面的标准化
-   - Function Calling 负责「LLM 怎么决定调哪个工具」—— 模型能力
-   - A2A 负责「Agent 之间怎么协作」—— Agent-to-Agent 通信
-  
-   它们不是竞争对手，而是一个协议栈的三个层次：
-   FC (模型层) → MCP (工具层) → A2A (多Agent层)"
-
-实际架构中的配合流程：
-  1. MCP Client 通过 tools/list 获取所有工具定义
-  2. 将工具定义转换为 OpenAI function 格式传给 LLM
-  3. LLM（通过 Function Calling）返回 function call
-  4. MCP Client 通过 tools/call 执行工具
-  5. 将结果返回给 LLM 继续推理
-  （如果是 Multi-Agent 场景，第 2 步的调用可能通过 A2A 来自另一个 Agent）
-
-▍ 面试陷阱：「MCP 和 Function Calling 是竞争关系吗？」
-
-  错误回答：「对，MCP 就是要替代 Function Calling」
-  正确回答：「不是竞争。MCP 是标准化 LLM 和外部工具的连接方式，
-  而 Function Calling 是 LLM 内部的决策机制。MCP Server 可以
-  同时对接 OpenAI 的 FC 和 Anthropic 的 Tool Use。」
-  
-  补一句可以加分：「我做过实验，同一个 MCP Server 给 GPT-4o 和
-  Claude 都能用——这就是协议标准化的价值。」
-
-
-10.8 本章总结
-━━━━━━━━━━━━━━
-
-核心要点回顾：
-
-1. MCP 的设计哲学（面试必问！）
-   为什么是 JSON-RPC 而不是 REST API？
-   → REST 是请求-响应、名词路由、Header 协商；MCP 需要双向推送、
-   动词路由、能力协商对象 → JSON-RPC 更合适
-   类比：MCP = AI 世界的 USB-C —— 一个协议连接所有外部系统
-
-2. Client-Host-Server 三层架构
-   核心安全设计：Server 看不到完整对话 → 对话历史留在 Host
-   Host 做安全隔离，每个 Server 只收到最少必要信息
-
-3. JSON-RPC 生产实战
-   id 字段的 3 个作用：并发保序 / 幂等性 / 请求链追踪
-   5 个标准错误码：-32700 / -32600 / -32601 / -32602 / -32603
-   Notification：让 MCP 从请求-响应升级为事件驱动
-
-4. 核心原语
-   - Tools：让 LLM「做事」（tools/list → tools/call）
-   - Resources：让 LLM「读数据」
-   - Prompts：预定义提示模板
-   - Sampling：Server 请求 Host 的 LLM 生成
-
-5. 能力协商（Capability Negotiation）
-   初始化时双方声明 capabilities 对象
-   只有双方都支持的功能才可用
-   面试答法：「像两个人见面先报自己会的语言，选交集交流」
-
-6. 传输层选型
-   本地 → stdio（零网络开销、进程隔离、无需鉴权）
-   远程简单 → Streamable HTTP（一个 POST endpoint）
-   远程复杂 → SSE（支持服务端推送，需 Nginx 关 buffering）
-   stdio 三大陷阱：进程管理 / 大结果传输 / stdin 污染
-
-7. MCP vs Function Calling vs A2A
-   不是竞争，是协议栈三层：
-   FC (模型层) → MCP (工具层) → A2A (多Agent层)
-   同一 MCP Server 可同时对接 OpenAI FC 和 Anthropic Tool Use
-
-面试速记（完整版）:
-  "请解释 MCP 的工作原理"
-  → 三层架构(Host/Client/Server) + JSON-RPC 通信 + 能力协商
-  → 生命周期：Initialize → Capability Negotiation → 
-    Tools/Resources/Prompts → Teardown
-  → 设计哲学：不是 REST API 因为需要双向推送和动词路由
-  → 安全：Server 看不到完整对话，Host 做信息过滤
-  → 传输：本地 stdio，远程 SSE/Streamable HTTP
-  → MCP + Function Calling + A2A 是互补关系，不是竞争
-"""
+    print(f"MCP 规范快照：{MCP_SPEC_SNAPSHOT}（无状态教学模拟）")
+    for request in requests:
+        print(json.dumps(server.handle(request), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
-    print("╔══════════════════════════════════════════════════════╗")
-    print("║  第10章：MCP 协议原理与调用全流程                      ║")
-    print("║  JSON-RPC · 原语 · 能力协商 · stdio/SSE             ║")
-    print("╚══════════════════════════════════════════════════════╝")
-
-    print("\n▶ 10.1-10.3 MCP 架构与消息格式")
-    print("-" * 50)
-    print("MCP = Client-Host-Server 架构")
-    print("通信协议: JSON-RPC 2.0")
-    print("消息类型: Request / Response / Notification")
-    print()
-    print("Request 示例:")
-    import pprint
-    pprint.pprint(REQUEST_EXAMPLE, width=60)
-    print()
-    print("Response 示例:")
-    pprint.pprint(RESPONSE_EXAMPLE, width=60)
-
-    print("\n▶ 10.6 MCP 完整调用流程演示")
-    demo_mcp_full_flow()
-
-    print("\n▶ 10.7 MCP vs Function Calling 对比")
-    print("-" * 50)
-    comparisons = [
-        ("本质", "MCP: 通信协议", "FC: LLM 能力"),
-        ("标准化", "MCP: 开放标准", "FC: 厂商自有实现"),
-        ("工具发现", "MCP: tools/list 动态发现", "FC: 每次手动传入"),
-        ("可组合性", "MCP: 多 Server 组合", "FC: 依赖应用代码"),
-        ("关系", "MCP 管理连接", "FC 管理执行决策"),
-    ]
-    for dim, mcp, fc in comparisons:
-        print(f"  {dim:12s}  {mcp:30s}  {fc}")
-
-    print("\n✅ 第10章完成！")
+    demo()

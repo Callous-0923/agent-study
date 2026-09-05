@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:069c03de22ed4b85e592bad85a42a60c2e9d241ee67ff0213e91b7a9c2fc5079 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -302,6 +303,9 @@ body {
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_03_types/03_agent_types.html" title="Agent 类型分类 — ReAct·Plan-Execute·Reflexion">第3章 →</a>
 </div><div class="hero"><h1>第2章 Agent 核心组件深度解析</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 深入理解 Agent 的三大组件：规划器 / 记忆系统 / 工具调用</span><span class="tag tag-goal">2. 理解不同规划策略的优劣（ReAct vs Plan-Execute）</span><span class="tag tag-goal">3. 掌握三种记忆类型：短期 / 长期 / 工作记忆</span><span class="tag tag-goal">4. 学会设计高质量的 Agent 工具</span><span class="tag tag-interview">🎤 Agent 记忆的类型和区别</span><span class="tag tag-interview">🎤 如何解决 Agent 的上下文窗口限制</span><span class="tag tag-interview">🎤 工具设计的最佳实践（description 怎么写效果好）</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -323,7 +327,7 @@ body {
 <p>答：</p>
 <p>ReAct：每一步都重新推理，灵活但效率低。</p>
 <p>Plan-Execute：一次性规划全部步骤，按计划执行，高效但不灵活。</p>
-<p>实际项目中常结合使用：高层用 Plan-Execute，每步内用 ReAct。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (40 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">call_llm_with_json</span></div><div class="code-block"><pre><span class="k">import</span> os
+<p>实际项目中常结合使用：高层用 Plan-Execute，每步内用 ReAct。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (35 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">call_llm_with_json</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -338,7 +342,7 @@ client = OpenAI(
 
 
 <span class="k">def</span> <span class="f">call_llm_with_json</span>(prompt: <span class="b">str</span>, system_msg: <span class="b">str</span> = <span class="s">""</span>) -&gt; <span class="b">dict</span>:
-    <span class="s">"""调用 LLM 并强制返回 JSON 格式。
+    <span class="s">"""通过 Responses API 请求 JSON 对象。
 
     在 Agent 开发中，经常需要 LLM 返回结构化数据
     （如规划步骤、实体提取结果等）。
@@ -350,19 +354,14 @@ client = OpenAI(
     Returns:
         LLM 返回的 JSON 字典。
     """</span>
-    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
-    messages = []
-    <span class="k">if</span> system_msg:
-        messages.append({<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system_msg})
-    messages.append({<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt})
-
-    response = client.chat.completions.create(
+    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>)
+    response = client.responses.create(
         model=model,
-        messages=messages,
-        response_format={<span class="s">"type"</span>: <span class="s">"json_object"</span>},
-        temperature=<span class="n">0.3</span>,
+        instructions=system_msg <span class="k">or</span> <span class="k">None</span>,
+        <span class="b">input</span>=prompt,
+        text={<span class="s">"format"</span>: {<span class="s">"type"</span>: <span class="s">"json_object"</span>}},
     )
-    <span class="k">return</span> json.loads(response.choices[<span class="n">0</span>].message.content)</pre></div></details></div><div class="lecture"><h3>2.1.1 Plan-Execute 规划器 —— 先把计划列出来再执行</h3>
+    <span class="k">return</span> json.loads(response.output_text)</pre></div></details></div><div class="lecture"><h3>2.1.1 Plan-Execute 规划器 —— 先把计划列出来再执行</h3>
 <p>为什么需要规划器？设想你让 Agent「帮我做一个市场调研报告」。</p>
 <p>这不是一步能完成的任务——需要查资料、分析数据、写报告多个步骤。</p>
 <p>如果每步都让 LLM 临时判断下一步做什么（纯 ReAct 模式），</p>
@@ -394,8 +393,8 @@ client = OpenAI(
     system_msg = (
         <span class="s">"你是一个任务规划专家。请将用户的任务分解为可执行的子步骤。"</span>
         <span class="s">"返回严格的 JSON 格式：\n"</span>
-        <span class="s">'{ PH3 : [{ PH4 : 1,  PH5 :  PH6 ,  PH7 :  PH8 , '</span>
-        <span class="s">' PH9 : []}, ...]}\n'</span>
+        <span class="s">'{<span class="s">"plan"</span>: [{<span class="s">"step"</span>: 1, <span class="s">"description"</span>: <span class="s">"..."</span>, <span class="s">"tool"</span>: <span class="s">"工具名"</span>, '</span>
+        <span class="s">'<span class="s">"depends_on"</span>: []}, ...]}\n'</span>
         <span class="s">'depends_on 表示该步骤依赖哪些步骤（填写步骤号）。'</span>
     )
     prompt = f<span class="s">"任务：{task}\n请制定执行计划。"</span>
@@ -412,7 +411,7 @@ client = OpenAI(
 <li>两者可以结合：Plan-Execute 制定大计划，每步执行完后用 Reflexion 审查</li>
 <p>&nbsp;</p>
 <p>面试官常问：「Reflexion 的额外开销是多少？」</p>
-<p>→ 每轮推理多 1 次 LLM 调用（反思步骤），成本 +50%，但质量提升显著</p>
+<p>→ 每轮推理会增加一次或多次模型调用；成本与质量变化必须通过任务集实测</p>
 <p>→ 适用于对正确性要求高的场景（代码审查、法律文书、医疗建议）</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (40 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">reflexion_review</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
@@ -444,8 +443,8 @@ client = OpenAI(
     system_msg = (
         <span class="s">"你是一个严格的质量审查员。请审查以下回答，"</span>
         <span class="s">"指出问题和改进建议。返回严格的 JSON 格式：\n"</span>
-        <span class="s">'{ PH3 : 1-10,  PH4 : [ PH5 ,  PH6 ], '</span>
-        <span class="s">' PH7 :  PH8 }'</span>
+        <span class="s">'{<span class="s">"score"</span>: 1-10, <span class="s">"issues"</span>: [<span class="s">"问题1"</span>, <span class="s">"问题2"</span>], '</span>
+        <span class="s">'<span class="s">"improved_answer"</span>: <span class="s">"改进后的回答"</span>}'</span>
     )
     prompt = (
         f<span class="s">"原始回答：\n{original_answer}\n\n"</span>
@@ -458,27 +457,27 @@ client = OpenAI(
 <p>&nbsp;</p>
 <p>三类记忆（类比人类大脑）：</p>
 <p>&nbsp;</p>
-<li>短期记忆 (Short-term Memory)</li>
+<li>1. 短期记忆 (Short-term Memory)</li>
 <li>即当前对话的上下文（conversation history）</li>
 <li>实现：直接存在 messages 列表里</li>
 <li>局限：受 LLM 上下文窗口限制（如 128K tokens）</li>
 <p>&nbsp;</p>
-<li>长期记忆 (Long-term Memory)</li>
+<li>2. 长期记忆 (Long-term Memory)</li>
 <li>跨对话的持久化存储</li>
 <li>实现：向量数据库（ChromaDB / Pinecone / Milvus）</li>
 <li>用途：用户偏好、历史知识积累</li>
 <p>&nbsp;</p>
-<li>工作记忆 (Working Memory)</li>
+<li>3. 工作记忆 (Working Memory)</li>
 <li>当前任务的中间状态</li>
 <li>例：已完成的步骤、当前进度、收集到的中间数据</li>
 <li>实现：Python 变量、字典、外部缓存</li>
 <p>&nbsp;</p>
 <p>面试常问：「如何解决 LLM 上下文窗口限制？」</p>
 <p>答：</p>
-<li>摘要压缩：用 LLM 将长对话总结为摘要</li>
-<li>滑动窗口：只保留最近 N 轮对话</li>
-<li>向量检索：将历史存入向量库，按相关性检索</li>
-<li>混合策略：短期用滑动窗口，长期用向量检索 + 摘要</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (98 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_conversation</span><span class="code-badge code-badge-func">set_working</span><span class="code-badge code-badge-func">get_working</span><span class="code-badge code-badge-func">get_context_for_llm</span><span class="code-badge code-badge-class">AgentMemory</span></div><div class="code-block"><pre><span class="k">import</span> os
+<li>1. 摘要压缩：用 LLM 将长对话总结为摘要</li>
+<li>2. 滑动窗口：只保留最近 N 轮对话</li>
+<li>3. 向量检索：将历史存入向量库，按相关性检索</li>
+<li>4. 混合策略：短期用滑动窗口，长期用向量检索 + 摘要</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (98 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_conversation</span><span class="code-badge code-badge-func">set_working</span><span class="code-badge code-badge-func">get_working</span><span class="code-badge code-badge-func">get_context_for_llm</span><span class="code-badge code-badge-class">AgentMemory</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -582,19 +581,19 @@ client = OpenAI(
 <p>&nbsp;</p>
 <p>工具设计的「4 条黄金法则」：</p>
 <p>&nbsp;</p>
-<li><strong>描述清晰</strong>：description 是 LLM 选择工具的唯一依据</li>
+<li>1. <strong>描述清晰</strong>：description 是 LLM 选择工具的唯一依据</li>
 <p>✗ "查询天气"（太模糊）</p>
 <p>✓ "查询指定城市当天的天气，返回温度、湿度、风向信息"</p>
 <p>&nbsp;</p>
-<li><strong>职责单一</strong>：一个工具只做一件事</li>
+<li>2. <strong>职责单一</strong>：一个工具只做一件事</li>
 <p>✗ "search_and_summarize"（两个动作）</p>
 <p>✓ 拆成 "search" 和 "summarize" 两个独立工具</p>
 <p>&nbsp;</p>
-<li><strong>错误可读</strong>：返回的错误信息要能帮助 LLM 修正调用</li>
+<li>3. <strong>错误可读</strong>：返回的错误信息要能帮助 LLM 修正调用</li>
 <p>✗ return "Error: 404"</p>
 <p>✓ return "未找到 '培京' 的天气数据。您是否指 '北京'？"</p>
 <p>&nbsp;</p>
-<li><strong>参数限定</strong>：用 enum 限制参数值，减少 LLM 幻觉</li>
+<li>4. <strong>参数限定</strong>：用 enum 限制参数值，减少 LLM 幻觉</li>
 <p>parameters: {"city": {"enum": ["北京", "上海", "深圳"]}}</p>
 <p>&nbsp;</p>
 <p>面试常问：「工具描述怎么写才有效？」</p>
@@ -669,10 +668,10 @@ client = OpenAI(
     <span class="b">print</span>(json.dumps(good_tool, indent=<span class="n">2</span>, ensure_ascii=<span class="k">False</span>))</pre></div></details></div><div class="lecture"><h2>2.4 综合演示：三大组件协同工作</h2>
 <p>&nbsp;</p>
 <p>下面演示一个完整流程：</p>
-<li>规划器制定计划</li>
-<li>记忆系统记录状态</li>
-<li>执行器中调用工具</li>
-<li>反思器自我审查</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (68 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run_full_demo</span></div><div class="code-block"><pre><span class="k">import</span> os
+<li>1. 规划器制定计划</li>
+<li>2. 记忆系统记录状态</li>
+<li>3. 执行器中调用工具</li>
+<li>4. 反思器自我审查</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (68 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">run_full_demo</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> re
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
@@ -743,19 +742,19 @@ client = OpenAI(
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
-<li>规划器 (Planner)</li>
+<li>1. 规划器 (Planner)</li>
 <li>ReAct: 每步推理，灵活 (面试高频)</li>
 <li>Plan-Execute: 先规划后执行，高效</li>
 <li>Reflexion: 自我批评改进</li>
 <li>实际项目：组合使用</li>
 <p>&nbsp;</p>
-<li>记忆系统 (Memory)</li>
+<li>2. 记忆系统 (Memory)</li>
 <li>短期记忆: 对话上下文，受窗口限制</li>
 <li>长期记忆: 向量数据库持久化</li>
 <li>工作记忆: 当前任务的中间状态</li>
 <li>面试重点：上下文窗口管理策略</li>
 <p>&nbsp;</p>
-<li>工具设计 (Tool Design)</li>
+<li>3. 工具设计 (Tool Design)</li>
 <li>描述要详细、准确</li>
 <li>职责要单一</li>
 <li>错误信息要可读</li>
@@ -793,9 +792,12 @@ client = OpenAI(
         run_full_demo()
     <span class="k">except</span> Exception <span class="k">as</span> e:
         <span class="b">print</span>(f<span class="s">"\n⚠️ 综合演示需要 API Key，错误信息: {e}"</span>)
-        <span class="b">print</span>(<span class="s">"请确保 .env 文件配置正确后重试。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (507 行)</summary><div class="code-block"><pre><span class="s">"""
+        <span class="b">print</span>(<span class="s">"请确保 .env 文件配置正确后重试。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (505 行)</summary><div class="code-block"><pre><span class="s">"""
 第2章：Agent 核心组件深度解析
 =====================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 深入理解 Agent 的三大组件：规划器 / 记忆系统 / 工具调用
@@ -847,7 +849,7 @@ client = OpenAI(
 
 
 <span class="k">def</span> <span class="f">call_llm_with_json</span>(prompt: <span class="b">str</span>, system_msg: <span class="b">str</span> = <span class="s">""</span>) -&gt; <span class="b">dict</span>:
-    <span class="s">"""调用 LLM 并强制返回 JSON 格式。
+    <span class="s">"""通过 Responses API 请求 JSON 对象。
 
     在 Agent 开发中，经常需要 LLM 返回结构化数据
     （如规划步骤、实体提取结果等）。
@@ -859,19 +861,14 @@ client = OpenAI(
     Returns:
         LLM 返回的 JSON 字典。
     """</span>
-    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>)
-    messages = []
-    <span class="k">if</span> system_msg:
-        messages.append({<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system_msg})
-    messages.append({<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: prompt})
-
-    response = client.chat.completions.create(
+    model = os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>)
+    response = client.responses.create(
         model=model,
-        messages=messages,
-        response_format={<span class="s">"type"</span>: <span class="s">"json_object"</span>},
-        temperature=<span class="n">0.3</span>,
+        instructions=system_msg <span class="k">or</span> <span class="k">None</span>,
+        <span class="b">input</span>=prompt,
+        text={<span class="s">"format"</span>: {<span class="s">"type"</span>: <span class="s">"json_object"</span>}},
     )
-    <span class="k">return</span> json.loads(response.choices[<span class="n">0</span>].message.content)
+    <span class="k">return</span> json.loads(response.output_text)
 
 
 <span class="s">"""
@@ -901,8 +898,8 @@ client = OpenAI(
     system_msg = (
         <span class="s">"你是一个任务规划专家。请将用户的任务分解为可执行的子步骤。"</span>
         <span class="s">"返回严格的 JSON 格式：\n"</span>
-        <span class="s">'{ PH48 : [{ PH49 : 1,  PH50 :  PH51 ,  PH52 :  PH53 , '</span>
-        <span class="s">' PH54 : []}, ...]}\n'</span>
+        <span class="s">'{<span class="s">"plan"</span>: [{<span class="s">"step"</span>: 1, <span class="s">"description"</span>: <span class="s">"..."</span>, <span class="s">"tool"</span>: <span class="s">"工具名"</span>, '</span>
+        <span class="s">'<span class="s">"depends_on"</span>: []}, ...]}\n'</span>
         <span class="s">'depends_on 表示该步骤依赖哪些步骤（填写步骤号）。'</span>
     )
     prompt = f<span class="s">"任务：{task}\n请制定执行计划。"</span>
@@ -923,7 +920,7 @@ Reflexion 是 ReAct 基础上叠加了一层「自我审视」机制。它的工
   - 两者可以结合：Plan-Execute 制定大计划，每步执行完后用 Reflexion 审查
 
 面试官常问：「Reflexion 的额外开销是多少？」
-  → 每轮推理多 1 次 LLM 调用（反思步骤），成本 +50%，但质量提升显著
+  → 每轮推理会增加一次或多次模型调用；成本与质量变化必须通过任务集实测
   → 适用于对正确性要求高的场景（代码审查、法律文书、医疗建议）
 """</span>
 
@@ -949,8 +946,8 @@ Reflexion 是 ReAct 基础上叠加了一层「自我审视」机制。它的工
     system_msg = (
         <span class="s">"你是一个严格的质量审查员。请审查以下回答，"</span>
         <span class="s">"指出问题和改进建议。返回严格的 JSON 格式：\n"</span>
-        <span class="s">'{ PH58 : 1-10,  PH59 : [ PH60 ,  PH61 ], '</span>
-        <span class="s">' PH62 :  PH63 }'</span>
+        <span class="s">'{<span class="s">"score"</span>: 1-10, <span class="s">"issues"</span>: [<span class="s">"问题1"</span>, <span class="s">"问题2"</span>], '</span>
+        <span class="s">'<span class="s">"improved_answer"</span>: <span class="s">"改进后的回答"</span>}'</span>
     )
     prompt = (
         f<span class="s">"原始回答：\n{original_answer}\n\n"</span>

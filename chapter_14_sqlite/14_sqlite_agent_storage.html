@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:4951415cb5d05fac189148a295a32f1ed32a0ccd407e46068c3e60f3b0b7abf8 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -302,6 +303,9 @@ body {
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_15_a2a/15_a2a_protocol.html" title="Google A2A 协议 — AgentCard·Task·Artifact">第15章 →</a>
 </div><div class="hero"><h1>第14章 SQLite + Agent 持久化存储</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 用 SQLite 实现 Agent 的会话持久化（对话历史不丢失）</span><span class="tag tag-goal">2. 实现任务状态管理（暂停/恢复/取消）</span><span class="tag tag-goal">3. 实现用户管理系统（配额/权限/偏好）</span><span class="tag tag-goal">4. 掌握 Agent 场景下的 SQL 设计模式</span><span class="tag tag-goal">5. 实现分析查询（Token 消耗 / 工具使用频率 / 成功率）</span><span class="tag tag-goal">6. 学习 WAL 模式、连接池、并发安全等生产实践</span><span class="tag tag-interview">🎤 Agent 的数据库 schema 怎么设计？</span><span class="tag tag-interview">🎤 对话历史存在哪里？怎么高效查询？</span><span class="tag tag-interview">🎤 SQLite 的 WAL 模式是什么？为什么 Agent 场景需要？</span><span class="tag tag-interview">🎤 如何实现 Agent 任务的暂停和恢复？</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>本章完全独立运行（仅依赖 Python 标准库 sqlite3）</p>
@@ -315,12 +319,12 @@ body {
 <p>✅ 真相：SQLite 是 Agent 开发中最被低估的数据库。</p>
 <p>&nbsp;</p>
 <p>SQLite 在 Agent 场景中的优势：</p>
-<li>零配置：不需要安装数据库服务，文件即数据库</li>
-<li>嵌入式：数据库和应用在同一个进程（低延迟）</li>
-<li>便携性：一个 .db 文件可以备份、迁移、版本控制</li>
-<li>WAL 模式：支持并发读 + 单写（Agent 场景足够）</li>
-<li>全文搜索(FTS5)：内置全文索引（对话搜索）</li>
-<li>JSON 支持：可以存储半结构化数据</li>
+<li>1. 零配置：不需要安装数据库服务，文件即数据库</li>
+<li>2. 嵌入式：数据库和应用在同一个进程（低延迟）</li>
+<li>3. 便携性：一个 .db 文件可以备份、迁移、版本控制</li>
+<li>4. WAL 模式：支持并发读 + 单写（Agent 场景足够）</li>
+<li>5. 全文搜索(FTS5)：内置全文索引（对话搜索）</li>
+<li>6. JSON 支持：可以存储半结构化数据</li>
 <p>&nbsp;</p>
 <p>什么时候用 SQLite？什么时候升级到 PostgreSQL？</p>
 <p>&nbsp;</p>
@@ -381,11 +385,11 @@ body {
   └────────────────────────────────────────────────────┘</pre>
 <p>&nbsp;</p>
 <p>设计要点（面试重点！）：</p>
-<li>sessions 和 messages 是 1:N 关系</li>
-<li>tool_calls 存储在 messages 表的 JSON 字段中（不用单独的表）</li>
+<li>1. sessions 和 messages 是 1:N 关系</li>
+<li>2. tool_calls 存储在 messages 表的 JSON 字段中（不用单独的表）</li>
 <p>→ 减少 JOIN，提高读取性能</p>
-<li>tool_logs 是独立的审计表（记录每次工具调用的详细信息）</li>
-<li>tasks 表支持异步任务（暂停/恢复/取消）</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (132 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get_db</span><span class="code-badge code-badge-func">init_database</span><span class="code-badge code-badge-const">DB_PATH</span></div><div class="code-block"><pre><span class="k">import</span> os
+<li>3. tool_logs 是独立的审计表（记录每次工具调用的详细信息）</li>
+<li>4. tasks 表支持异步任务（暂停/恢复/取消）</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (132 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get_db</span><span class="code-badge code-badge-func">init_database</span><span class="code-badge code-badge-const">DB_PATH</span></div><div class="code-block"><pre><span class="k">import</span> os
 <span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
@@ -443,7 +447,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
             title TEXT DEFAULT '新对话',
             status TEXT DEFAULT 'active'
                 CHECK(status IN ('active','paused','completed','cancelled')),
-            model TEXT DEFAULT 'gpt-4o-mini',
+            model TEXT DEFAULT 'gpt-5.6-terra',
             total_tokens INTEGER DEFAULT 0,
             total_cost REAL DEFAULT 0.0,
             message_count INTEGER DEFAULT 0,
@@ -606,7 +610,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
 
     <span <span class="k">class</span>="d">@staticmethod</span>
     <span class="k">def</span> <span class="f">create_session</span>(user_id: <span class="b">str</span>, title: <span class="b">str</span> = <span class="s">"新对话"</span>,
-                       model: <span class="b">str</span> = <span class="s">"gpt-4o-mini"</span>) -&gt; <span class="b">dict</span>:
+                       model: <span class="b">str</span> = <span class="s">"gpt-5.6-terra"</span>) -&gt; <span class="b">dict</span>:
         <span class="s">"""创建新会话。
 
         Args:
@@ -916,7 +920,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
 <p>&nbsp;</p>
 <h2>14.5 SQLite 在 Agent 场景中的高级用法</h2>
 <p>&nbsp;</p>
-<li>FTS5 全文搜索 —— 搜索对话历史</li>
+<li>1. FTS5 全文搜索 —— 搜索对话历史</li>
 <p>&nbsp;</p>
 <p>CREATE VIRTUAL TABLE messages_fts USING fts5(</p>
 <p>content,</p>
@@ -927,7 +931,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
 <p>-- 搜索包含 "天气" 的消息</p>
 <p>SELECT * FROM messages_fts WHERE content MATCH '天气';</p>
 <p>&nbsp;</p>
-<li>JSON 函数 —— 查询半结构化数据</li>
+<li>2. JSON 函数 —— 查询半结构化数据</li>
 <p>&nbsp;</p>
 <p>-- 查询偏好中 theme 为 dark 的用户</p>
 <p>SELECT * FROM users</p>
@@ -937,7 +941,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
 <p>SELECT * FROM messages</p>
 <p>WHERE tool_calls_json LIKE '%"name":"search"%';</p>
 <p>&nbsp;</p>
-<li>增量备份</li>
+<li>3. 增量备份</li>
 <p>&nbsp;</p>
 <p>-- VACUUM INTO 备份到新文件</p>
 <p>conn.execute("VACUUM INTO 'agent_store_backup.db'")</p>
@@ -998,23 +1002,23 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
-<li>SQLite 是 Agent 开发中最实用的数据库</li>
+<li>1. SQLite 是 Agent 开发中最实用的数据库</li>
 <li>零配置、嵌入式、便携</li>
 <li>WAL 模式支持高并发读</li>
 <li>FTS5 + JSON 支持高级查询</li>
 <p>&nbsp;</p>
-<li>Schema 设计核心</li>
+<li>2. Schema 设计核心</li>
 <li>sessions: 会话管理</li>
 <li>messages: 对话历史（含 JSON 格式的 tool_calls）</li>
 <li>tasks: 异步任务（暂停/恢复/取消）</li>
 <li>tool_logs: 工具调用审计</li>
 <p>&nbsp;</p>
-<li>关键决策（面试重点！）</li>
+<li>3. 关键决策（面试重点！）</li>
 <li>tool_calls 用 JSON 字段 vs 单独建表（选择 JSON 减少 JOIN）</li>
 <li>WAL 模式保证读写不互斥</li>
 <li>TEXT 存时间（人类可读 + 排序正确）</li>
 <p>&nbsp;</p>
-<li>Agent 存储的核心查询</li>
+<li>4. Agent 存储的核心查询</li>
 <li>get_conversation_history: 构建 LLM 上下文</li>
 <li>log_tool_call: 审计和分析</li>
 <li>get_usage_stats: 用户用量统计</li>
@@ -1156,9 +1160,12 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
     <span class="b">print</span>(f<span class="s">"\n  💾 数据库文件: {DB_PATH}"</span>)
     <span class="b">print</span>(f<span class="s">"  📏 文件大小: {os.path.getsize(DB_PATH):,} bytes"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第14章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (879 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第14章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (882 行)</summary><div class="code-block"><pre><span class="s">"""
 第14章：SQLite + Agent 持久化存储
 ==================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 用 SQLite 实现 Agent 的会话持久化（对话历史不丢失）
@@ -1320,7 +1327,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
             title TEXT DEFAULT '新对话',
             status TEXT DEFAULT 'active'
                 CHECK(status IN ('active','paused','completed','cancelled')),
-            model TEXT DEFAULT 'gpt-4o-mini',
+            model TEXT DEFAULT 'gpt-5.6-terra',
             total_tokens INTEGER DEFAULT 0,
             total_cost REAL DEFAULT 0.0,
             message_count INTEGER DEFAULT 0,
@@ -1481,7 +1488,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
 
     <span <span class="k">class</span>="d">@staticmethod</span>
     <span class="k">def</span> <span class="f">create_session</span>(user_id: <span class="b">str</span>, title: <span class="b">str</span> = <span class="s">"新对话"</span>,
-                       model: <span class="b">str</span> = <span class="s">"gpt-4o-mini"</span>) -&gt; <span class="b">dict</span>:
+                       model: <span class="b">str</span> = <span class="s">"gpt-5.6-terra"</span>) -&gt; <span class="b">dict</span>:
         <span class="s">"""创建新会话。
 
         Args:
@@ -1831,7 +1838,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), <span class="s">"agent_store.d
 ▍ 连接池不是 PostgreSQL 才需要的
 
   SQLite 的 WAL 模式支持「无限读 + 1 写」，但前提是正确管理连接。
-  
+
   很多人直接用 `sqlite3.connect()` 每次都新建连接，这在低并发下
   没问题，但在 FastAPI + 异步 + Agent 场景下会导致：
     - 频繁打开/关闭文件 → 延迟抖动（P99 可达 100ms+）

@@ -1,10 +1,13 @@
 """
-第35章：数据飞轮 —— 让 Agent 越用越好
-======================================
+第35章：数据飞轮——以评测和治理驱动持续改进
+==========================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 理解数据飞轮在 Agent 系统中的核心价值
-  2. 掌握从交互日志中提取训练数据的 Pipeline
+  2. 掌握从合规交互数据中提取评测候选样本的 Pipeline
   3. 学会设计「收集→标注→改进→验证」闭环
   4. 了解持续改进的工程实践
 
@@ -14,46 +17,35 @@
   - 「怎么区分好的反馈和噪声？」
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-数据飞轮 = 今天的数据 → 明天的改进 → 后天更好的数据
+数据飞轮 = 可治理的数据 → 候选改进 → 隔离评测 → 受控发布
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
 35.1 什么是数据飞轮？—— 和传统开发的本质区别
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-传统软件开发是「大爆炸」模式：开发 → 测试 → 发布 → 等反馈 → 手动分析 → 手动改进 → 再发布。一个改进周期可能需要数周甚至数月。
-
-数据飞轮（Data Flywheel）是一种不同的哲学：让系统自己从交互中学习。
-
-飞轮这个名字来自亚马逊的经典理念。在 Agent 语境下它的意思是：
-  今天的用户交互数据 → 明天就能驱动系统改进 → 后天产生更好的交互数据
-  → 循环往复，像飞轮一样越转越快
-
-这和传统开发的关键区别在于「谁来做分析」：
-  - 传统：人工看日志 → 人工写改进 → 人工测试 → 人工发布
-  - 飞轮：系统自动采日志 → LLM 自动标注 Bad Case → 自动触发优化
-           → 自动回归评测 → 自动部署
+数据飞轮（Data Flywheel）不是让线上 Agent 无监督地改写自己，而是把生产信号稳定地转化为
+可审计的候选改进。自动化可以帮助采样、聚类、去重和初步标注，但 LLM 评分本身也会有偏差；
+高风险数据和发布决策仍需要人工责任人及明确门禁。
 
 飞轮的四阶段：
-  1. 采集 —— 记录每一次用户交互 + 评分 + 反馈文字
-  2. 标注 —— LLM 自动判断哪些是 Bad Case、归类问题类型
-  3. 改进 —— 触发对应场景的 Prompt 优化或路由调整
-  4. 验证 —— 跑回归评测确认改进有效才发布
+  1. 采集 —— 依同意、用途和保留期采集必要字段；脱敏、访问控制并记录数据血缘
+  2. 标注 —— 聚类 Bad Case，结合用户反馈、规则、模型裁判与人工复核
+  3. 改进 —— 生成版本化的 Prompt、检索、工具、路由或训练数据候选
+  4. 验证 —— 冻结测试集，执行质量、安全和成本回归，再经审批、canary 与回滚发布
 
 为什么这样做很有价值？因为 Agent 的「质量」不是静态的——
 Prompt 改了、工具变了、用户行为变了，Agent 的表现都可能退化。
-飞轮让质量监控变成自动化、持续化的过程，而不是等用户投诉才知道出问题。
+飞轮让质量监控变成持续过程，但“用户给低分”等代理信号不等于真实错误。还要校正选择偏差、
+反馈操纵、隐私泄露、训练与测试污染，以及优化单一指标导致的反常行为。
 """
 
-import json
 import time
 import hashlib
-from collections import defaultdict
-from typing import Optional
 
 
 class DataFlywheel:
-    """数据飞轮 —— 从日志到改进的自动化 Pipeline。"""
+    """教学模拟：从已脱敏反馈生成“待评测改进建议”，不会自动修改或部署系统。"""
 
     def __init__(self, improvement_threshold: int = 10):
         self.logs = []
@@ -83,7 +75,8 @@ class DataFlywheel:
         }
         self.logs.append(entry)
 
-        # 检测是否需要触发改进
+        # 真实系统应在写入前完成同意检查、数据最小化和脱敏。
+        # 此处只检测是否需要生成待评测建议。
         if rating is not None and rating <= 2:
             self._check_improvement()
 
@@ -98,7 +91,7 @@ class DataFlywheel:
             )
 
     def _trigger_improvement(self, reason: str, detail: str):
-        """触发一次自动改进。"""
+        """创建一条候选改进建议；不会自动修改 Prompt 或部署。"""
         improvement = {
             "timestamp": time.time(),
             "reason": reason,
@@ -121,7 +114,7 @@ class DataFlywheel:
             "total_interactions": len(self.logs),
             "avg_rating": round(avg_rating, 1),
             "low_rated": sum(1 for r in ratings if r <= 2),
-            "improvements_triggered": len(self.improvements),
+            "improvement_candidates": len(self.improvements),
             "latest_improvement": (
                 self.improvements[-1]["reason"]
                 if self.improvements else "暂无"
@@ -159,7 +152,7 @@ def demo_flywheel():
         print(f"  [{icon}] {user} → {output[:20]}... "
               + (f"反馈: {fb}" if fb else ""))
 
-    stats = fw.stats()
+    stats = fw.get_stats()
     print(f"\n  📊 飞轮统计:")
     for k, v in stats.items():
         print(f"    {k}: {v}")
@@ -173,7 +166,7 @@ def demo_flywheel():
 if __name__ == "__main__":
     print("╔══════════════════════════════════════════════════════╗")
     print("║  第35章：数据飞轮                                      ║")
-    print("║  交互采集 · Bad Case 识别 · 自动触发改进              ║")
+    print("║  合规采集 · Bad Case 识别 · 候选改进 · 受控验证        ║")
     print("╚══════════════════════════════════════════════════════╝")
     demo_flywheel()
     print("\n▶ 飞轮四阶段")

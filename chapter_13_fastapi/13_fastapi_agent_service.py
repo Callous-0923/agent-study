@@ -2,6 +2,9 @@
 第13章：FastAPI + Agent 服务化部署
 ===================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 用 FastAPI 将 Agent 封装为 RESTful API 服务
   2. 实现 SSE (Server-Sent Events) 流式推送 Agent 执行过程
@@ -46,6 +49,9 @@ import time
 import sqlite3
 import asyncio
 import hashlib
+import ast
+import operator
+import re
 from datetime import datetime
 from typing import Optional, AsyncGenerator
 from contextlib import asynccontextmanager
@@ -126,6 +132,41 @@ MockAgentEngine 的核心：
 """
 
 
+_ARITHMETIC_OPERATORS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.Mod: operator.mod,
+    ast.USub: operator.neg,
+    ast.UAdd: operator.pos,
+}
+
+
+def safe_calculate(raw_expression: str) -> str:
+    """计算基础算术表达式；不使用 eval，也不允许名称、属性或函数调用。"""
+    candidates = [part.strip() for part in re.findall(r"[0-9+\-*/().% ]+", raw_expression)]
+    expression = max(candidates, key=len, default="")
+    if not expression or len(expression) > 100:
+        return "表达式错误"
+
+    def evaluate(node):
+        if isinstance(node, ast.Expression):
+            return evaluate(node.body)
+        if isinstance(node, ast.Constant) and type(node.value) in {int, float}:
+            return node.value
+        if isinstance(node, ast.BinOp) and type(node.op) in _ARITHMETIC_OPERATORS:
+            return _ARITHMETIC_OPERATORS[type(node.op)](evaluate(node.left), evaluate(node.right))
+        if isinstance(node, ast.UnaryOp) and type(node.op) in _ARITHMETIC_OPERATORS:
+            return _ARITHMETIC_OPERATORS[type(node.op)](evaluate(node.operand))
+        raise ValueError("只允许基础算术")
+
+    try:
+        return str(evaluate(ast.parse(expression, mode="eval")))
+    except (SyntaxError, ValueError, TypeError, ZeroDivisionError, OverflowError):
+        return "表达式错误"
+
+
 class SimulatedAgent:
     """模拟 Agent —— 演示 Agent 的逐步执行过程。
 
@@ -135,7 +176,7 @@ class SimulatedAgent:
 
     MOCK_TOOLS = {
         "search": lambda q: f"搜索结果: 关于「{q}」的最新信息...",
-        "calculate": lambda e: f"计算结果: {eval(e) if all(c in '0123456789+-*/().% ' for c in e) else '表达式错误'}",
+        "calculate": lambda e: f"计算结果: {safe_calculate(e)}",
         "get_time": lambda _: f"当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
     }
 
@@ -200,26 +241,26 @@ class SimulatedAgent:
 13.4 FastAPI 应用主体
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-这是整个 Agent 服务的入口。FastAPI app 拆分为 6 个端点：
+这是整个 Agent 服务的入口。FastAPI app 提供 5 个端点：
 
-  POST /agent/task —— 提交一个 Agent 任务（同步等待结果）
-  GET  /agent/task/{task_id}/stream —— SSE 流式获取执行过程
-  WS   /agent/task/{task_id}/ws —— WebSocket 双向通信
-  GET  /agent/task/{task_id} —— 查询任务状态
+  POST /agent/chat —— 提交 Agent 任务并等待完整结果
+  POST /agent/chat/stream —— SSE 流式获取状态、工具事件和回答
+  WS   /agent/ws —— WebSocket 双向通信
   GET  /health —— 健康检查
-  GET  / —— Swagger 文档页面
+  GET  / —— 可直接使用的浏览器 Streaming Console
 
-加上 CORS 中间件（允许前端跨域调用）和应用生命周期管理。
+加上显式来源的 CORS 中间件和应用生命周期管理。本地演示未实现认证；
+生产环境必须在路由前加入 OAuth/OIDC 或网关身份验证与租户授权。
 """
 
 # 应用生命周期管理
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用启动和关闭时的操作。"""
-    print("🚀 Agent 服务启动中...")
+    print("[startup] Agent 服务启动中...")
     # 启动时：初始化数据库连接池、加载配置等
     yield
-    print("👋 Agent 服务关闭中...")
+    print("[shutdown] Agent 服务关闭中...")
     # 关闭时：清理资源、关闭连接等
 
 app = FastAPI(
@@ -229,15 +270,96 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS 中间件（允许前端跨域调用）
+# CORS 不能与认证授权混为一谈；只允许配置中的前端来源。
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[
+        origin.strip()
+        for origin in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+        if origin.strip()
+    ],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
 )
 
 agent = SimulatedAgent()
+
+
+# 一个真实可用的最小前端：使用 fetch 读取 POST SSE，按事件类型渲染状态。
+# 生产项目通常把它替换为独立前端或 ChatKit，并增加认证、会话恢复和审批 UI。
+AGENT_CONSOLE_HTML = r"""<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Agent Console</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: #0f172a; color: #e2e8f0; }
+    main { max-width: 760px; margin: 48px auto; padding: 0 20px; }
+    form { display: flex; gap: 10px; }
+    input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #475569;
+            background: #111827; color: inherit; }
+    button { padding: 10px 16px; border: 0; border-radius: 8px; cursor: pointer; }
+    #stop { background: #7f1d1d; color: white; }
+    #run { background: #2563eb; color: white; }
+    #events { margin-top: 20px; display: grid; gap: 8px; }
+    .event { padding: 10px 12px; border: 1px solid #334155; border-radius: 8px;
+             background: #111827; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .event b { color: #7dd3fc; margin-right: 8px; }
+    .done { border-color: #15803d; }
+    .error { border-color: #b91c1c; }
+  </style>
+</head>
+<body><main>
+  <h1>Agent Streaming Console</h1>
+  <p>实时显示状态、工具调用与最终答案；“thinking”只是进度事件，不是隐藏思维链。</p>
+  <form id="form">
+    <input id="message" value="计算 12 * (7 + 3)" maxlength="10000" required>
+    <button id="run">运行</button><button id="stop" type="button">停止</button>
+  </form>
+  <section id="events" aria-live="polite"></section>
+  <p><a href="/docs">OpenAPI 文档</a></p>
+</main>
+<script>
+let controller;
+const events = document.querySelector('#events');
+function render(type, data) {
+  const row = document.createElement('div');
+  row.className = `event ${type}`;
+  const label = document.createElement('b');
+  label.textContent = type;
+  const value = document.createElement('span');
+  value.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+  row.append(label, value); events.append(row); row.scrollIntoView({block: 'nearest'});
+}
+document.querySelector('#stop').onclick = () => controller?.abort();
+document.querySelector('#form').onsubmit = async (event) => {
+  event.preventDefault(); events.replaceChildren(); controller = new AbortController();
+  try {
+    const response = await fetch('/agent/chat/stream', {
+      method: 'POST', headers: {'content-type': 'application/json'},
+      body: JSON.stringify({message: document.querySelector('#message').value, stream: true}),
+      signal: controller.signal,
+    });
+    if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+    let buffer = '';
+    while (true) {
+      const {value, done} = await reader.read(); if (done) break; buffer += value;
+      const frames = buffer.split('\n\n'); buffer = frames.pop();
+      for (const frame of frames) {
+        let type = 'message', raw = '';
+        for (const line of frame.split('\n')) {
+          if (line.startsWith('event:')) type = line.slice(6).trim();
+          if (line.startsWith('data:')) raw += line.slice(5).trim();
+        }
+        if (raw) { try { render(type, JSON.parse(raw)); } catch { render(type, raw); } }
+      }
+    }
+  } catch (error) { render(error.name === 'AbortError' ? 'cancelled' : 'error', error.message); }
+};
+</script></body></html>"""
 
 
 # ==================== REST API 端点 ====================
@@ -379,17 +501,8 @@ async def health_check():
 
 @app.get("/")
 async def root():
-    """根路径 → 跳转到 API 文档。"""
-    return {
-        "service": "AI Agent API Service",
-        "docs": "/docs",
-        "endpoints": {
-            "POST /agent/chat": "标准 API（一次响应）",
-            "POST /agent/chat/stream": "SSE 流式 API",
-            "WebSocket /agent/ws": "WebSocket 双向通信",
-            "GET /health": "健康检查",
-        },
-    }
+    """根路径返回最小可用 Agent 前端。"""
+    return HTMLResponse(AGENT_CONSOLE_HTML)
 
 
 # ==================== 辅助函数 ====================
@@ -464,7 +577,7 @@ Kubernetes 部署要点：
 
 Agent 场景推荐：
   - 简单问答 → POST /agent/chat（普通 HTTP）
-  - 流式输出（展示思考过程）→ POST /agent/chat/stream（SSE）
+  - 流式输出（展示状态、工具调用和回答）→ POST /agent/chat/stream（SSE）
   - 实时对话（用户可中途介入）→ WebSocket /agent/ws
 
 
@@ -502,7 +615,7 @@ Agent 场景推荐：
 
 ▍ 背压控制 —— Agent 推太快，客户端来不及消费
 
-  当 Agent 快速产出 token（如 GPT-4o 的 100 tokens/s），而
+  当 Agent 产出速度高于客户端消费速度，而
   客户端网络慢时，会出现「背压」——数据在缓冲区堆叠，内存暴涨。
 
   应对：
@@ -518,8 +631,8 @@ Agent 场景推荐：
   但 WebSocket 在 Agent 场景下的 3 个工程挑战：
 
   1. 连接管理复杂性 —— HTTP 请求用完即弃，WebSocket 需要维护连接状态
-     → 单进程只能维持 1000-10000 个 WebSocket（取决于内存）
-     → 需要连接池 + 心跳检测（ping/pong）
+     → 容量取决于 worker、内存、消息频率和代理配置，必须做压测
+     → 需要连接注册表 + 心跳检测（ping/pong）
 
   2. 重连逻辑需手写 —— 手机切网络、电脑休眠唤醒 → 连接都会断
      → 需要手动实现 exponential backoff 重连
@@ -531,6 +644,32 @@ Agent 场景推荐：
   什么时候值得用 WebSocket？
     → 用户需要中途介入（「等一下，我改一下之前的条件」）
     → 实时协作场景（两个用户 + 一个 Agent 同时交互）
+
+
+13.6.3 长任务：Background Mode + Webhooks
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OpenAI 官方文档：
+  https://developers.openai.com/api/docs/guides/background
+  https://developers.openai.com/api/docs/guides/webhooks
+
+不要让分钟级任务占住一个浏览器连接。应用层常见两种实现：
+
+  自建队列：FastAPI 创建 task_id → 队列 worker 执行 → 数据库保存状态 →
+           SSE/WebSocket 只订阅进度；适合多供应商、复杂重试和业务工作流
+
+  Provider background：Responses API 创建响应时设置 background=true，保存
+           response.id，通过 retrieve 轮询，或订阅 response.completed 等 webhook
+
+Webhook 生产要求：
+  - 先用 SDK/签名密钥验证原始请求体，再解析事件
+  - 用 event.id 做幂等去重；处理重复、乱序和延迟到达
+  - 回调只入队，快速返回 2xx；耗时业务放到 worker
+  - 收到完成通知后再按 response.id 拉取权威对象，不盲信未验证 payload
+  - 记录租户、任务、response.id、trace_id 的映射，避免跨租户读取
+
+Background 解决 API 执行与连接寿命问题，不等于业务工作流已经拥有重试、
+补偿、审批和持久化；这些仍由你的服务层负责。
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -551,12 +690,17 @@ Agent 场景推荐：
 
 3. WebSocket 使用场景
    - 用户需要中途介入的实时双向对话
-   - 权衡：复杂度比 SSE 高 3 倍，只在确实需要双向通信时用
+   - 权衡：状态、重连和容量管理更复杂，只在确实需要双向通信时用
 
 4. 三种通信模式各有适用场景
    - REST API: 简单问答 → 一次请求一次响应
-   - SSE: 流式输出 → 展示 Agent 思考过程
+   - SSE: 流式输出 → 展示状态、工具调用和回答
    - WebSocket: 实时双向 → 用户可中途介入
+
+5. 长任务与产品界面
+   - Background/队列把任务寿命与浏览器连接解耦
+   - Webhook 必须验签、幂等并快速入队
+   - 本章根路径提供可运行 Streaming Console，前端只渲染结构化事件
 
 3. 生产部署核心组件
    - Nginx: SSL + 负载均衡 + WebSocket 升级
@@ -576,18 +720,18 @@ Agent 场景推荐：
 
 if __name__ == "__main__":
     import uvicorn
-    print("╔══════════════════════════════════════════════════════╗")
-    print("║  第13章：FastAPI + Agent 服务化部署                    ║")
-    print("║  REST API · SSE流式 · WebSocket · 生产架构           ║")
-    print("╚══════════════════════════════════════════════════════╝")
+    print("=" * 60)
+    print("第13章：FastAPI + Agent 服务化部署")
+    print("REST API / SSE / WebSocket / 生产架构")
+    print("=" * 60)
     print()
     print("启动后访问以下地址：")
-    print("  📖 API 文档:        http://localhost:8000/docs")
-    print("  🏠 服务主页:        http://localhost:8000/")
-    print("  ❤️  健康检查:       http://localhost:8000/health")
-    print("  💬 REST 聊天:       POST http://localhost:8000/agent/chat")
-    print("  📡 SSE 流式:        POST http://localhost:8000/agent/chat/stream")
-    print("  🔌 WebSocket:       ws://localhost:8000/agent/ws")
+    print("  API 文档:        http://localhost:8000/docs")
+    print("  服务主页:        http://localhost:8000/")
+    print("  健康检查:        http://localhost:8000/health")
+    print("  REST 聊天:       POST http://localhost:8000/agent/chat")
+    print("  SSE 流式:        POST http://localhost:8000/agent/chat/stream")
+    print("  WebSocket:       ws://localhost:8000/agent/ws")
     print()
 
     # 非阻塞启动（不调用外部 API，可独立运行）

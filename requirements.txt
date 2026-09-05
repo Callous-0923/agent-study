@@ -1,0 +1,12 @@
+# 2026-08-01 verified major-version ranges.
+# Install with: python -m pip install -r requirements.txt
+openai>=2.52,<3
+python-dotenv>=1.1,<2
+langchain>=1.3,<2
+langchain-openai>=1.4,<2
+langgraph>=1.2,<2
+numpy>=2.2,<2.3; python_version < "3.11"
+numpy>=2.3,<3; python_version >= "3.11"
+fastapi>=0.141,<1
+pydantic>=2.13,<3
+uvicorn[standard]>=0.35,<1

@@ -2,15 +2,15 @@
   <h1 align="center">🤖 AI Agent 全栈学习课程</h1>
   <p align="center">
     从零到一，系统掌握 AI Agent 核心理论与工程实践<br>
-    36 章节 · 22000+ 行代码 · 60+ 可运行示例 · 面试全覆盖
+    37 章节 · 22000+ 行代码 · 60+ 可运行示例 · 面试全覆盖
   </p>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/章节-36-green" alt="Chapters">
+  <img src="https://img.shields.io/badge/章节-37-green" alt="Chapters">
   <img src="https://img.shields.io/badge/许可-MIT-yellow" alt="License">
-  <img src="https://img.shields.io/badge/更新-2026.05-brightgreen" alt="Update">
+  <img src="https://img.shields.io/badge/更新-2026.08-brightgreen" alt="Update">
 
   <br>
 
@@ -19,7 +19,7 @@
 
 ---
 
-## � 快速入口
+## 🔗 快速入口
 
 <p align="center">
   <a href="https://agent-study-ruddy.vercel.app/"><img src="https://img.shields.io/badge/🌐-在线站点-Vercel?style=for-the-badge&logo=vercel&logoColor=white&labelColor=000000&color=6366F1" alt="在线站点"></a>
@@ -28,19 +28,19 @@
   <a href="https://agent-study-ruddy.vercel.app/chapter_10_mcp/10_mcp_deepdive.html"><img src="https://img.shields.io/badge/🔌-MCP_协议详解-10B981?style=for-the-badge" alt="MCP 协议详解"></a>
 </p>
 
-> **🌐 无需安装，浏览器直接看**：[agent-study-ruddy.vercel.app](https://agent-study-ruddy.vercel.app/) · 36 章完整内容 · 深色蓝图风格 · 手机/电脑自适应
+> **🌐 无需安装，浏览器直接看**：[agent-study-ruddy.vercel.app](https://agent-study-ruddy.vercel.app/) · 37 章完整内容 · 深色蓝图风格 · 手机/电脑自适应
 
 ---
 
-## �📖 项目简介
+## 📖 项目简介
 
-这是一套**面向求职**的 AI Agent 全栈学习课程，从 Agent 基础理论到 Claude Code 逆向工程、从 RAG 到 MCP/A2A 协议、从 DSPy 到生产可观测性，覆盖 **28 个主题、7 个层次**。每个章节都是 **可独立运行的 `.py` 文件**，既是完整讲义，又是可执行代码。
+这是一套**面向求职和产品工程**的 AI Agent 全栈学习课程，从 Agent 基础理论到代码 Agent、从 RAG 到 MCP 2026-07-28 / A2A v1.0、从 Responses API 工具编排到流式 UI、评测、安全与可观测性，覆盖 **37 个主题、7 个层次**。每个章节都是 **可独立运行的 `.py` 文件**，既是完整讲义，又是可执行代码。
 
 > **适合人群**：应届毕业生、转行工程师、任何想系统学习 AI Agent 的开发者。
 
 ---
 
-## 🗺️ 课程路线图（36 章 · 7 层递进）
+## 🗺️ 课程路线图（37 章 · 7 层递进）
 
 ```
 第1层：理论基础 ── 第2层：工程实践 ── 第3层：深度技术 ── 第4层：工程化与前沿
@@ -154,7 +154,7 @@ python chapter_00_overview/00_course_overview.py
 ```env
 OPENAI_API_KEY=sk-your-api-key-here
 OPENAI_BASE_URL=https://api.openai.com/v1
-LLM_MODEL=gpt-4o-mini
+LLM_MODEL=gpt-5.6-terra
 ```
 
 > 也可使用国产模型（DeepSeek / 通义千问），修改 `OPENAI_BASE_URL` 和 `LLM_MODEL` 即可。
@@ -185,6 +185,8 @@ python chapter_28_cache/28_cache.py
 | `pydantic` | Ch13 | 数据模型校验 |
 | `python-dotenv` | Ch0 | 环境变量管理 |
 
+可选安装 `pip install -e ".[agents]"`，用于继续学习 OpenAI Agents SDK；课程核心示例仍以 Responses API 和可离线运行的教学实现为主。
+
 > **注**：Ch8-12、Ch14-28 绝大部分章节仅依赖 Python 标准库（`sqlite3`、`asyncio`、`hashlib` 等），无需额外安装即可运行。
 
 ---
@@ -192,7 +194,7 @@ python chapter_28_cache/28_cache.py
 ## 🎯 学习建议
 
 ### 路径 1：从零开始（推荐新手）
-按 Ch1 → Ch28 顺序学习，每章 1-2 小时。
+按 Ch0 → Ch36 顺序学习，每章 1-2 小时。
 
 ### 路径 2：面试突击（重点章节）
 - **Ch7**：20 道高频面试题 + 面试流程
@@ -201,11 +203,12 @@ python chapter_28_cache/28_cache.py
 - **Ch11**：Tool Calling 底层机制
 - **Ch18**：Agent 安全（区分 Demo vs 生产工程师）
 - **Ch19**：Workflow 设计模式（系统设计万能框架）
-- **Ch26**：模型路由（降本 50-80%）
+- **Ch26**：模型路由（用私有评测集验证质量、延迟与成本）
 
 ### 路径 3：构建产品
 - **Ch13**：FastAPI 服务化
 - **Ch14**：SQLite 持久化
+- **Ch11 + Ch21**：Tool Search/PTC + 流式 UI、审批与 Realtime
 - **Ch12 + Ch24**：生产化 Checklist + 可观测性
 - **Ch26 + Ch28**：成本优化（路由 + 缓存）
 
@@ -214,18 +217,18 @@ python chapter_28_cache/28_cache.py
 ## 🧠 核心技术覆盖
 
 ```
-Tool Calling 底层     ★★★★★  OpenAI/Anthropic 两套实现完整对比 + Streaming 组装
-MCP 协议              ★★★★★  完整生命周期模拟（Initialize→tools/call）
-A2A 协议              ★★★★★  AgentCard/Task/Artifact + Multi-Agent 协作
+Tool Calling 底层     ★★★★★  OpenAI/Anthropic + Tool Search/PTC + Streaming 组装
+MCP 协议              ★★★★★  2026-07-28 无状态核心 + 路由头/MRTR/缓存
+A2A 协议              ★★★★★  v1.0 AgentCard/Task/Artifact + 标准流事件
 Claude Code 架构      ★★★★★  nO/h2A/Compaction/SubAgent 逆向分析
 RAG 全栈              ★★★★   Chunk策略/Embedding选型/RRF/Cross-Encoder/生产
-模型路由              ★★★★   4 种策略 + 成本对比实验（节省 94%）
+模型路由              ★★★★   4 种策略 + 质量/延迟/成本联合评测
 语义缓存              ★★★★   三级缓存 + Token 预算管理
 Agent 安全            ★★★★   Prompt Injection + 权限分级 + 4 层防御
 DSPy 自动优化         ★★★★   Signature/Module/Optimizer + LangChain 互补
 Agentic Workflow      ★★★★   7 种设计模式 + 系统设计答题框架
 Context Engineering   ★★★★   Context Rot 原理 + XML Prompt + 预算管理
-Streaming 实时架构    ★★★★   EventBus + 动态中断 + 背压控制
+Streaming 实时架构    ★★★★   EventBus + 可运行 Web UI + 断线恢复/审批/Realtime
 可观测性              ★★★★   Tracing Span 树 + LangSmith vs LangFuse
 MemGPT 记忆           ★★★★   Core Memory/Heartbeat/Sleep-Time/Filesystem
 代码 Agent            ★★★    CodeAct/ACI/Plan-Execute + SWE-bench
@@ -319,5 +322,5 @@ MIT License — 自由使用、修改、分发。
 
 <p align="center">
   <b>如果这个项目对你有帮助，请给一个 ⭐ Star！</b><br>
-  <sub>36 章 · 7 层递进 · 持续更新中 · 欢迎提交 Issue 和 PR</sub>
+<sub>37 章 · 7 层递进 · 2026.08 已核对 · 欢迎提交 Issue 和 PR</sub>
 </p>

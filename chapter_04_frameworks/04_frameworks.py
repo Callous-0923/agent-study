@@ -2,6 +2,9 @@
 第4章：主流 Agent 框架实战
 ===========================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 了解当前主流 Agent 框架及其定位
   2. 掌握 LangChain Agent 的核心用法
@@ -25,8 +28,8 @@
 │ LangChain          │ 通用 LLM 框架 │ 组件化、生态最丰富          │
 │ LangGraph          │ Agent 编排    │ 状态机模型、图式工作流      │
 │ crewAI             │ 多智能体协作  │ 角色扮演、任务委派           │
-│ AutoGen (微软)      │ 对话式 Agent  │ 多Agent对话、人在回路        │
-│ OpenAI Assistants  │ 托管式 Agent  │ 零配置、但灵活性低           │
+│ AutoGen / Agent FW │ 多Agent框架   │ 对话协作、人在回路           │
+│ OpenAI Agents SDK  │ 轻量 Agent SDK│ 工具、交接、护栏、Tracing    │
 │ Dify / Coze        │ 低代码 Agent  │ 可视化搭建、非技术人员友好   │
 └────────────────────┴──────────────┴────────────────────────────┘
 
@@ -42,12 +45,14 @@
 │ 完全掌控、极致性能                    │ 裸写（第1章的方式）     │
 └──────────────────────────────────────┴────────────────────────┘
 
-下面我们重点学习 LangChain Agent 和 LangGraph。
-这两个是目前市场上使用最广泛的框架。
+下面重点学习 LangChain Agent 和 LangGraph。框架生态变化很快，
+选型应基于任务图、持久化、人工审批、可观测性和部署约束做最小原型验证。
 """
 
-import os
+import ast
 import json
+import operator
+import os
 from typing import Any
 from dotenv import load_dotenv
 
@@ -66,7 +71,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
   ─────────────    ─────────────────
   TOOLS 列表       →  @tool 装饰器
   TOOL_MAP 字典    →  Tool 对象
-  Agent 循环       →  create_react_agent()
+  Agent 循环       →  create_agent()
   对话历史         →  MemorySaver / ChatMessageHistory
 
 安装依赖:
@@ -76,7 +81,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
 try:
     from langchain_openai import ChatOpenAI
     from langchain_core.tools import tool
-    from langgraph.prebuilt import create_react_agent
+    from langchain.agents import create_agent
     from langgraph.checkpoint.memory import MemorySaver
     LANGCHAIN_AVAILABLE = True
 except ImportError:
@@ -118,7 +123,7 @@ def search_news(query: str) -> str:
         相关新闻摘要。
     """
     mock_news = {
-        "AI": "2025年 AI Agent 成为业界焦点，各大科技公司纷纷布局 Agent 技术。",
+        "AI": "AI Agent 正从原型走向带评测、可观测和权限控制的工程系统。",
         "股票": "今日股市震荡，科技板块表现强劲。",
         "特斯拉": "特斯拉发布新一代自动驾驶技术，股价上涨 3%。",
     }
@@ -133,18 +138,38 @@ def calculate_math(expression: str) -> str:
     """执行数学计算。
 
     Args:
-        expression: 数学表达式，如 '100 * 1.15' 或 'sqrt(144)'。
+        expression: 基础算术表达式，如 '100 * 1.15' 或 '(12 + 3) / 5'。
 
     Returns:
         计算结果。
     """
+    arithmetic_operators = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Mod: operator.mod,
+        ast.USub: operator.neg,
+        ast.UAdd: operator.pos,
+    }
+
+    def evaluate(node):
+        if isinstance(node, ast.Expression):
+            return evaluate(node.body)
+        if isinstance(node, ast.Constant) and type(node.value) in {int, float}:
+            return node.value
+        if isinstance(node, ast.BinOp) and type(node.op) in arithmetic_operators:
+            return arithmetic_operators[type(node.op)](evaluate(node.left), evaluate(node.right))
+        if isinstance(node, ast.UnaryOp) and type(node.op) in arithmetic_operators:
+            return arithmetic_operators[type(node.op)](evaluate(node.operand))
+        raise ValueError("只允许基础算术")
+
+    if not expression.strip() or len(expression) > 100:
+        return "计算错误：表达式为空或过长"
     try:
-        allowed = set("0123456789+-*/().%^ ")
-        if not all(c in allowed for c in expression):
-            return "错误：表达式包含不允许的字符"
-        return str(eval(expression))
-    except Exception as e:
-        return f"计算错误: {e}"
+        return str(evaluate(ast.parse(expression, mode="eval")))
+    except (SyntaxError, ValueError, TypeError, ZeroDivisionError, OverflowError):
+        return "计算错误：只允许有限长度的基础算术表达式"
 
 
 def demo_langchain_agent():
@@ -166,7 +191,7 @@ def demo_langchain_agent():
 
     # 步骤 1：初始化 LLM
     llm = ChatOpenAI(
-        model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
+        model=os.getenv("LLM_MODEL", "gpt-5.6-terra"),
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL"),
         temperature=0.7,
@@ -177,7 +202,7 @@ def demo_langchain_agent():
 
     # 步骤 3：创建 Agent（内置 ReAct 循环！）
     memory = MemorySaver()  # 对话记忆管理器
-    agent = create_react_agent(
+    agent = create_agent(
         model=llm,
         tools=tools,
         checkpointer=memory,
@@ -187,7 +212,7 @@ def demo_langchain_agent():
     LangChain Agent 的核心抽象：
       - LLM: ChatOpenAI —— 大脑
       - Tools: @tool 列表 —— 技能
-      - Agent: create_react_agent —— 执行器
+      - Agent: create_agent —— LangChain 1.x 的高层执行器
       - Checkpointer: MemorySaver —— 记忆
 
     对比第1章裸写的优势：
@@ -285,7 +310,7 @@ def demo_langgraph_agent():
     print("=" * 60)
 
     llm = ChatOpenAI(
-        model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
+        model=os.getenv("LLM_MODEL", "gpt-5.6-terra"),
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL"),
         temperature=0.5,
@@ -431,7 +456,7 @@ def demo_langgraph_agent():
 核心要点回顾：
 
 1. LangChain Agent
-   - create_react_agent() 一行创建 Agent
+   - create_agent() 一行创建 Agent；底层返回可运行的 LangGraph 图
    - @tool 装饰器定义工具
    - MemorySaver 自动管理对话历史
    - 适合快速原型和中等复杂度场景

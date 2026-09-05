@@ -2,6 +2,9 @@
 第7章：Agent 求职面试准备与行业实践
 ===================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 了解 Agent 相关岗位的类型和要求
   2. 掌握 Agent 面试的高频问题和答题框架
@@ -37,10 +40,10 @@
 │                  │ 要求：顶会论文 + 理论基础 + 工程实现能力   │
 └──────────────────┴─────────────────────────────────────────┘
 
-招聘趋势（2024-2025）：
-  - Agent 应用工程师需求量最大（占 60%+）
-  - 岗位从大厂向中厂/创业公司扩散
-  - 薪资范围：一线城市 25K-60K（视经验和公司而定）
+能力趋势（截至 2026-08-01）：
+  - 招聘数量、岗位命名和薪资随地区与时间快速变化
+  - 求职时以目标城市的近期职位描述做样本，不引用无来源占比
+  - 重点提炼共性能力：工具编排、服务化、评测、安全、可观测与成本治理
   - 关键技能排序：LangChain/LangGraph > Python > LLM 原理 > 系统设计
 
 主要雇主类型：
@@ -150,7 +153,7 @@ AGENT_INTERVIEW_QUESTIONS = [
         "question": "LangChain Agent 的核心架构是什么？和裸写有什么区别？",
         "category": "框架工程",
         "framework": (
-            "1. 核心：create_react_agent(LLM, tools, checkpointer)\n"
+            "1. 核心：create_agent(model, tools, checkpointer)\n"
             "2. 对比裸写：自动管理 messages、自动处理 tool_calls 循环、"
             "内置记忆管理\n"
             "3. LangChain 提供了 Tool/Toolkit/AgentExecutor 等抽象层\n"
@@ -254,7 +257,7 @@ AGENT_INTERVIEW_QUESTIONS = [
     },
     {
         "id": 12,
-        "question": "Agent 的上下文窗口只有 128K，如何处理超长对话？",
+        "question": "Agent 的上下文窗口有限，如何处理超长对话？",
         "category": "系统设计",
         "framework": (
             "1. 滑动窗口：只保留最近 N 条消息\n"
@@ -293,7 +296,7 @@ AGENT_INTERVIEW_QUESTIONS = [
         "question": "怎么降低 Agent 的 API 调用成本？",
         "category": "系统设计",
         "framework": (
-            "1. 模型分层：简单任务用小模型(gpt-4o-mini)，复杂任务用大模型\n"
+            "1. 模型分层：按任务评测在低成本与高能力模型之间路由\n"
             "2. 语义缓存：相同问题缓存结果，避免重复调用\n"
             "3. 减少 round-trip：一次 prompt 解决多个问题\n"
             "4. Batching：将多个独立工具调用合并\n"
@@ -354,7 +357,7 @@ AGENT_INTERVIEW_QUESTIONS = [
         ),
         "scoring_points": [
             "观点有逻辑支撑",
-            "关注行业前沿（提到 Claude Computer Use 等）",
+            "关注行业前沿，并明确 Computer Use 等能力的 Beta 状态与风险",
             "能和自己的职业规划联系起来",
         ],
     },
@@ -553,7 +556,7 @@ if __name__ == "__main__":
     print("\n▶ 7.1 Agent 岗位全景图")
     print("-" * 50)
     roles = [
-        "Agent 应用工程师 → 需求量最大(60%+) → 25K-60K",
+        "Agent 应用工程师 → 查看目标地区近期 JD，避免引用无来源占比和薪资",
         "Agent 平台工程师 → 要求分布式系统能力",
         "Agent 产品经理   → 产品感 + 技术理解",
         "Prompt 工程师    → 系统化提示词设计",

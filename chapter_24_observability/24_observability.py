@@ -2,22 +2,23 @@
 第24章：Agent 可观测性 —— 生产环境的「监控仪表盘」
 =====================================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 理解 Agent 可观测性的 4 大支柱
   2. 掌握 Tracing 的核心设计模式
-  3. 了解 LangSmith 和 LangFuse 的使用方式
+  3. 理解 OpenTelemetry GenAI semantic conventions 与平台字段的边界
   4. 学会构建 Agent 的监控仪表盘
 
 📌 面试高频点：
   - 「Agent 的可观测性包含哪些维度？」
-  - 「LangSmith 和 LangFuse 有什么区别？」
+  - 「LangSmith 和 Langfuse 有什么区别？」
   - 「怎么追踪 Multi-Agent 的调用链？」
   - 「Level 2 Tracing 比 Level 1 多了什么？」
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-基于 2025 年 Agent Observability 五大主流平台对比
-+ OpenTelemetry GenAI SIG 标准
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+平台功能、许可证和定价会变化；本章以 OpenTelemetry GenAI 语义约定作为
+跨平台字段基线，并把 LangSmith / Langfuse 作为选型候选而非固定排名。
 
 
 24.1 为什么 Agent 可观测性是「必需品」而非「可选项」？
@@ -70,7 +71,7 @@ Trace 的核心数据结构：Span
   │                  Trace (根)                    │
   │  ├── Span: Agent 步骤 1 (thinking)            │
   │  │   ├── Span: LLM 调用                       │
-  │  │   │   ├── model: gpt-4o-mini              │
+  │  │   │   ├── model: gpt-5.6-terra              │
   │  │   │   ├── input_tokens: 1250              │
   │  │   │   ├── output_tokens: 86               │
   │  │   │   └── latency_ms: 1520                │
@@ -114,7 +115,7 @@ class TraceSpan:
 
 
 class AgentTracer:
-    """Agent 专用 Tracer —— 模拟 LangSmith/LangFuse 的功能。
+    """Agent 专用 Tracer —— 模拟 LangSmith/Langfuse 的功能。
 
     实现：
       1. Trace 管理（创建/结束/嵌套）
@@ -160,7 +161,7 @@ class AgentTracer:
         """创建一个子 Span（上下文管理器）。
 
         用法:
-          with tracer.span(tid, "llm_call", model="gpt-4o"):
+          with tracer.span(tid, "llm_call", model="gpt-5.6-sol"):
               result = llm.invoke(...)
 
         Args:
@@ -337,7 +338,7 @@ def demo_agent_tracing():
     trace_id = tracer.start_trace("用户查询天气", session_id="session_abc")
 
     # LLM 调用 1：理解用户意图
-    tracer.log_llm_call(trace_id, "gpt-4o-mini",
+    tracer.log_llm_call(trace_id, "gpt-5.6-terra",
                         input_tokens=450, output_tokens=85,
                         latency_ms=1200)
 
@@ -347,7 +348,7 @@ def demo_agent_tracing():
                          latency_ms=320)
 
     # LLM 调用 2：整理回答
-    tracer.log_llm_call(trace_id, "gpt-4o-mini",
+    tracer.log_llm_call(trace_id, "gpt-5.6-terra",
                         input_tokens=650, output_tokens=120,
                         latency_ms=980)
 
@@ -363,7 +364,7 @@ def demo_agent_tracing():
 
     # 模拟第二个请求（带工具失败）
     trace_id2 = tracer.start_trace("用户计算数学题", session_id="session_abc")
-    tracer.log_llm_call(trace_id2, "gpt-4o-mini",
+    tracer.log_llm_call(trace_id2, "gpt-5.6-terra",
                         input_tokens=300, output_tokens=65,
                         latency_ms=800)
     tracer.log_tool_call(trace_id2, "calculator",
@@ -372,7 +373,7 @@ def demo_agent_tracing():
     tracer.log_tool_call(trace_id2, "calculator",
                          {"expr": "123+456"}, "579",
                          latency_ms=45, success=True)
-    tracer.log_llm_call(trace_id2, "gpt-4o-mini",
+    tracer.log_llm_call(trace_id2, "gpt-5.6-terra",
                         input_tokens=400, output_tokens=70,
                         latency_ms=600)
 
@@ -385,26 +386,27 @@ def demo_agent_tracing():
 
 
 """
-24.3 LangSmith vs LangFuse —— 两大平台对比
+24.3 OpenTelemetry GenAI 字段与平台选型
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  ┌──────────────┬─────────────────────┬─────────────────────┐
-  │     维度      │      LangSmith       │      LangFuse        │
-  ├──────────────┼─────────────────────┼─────────────────────┤
-  │ 开发者        │ LangChain 公司       │ 独立开源社区         │
-  │ 开源          │ 部分开源             │ 完全开源 (MIT)       │
-  │ 部署          │ SaaS (托管)          │ SaaS + 自托管 (Docker/K8s)│
-  │ LangChain集成 │ 原生（环境变量开箱）   │ 通过回调集成         │
-  │ 定价          │ 免费层 + Pro/Enterprise│ 免费层 + Cloud/Enterprise│
-  │ 特色功能       │ Hub (Prompt共享)     │ Prompt Management    │
-  │ 评测          │ LLM-as-Judge 评测     │ Dataset Runs 评测    │
-  └──────────────┴─────────────────────┴─────────────────────┘
+建议在 span/metric 上优先使用当前 OTel GenAI registry 的稳定字段：
+  - gen_ai.operation.name
+  - gen_ai.provider.name
+  - gen_ai.request.model / gen_ai.response.model
+  - gen_ai.usage.input_tokens / gen_ai.usage.output_tokens
 
-选型建议：
-  - 重度用 LangChain/LangGraph → LangSmith（原生集成）
-  - 需要自托管 + 完全开源 → LangFuse
-  - 小团队快速上手 → LangSmith Cloud
-  - 需要 Prompt 版本管理 → LangFuse
+语义约定本身会演进，collector 与仪表盘应锁定版本，并在升级时做字段迁移。
+Prompt、工具参数和模型输出可能含个人信息或凭据，默认只记录 hash、长度、
+分类和抽样后的脱敏内容。
+
+LangSmith / Langfuse 等平台的选型维度：
+  - 是否能导出/接收 OpenTelemetry，避免数据锁定
+  - SaaS、自托管、数据驻留、RBAC 与审计要求
+  - 所用框架和 SDK 的原生集成质量
+  - Dataset、评测、Prompt 版本、成本分析和告警能力
+  - 实际吞吐、保留期与总拥有成本
+
+具体功能、许可证与价格在采购时查看各自官方文档，不把本章快照作为合同依据。
 
 
 24.4 告警系统 —— 被忽视的关键
@@ -412,11 +414,11 @@ def demo_agent_tracing():
 
 Agent 告警规则（面试时脱口而出！）：
 
-  关键指标告警：
-    ☐ 成功率 < 95% (1h 窗口) → PagerDuty/Slack 告警
-    ☐ P99 延迟 > 60s → 延迟告警
-    ☐ Token 消耗 > 预算 × 80% → 预算告警
-    ☐ 工具调用失败率 > 10% → 工具故障告警
+  关键指标告警（阈值由业务 SLO 和历史基线确定）：
+    ☐ 成功率/任务完成率低于 SLO → 值班告警
+    ☐ p95/p99 延迟超过 SLO → 延迟告警
+    ☐ Token 或费用消耗接近租户预算 → 预算告警
+    ☐ 工具失败率显著偏离基线 → 工具故障告警
     ☐ 连续 N 次相同错误 → 死循环告警
 
   异常检测：
@@ -462,46 +464,38 @@ Agent 告警规则（面试时脱口而出！）：
 2. Tracing 三层模型
    Level 1 (LLM调用) → Level 2 (Agent链) → Level 3 (Multi-Agent)
 
-3. LangSmith vs LangFuse
-   LangSmith: LangChain 原生集成
-   LangFuse: 完全开源 + 自托管
+3. 先统一 OTel GenAI 字段，再按集成、部署、治理和成本选平台
 
 面试速记：
   "Agent 怎么监控？"
   → 4 大支柱：Tracing + Metrics + Evaluation + Alerts
   → Tracing：记录每个 LLM 调用 + 工具调用
-  → LangSmith/LangFuse 选型
-  → 告警：成功率 < 95% → 通知
+  → 评估 LangSmith/Langfuse 等候选，但以官方当前能力为准
+  → 告警：阈值来自业务 SLO 和动态基线
 """
 
 
 if __name__ == "__main__":
     print("╔══════════════════════════════════════════════════════╗")
     print("║  第24章：Agent 可观测性                                 ║")
-    print("║  Tracing · Metrics · Dashboard · LangSmith/LangFuse ║")
+    print("║  Tracing · Metrics · Dashboard · LangSmith/Langfuse ║")
     print("╚══════════════════════════════════════════════════════╝")
 
     demo_agent_tracing()
 
-    print("\n▶ LangSmith vs LangFuse")
+    print("\n▶ 可观测平台选型维度")
     print("-" * 50)
-    pairs = [
-        ("开发者", "LangSmith: LangChain公司", "LangFuse: 独立开源社区"),
-        ("开源", "LangSmith: 部分开源", "LangFuse: 完全开源 MIT"),
-        ("部署", "LangSmith: SaaS (托管)", "LangFuse: SaaS + 自托管"),
-        ("LangChain集成", "LangSmith: 原生(环境变量)", "LangFuse: 回调集成"),
-        ("推荐场景", "LangSmith: 重度LangChain用户", "LangFuse: 自建/开源优先"),
-    ]
-    for dim, ls, lf in pairs:
-        print(f"  {dim:12s} | {ls:30s} | {lf}")
+    for item in ["OTel 导入/导出", "SaaS/自托管与数据驻留", "RBAC/审计",
+                 "Dataset/评测/Prompt 版本", "吞吐、保留期与总成本"]:
+        print(f"  - {item}")
 
     print("\n▶ 告警规则 Checklist")
     print("-" * 50)
     alerts = [
-        "成功率 < 95% (1h) → PagerDuty/Slack",
-        "P99 延迟 > 60s → 延迟告警",
-        "Token 消耗 > 预算×80% → 预算告警",
-        "工具调用失败率 > 10% → 工具故障",
+        "任务完成率低于 SLO → 值班告警",
+        "p95/p99 延迟超过 SLO → 延迟告警",
+        "Token/费用接近租户预算 → 预算告警",
+        "工具失败率偏离历史基线 → 工具故障",
         "连续 N 次相同错误 → 死循环告警",
     ]
     for a in alerts:

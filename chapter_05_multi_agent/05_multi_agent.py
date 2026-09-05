@@ -2,11 +2,14 @@
 第5章：多智能体系统（Multi-Agent System）
 =========================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 理解多智能体系统的核心架构模式
   2. 掌握 Agent 之间的协作/通信机制
   3. 学会用 LangGraph 构建多 Agent 工作流
-  4. 了解 crewAI 等框架的多 Agent 编排方式
+  4. 了解 LangGraph、OpenAI Agents SDK 与 Responses multi-agent 的边界
 
 📌 面试高频点：
   - 多 Agent 系统的架构模式（协作/分层/竞争）
@@ -260,7 +263,7 @@ def demo_content_team():
     print("=" * 60)
 
     llm = ChatOpenAI(
-        model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
+        model=os.getenv("LLM_MODEL", "gpt-5.6-terra"),
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL"),
         temperature=0.7,
@@ -372,7 +375,7 @@ def demo_crew_style():
     # 尝试初始化 LLM
     try:
         llm = ChatOpenAI(
-            model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
+            model=os.getenv("LLM_MODEL", "gpt-5.6-terra"),
             api_key=os.getenv("OPENAI_API_KEY"),
             base_url=os.getenv("OPENAI_BASE_URL"),
             temperature=0.5,
@@ -429,6 +432,23 @@ def demo_crew_style():
 
     print("\n📄 ===== 最终报告摘要 =====")
     print(report if len(report) < 500 else report[:500] + "...")
+
+
+"""
+5.3.1 2026 年的编排选择
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+多 Agent 是架构选择，不是默认升级。先建立单 Agent + 工具的质量、延迟和成本
+基线；只有任务能清晰拆分、角色上下文需要隔离或并行确有收益时再引入。
+
+  LangGraph：应用显式拥有图、状态、checkpoint 和中断点，适合可控工作流
+  OpenAI Agents SDK：提供 Agent、handoff、guardrail、session 和 tracing 抽象
+  Responses multi-agent：GPT-5.6 可用的 beta 编排能力，适合可独立并行的子任务
+  自定义队列/工作流引擎：适合跨服务、长任务、严格重试和审计要求
+
+无论选择哪一层，都要保留：最大子任务数、最大深度、超时/重试、审批边界、
+每个子 Agent 的输入输出 trace，以及与单 Agent 基线的同集评测。
+"""
 
 
 """

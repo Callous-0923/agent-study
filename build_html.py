@@ -2,6 +2,7 @@
 章节 .py → 可读 .html 转换器
 
 用法:
+  python build_html.py --all
   python build_html.py chapter_00_overview/00_course_overview.py
   python build_html.py chapter_01_fundamentals/01_hello_agent.py
 
@@ -15,6 +16,7 @@
 import re
 import sys
 import os
+import hashlib
 
 BASE_URL = "https://callous-0923.github.io/agent-study"
 
@@ -80,6 +82,19 @@ CHAPTERS = {
     35: ("chapter_35_data_flywheel",  "35_data_flywheel.html",           "数据飞轮 — 从日志采集到自动改进的闭环"),
     36: ("chapter_36_defense",        "36_defense.html",                 "Agent 纵深安全 — Canary Token·分层隔离·行为沙箱"),
 }
+
+
+def chapter_source_paths(root: str | None = None) -> list[str]:
+    """按章节号返回全部讲义源码，并在映射失配时立即失败。"""
+    root = root or os.path.dirname(os.path.abspath(__file__))
+    paths = []
+    for chapter_number in sorted(CHAPTERS):
+        directory, html_name, _ = CHAPTERS[chapter_number]
+        path = os.path.join(root, directory, html_name.removesuffix(".html") + ".py")
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"章节映射缺少源码: {path}")
+        paths.append(path)
+    return paths
 
 
 CSS = r"""
@@ -503,6 +518,8 @@ def build_html(filepath: str, output_path: str = None):
         css=CSS,
         busuanzi_script=BUSUANZI_SCRIPT,
     )
+    source_hash = hashlib.sha256(full_code.encode("utf-8")).hexdigest()
+    html += f"<!-- generated-from-sha256:{source_hash} -->\n"
 
     # 面包屑 + 导航 + hero
     dir_name, file_name, ch_title = CHAPTERS.get(ch_num, ("", "", ""))
@@ -585,7 +602,10 @@ def build_html(filepath: str, output_path: str = None):
         base = os.path.splitext(os.path.basename(filepath))[0]
         output_path = os.path.join(os.path.dirname(filepath), f"{base}.html")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w", encoding="utf-8") as f:
+    # 去掉生成模板和代码块空行上的尾随空白，并固定使用 LF，避免在 Windows
+    # 上把整份生成物变成只有空白或换行不同的 diff。
+    html = "\n".join(line.rstrip() for line in html.splitlines()) + "\n"
+    with open(output_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(html)
     return output_path
 
@@ -727,7 +747,9 @@ def parse_lecture(docstring: str) -> str:
             continue
 
         # 缩进 4 格代码块 —— 仅当内容像代码时才渲染为 pre
-        if line.startswith("    ") and not stripped.startswith("-") and not stripped.startswith("1.") and not stripped.startswith("•") and stripped:
+        if (line.startswith("    ") and not stripped.startswith("-")
+                and not re.match(r'^\d+\.\s', stripped)
+                and not stripped.startswith("•") and stripped):
             looks_like_code = _looks_like_code(stripped)
             if not looks_like_code:
                 output.append(f"<p>{stripped}</p>")
@@ -832,8 +854,8 @@ def parse_lecture(docstring: str) -> str:
             i += 1
             continue
         if re.match(r'^\d+\.\s', stripped):
-            inner = re.sub(r'^\d+\.\s', '', stripped)
-            output.append(f'<li>{inner}</li>')
+            # 保留序号，避免裸 <li> 在无 <ol> 容器时丢失顺序语义。
+            output.append(f'<li>{stripped}</li>')
             i += 1
             continue
 
@@ -874,8 +896,6 @@ def highlight_python(code: str) -> str:
 
     # === 第1步：扫描代码，用占位符替换所有字符串和注释 ===
     placeholders = []
-    counter = [0]
-
     def add_ph(text, cls):
         ph = f"\x00PH{len(placeholders)}\x00"
         escaped = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -925,17 +945,23 @@ def highlight_python(code: str) -> str:
     code = re.sub(r'\b(\d+\.?\d*)\b', r'<span class="n">\1</span>', code)
 
     # === 第4步：还原所有占位符 ===
-    for ph, replacement in placeholders:
+    # 后创建的占位符可能包住先创建的占位符（例如单引号 JSON 字符串里
+    # 含双引号）。逆序还原才能把所有嵌套占位符完整展开。
+    for ph, replacement in reversed(placeholders):
         code = code.replace(ph, replacement)
+
+    if "\x00PH" in code:
+        raise ValueError("语法高亮器残留了未解析的内部占位符")
 
     return code
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("用法: python build_html.py <章节.py>")
+        print("用法: python build_html.py --all | <章节.py> [更多章节.py ...]")
         sys.exit(1)
 
-    for path in sys.argv[1:]:
+    paths = chapter_source_paths() if sys.argv[1:] == ["--all"] else sys.argv[1:]
+    for path in paths:
         out = build_html(path)
-        print(f"✅ {path} → {out}")
+        print(f"[built] {path} -> {out}")

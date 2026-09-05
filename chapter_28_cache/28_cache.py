@@ -1,6 +1,9 @@
 """
-第28章：语义缓存与 Token 优化 —— 不花钱的 Agent 调用
+第28章：语义缓存与 Token 优化 —— 用正确性约束缓存收益
 ========================================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 理解语义缓存的核心原理和三级缓存架构
@@ -22,16 +25,14 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Agent 的 LLM 调用特征：
-  1. 重复率高：用户问相似的问题（客服/教育场景 30-50% 重复）
+  1. 某些 FAQ 场景存在重复请求，但实际比例必须从脱敏日志测量
   2. 代价高：每次调用 = 金钱 + 时间
   3. 步骤多：一个 Agent 任务可能调 5-10 次 LLM
 
-缓存收益估算：
-  假设：日请求 10000 次，30% 可缓存，每次 $0.01
-  日节省：10000 × 0.3 × $0.01 = $30/天
-  年节省：$30 × 365 = $10,950/年
-
-  加上延迟改善：缓存命中 P99 < 10ms vs LLM 调用 P99 > 2s)
+缓存收益公式：
+  避免调用数 = 可缓存请求数 × 实测命中率 × 正确性通过率
+  净收益 = 避免的实际账单 - embedding/存储/失效/误命中的处理成本
+  延迟收益也应从线上 p50/p95/p99 测量，不引用跨系统固定数字。
 
 
 28.2 三级缓存架构
@@ -42,22 +43,19 @@ Agent 的 LLM 调用特征：
   │  ─────────────────────────────────               │
   │  查询: "今天天气" → 缓存中查 "今天天气"             │
   │  命中条件: 完全相同的文本                           │
-  │  命中率: 5-10%                                    │
-  │  延迟: <1ms                                       │
+  │  命中率/延迟: 由 key、存储和流量分布实测             │
   ├─────────────────────────────────────────────────┤
   │                 L2: Semantic Cache                 │
   │  ─────────────────────────────────               │
   │  查询: "今天天气" → 缓存中查相似查询 → 命中 "今天天气怎么样"│
-  │  命中条件: 余弦相似度 > 0.95                        │
-  │  命中率: 20-40%                                    │
-  │  延迟: ~10ms                                       │
+  │  命中条件: 阈值由标注对和风险等级校准                 │
+  │  同时监控命中率、误命中率和数据新鲜度                 │
   ├─────────────────────────────────────────────────┤
-  │                 L3: LLM-as-Cache                   │
+  │                 L3: LLM Fallback                   │
   │  ─────────────────────────────────               │
   │  查询: 无法在前2级命中 → 调用廉价小模型               │
-  │  如果小模型回答合适 → 缓存结果                       │
-  │  命中率: 10-20% (加上前两级：总 40-70%)              │
-  │  延迟: ~500ms                                      │
+  │  这不是 cache hit；生成后仅在策略允许时写回 L1/L2     │
+  │  质量、延迟和费用按模型与任务实测                     │
   └─────────────────────────────────────────────────┘
 """
 
@@ -147,15 +145,14 @@ class SemanticCache:
 
 
 class ThreeLevelCache:
-    """三级缓存 —— 层层降级，最大化命中率。"""
+    """两级缓存 + LLM fallback 的教学流水线。"""
 
     def __init__(self):
         self.l1 = ExactMatchCache(max_size=500)
         self.l2 = SemanticCache(similarity_threshold=0.90)
         self.stats = {"l1_hits": 0, "l2_hits": 0,
-                      "l3_hits": 0, "misses": 0,
-                      "cost_saved": 0.0}
-        self.COST_PER_LLM_CALL = 0.01  # 每次 LLM 调用成本
+                      "llm_calls": 0, "misses": 0,
+                      "avoided_llm_calls": 0}
 
     def query(self, query: str,
               llm_func: callable = None) -> tuple[str, int, bool]:
@@ -169,14 +166,14 @@ class ThreeLevelCache:
         result = self.l1.get(query)
         if result:
             self.stats["l1_hits"] += 1
-            self.stats["cost_saved"] += self.COST_PER_LLM_CALL
+            self.stats["avoided_llm_calls"] += 1
             return result, 1, True
 
         # L2: Semantic
         result = self.l2.get(query)
         if result:
             self.stats["l2_hits"] += 1
-            self.stats["cost_saved"] += self.COST_PER_LLM_CALL
+            self.stats["avoided_llm_calls"] += 1
             return result, 2, True
 
         # L3: LLM
@@ -184,7 +181,7 @@ class ThreeLevelCache:
             response = llm_func(query)
         else:
             response = f"[LLM 响应] 关于「{query[:30]}...」的回答"
-        self.stats["l3_hits"] += 1
+        self.stats["llm_calls"] += 1
 
         # 写入缓存
         self.l1.set(query, response)
@@ -194,15 +191,15 @@ class ThreeLevelCache:
 
     def report(self) -> dict:
         total = sum([self.stats["l1_hits"], self.stats["l2_hits"],
-                     self.stats["l3_hits"], self.stats["misses"]])
+                     self.stats["llm_calls"], self.stats["misses"]])
         total = max(total, 1)
         return {
             "total_queries": total,
             "l1_hit_rate": f"{self.stats['l1_hits'] / total:.1%}",
             "l2_hit_rate": f"{self.stats['l2_hits'] / total:.1%}",
-            "l3_rate": f"{self.stats['l3_hits'] / total:.1%}",
+            "llm_fallback_rate": f"{self.stats['llm_calls'] / total:.1%}",
             "total_cache_hit": (f"{(self.stats['l1_hits'] + self.stats['l2_hits']) / total:.1%}"),
-            "cost_saved": f"${self.stats['cost_saved']:.3f}",
+            "avoided_llm_calls": self.stats["avoided_llm_calls"],
             "l1_size": len(self.l1._store),
             "l2_size": len(self.l2.queries),
         }
@@ -221,9 +218,9 @@ class ThreeLevelCache:
 
   Agent Token 预算：
     每月 100M tokens：
-      - 简单问答 → gpt-4o-mini (便宜)
-      - 复杂分析 → gpt-4o (贵)
-      - 快超标 → 只允许 mini + 摘要压缩
+      - 低风险任务 → 经评测的 economy / balanced 候选
+      - 高风险任务 → high-capability 或人工处理
+      - 快超标 → 限流、排队或降级，但不能绕过质量/安全下限
 
 Token 预算的 4 个层级：
   1. 用户级：每人每月 N tokens
@@ -241,7 +238,6 @@ class TokenBudget:
         self.used_today = 0
         self.warning_threshold = 0.8
         self.critical_threshold = 0.95
-        self.cost_per_1k = 0.002  # $/1K tokens
         self.history = []
 
     def check(self, required_tokens: int) -> dict:
@@ -279,13 +275,11 @@ class TokenBudget:
     def daily_report(self) -> dict:
         """每日预算报告。"""
         pct = self.used_today / self.daily_limit
-        cost = self.used_today / 1000 * self.cost_per_1k
         return {
             "daily_limit": f"{self.daily_limit:,}",
             "used": f"{self.used_today:,}",
             "remaining": f"{self.daily_limit - self.used_today:,}",
             "usage_pct": f"{pct:.1%}",
-            "est_cost": f"${cost:.2f}",
             "status": "🟢" if pct < 0.8 else ("🟡" if pct < 0.95 else "🔴"),
         }
 
@@ -355,18 +349,21 @@ def demo_token_budget():
 ━━━━━━━━━━━━━━━━━━━
 
 1. 分层 TTL
-   L1 精确缓存：永久（直到 LRU 淘汰）
-   L2 语义缓存：24小时 TTL（信息会过时）
-   L3 LLM 缓存：按查询类型设 TTL（新闻类 1h / 知识类 7天）
+   TTL 由数据源新鲜度和风险决定；即使是 Exact Match 也不能默认永久有效
 
 2. 缓存预热
    上线前用常见问题预填充缓存
 
 3. 缓存失效
-   知识库更新 → 相关缓存全部失效
+   key 包含 tenant、权限、模型、prompt、tool/schema 与数据版本
+   知识库更新 → 按依赖关系精准失效，无法追踪依赖时宁可不命中
 
-4. 监控指标
-   命中率 / 节省成本 / 缓存大小 / L1/L2/L3 分流比例
+4. 禁止或谨慎缓存
+   个性化/含敏感信息、实时数据、权限相关回答和有副作用的工具结果默认不复用
+   语义缓存命中必须经过意图、实体、时间范围和权限一致性检查
+
+5. 监控指标
+   命中率 / 误命中率 / 数据陈旧率 / 避免调用数 / LLM fallback 比例
 
 
 28.5 本章总结
@@ -374,16 +371,16 @@ def demo_token_budget():
 
 核心要点回顾：
 
-1. 三级缓存：Exact → Semantic → LLM
+1. 两级缓存 + LLM fallback：Exact → Semantic → LLM
 2. Token 预算 = 流量套餐管理
-3. 缓存 + 路由 = 成本降低 50-80%
+3. 缓存收益取决于可缓存性、命中率、误命中成本和失效策略
 
 面试速记：
   「Agent 成本怎么优化？」
-  → 三级缓存（Exact/Semantic/LLM）命中率 40-70%
+  → Exact/Semantic 缓存命中率与误命中率从标注日志测量
   → 模型路由（简单用小模型，复杂用大模型）
   → Token 预算管理（防超支）
-  → 三管齐下：年省 50-80%
+  → 同时报告质量、风险、延迟与实际账单
 """
 
 
@@ -396,10 +393,10 @@ if __name__ == "__main__":
     demo_token_budget()
     print("\n▶ 成本优化组合拳")
     for item in [
-        "三级缓存 → 30-50% 请求免调 LLM",
-        "模型路由 → 80% 简单请求用小模型",
+        "Exact/Semantic 缓存 → 只缓存允许复用且通过正确性验证的结果",
+        "模型路由 → 按评测门槛选择候选，不假设固定流量比例",
         "Token 预算 → 防止单用户消耗超标",
-        "三者叠加 → 年省 50-80% LLM 成本",
+        "组合收益 → 用真实账单减去缓存、失效和误命中处理成本",
     ]:
         print(f"  💰 {item}")
     print("\n✅ 第28章完成！🎓 全部课程构建完成！")

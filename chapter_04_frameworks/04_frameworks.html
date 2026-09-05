@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:35826220dfada6678635f4d790f466563a5862853d19e1a97b8090ef0a904b62 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -302,6 +303,9 @@ body {
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_05_multi_agent/05_multi_agent.html" title="多智能体系统 — Multi-Agent 协作">第5章 →</a>
 </div><div class="hero"><h1>第4章 主流 Agent 框架实战</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 了解当前主流 Agent 框架及其定位</span><span class="tag tag-goal">2. 掌握 LangChain Agent 的核心用法</span><span class="tag tag-goal">3. 理解 LangGraph 的状态机模型</span><span class="tag tag-goal">4. 学会根据项目需求选择合适的框架</span><span class="tag tag-interview">🎤 LangChain Agent vs 裸写的区别和优势</span><span class="tag tag-interview">🎤 LangGraph 的状态管理机制</span><span class="tag tag-interview">🎤 生产环境 Agent 选型策略</span><span class="tag tag-interview">🎤 不同框架的适用场景</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -313,8 +317,8 @@ body {
 │ LangChain          │ 通用 LLM 框架 │ 组件化、生态最丰富          │
 │ LangGraph          │ Agent 编排    │ 状态机模型、图式工作流      │
 │ crewAI             │ 多智能体协作  │ 角色扮演、任务委派           │
-│ AutoGen (微软)      │ 对话式 Agent  │ 多Agent对话、人在回路        │
-│ OpenAI Assistants  │ 托管式 Agent  │ 零配置、但灵活性低           │
+│ AutoGen / Agent FW │ 多Agent框架   │ 对话协作、人在回路           │
+│ OpenAI Agents SDK  │ 轻量 Agent SDK│ 工具、交接、护栏、Tracing    │
 │ Dify / Coze        │ 低代码 Agent  │ 可视化搭建、非技术人员友好   │
 └────────────────────┴──────────────┴────────────────────────────┘</pre>
 <p>&nbsp;</p>
@@ -330,9 +334,11 @@ body {
 │ 完全掌控、极致性能                    │ 裸写（第1章的方式）     │
 └──────────────────────────────────────┴────────────────────────┘</pre>
 <p>&nbsp;</p>
-<p>下面我们重点学习 LangChain Agent 和 LangGraph。</p>
-<p>这两个是目前市场上使用最广泛的框架。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (6 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>下面重点学习 LangChain Agent 和 LangGraph。框架生态变化很快，</p>
+<p>选型应基于任务图、持久化、人工审批、可观测性和部署约束做最小原型验证。</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (8 行)</summary><div class="code-block"><pre><span class="k">import</span> ast
 <span class="k">import</span> json
+<span class="k">import</span> operator
+<span class="k">import</span> os
 <span class="k">from</span> typing <span class="k">import</span> Any
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
@@ -346,12 +352,14 @@ load_dotenv()</pre></div></details></div><div class="lecture"><h2>4.1 LangChain 
 <p>─────────────    ─────────────────</p>
 <p>TOOLS 列表       →  @tool 装饰器</p>
 <p>TOOL_MAP 字典    →  Tool 对象</p>
-<p>Agent 循环       →  create_react_agent()</p>
+<p>Agent 循环       →  create_agent()</p>
 <p>对话历史         →  MemorySaver / ChatMessageHistory</p>
 <p>&nbsp;</p>
 <p>安装依赖:</p>
-<p>pip install langchain langchain-openai langgraph</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (150 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get_stock_price</span><span class="code-badge code-badge-func">search_news</span><span class="code-badge code-badge-func">calculate_math</span><span class="code-badge code-badge-func">demo_langchain_agent</span></div><div class="code-block"><pre><span class="k">import</span> os
+<p>pip install langchain langchain-openai langgraph</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (172 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">get_stock_price</span><span class="code-badge code-badge-func">search_news</span><span class="code-badge code-badge-func">calculate_math</span><span class="code-badge code-badge-func">evaluate</span><span class="code-badge code-badge-func">demo_langchain_agent</span></div><div class="code-block"><pre><span class="k">import</span> ast
 <span class="k">import</span> json
+<span class="k">import</span> operator
+<span class="k">import</span> os
 <span class="k">from</span> typing <span class="k">import</span> Any
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
@@ -360,7 +368,7 @@ load_dotenv()
 <span class="k">try</span>:
     <span class="k">from</span> langchain_openai <span class="k">import</span> ChatOpenAI
     <span class="k">from</span> langchain_core.tools <span class="k">import</span> tool
-    <span class="k">from</span> langgraph.prebuilt <span class="k">import</span> create_react_agent
+    <span class="k">from</span> langchain.agents <span class="k">import</span> create_agent
     <span class="k">from</span> langgraph.checkpoint.memory <span class="k">import</span> MemorySaver
     LANGCHAIN_AVAILABLE = <span class="k">True</span>
 <span class="k">except</span> ImportError:
@@ -402,7 +410,7 @@ load_dotenv()
         相关新闻摘要。
     """</span>
     mock_news = {
-        <span class="s">"AI"</span>: <span class="s">"2025年 AI Agent 成为业界焦点，各大科技公司纷纷布局 Agent 技术。"</span>,
+        <span class="s">"AI"</span>: <span class="s">"AI Agent 正从原型走向带评测、可观测和权限控制的工程系统。"</span>,
         <span class="s">"股票"</span>: <span class="s">"今日股市震荡，科技板块表现强劲。"</span>,
         <span class="s">"特斯拉"</span>: <span class="s">"特斯拉发布新一代自动驾驶技术，股价上涨 3%。"</span>,
     }
@@ -417,18 +425,38 @@ load_dotenv()
     <span class="s">"""执行数学计算。
 
     Args:
-        expression: 数学表达式，如 '100 * 1.15' 或 'sqrt(144)'。
+        expression: 基础算术表达式，如 '100 * 1.15' 或 '(12 + 3) / 5'。
 
     Returns:
         计算结果。
     """</span>
+    arithmetic_operators = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Mod: operator.mod,
+        ast.USub: operator.neg,
+        ast.UAdd: operator.pos,
+    }
+
+    <span class="k">def</span> <span class="f">evaluate</span>(node):
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.Expression):
+            <span class="k">return</span> evaluate(node.body)
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.Constant) <span class="k">and</span> <span class="b">type</span>(node.value) <span class="k">in</span> {<span class="b">int</span>, <span class="b">float</span>}:
+            <span class="k">return</span> node.value
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.BinOp) <span class="k">and</span> <span class="b">type</span>(node.op) <span class="k">in</span> arithmetic_operators:
+            <span class="k">return</span> arithmetic_operators[<span class="b">type</span>(node.op)](evaluate(node.left), evaluate(node.right))
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.UnaryOp) <span class="k">and</span> <span class="b">type</span>(node.op) <span class="k">in</span> arithmetic_operators:
+            <span class="k">return</span> arithmetic_operators[<span class="b">type</span>(node.op)](evaluate(node.operand))
+        <span class="k">raise</span> ValueError(<span class="s">"只允许基础算术"</span>)
+
+    <span class="k">if</span> <span class="k">not</span> expression.strip() <span class="k">or</span> <span class="b">len</span>(expression) &gt; <span class="n">100</span>:
+        <span class="k">return</span> <span class="s">"计算错误：表达式为空或过长"</span>
     <span class="k">try</span>:
-        allowed = <span class="b">set</span>(<span class="s">"0123456789+-*/().%^ "</span>)
-        <span class="k">if</span> <span class="k">not</span> <span class="b">all</span>(c <span class="k">in</span> allowed <span class="k">for</span> c <span class="k">in</span> expression):
-            <span class="k">return</span> <span class="s">"错误：表达式包含不允许的字符"</span>
-        <span class="k">return</span> <span class="b">str</span>(eval(expression))
-    <span class="k">except</span> Exception <span class="k">as</span> e:
-        <span class="k">return</span> f<span class="s">"计算错误: {e}"</span>
+        <span class="k">return</span> <span class="b">str</span>(evaluate(ast.parse(expression, mode=<span class="s">"eval"</span>)))
+    <span class="k">except</span> (SyntaxError, ValueError, TypeError, ZeroDivisionError, OverflowError):
+        <span class="k">return</span> <span class="s">"计算错误：只允许有限长度的基础算术表达式"</span>
 
 
 <span class="k">def</span> <span class="f">demo_langchain_agent</span>():
@@ -450,7 +478,7 @@ load_dotenv()
 
     <span class="h"># 步骤 1：初始化 LLM</span>
     llm = ChatOpenAI(
-        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>),
         api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
         base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
         temperature=<span class="n">0.7</span>,
@@ -461,7 +489,7 @@ load_dotenv()
 
     <span class="h"># 步骤 3：创建 Agent（内置 ReAct 循环！）</span>
     memory = MemorySaver()  <span class="h"># 对话记忆管理器</span>
-    agent = create_react_agent(
+    agent = create_agent(
         model=llm,
         tools=tools,
         checkpointer=memory,
@@ -471,7 +499,7 @@ load_dotenv()
     LangChain Agent 的核心抽象：
       - LLM: ChatOpenAI —— 大脑
       - Tools: @tool 列表 —— 技能
-      - Agent: create_react_agent —— 执行器
+      - Agent: create_agent —— LangChain 1.x 的高层执行器
       - Checkpointer: MemorySaver —— 记忆
 
     对比第1章裸写的优势：
@@ -516,8 +544,10 @@ load_dotenv()
 <li>多 Agent 协作场景（第5章会用到）</li>
 <p>&nbsp;</p>
 <p>安装依赖：</p>
-<p>pip install langgraph</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (147 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_langgraph_agent</span><span class="code-badge code-badge-func">analyze_node</span><span class="code-badge code-badge-func">should_continue</span><span class="code-badge code-badge-func">elaborate_node</span><span class="code-badge code-badge-class">AgentState</span></div><div class="code-block"><pre><span class="k">import</span> os
+<p>pip install langgraph</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (149 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">demo_langgraph_agent</span><span class="code-badge code-badge-func">analyze_node</span><span class="code-badge code-badge-func">should_continue</span><span class="code-badge code-badge-func">elaborate_node</span><span class="code-badge code-badge-class">AgentState</span></div><div class="code-block"><pre><span class="k">import</span> ast
 <span class="k">import</span> json
+<span class="k">import</span> operator
+<span class="k">import</span> os
 <span class="k">from</span> typing <span class="k">import</span> Any
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
@@ -567,7 +597,7 @@ load_dotenv()
     <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     llm = ChatOpenAI(
-        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>),
         api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
         base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
         temperature=<span class="n">0.5</span>,
@@ -668,20 +698,20 @@ load_dotenv()
 <p>&nbsp;</p>
 <p>回答框架：</p>
 <p>&nbsp;</p>
-<li>学习阶段：从裸写开始（第1章）</li>
+<li>1. 学习阶段：从裸写开始（第1章）</li>
 <li>理解底层原理</li>
 <li>不被框架黑盒限制</li>
 <p>&nbsp;</p>
-<li>原型验证：用 LangChain Agent</li>
+<li>2. 原型验证：用 LangChain Agent</li>
 <li>快速搭建、生态丰富</li>
 <li>适合 MVP 和 demo</li>
 <p>&nbsp;</p>
-<li>生产环境：用 LangGraph</li>
+<li>3. 生产环境：用 LangGraph</li>
 <li>状态管理可控</li>
 <li>支持复杂工作流</li>
 <li>可观测性好（便于调试和监控）</li>
 <p>&nbsp;</p>
-<li>多 Agent 场景：</li>
+<li>4. 多 Agent 场景：</li>
 <li>crewAI（简单协作）</li>
 <li>AutoGen（需要人在回路）</li>
 <li>自建 LangGraph 图（完全定制）</li>
@@ -699,19 +729,19 @@ load_dotenv()
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
-<li>LangChain Agent</li>
-<li>create_react_agent() 一行创建 Agent</li>
+<li>1. LangChain Agent</li>
+<li>create_agent() 一行创建 Agent；底层返回可运行的 LangGraph 图</li>
 <li>@tool 装饰器定义工具</li>
 <li>MemorySaver 自动管理对话历史</li>
 <li>适合快速原型和中等复杂度场景</li>
 <p>&nbsp;</p>
-<li>LangGraph</li>
+<li>2. LangGraph</li>
 <li>状态机模型：State + Node + Edge</li>
 <li>完全自定义执行流程</li>
 <li>支持条件分支、循环、并行</li>
 <li>生产环境首选</li>
 <p>&nbsp;</p>
-<li>选型策略</li>
+<li>3. 选型策略</li>
 <li>学习原理 → 裸写</li>
 <li>快速验证 → LangChain</li>
 <li>生产落地 → LangGraph</li>
@@ -721,8 +751,10 @@ load_dotenv()
 <p>"LangGraph 和 LangChain Agent 的区别？"</p>
 <p>→ LangChain Agent 是预定义的 ReAct 循环</p>
 <p>→ LangGraph 可以自定义任意执行图</p>
-<p>→ LangGraph 适合复杂工作流，LangChain Agent 适合简单任务</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (34 行)</summary><div class="code-block"><pre><span class="k">import</span> os
+<p>→ LangGraph 适合复杂工作流，LangChain Agent 适合简单任务</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (36 行)</summary><div class="code-block"><pre><span class="k">import</span> ast
 <span class="k">import</span> json
+<span class="k">import</span> operator
+<span class="k">import</span> os
 <span class="k">from</span> typing <span class="k">import</span> Any
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
@@ -754,9 +786,12 @@ load_dotenv()
     <span class="b">print</span>(<span class="s">"场景: 人在回路 → AutoGen"</span>)
     <span class="b">print</span>(<span class="s">"场景: 完全掌控 → 裸写（第1章方式）"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第4章完成！接下来进入第5章：多智能体系统。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (486 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第4章完成！接下来进入第5章：多智能体系统。"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (511 行)</summary><div class="code-block"><pre><span class="s">"""
 第4章：主流 Agent 框架实战
 ===========================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 了解当前主流 Agent 框架及其定位
@@ -781,8 +816,8 @@ load_dotenv()
 │ LangChain          │ 通用 LLM 框架 │ 组件化、生态最丰富          │
 │ LangGraph          │ Agent 编排    │ 状态机模型、图式工作流      │
 │ crewAI             │ 多智能体协作  │ 角色扮演、任务委派           │
-│ AutoGen (微软)      │ 对话式 Agent  │ 多Agent对话、人在回路        │
-│ OpenAI Assistants  │ 托管式 Agent  │ 零配置、但灵活性低           │
+│ AutoGen / Agent FW │ 多Agent框架   │ 对话协作、人在回路           │
+│ OpenAI Agents SDK  │ 轻量 Agent SDK│ 工具、交接、护栏、Tracing    │
 │ Dify / Coze        │ 低代码 Agent  │ 可视化搭建、非技术人员友好   │
 └────────────────────┴──────────────┴────────────────────────────┘
 
@@ -798,12 +833,14 @@ load_dotenv()
 │ 完全掌控、极致性能                    │ 裸写（第1章的方式）     │
 └──────────────────────────────────────┴────────────────────────┘
 
-下面我们重点学习 LangChain Agent 和 LangGraph。
-这两个是目前市场上使用最广泛的框架。
+下面重点学习 LangChain Agent 和 LangGraph。框架生态变化很快，
+选型应基于任务图、持久化、人工审批、可观测性和部署约束做最小原型验证。
 """</span>
 
-<span class="k">import</span> os
+<span class="k">import</span> ast
 <span class="k">import</span> json
+<span class="k">import</span> operator
+<span class="k">import</span> os
 <span class="k">from</span> typing <span class="k">import</span> Any
 <span class="k">from</span> dotenv <span class="k">import</span> load_dotenv
 
@@ -822,7 +859,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
   ─────────────    ─────────────────
   TOOLS 列表       →  @tool 装饰器
   TOOL_MAP 字典    →  Tool 对象
-  Agent 循环       →  create_react_agent()
+  Agent 循环       →  create_agent()
   对话历史         →  MemorySaver / ChatMessageHistory
 
 安装依赖:
@@ -832,7 +869,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
 <span class="k">try</span>:
     <span class="k">from</span> langchain_openai <span class="k">import</span> ChatOpenAI
     <span class="k">from</span> langchain_core.tools <span class="k">import</span> tool
-    <span class="k">from</span> langgraph.prebuilt <span class="k">import</span> create_react_agent
+    <span class="k">from</span> langchain.agents <span class="k">import</span> create_agent
     <span class="k">from</span> langgraph.checkpoint.memory <span class="k">import</span> MemorySaver
     LANGCHAIN_AVAILABLE = <span class="k">True</span>
 <span class="k">except</span> ImportError:
@@ -874,7 +911,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
         相关新闻摘要。
     """</span>
     mock_news = {
-        <span class="s">"AI"</span>: <span class="s">"2025年 AI Agent 成为业界焦点，各大科技公司纷纷布局 Agent 技术。"</span>,
+        <span class="s">"AI"</span>: <span class="s">"AI Agent 正从原型走向带评测、可观测和权限控制的工程系统。"</span>,
         <span class="s">"股票"</span>: <span class="s">"今日股市震荡，科技板块表现强劲。"</span>,
         <span class="s">"特斯拉"</span>: <span class="s">"特斯拉发布新一代自动驾驶技术，股价上涨 3%。"</span>,
     }
@@ -889,18 +926,38 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
     <span class="s">"""执行数学计算。
 
     Args:
-        expression: 数学表达式，如 '100 * 1.15' 或 'sqrt(144)'。
+        expression: 基础算术表达式，如 '100 * 1.15' 或 '(12 + 3) / 5'。
 
     Returns:
         计算结果。
     """</span>
+    arithmetic_operators = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Mod: operator.mod,
+        ast.USub: operator.neg,
+        ast.UAdd: operator.pos,
+    }
+
+    <span class="k">def</span> <span class="f">evaluate</span>(node):
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.Expression):
+            <span class="k">return</span> evaluate(node.body)
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.Constant) <span class="k">and</span> <span class="b">type</span>(node.value) <span class="k">in</span> {<span class="b">int</span>, <span class="b">float</span>}:
+            <span class="k">return</span> node.value
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.BinOp) <span class="k">and</span> <span class="b">type</span>(node.op) <span class="k">in</span> arithmetic_operators:
+            <span class="k">return</span> arithmetic_operators[<span class="b">type</span>(node.op)](evaluate(node.left), evaluate(node.right))
+        <span class="k">if</span> <span class="b">isinstance</span>(node, ast.UnaryOp) <span class="k">and</span> <span class="b">type</span>(node.op) <span class="k">in</span> arithmetic_operators:
+            <span class="k">return</span> arithmetic_operators[<span class="b">type</span>(node.op)](evaluate(node.operand))
+        <span class="k">raise</span> ValueError(<span class="s">"只允许基础算术"</span>)
+
+    <span class="k">if</span> <span class="k">not</span> expression.strip() <span class="k">or</span> <span class="b">len</span>(expression) &gt; <span class="n">100</span>:
+        <span class="k">return</span> <span class="s">"计算错误：表达式为空或过长"</span>
     <span class="k">try</span>:
-        allowed = <span class="b">set</span>(<span class="s">"0123456789+-*/().%^ "</span>)
-        <span class="k">if</span> <span class="k">not</span> <span class="b">all</span>(c <span class="k">in</span> allowed <span class="k">for</span> c <span class="k">in</span> expression):
-            <span class="k">return</span> <span class="s">"错误：表达式包含不允许的字符"</span>
-        <span class="k">return</span> <span class="b">str</span>(eval(expression))
-    <span class="k">except</span> Exception <span class="k">as</span> e:
-        <span class="k">return</span> f<span class="s">"计算错误: {e}"</span>
+        <span class="k">return</span> <span class="b">str</span>(evaluate(ast.parse(expression, mode=<span class="s">"eval"</span>)))
+    <span class="k">except</span> (SyntaxError, ValueError, TypeError, ZeroDivisionError, OverflowError):
+        <span class="k">return</span> <span class="s">"计算错误：只允许有限长度的基础算术表达式"</span>
 
 
 <span class="k">def</span> <span class="f">demo_langchain_agent</span>():
@@ -922,7 +979,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
 
     <span class="h"># 步骤 1：初始化 LLM</span>
     llm = ChatOpenAI(
-        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>),
         api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
         base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
         temperature=<span class="n">0.7</span>,
@@ -933,7 +990,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
 
     <span class="h"># 步骤 3：创建 Agent（内置 ReAct 循环！）</span>
     memory = MemorySaver()  <span class="h"># 对话记忆管理器</span>
-    agent = create_react_agent(
+    agent = create_agent(
         model=llm,
         tools=tools,
         checkpointer=memory,
@@ -943,7 +1000,7 @@ LangChain 是最流行的 LLM 应用框架，它将第1-3章我们
     LangChain Agent 的核心抽象：
       - LLM: ChatOpenAI —— 大脑
       - Tools: @tool 列表 —— 技能
-      - Agent: create_react_agent —— 执行器
+      - Agent: create_agent —— LangChain 1.x 的高层执行器
       - Checkpointer: MemorySaver —— 记忆
 
     对比第1章裸写的优势：
@@ -1041,7 +1098,7 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
     <span class="b">print</span>(<span class="s">"="</span> * <span class="n">60</span>)
 
     llm = ChatOpenAI(
-        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-4o-mini"</span>),
+        model=os.getenv(<span class="s">"LLM_MODEL"</span>, <span class="s">"gpt-5.6-terra"</span>),
         api_key=os.getenv(<span class="s">"OPENAI_API_KEY"</span>),
         base_url=os.getenv(<span class="s">"OPENAI_BASE_URL"</span>),
         temperature=<span class="n">0.5</span>,
@@ -1187,7 +1244,7 @@ LangGraph 是 LangChain 生态中的 Agent 编排框架。
 核心要点回顾：
 
 1. LangChain Agent
-   - create_react_agent() 一行创建 Agent
+   - create_agent() 一行创建 Agent；底层返回可运行的 LangGraph 图
    - @tool 装饰器定义工具
    - MemorySaver 自动管理对话历史
    - 适合快速原型和中等复杂度场景

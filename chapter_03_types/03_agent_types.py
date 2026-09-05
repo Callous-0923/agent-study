@@ -2,6 +2,9 @@
 第3章：Agent 类型分类与设计模式
 =================================
 
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
+
 📌 本章目标：
   1. 掌握 5 种主流 Agent 类型的设计模式与适用场景
   2. 理解每种模式的执行流程和优劣对比
@@ -50,6 +53,8 @@ Agent 类型全景图
 
 import os
 import json
+import ast
+import operator
 from typing import Optional
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -61,43 +66,78 @@ client = OpenAI(
     base_url=os.getenv("OPENAI_BASE_URL"),
 )
 
-MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
+MODEL = os.getenv("LLM_MODEL", "gpt-5.6-terra")
 
 # 共享工具集
 TOOLS = [
     {
         "type": "function",
-        "function": {
-            "name": "search",
-            "description": "在互联网上搜索信息。适用于获取实时信息、事实查询等。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "搜索关键词"}
-                },
-                "required": ["query"],
+        "name": "search",
+        "description": "返回课程内置的模拟搜索结果；不访问互联网。",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "搜索关键词"}
             },
+            "required": ["query"],
+            "additionalProperties": False,
         },
+        "strict": True,
     },
     {
         "type": "function",
-        "function": {
-            "name": "calculator",
-            "description": "执行数学计算。支持加减乘除、乘方等运算。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "expression": {"type": "string", "description": "数学表达式"}
-                },
-                "required": ["expression"],
+        "name": "calculator",
+        "description": "执行只含基础运算符的数学表达式。",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "expression": {"type": "string", "description": "数学表达式"}
             },
+            "required": ["expression"],
+            "additionalProperties": False,
         },
+        "strict": True,
     },
 ]
 
+
+_OPERATORS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.Mod: operator.mod,
+    ast.Pow: operator.pow,
+    ast.USub: operator.neg,
+    ast.UAdd: operator.pos,
+}
+
+
+def calculate_safely(expression: str) -> str:
+    """解释一个受限算术 AST，拒绝名称、调用和属性访问。"""
+    if len(expression) > 100:
+        return "表达式过长"
+
+    def evaluate(node):
+        if isinstance(node, ast.Expression):
+            return evaluate(node.body)
+        if isinstance(node, ast.Constant) and type(node.value) in {int, float}:
+            return node.value
+        if isinstance(node, ast.BinOp) and type(node.op) in _OPERATORS:
+            return _OPERATORS[type(node.op)](evaluate(node.left), evaluate(node.right))
+        if isinstance(node, ast.UnaryOp) and type(node.op) in _OPERATORS:
+            return _OPERATORS[type(node.op)](evaluate(node.operand))
+        raise ValueError("只允许基础算术")
+
+    try:
+        return str(evaluate(ast.parse(expression, mode="eval")))
+    except (SyntaxError, ValueError, TypeError, ZeroDivisionError, OverflowError):
+        return "表达式错误"
+
+
 TOOL_MAP = {
     "search": lambda query: f"搜索结果(模拟): 关于'{query}'的信息...",
-    "calculator": lambda expression: f"计算结果(模拟): {eval(expression) if all(c in '0123456789+-*/().% ' for c in expression) else '表达式错误'}",
+    "calculator": lambda expression: f"计算结果: {calculate_safely(expression)}",
 }
 
 
@@ -163,7 +203,7 @@ class ReActAgent:
         Returns:
             Agent 的最终回答。
         """
-        messages = [
+        input_items = [
             {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": user_message},
         ]
@@ -171,26 +211,26 @@ class ReActAgent:
         for step in range(max_steps):
             print(f"\n  [ReAct 第 {step+1} 步]")
 
-            response = client.chat.completions.create(
-                model=MODEL, messages=messages,
+            response = client.responses.create(
+                model=MODEL, input=input_items,
                 tools=TOOLS, tool_choice="auto",
             )
-            msg = response.choices[0].message
+            calls = [item for item in response.output if item.type == "function_call"]
 
-            if msg.tool_calls is None:
+            if not calls:
                 print(f"  → 最终回答")
-                return msg.content
+                return response.output_text
 
-            messages.append(msg)
-            for tc in msg.tool_calls:
-                name = tc.function.name
-                args = json.loads(tc.function.arguments)
+            input_items.extend(response.output)
+            for tc in calls:
+                name = tc.name
+                args = json.loads(tc.arguments)
                 print(f"  → 调用: {name}({args})")
                 result = TOOL_MAP[name](**args)
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": tc.id,
-                    "content": result,
+                input_items.append({
+                    "type": "function_call_output",
+                    "call_id": tc.call_id,
+                    "output": result,
                 })
 
         return "达到最大步数限制，无法完成任务。"
@@ -238,13 +278,12 @@ class PlanExecuteAgent:
             f"\"tool\": \"search|calculator|none\", "
             f"\"tool_input\": \"...\"}}]}}\n\n任务: {task}"
         )
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_object"},
-            temperature=0.3,
+            input=prompt,
+            text={"format": {"type": "json_object"}},
         )
-        data = json.loads(response.choices[0].message.content)
+        data = json.loads(response.output_text)
         return data.get("steps", [])
 
     def run(self, task: str) -> str:
@@ -282,11 +321,11 @@ class PlanExecuteAgent:
             f"执行结果:\n{json.dumps(self.results, ensure_ascii=False)}\n"
             f"请基于以上结果给出最终回答。"
         )
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=MODEL,
-            messages=[{"role": "user", "content": summary_prompt}],
+            input=summary_prompt,
         )
-        return response.choices[0].message.content
+        return response.output_text
 
 
 """
@@ -341,12 +380,12 @@ class ReflexionAgent:
             f'{{"accuracy": 0, "completeness": 0, "clarity": 0, '
             f'"issues": ["问题1"]}}'
         )
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_object"},
+            input=prompt,
+            text={"format": {"type": "json_object"}},
         )
-        return json.loads(response.choices[0].message.content)
+        return json.loads(response.output_text)
 
     def run(self, task: str) -> str:
         """执行 Reflexion 流程。
@@ -377,11 +416,11 @@ class ReflexionAgent:
                 prompt = task
 
             # 执行（不调用工具，纯推理）
-            response = client.chat.completions.create(
+            response = client.responses.create(
                 model=MODEL,
-                messages=[{"role": "user", "content": prompt}],
+                input=prompt,
             )
-            answer = response.choices[0].message.content
+            answer = response.output_text
             print(f"    回答: {answer[:100]}...")
 
             # 自我评估

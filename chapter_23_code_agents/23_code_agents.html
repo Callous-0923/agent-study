@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>第23章：代码 Agent 架构横评 —— 谁是最好的 AI 程序员？ — AI Agent 全栈课程</title>
+<title>第23章：代码 Agent 架构横评 —— 从产品榜单回到可验证设计 — AI Agent 全栈课程</title>
 <style>
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -250,6 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
+<!-- generated-from-sha256:b14cdd1d742ed9aec7701bbfdda9c8db2634c07eafe83f1b3434d3dd1c42bbe8 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -301,10 +302,13 @@ body {
 <a class="nav-link nav-prev" href="https://callous-0923.github.io/agent-study/chapter_22_dspy/22_dspy.html" title="DSPy 自动优化 — Signature·Module·Optimizer">← 第22章</a>
 <a class="nav-link nav-home" href="https://callous-0923.github.io/agent-study/index.html">📖 课程主页</a>
 <a class="nav-link nav-next" href="https://callous-0923.github.io/agent-study/chapter_24_observability/24_observability.html" title="Agent 可观测性 — Tracing·LangSmith vs LangFuse">第24章 →</a>
-</div><div class="hero"><h1>第23章 代码 Agent 架构横评 —— 谁是最好的 AI 程序员？</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解代码 Agent 的 4 种核心架构模式</span><span class="tag tag-goal">2. 掌握主要代码 Agent 的架构差异和选型策略</span><span class="tag tag-goal">3. 理解 SWE-bench 评测体系</span><span class="tag tag-goal">4. 学会「Agentless vs Agent」的设计哲学辩论</span><span class="tag tag-interview">🎤 「代码 Agent 有哪些架构类型？」</span><span class="tag tag-interview">🎤 「Claude Code 和 SWE-Agent 的区别？」</span><span class="tag tag-interview">🎤 「Agentless 为什么能超过 Agent？」</span><span class="tag tag-interview">🎤 「SWE-bench 是怎么评测的？」</span></div><p>&nbsp;</p>
+</div><div class="hero"><h1>第23章 代码 Agent 架构横评 —— 从产品榜单回到可验证设计</h1><p class="subtitle">📖 AI Agent 全栈学习课程 · 可运行讲义</p></div><div class="lecture"><div class="tag-row"><span class="tag tag-goal">1. 理解代码 Agent 的 4 种核心架构模式</span><span class="tag tag-goal">2. 掌握主要代码 Agent 的架构差异和选型策略</span><span class="tag tag-goal">3. 理解 SWE-bench 评测体系</span><span class="tag tag-goal">4. 学会「Agentless vs Agent」的设计哲学辩论</span><span class="tag tag-interview">🎤 「代码 Agent 有哪些架构类型？」</span><span class="tag tag-interview">🎤 「Claude Code 和 SWE-Agent 的区别？」</span><span class="tag tag-interview">🎤 「Agentless 为什么能超过 Agent？」</span><span class="tag tag-interview">🎤 「SWE-bench 是怎么评测的？」</span></div><p>&nbsp;</p>
+<p>内容核对：2026-08-01</p>
+<p>说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p>基于 2025-2026 年最新代码 Agent 生态全景</p>
+<p>&nbsp;</p>
+<p>产品与榜单变化很快；本章产品名只是 2026-08-01 的架构示例，不构成排名。</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>23.1 代码 Agent 生态全景图</h2>
@@ -312,7 +316,7 @@ body {
 <p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────────────────────────────────────────────┐
   │              代码 Agent 生态 (2025-2026)              │
   │                                                       │
-  │  第一梯队（商业/闭源）     第二梯队（开源）             │
+  │  商业/闭源示例             开源示例                    │
   │  ┌──────────────────┐  ┌──────────────────┐         │
   │  │ Claude Code      │  │ OpenHands        │         │
   │  │ (Anthropic)      │  │ (原 OpenDevin)   │         │
@@ -351,7 +355,7 @@ body {
 │                 │ Cline, Roo Code     │ 最像人类的开发流程      │
 └─────────────────┴─────────────────────┴──────────────────────┘</pre>
 <p>&nbsp;</p>
-<li>Code-as-Action (CodeAct)</li>
+<li>1. Code-as-Action (CodeAct)</li>
 <p>&nbsp;</p>
 <p>OpenHands 的创新：</p>
 <p>不预定义 read_file/write_file 等固定工具</p>
@@ -364,7 +368,7 @@ body {
 <p>优势：无限可扩展（任何脚本能做的事 Agent 都能做）</p>
 <p>劣势：可靠性低（执行任意代码的失败面更大）</p>
 <p>&nbsp;</p>
-<li>Agent-Computer Interface (ACI)</li>
+<li>2. Agent-Computer Interface (ACI)</li>
 <p>&nbsp;</p>
 <p>SWE-Agent 的创新（Princeton）：</p>
 <p>像设计 HCI（人机交互界面）一样设计 AI 的交互界面</p>
@@ -376,13 +380,13 @@ body {
 <li>搜索结果带上下文</li>
 <li>命令执行结果被结构化</li>
 <p>&nbsp;</p>
-<li>Plan-and-Execute</li>
+<li>3. Plan-and-Execute</li>
 <p>&nbsp;</p>
 <p>代表：Devin</p>
 <p>安全优先：先规划 → 人工审核 → 沙箱执行</p>
 <p>适合企业级场景（不能允许 Agent 自己删文件）</p>
 <p>&nbsp;</p>
-<li>React-and-Iterate（也即标准 ReAct）</li>
+<li>4. React-and-Iterate（也即标准 ReAct）</li>
 <p>&nbsp;</p>
 <p>代表：Claude Code（Ch8 深入讲过）</p>
 <p>像程序员一样工作：搜索 → 读代码 → 改 → 测试 → 修</p>
@@ -390,7 +394,7 @@ body {
 <p>&nbsp;</p>
 <h2>23.3 SWE-bench 评测体系</h2>
 <p>&nbsp;</p>
-<p>SWE-bench 是代码 Agent 的「ImageNet」。</p>
+<p>SWE-bench 是重要的代码修复 benchmark，但不是完整的软件工程能力度量。</p>
 <p>&nbsp;</p>
 <p>评测任务：</p>
 <p>从 GitHub 真实 Issue 中提取 → 让 Agent 修复 → 运行测试验证</p>
@@ -407,55 +411,42 @@ body {
 <p>进一步精简，适合快速评测</p>
 <p>&nbsp;</p>
 <p>评测流程：</p>
-<li>给 Agent GitHub Issue 描述</li>
-<li>Agent 需要在代码库中找到问题 → 修复</li>
-<li>生成 patch → 运行原始测试 → 看是否通过</li>
+<li>1. 给 Agent GitHub Issue 描述</li>
+<li>2. Agent 需要在代码库中找到问题 → 修复</li>
+<li>3. 生成 patch → 运行原始测试 → 看是否通过</li>
 <p>&nbsp;</p>
-<p>SWE-bench Verified 成绩对比 (2025 数据)：</p>
-<p>&nbsp;</p>
-<p class="diagram-label">📊 架构示意</p><pre class="ascii-art diagram-pre">  ┌──────────────────────┬───────────┬──────────┐
-  │ Agent                 │ 解决率     │  成本     │
-  ├──────────────────────┼───────────┼──────────┤
-  │ Claude Code (Sonnet 4)│  ~72%     │  ~$5/任务 │
-  │ OpenHands             │  ~72%     │  ~$3/任务 │
-  │ SWE-Agent             │  ~45%     │  ~$1/任务 │
-  │ Agentless (无 Agent!)  │  ~32%     │  $0.70    │
-  │ Devin                 │  未公开    │  订阅制    │
-  └──────────────────────┴───────────┴──────────┘</pre>
+<p>2026 年的重要限制：</p>
+<li>OpenAI 已停止把 SWE-bench Verified 作为前沿编码能力的主要指标，理由包括</li>
+<p>训练污染和部分测试缺陷</p>
+<li>2026-07 对 SWE-bench Pro 的审查也报告了大量有问题的任务</li>
+<li>公布分数只有在模型快照、harness、最大预算、测试镜像和日期一致时才可比</li>
+<li>项目选型应加入私有未污染 issue、代码审查、安全、测试质量和人工接管指标</li>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>23.4 Agentless 的颠覆性发现</h2>
 <p>&nbsp;</p>
-<p>2025年 Illinois 的论文：Agentless</p>
+<p>2024 年发表的 Agentless 工作展示了一条固定的定位→修复→验证流水线。</p>
 <p>&nbsp;</p>
 <p>核心发现：</p>
 <p>简单固定流程 = 定位 → 修复 → 验证</p>
 <p>不让 LLM 做任何自主决策！</p>
 <p>&nbsp;</p>
 <p>Agentless 的三阶段流程：</p>
-<li>Localization（定位）：LLM 扫描文件，找出需要修改的位置</li>
-<p>2. Repair（修复）：LLM 生成 patch</p>
-<p>3. Validation（验证）：运行测试</p>
+<li>1. Localization（定位）：LLM 扫描文件，找出需要修改的位置</li>
+<li>2. Repair（修复）：LLM 生成 patch</li>
+<li>3. Validation（验证）：运行测试</li>
 <p>&nbsp;</p>
 <p>和 Agent 的关键区别：</p>
 <p>✗ 没有循环</p>
 <p>✗ 没有工具调用</p>
 <p>✗ 没有自主决策</p>
-<p>→ 居然比很多 Agent 效果更好！</p>
+<p>→ 在特定 benchmark 与预算下可以形成有竞争力的强基线</p>
 <p>&nbsp;</p>
 <p>为什么？</p>
 <p>&nbsp;</p>
-<li>LLM 还不够「聪明」到能做好的自主决策</li>
-<li>Agent 循环增加了出错机会（多做多错）</li>
-<li>Agent 消耗了 token 在「思考过程」而非「解决问题」上</li>
-<p>&nbsp;</p>
-<p>Anthropic 的回应（在 Claude Code 的优化中）：</p>
-<p>「做最简单的事」</p>
-<p>搜索用 Grep 而不是 Embedding</p>
-<p>记忆用 Markdown 而不是数据库</p>
-<p>单线程而不是多 Agent 并行</p>
-<p>&nbsp;</p>
-<p>这条哲学和 Agentless 的发现是一致的。</p>
+<li>1. 更多自主步骤会增加错误与方差</li>
+<li>2. 固定流程更容易复现、预算和消融</li>
+<li>3. 自主 Agent 只有在需要动态探索时才可能覆盖固定流程做不到的分支</li>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>23.5 代码 Agent 的通用工作流</h2>
@@ -615,22 +606,22 @@ body {
 <p>&nbsp;</p>
 <p>核心要点回顾：</p>
 <p>&nbsp;</p>
-<li>4 种架构模式</li>
+<li>1. 4 种架构模式</li>
 <p>CodeAct / ACI / Plan-Execute / React-and-Iterate</p>
 <p>&nbsp;</p>
-<li>SWE-bench 是代码 Agent 的标准评测</li>
-<p>Verified 版最可靠，Lite 版适合快速验证</p>
+<li>2. SWE-bench 是重要外部参照，但 Verified 与 Pro 都暴露出污染/任务质量问题</li>
+<p>必须同时维护私有回归集，并报告 harness、预算、镜像和日期</p>
 <p>&nbsp;</p>
-<li>Agentless 的启示</li>
+<li>3. Agentless 的启示</li>
 <p>简单方案常比复杂 Agent 更好</p>
-<p>验证了 Anthropic「做最简单的事」的哲学</p>
+<p>固定流程应作为所有复杂 Agent 的强基线</p>
 <p>&nbsp;</p>
 <p>面试速记：</p>
 <p>"你了解哪些代码 Agent？"</p>
 <p>→ 4 种架构 + 每个代表 + 选型场景</p>
 <p>→ 提到 SWE-bench 评测体系</p>
 <p>→ Agentless 的「返璞归真」启示</p>
-<p>→ Claude Code 的简单至上哲学</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (29 行)</summary><div class="code-block"><pre><span class="k">import</span> time
+<p>→ Claude Code 的简单至上哲学</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (28 行)</summary><div class="code-block"><pre><span class="k">import</span> time
 
 <span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
     <span class="b">print</span>(<span class="s">"╔══════════════════════════════════════════════════════╗"</span>)
@@ -651,16 +642,18 @@ body {
     <span class="k">for</span> name, desc <span class="k">in</span> archs:
         <span class="b">print</span>(f<span class="s">"  {name:25s} → {desc}"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n▶ SWE-bench Verified 成绩"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ SWE-bench 结果报告 Checklist"</span>)
     <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
-    <span class="b">print</span>(<span class="s">"  Claude Code (Sonnet 4)   ~72%     ~$5/task"</span>)
-    <span class="b">print</span>(<span class="s">"  OpenHands                 ~72%     ~$3/task"</span>)
-    <span class="b">print</span>(<span class="s">"  SWE-Agent                 ~45%     ~$1/task"</span>)
-    <span class="b">print</span>(<span class="s">"  Agentless (无Agent!)      ~32%     $0.70"</span>)
+    <span class="b">print</span>(<span class="s">"  模型快照 / harness commit / 容器镜像 / 最大预算"</span>)
+    <span class="b">print</span>(<span class="s">"  运行日期 / 重试策略 / 失败分类 / 污染检查"</span>)
+    <span class="b">print</span>(<span class="s">"  公开 benchmark + 私有未污染回归集"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n✅ 第23章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (390 行)</summary><div class="code-block"><pre><span class="s">"""
-第23章：代码 Agent 架构横评 —— 谁是最好的 AI 程序员？
+    <span class="b">print</span>(<span class="s">"\n✅ 第23章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (377 行)</summary><div class="code-block"><pre><span class="s">"""
+第23章：代码 Agent 架构横评 —— 从产品榜单回到可验证设计
 ========================================================
+
+内容核对：2026-08-01
+说明：标注为模拟的实现与数值用于讲解概念，不代表真实 SDK、协议或基准结果。
 
 📌 本章目标：
   1. 理解代码 Agent 的 4 种核心架构模式
@@ -674,9 +667,7 @@ body {
   - 「Agentless 为什么能超过 Agent？」
   - 「SWE-bench 是怎么评测的？」
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-基于 2025-2026 年最新代码 Agent 生态全景
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+产品与榜单变化很快；本章产品名只是 2026-08-01 的架构示例，不构成排名。
 
 
 23.1 代码 Agent 生态全景图
@@ -685,7 +676,7 @@ body {
   ┌──────────────────────────────────────────────────────┐
   │              代码 Agent 生态 (2025-2026)              │
   │                                                       │
-  │  第一梯队（商业/闭源）     第二梯队（开源）             │
+  │  商业/闭源示例             开源示例                    │
   │  ┌──────────────────┐  ┌──────────────────┐         │
   │  │ Claude Code      │  │ OpenHands        │         │
   │  │ (Anthropic)      │  │ (原 OpenDevin)   │         │
@@ -765,7 +756,7 @@ body {
 23.3 SWE-bench 评测体系
 ━━━━━━━━━━━━━━━━━━━━━━
 
-SWE-bench 是代码 Agent 的「ImageNet」。
+SWE-bench 是重要的代码修复 benchmark，但不是完整的软件工程能力度量。
 
 评测任务：
   从 GitHub 真实 Issue 中提取 → 让 Agent 修复 → 运行测试验证
@@ -786,23 +777,18 @@ SWE-bench 是代码 Agent 的「ImageNet」。
   2. Agent 需要在代码库中找到问题 → 修复
   3. 生成 patch → 运行原始测试 → 看是否通过
 
-SWE-bench Verified 成绩对比 (2025 数据)：
-
-  ┌──────────────────────┬───────────┬──────────┐
-  │ Agent                 │ 解决率     │  成本     │
-  ├──────────────────────┼───────────┼──────────┤
-  │ Claude Code (Sonnet 4)│  ~72%     │  ~$5/任务 │
-  │ OpenHands             │  ~72%     │  ~$3/任务 │
-  │ SWE-Agent             │  ~45%     │  ~$1/任务 │
-  │ Agentless (无 Agent!)  │  ~32%     │  $0.70    │
-  │ Devin                 │  未公开    │  订阅制    │
-  └──────────────────────┴───────────┴──────────┘
+2026 年的重要限制：
+  - OpenAI 已停止把 SWE-bench Verified 作为前沿编码能力的主要指标，理由包括
+    训练污染和部分测试缺陷
+  - 2026-07 对 SWE-bench Pro 的审查也报告了大量有问题的任务
+  - 公布分数只有在模型快照、harness、最大预算、测试镜像和日期一致时才可比
+  - 项目选型应加入私有未污染 issue、代码审查、安全、测试质量和人工接管指标
 
 
 23.4 Agentless 的颠覆性发现
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-2025年 Illinois 的论文：Agentless
+2024 年发表的 Agentless 工作展示了一条固定的定位→修复→验证流水线。
 
 核心发现：
   简单固定流程 = 定位 → 修复 → 验证
@@ -817,21 +803,13 @@ SWE-bench Verified 成绩对比 (2025 数据)：
     ✗ 没有循环
     ✗ 没有工具调用
     ✗ 没有自主决策
-    → 居然比很多 Agent 效果更好！
+    → 在特定 benchmark 与预算下可以形成有竞争力的强基线
 
   为什么？
 
-  1. LLM 还不够「聪明」到能做好的自主决策
-  2. Agent 循环增加了出错机会（多做多错）
-  3. Agent 消耗了 token 在「思考过程」而非「解决问题」上
-
-  Anthropic 的回应（在 Claude Code 的优化中）：
-    「做最简单的事」
-    搜索用 Grep 而不是 Embedding
-    记忆用 Markdown 而不是数据库
-    单线程而不是多 Agent 并行
-
-  这条哲学和 Agentless 的发现是一致的。
+  1. 更多自主步骤会增加错误与方差
+  2. 固定流程更容易复现、预算和消融
+  3. 自主 Agent 只有在需要动态探索时才可能覆盖固定流程做不到的分支
 
 
 23.5 代码 Agent 的通用工作流
@@ -1004,12 +982,12 @@ SWE-bench Verified 成绩对比 (2025 数据)：
 1. 4 种架构模式
    CodeAct / ACI / Plan-Execute / React-and-Iterate
 
-2. SWE-bench 是代码 Agent 的标准评测
-   Verified 版最可靠，Lite 版适合快速验证
+2. SWE-bench 是重要外部参照，但 Verified 与 Pro 都暴露出污染/任务质量问题
+   必须同时维护私有回归集，并报告 harness、预算、镜像和日期
 
 3. Agentless 的启示
    简单方案常比复杂 Agent 更好
-   验证了 Anthropic「做最简单的事」的哲学
+   固定流程应作为所有复杂 Agent 的强基线
 
 面试速记：
   "你了解哪些代码 Agent？"
@@ -1039,12 +1017,11 @@ SWE-bench Verified 成绩对比 (2025 数据)：
     <span class="k">for</span> name, desc <span class="k">in</span> archs:
         <span class="b">print</span>(f<span class="s">"  {name:25s} → {desc}"</span>)
 
-    <span class="b">print</span>(<span class="s">"\n▶ SWE-bench Verified 成绩"</span>)
+    <span class="b">print</span>(<span class="s">"\n▶ SWE-bench 结果报告 Checklist"</span>)
     <span class="b">print</span>(<span class="s">"-"</span> * <span class="n">50</span>)
-    <span class="b">print</span>(<span class="s">"  Claude Code (Sonnet 4)   ~72%     ~$5/task"</span>)
-    <span class="b">print</span>(<span class="s">"  OpenHands                 ~72%     ~$3/task"</span>)
-    <span class="b">print</span>(<span class="s">"  SWE-Agent                 ~45%     ~$1/task"</span>)
-    <span class="b">print</span>(<span class="s">"  Agentless (无Agent!)      ~32%     $0.70"</span>)
+    <span class="b">print</span>(<span class="s">"  模型快照 / harness commit / 容器镜像 / 最大预算"</span>)
+    <span class="b">print</span>(<span class="s">"  运行日期 / 重试策略 / 失败分类 / 污染检查"</span>)
+    <span class="b">print</span>(<span class="s">"  公开 benchmark + 私有未污染回归集"</span>)
 
     <span class="b">print</span>(<span class="s">"\n✅ 第23章完成！"</span>)
 </pre></div></details></div><div class="nav-bar">
