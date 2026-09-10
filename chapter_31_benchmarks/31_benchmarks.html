@@ -250,7 +250,7 @@ body {
 </head>
 <body>
 <div class="page-wrapper">
-<!-- generated-from-sha256:c1b73e839f297cbf5043637bf6b7bf6932c64cd85513604c49c1a2d2a6722eb5 -->
+<!-- generated-from-sha256:b25c8e25e06d76ce2bad4517cda607b56b665baf1bfe7b848777c46ceee61a25 -->
 <div class="sidebar" id="sidebar">
 <div class="sidebar-title"><a href="https://callous-0923.github.io/agent-study/index.html">🤖 AI Agent 全栈课程</a></div>
 <div class="sidebar-layer">第1层 理论基础</div>
@@ -417,7 +417,18 @@ body {
 <li>4. 持续迭代</li>
 <li>每次模型/prompt/tool/schema/harness 变更跑哨兵集，按风险定期跑全量</li>
 <li>Bad Case → 改进 prompt → 重新评测</li>
-<li>非确定性路径运行多次，报告均值、方差和置信区间</li></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (148 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_case</span><span class="code-badge code-badge-func">evaluate</span><span class="code-badge code-badge-func">demo_benchmarks</span><span class="code-badge code-badge-func">mock_agent</span><span class="code-badge code-badge-class">AgentTestCase</span><span class="code-badge code-badge-class">SimpleAgentBench</span></div><div class="code-block"><pre><span class="k">import</span> json
+<li>非确定性路径运行多次，报告均值、方差和置信区间</li>
+<p>&nbsp;</p>
+<p>开源参考实现 —— yylo-benchmark（面向编码 Agent 的开源评测框架）：</p>
+<p>将上述四步落成可审计的工程实践。</p>
+<p>&nbsp;</p>
+<li>隔离：任务提示词与普通 Workflow Runner YAML 在私有的全新仓库</li>
+<p>工作区中执行，尝试之间互不污染</p>
+<li>评测：评测器配置支持确定性命令与可配置的 LLM 裁判</li>
+<li>证据：初始工作区收据与执行后仓库清单哈希通过 terminal、</li>
+<p>evidence、state 串成一条证据链，支持重评与事后审计</p>
+<p>&nbsp;</p>
+<p>代码：https://github.com/yylo-dev/yylo-benchmark</p></div><div class="code-bridge">📝 对应的代码实现</div><div class="code-section"><details open><summary>💻 代码 (148 行)</summary><div class="code-badges"><span class="code-badge code-badge-func">add_case</span><span class="code-badge code-badge-func">evaluate</span><span class="code-badge code-badge-func">demo_benchmarks</span><span class="code-badge code-badge-func">mock_agent</span><span class="code-badge code-badge-class">AgentTestCase</span><span class="code-badge code-badge-class">SimpleAgentBench</span></div><div class="code-block"><pre><span class="k">import</span> json
 <span class="k">import</span> time
 <span class="k">import</span> hashlib
 <span class="k">from</span> typing <span class="k">import</span> Optional
@@ -564,7 +575,7 @@ body {
         (<span class="s">"SWE-bench"</span>, <span class="s">"代码修复"</span>),
     ]:
         <span class="b">print</span>(f<span class="s">"  {name:14s} → {purpose}"</span>)
-    <span class="b">print</span>(<span class="s">"\n✅ 第31章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (285 行)</summary><div class="code-block"><pre><span class="s">"""
+    <span class="b">print</span>(<span class="s">"\n✅ 第31章完成！"</span>)</pre></div></details></div><hr style="margin:36px 0"><div class="code-section"><details><summary>📦 完整源代码 (296 行)</summary><div class="code-block"><pre><span class="s">"""
 第31章：Agent 评测体系深度 —— 不只是「看起来不错」
 =====================================================
 
@@ -698,6 +709,17 @@ SWE-bench 特别提示（2026）：Verified 已被指出存在污染和测试缺
      - 每次模型/prompt/tool/schema/harness 变更跑哨兵集，按风险定期跑全量
      - Bad Case → 改进 prompt → 重新评测
      - 非确定性路径运行多次，报告均值、方差和置信区间
+
+开源参考实现 —— yylo-benchmark（面向编码 Agent 的开源评测框架）：
+将上述四步落成可审计的工程实践。
+
+  - 隔离：任务提示词与普通 Workflow Runner YAML 在私有的全新仓库
+    工作区中执行，尝试之间互不污染
+  - 评测：评测器配置支持确定性命令与可配置的 LLM 裁判
+  - 证据：初始工作区收据与执行后仓库清单哈希通过 terminal、
+    evidence、state 串成一条证据链，支持重评与事后审计
+
+代码：https://github.com/yylo-dev/yylo-benchmark
 """</span>
 
 <span class="k">import</span> json
