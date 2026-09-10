@@ -132,6 +132,17 @@ SWE-bench 特别提示（2026）：Verified 已被指出存在污染和测试缺
      - 每次模型/prompt/tool/schema/harness 变更跑哨兵集，按风险定期跑全量
      - Bad Case → 改进 prompt → 重新评测
      - 非确定性路径运行多次，报告均值、方差和置信区间
+
+开源参考实现 —— yylo-benchmark（面向编码 Agent 的开源评测框架）：
+将上述四步落成可审计的工程实践。
+
+  - 隔离：任务提示词与普通 Workflow Runner YAML 在私有的全新仓库
+    工作区中执行，尝试之间互不污染
+  - 评测：评测器配置支持确定性命令与可配置的 LLM 裁判
+  - 证据：初始工作区收据与执行后仓库清单哈希通过 terminal、
+    evidence、state 串成一条证据链，支持重评与事后审计
+
+代码：https://github.com/yylo-dev/yylo-benchmark
 """
 
 import json
